@@ -34,7 +34,7 @@ You can check a demonstration of this plugin [here](##). [SOON]
 * CDN
   * `https://unpkg.com/@silexlabs/grapesjs-keymaps-dialog`
 * NPM
-  * `npm i silexlabs@grapesjs-keymaps-dialog`
+  * `yarn add silexlabs@grapesjs-keymaps-dialog`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-keymaps-dialog.git`
 
@@ -96,19 +96,19 @@ $ cd grapesjs-keymaps-dialog
 Install dependencies
 
 ```sh
-$ npm i
+$ yarn install
 ```
 
 Build the project
 
 ```sh
-$ npm run build
+$ yarn run build
 ```
 
 Start the dev server
 
 ```sh
-$ npm start
+$ yarn start
 ```
 
 ## License

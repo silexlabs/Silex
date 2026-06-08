@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "rootDir": "./src",
     "lib": [
       "dom",
       "dom.iterable",
@@ -15,7 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": false,

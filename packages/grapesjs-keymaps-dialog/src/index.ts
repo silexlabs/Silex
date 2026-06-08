@@ -43,7 +43,7 @@ export default (editor: Editor, opts = {}): void => {
   }
 
   if (options.longPressDuration && options.longPressKey) {
-    let longPressTimeout: NodeJS.Timeout | undefined = undefined
+    let longPressTimeout: ReturnType<typeof setTimeout> | undefined = undefined
 
     document.addEventListener('keydown', event => {
       // Handle long press of the longPressKey
