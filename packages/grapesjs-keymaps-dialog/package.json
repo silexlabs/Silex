@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-keymaps-dialog",
-  "version": "1.4.0-canary.2",
+  "version": "1.4.0-canary.3",
   "description": "GrapesJS Keymap Dialog",
   "main": "dist/index.js",
   "files": [
