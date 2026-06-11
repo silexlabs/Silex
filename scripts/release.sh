@@ -197,7 +197,14 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
       echo "  ↑ deps: ${INTERNAL_UPGRADE_LIST[*]}"
       npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}" > /dev/null 2>&1
       if [ -f yarn.lock ]; then
-        yarn install --ignore-scripts > /dev/null 2>&1
+        # yarn 1 resolves the meta workspace and updates the wrong lockfile when
+        # run in-place; regenerate yarn.lock in a detached clone instead
+        LOCK_TMP=$(mktemp -d)
+        git clone -q . "$LOCK_TMP"
+        cp package.json "$LOCK_TMP/package.json"
+        (cd "$LOCK_TMP" && yarn install --ignore-scripts > /dev/null 2>&1)
+        cp "$LOCK_TMP/yarn.lock" yarn.lock
+        rm -rf "$LOCK_TMP"
         git add package.json yarn.lock
       else
         npm install --package-lock-only --workspaces false > /dev/null 2>&1
