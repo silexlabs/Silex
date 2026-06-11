@@ -227,13 +227,16 @@ jobs:
 
           # macOS updater bundles are named Silex.app.tar.gz on both arches —
           # rename per-arch while copying so they don't overwrite each other.
+          # Cross-builds leave an unsigned native bundle next to the signed
+          # target one: only pick a bundle that has its .sig sibling.
           V="${VERSION#v}"
           for pair in "macos-arm aarch64" "macos-x64 x64"; do
             set -- $pair
-            SRC=$(find "artifacts/silex-desktop-$1" -name '*.app.tar.gz' ! -name '*.sig' | head -1)
+            SRC=$(find "artifacts/silex-desktop-$1" -name '*.app.tar.gz' ! -name '*.sig' \
+                  | while read -r f; do [ -f "$f.sig" ] && echo "$f" && break; done)
             if [ -n "$SRC" ]; then
               cp "$SRC" "release/Silex_${V}_$2.app.tar.gz"
-              cp "$SRC.sig" "release/Silex_${V}_$2.app.tar.gz.sig" 2>/dev/null || true
+              cp "$SRC.sig" "release/Silex_${V}_$2.app.tar.gz.sig"
             fi
           done
 
