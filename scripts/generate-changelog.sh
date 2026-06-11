@@ -286,7 +286,7 @@ echo ""
 echo "Install Silex on your computer."
 echo ""
 if [[ -n "$DESKTOP_VERSION" ]]; then
-  echo "- **Linux**: [.deb installer](${BASE}/Silex_${DESKTOP_VERSION}_amd64.deb) · [.rpm installer](${BASE}/Silex-${DESKTOP_VERSION}-1.x86_64.rpm)"
+  echo "- **Linux**: [.AppImage (auto-updates)](${BASE}/Silex_${DESKTOP_VERSION}_amd64.AppImage) · [.deb installer](${BASE}/Silex_${DESKTOP_VERSION}_amd64.deb) · [.rpm installer](${BASE}/Silex-${DESKTOP_VERSION}-1.x86_64.rpm)"
   echo "- **macOS** (Apple Silicon): [.dmg](${BASE}/Silex_${DESKTOP_VERSION}_aarch64.dmg)"
   echo "- **macOS** (Intel): [.dmg](${BASE}/Silex_${DESKTOP_VERSION}_x64.dmg)"
   echo "- **Windows**: [setup.exe](${BASE}/Silex_${DESKTOP_VERSION}_x64-setup.exe)"
@@ -295,9 +295,9 @@ else
 fi
 echo ""
 
-echo "### Self-hosted server"
+echo "### Server binary (advanced)"
 echo ""
-echo "Host Silex on a server for your team. Single static binary, no Node.js install needed."
+echo "The standalone server embedded in Silex Desktop — useful to try Silex from the command line. Not meant for production self-hosting (no OAuth): to self-host Silex, follow [the docs](https://docs.silex.me) (Docker or Node.js)."
 echo ""
 echo "- [Linux x64](${BASE}/silex-server-linux-amd64)"
 echo "- [macOS Apple Silicon](${BASE}/silex-server-macos-arm64)"
