@@ -1,4 +1,4 @@
-yarn install --ignore-scripts
+if [ -z "$(git rev-parse --show-superproject-working-tree)" ]; then yarn install --ignore-scripts; fi
 yarn run build
 yarn run lint:fix
 git update-index --again
