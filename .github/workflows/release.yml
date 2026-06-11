@@ -68,6 +68,18 @@ jobs:
       - name: Use npm registry (yarnpkg.com has intermittent 500s)
         run: yarn config set registry https://registry.npmjs.org
 
+      # Patch the desktop version from the tag BEFORE any Tauri build so every
+      # bundle (and the updater metadata) carries the release version — no
+      # stale 0.1.0 artifacts from intermediate builds.
+      - name: Patch desktop version from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          jq --arg v "$V" '.version = $v' packages/silex-desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
+          mv /tmp/tauri.conf.json packages/silex-desktop/src-tauri/tauri.conf.json
+          echo "Desktop version set to $V"
+
       - name: Install JS dependencies and build frontend
         shell: bash
         run: yarn install --ignore-scripts && yarn run build
@@ -84,14 +96,6 @@ jobs:
       # ── silex-desktop (Tauri) ────────────────────────────────────
       # Build Tauri first — it compiles silex-server as a library dependency.
       # The standalone server build below reuses the cached compilation.
-      # Compute the monorepo version (tag without the leading 'v') so Tauri
-      # bundles the artifacts as Silex_<tag>_*.deb etc.
-      - name: Compute release version
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: release_version
-        shell: bash
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-
       # Sign updater artifacts only on tag pushes (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -104,7 +108,7 @@ jobs:
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
-          args: --config '{"version":"${{ steps.release_version.outputs.version }}"}' ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # Write a temp config to disable updater artifacts (they require signing keys)
       - name: Disable updater artifacts config
@@ -131,7 +135,7 @@ jobs:
           name: silex-desktop-${{ matrix.platform }}
           path: |
             target/**/release/bundle/**/*.dmg
-            target/**/release/bundle/**/*.app
+            target/**/release/bundle/**/*.AppImage
             target/**/release/bundle/**/*.deb
             target/**/release/bundle/**/*.rpm
             target/**/release/bundle/**/*.exe
@@ -211,34 +215,59 @@ jobs:
           find artifacts/silex-server-macos-x64 -name 'silex-server' -type f -exec cp {} release/silex-server-macos-x64 \;
           find artifacts/silex-server-windows -name 'silex-server.exe' -type f -exec cp {} release/silex-server-windows-amd64.exe \;
 
-          # Desktop installers + updater artifacts (flatten into release/)
+          # Desktop installers + updater artifacts (flatten into release/).
+          # Tauri v2 updater artifacts are the bundles themselves + .sig:
+          # Linux = .AppImage, macOS = .app.tar.gz, Windows = -setup.exe.
+          # NB: deb staging dirs contain control.tar.gz/data.tar.gz — not matched here.
           find artifacts/silex-desktop-* -type f \
-            \( -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.exe' \
-               -o -name '*.tar.gz' -o -name '*.tar.gz.sig' \
-               -o -name '*.zip' -o -name '*.zip.sig' \) \
+            \( -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*-setup.exe' \
+               -o -name '*.AppImage' -o -name '*.AppImage.sig' -o -name '*-setup.exe.sig' \
+               -o -name '*.AppImage.tar.gz' -o -name '*.AppImage.tar.gz.sig' \) \
             -exec cp {} release/ \;
+
+          # macOS updater bundles are named Silex.app.tar.gz on both arches —
+          # rename per-arch while copying so they don't overwrite each other.
+          V="${VERSION#v}"
+          for pair in "macos-arm aarch64" "macos-x64 x64"; do
+            set -- $pair
+            SRC=$(find "artifacts/silex-desktop-$1" -name '*.app.tar.gz' ! -name '*.sig' | head -1)
+            if [ -n "$SRC" ]; then
+              cp "$SRC" "release/Silex_${V}_$2.app.tar.gz"
+              cp "$SRC.sig" "release/Silex_${V}_$2.app.tar.gz.sig" 2>/dev/null || true
+            fi
+          done
 
           # Helper: find file + read its .sig
           sig() { cat "$1.sig" 2>/dev/null || echo ""; }
 
-          # Build latest.json for the Tauri updater
+          # Build latest.json for the Tauri updater (v2 artifact names)
           BASE="https://github.com/${REPO}/releases/download/${VERSION}"
-          LINUX_TAR=$(find release -name '*_amd64.tar.gz' ! -name '*.sig' | head -1)
-          MACOS_ARM_TAR=$(find release -name '*_aarch64.app.tar.gz' | head -1)
-          MACOS_X64_TAR=$(find release -name '*_x64.app.tar.gz' | head -1)
-          WINDOWS_ZIP=$(find release -name '*_x64-setup*.zip' ! -name '*.sig' | head -1)
+          LINUX_BUNDLE=$(find release -name '*_amd64.AppImage' ! -name '*.sig' | head -1)
+          [ -z "$LINUX_BUNDLE" ] && LINUX_BUNDLE=$(find release -name '*_amd64.AppImage.tar.gz' ! -name '*.sig' | head -1)
+          MACOS_ARM_BUNDLE=$(find release -name '*_aarch64.app.tar.gz' ! -name '*.sig' | head -1)
+          MACOS_X64_BUNDLE=$(find release -name '*_x64.app.tar.gz' ! -name '*.sig' | head -1)
+          WINDOWS_BUNDLE=$(find release -name '*_x64-setup.exe' ! -name '*.sig' | head -1)
+
+          # Fail loudly if an updater bundle is missing — an empty URL in
+          # latest.json silently breaks auto-update for that platform.
+          for f in "$LINUX_BUNDLE" "$MACOS_ARM_BUNDLE" "$MACOS_X64_BUNDLE" "$WINDOWS_BUNDLE"; do
+            if [ -z "$f" ] || [ -z "$(sig "$f")" ]; then
+              echo "::error::Missing updater bundle or signature (linux='$LINUX_BUNDLE' macos-arm='$MACOS_ARM_BUNDLE' macos-x64='$MACOS_X64_BUNDLE' windows='$WINDOWS_BUNDLE')"
+              exit 1
+            fi
+          done
 
           jq -n \
             --arg ver   "${VERSION#v}" \
             --arg date  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --arg lu    "${BASE}/$(basename "$LINUX_TAR")" \
-            --arg ls    "$(sig "$LINUX_TAR")" \
-            --arg mau   "${BASE}/$(basename "$MACOS_ARM_TAR")" \
-            --arg mas   "$(sig "$MACOS_ARM_TAR")" \
-            --arg mxu   "${BASE}/$(basename "$MACOS_X64_TAR")" \
-            --arg mxs   "$(sig "$MACOS_X64_TAR")" \
-            --arg wu    "${BASE}/$(basename "$WINDOWS_ZIP")" \
-            --arg ws    "$(sig "$WINDOWS_ZIP")" \
+            --arg lu    "${BASE}/$(basename "$LINUX_BUNDLE")" \
+            --arg ls    "$(sig "$LINUX_BUNDLE")" \
+            --arg mau   "${BASE}/$(basename "$MACOS_ARM_BUNDLE")" \
+            --arg mas   "$(sig "$MACOS_ARM_BUNDLE")" \
+            --arg mxu   "${BASE}/$(basename "$MACOS_X64_BUNDLE")" \
+            --arg mxs   "$(sig "$MACOS_X64_BUNDLE")" \
+            --arg wu    "${BASE}/$(basename "$WINDOWS_BUNDLE")" \
+            --arg ws    "$(sig "$WINDOWS_BUNDLE")" \
             '{
               version: $ver, pub_date: $date,
               platforms: {
