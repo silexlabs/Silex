@@ -1,7 +1,3 @@
-[submodule "packages/SitemapGen"]
-	path = packages/SitemapGen
-	url = https://github.com/silexlabs/SitemapGen.git
-	branch = main
 [submodule "packages/silex-desktop"]
 	path = packages/silex-desktop
 	url = https://github.com/silexlabs/silex-desktop.git
