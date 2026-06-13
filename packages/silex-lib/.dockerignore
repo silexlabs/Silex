@@ -1,0 +1,8 @@
+.git
+.gitmodules
+docs
+node_modules
+Dockerfile
+!.
+!.env.default
+silex

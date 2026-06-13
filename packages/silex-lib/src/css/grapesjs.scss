@@ -1,0 +1,370 @@
+@use "variables" as *;
+@use "grapesjs-plugins";
+
+#gjs {
+  flex: 1 1 auto;
+}
+
+
+// GrapesJS color utility classes - using CSS custom properties
+.#{$prefix} {
+  &one {
+    &-bg {
+      background-color: var(--gjs-primary-color);
+    }
+
+    &-color {
+      color: var(--gjs-primary-color);
+
+      &-h:hover {
+        color: var(--gjs-primary-color);
+      }
+    }
+  }
+
+  &two {
+    &-bg {
+      background-color: var(--gjs-secondary-color);
+    }
+
+    &-color {
+      color: var(--gjs-secondary-color);
+
+      &-h:hover {
+        color: var(--gjs-secondary-color);
+      }
+    }
+  }
+
+  &three {
+    &-bg {
+      background-color: var(--gjs-tertiary-color);
+    }
+
+    &-color {
+      color: var(--gjs-tertiary-color);
+
+      &-h:hover {
+        color: var(--gjs-tertiary-color);
+      }
+    }
+  }
+
+  &four {
+    &-bg {
+      background-color: var(--gjs-quaternary-color);
+    }
+
+    &-color {
+      color: var(--gjs-quaternary-color);
+
+      &-h:hover {
+        color: var(--gjs-quaternary-color);
+      }
+    }
+  }
+}
+
+.#{$cv-prefix}canvas,
+.#{$pn-prefix}panel,
+.#{$pn-prefix}commands {
+  left: $projectBarWidth;
+}
+.#{$pn-prefix}project-bar-panel,
+.#{$pn-prefix}views,
+.#{$pn-prefix}options,
+.#{$pn-prefix}views-container {
+  left: auto;
+}
+.#{$cv-prefix}canvas {
+  width: calc(100% - var(--viewsPanelWidth) - $projectBarWidth);
+}
+.#{$pn-prefix}devices-c {
+  display: flex;
+  .#{$prefix}device-label {
+    display: none;
+  }
+}
+.#{$pn-prefix}views-container {
+}
+
+.gjs-editor {
+  font-family: $fontFamily;
+  font-size: 0.75rem;
+}
+
+// Dialogs
+.gjs-mdl-header {
+  background-color: var(--silex-bg-main);
+  color: var(--silex-text-primary);
+  padding: 20px;
+  border-bottom: 1px solid var(--silex-border-color-strong);
+
+  .gjs-mdl-btn-close {
+    top: 15px;
+  }
+}
+
+// Inside the canvas
+.gjs-toolbar {
+  background-color: var(--silex-accent-primary);
+}
+
+.gjs-resizer-h {
+  border-color: var(--silex-accent-primary);
+}
+
+.gjs-com-badge,
+.gjs-com-badge-red,
+.gjs-badge {
+  background-color: var(--silex-accent-primary);
+}
+
+.gjs-cv-canvas .gjs-highlighter,
+.gjs-cv-canvas .gjs-highlighter-sel {
+  outline: 1px solid var(--silex-accent-primary);
+}
+
+.gjs-cv-canvas {
+  height: calc(100% - var(--gjs-canvas-top) - var(--footerHeight));
+}
+
+// Property panels
+.gjs-pn-buttons {
+  justify-content: unset;
+}
+
+.gjs-pn-views-container, .gjs-pn-views {
+  width: var(--viewsPanelWidth);
+}
+
+.gjs-pn-project-bar-container {
+  width: var(--viewsProjectPanelWidth);
+}
+
+.gjs-pn-options {
+  right: var(--viewsPanelWidth);
+}
+
+// Sticky CSS tags section
+.top-style-section {
+  position: sticky;
+  top: 0;
+  border-bottom: solid var(--silex-border-color-strong) 1px;
+  background-color: var(--silex-bg-main);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+.gjs-clm-label-sel {
+  opacity: 0.5;
+}
+.gjs-clm-sels-info {
+  padding: 7px 0;
+  margin: 0;
+  overflow-x: scroll;
+}
+.gjs-clm-sel-rule {
+  word-break: break-all;
+}
+#gjs-clm-tags-field.gjs-field {
+  margin: 0;
+}
+.gjs-field.gjs-field-integer {
+  width: 100%;
+}
+.gjs-clm-tags {
+  padding-top: 7px;
+  padding-bottom: 0;
+}
+#gjs-clm-up {
+  margin-top: 0;
+}
+.gjs-sm-icon[title]:not([title=""])::after {
+  content: "?";
+  margin-left: 0.5em;
+  padding: 0.1em 0.3em;
+  transition: background 0.5s;
+  font-size: x-small;
+}
+.gjs-sm-icon[title]:not([title=""]):hover::after {
+  background: var(--gjs-main-dark-color);
+}
+
+// Element settings
+.gjs-field.gjs-field-plugin-unwrap {
+  width: fit-content;
+  border: 1px solid rgba(136, 115, 254, 0.3);
+}
+
+/*
+*/
+// Font awesome 5 fix
+// https://github.com/GrapesJS/grapesjs/issues/644#issuecomment-833215677
+.gjs-editor-cont .fa {
+	font-weight: 400;
+}
+
+.fa-square-o:before {
+	content: "\f0c8";
+}
+
+.fa-trash-o:before {
+	content: "\f1f8";
+}
+
+.fa-map-o:before {
+	content: "\f279";
+}
+
+.fa-youtube-play:before {
+	content: "\f04b";
+}
+
+/* Fix: open close chevrons: FA5 has the tags in different order ?!!? */
+.fa-chevron-right:before {
+	content: "\f054";
+}
+
+.fa-chevron-down:before {
+	content: "\f078";
+}
+
+// Font awesome 6 fix
+.fa-cog:before {
+  font-weight: 900;
+}
+
+.fa-paint-brush:before {
+  font-weight: 900;
+}
+
+.fa-arrows-alt:before {
+	content: "\f065";
+  font-weight: 900;
+}
+
+.fa-caret-down:before {
+  content: "\f0d7";
+  font-weight: 900;
+}
+
+.fa-caret-right:before {
+  content: "\f0da";
+  font-weight: 900;
+}
+
+.fa-trash:before {
+  content: "\f2ed";
+  font-weight: 900;
+}
+
+.fa-list:before {
+  content: "\f03a";
+  font-weight: 900;
+}
+
+.fa-sign-out:before {
+  content: "\f08b";
+  font-weight: 900;
+}
+
+.fa-diamond:before {
+  content: "\f3a5";
+  font-weight: 900;
+}
+
+.fa-rotate-left:before {
+  content: "\f2ea";
+  font-weight: 900;
+}
+
+.fa-rotate-right:before {
+  content: "\f2f9";
+  font-weight: 900;
+}
+
+// Fix inline SVG icons in RTE toolbar (link, wrap) having no intrinsic size on WebKit
+.gjs-rte-actionbar .gjs-rte-action svg,
+.actionbar .action svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
+// // Sector icons (SVG data-URI via ::before on sector label)
+// .gjs-sm-sector .gjs-sm-sector-label::before {
+//     display: inline-block;
+//     width: 14px;
+//     height: 14px;
+//     margin-right: 6px;
+//     vertical-align: -2px;
+// }
+// // Layout (general) — move arrows
+// .gjs-sm-sector__general .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 9 2 12 5 15'/%3E%3Cpolyline points='9 5 12 2 15 5'/%3E%3Cpolyline points='15 19 12 22 9 19'/%3E%3Cpolyline points='19 9 22 12 19 15'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cline x1='12' y1='2' x2='12' y2='22'/%3E%3C/svg%3E");
+// }
+// // Flexbox — layers
+// .gjs-sm-sector__flex .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cline x1='12' y1='3' x2='12' y2='21'/%3E%3C/svg%3E");
+// }
+// // Size (dimension) — maximize
+// .gjs-sm-sector__dimension .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpolyline points='9 21 3 21 3 15'/%3E%3Cline x1='21' y1='3' x2='14' y2='10'/%3E%3Cline x1='3' y1='21' x2='10' y2='14'/%3E%3C/svg%3E");
+// }
+// // Typography — type T
+// .gjs-sm-sector__typography .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 7 4 4 20 4 20 7'/%3E%3Cline x1='9' y1='20' x2='15' y2='20'/%3E%3Cline x1='12' y1='4' x2='12' y2='20'/%3E%3C/svg%3E");
+// }
+// // Backgrounds & Borders (decorations) — palette
+// .gjs-sm-sector__decorations .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='13.5' cy='6.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='17.5' cy='10.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='8.5' cy='7.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='6.5' cy='12.5' r='0.5' fill='%23e5e5e5'/%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z'/%3E%3C/svg%3E");
+// }
+// // Effects (extra) — zap
+// .gjs-sm-sector__extra .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E");
+// }
+
+// Sector label styling
+.gjs-sm-sector .gjs-sm-sector-label {
+    margin: 0;
+    margin-right: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.fa-grip-vertical:before {
+  content: "\f58e";
+  font-weight: 900;
+}
+.gjs-sm-sector .gjs-sm-sector-title::before,
+.gjs-sm-sector .gjs-sm-sector-title::after {
+    content: 'o';
+    display: none;
+    margin-left: 0.4em;
+}
+
+// Order of the 3 elements making the sector group header
+.gjs-sm-sector .gjs-sm-sector-label { order: 1; }
+.gjs-sm-sector .gjs-sm-sector-title::before, .gjs-sm-sector .gjs-sm-sector-title::after { order: 2; }
+.gjs-sm-sector .gjs-sm-sector-caret { order: 3; margin-left: auto; }
+
+.gjs-sm-sector:has(.gjs-sm-label.gjs-four-color) .gjs-sm-sector-title::before {
+    display: block;
+    color: var(--gjs-quaternary-color);
+}
+.gjs-sm-sector:has(.gjs-sm-label.gjs-color-warn) .gjs-sm-sector-title::after {
+    display: block;
+    color: var(--gjs-color-warn);
+}
+
+// FIXME: Workaround, why is this needed?
+.gjs-field .gjs-sel-arrow {
+  z-index: 999;
+}
+
+.silex-sm-background-image-btn {
+  width: 100%;
+  margin-top: 4px;
+}

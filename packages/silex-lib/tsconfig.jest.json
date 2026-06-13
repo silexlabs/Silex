@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/client/",
+    "target": "ES2019",
+    "sourceMap": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+  }
+}

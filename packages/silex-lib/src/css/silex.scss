@@ -1,0 +1,691 @@
+@use "variables" as *;
+@use "mixins";
+
+// Simple action-link style for Info meta links (e.g., "Star" button)
+.silex-link-action {
+  margin-left: 0.5em;
+  color: var(--silex-accent-primary);
+  font-size: 0.93em;
+  font-weight: 600;
+  text-decoration: underline;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline;
+}
+
+// -------------------
+// Styles for Info Meta Data Section and pre JSON render
+// -------------------
+.silex-mono-json {
+  background: var(--silex-bg-lighter);
+  color: var(--silex-text-secondary);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.silex-workspace {
+  @include mixins.silex-ui-full;
+  display: flex;
+  body {
+    font-family: $fontFamily;
+  }
+  a {
+    color: inherit;
+  }
+  h2 {
+    font-size: 18px;
+    background: var(--silex-bg-lighter);
+    border-radius: 8px 8px 0 0;
+    padding: 8px;
+    margin: 0;
+    font-weight: normal;
+  }
+
+  h3 {
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: normal;
+  }
+
+  // Better contrast than grapesjs default for select menu and input
+  select,
+  input {
+    background-color: var(--silex-input-bg);
+  }
+  select.gjs-input-unit {
+    height: 100%;
+    background-color: transparent;
+  }
+
+  .gjs-color-warn,
+  .gjs-sm-sector .gjs-sm-field input,
+  .gjs-clm-tags .gjs-sm-field input,
+  .gjs-sm-sector .gjs-clm-field input,
+  .gjs-clm-tags .gjs-clm-field input,
+  .gjs-sm-sector .gjs-sm-field select,
+  .gjs-clm-tags .gjs-sm-field select,
+  .gjs-sm-sector .gjs-clm-field select,
+  .gjs-clm-tags .gjs-clm-field select {
+    color: var(--silex-text-primary);
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Resize options panel button
+.silex-workspace {
+  .gjs-pn-viewsOptions {
+      z-index: $z-views-options-buttons;
+      right: 0;
+      left: auto;
+
+      .viewsOptions__size-btn::before {
+        content: '←';
+      }
+    }
+}
+
+.silex-hidden {
+  /* do not really hide, because it breaks the code editor init in the site settings + for animation */
+  visibility: hidden;
+  position: absolute;
+  opacity: 0;
+  height: 10px;
+  width: 10px;
+  overflow: hidden;
+}
+
+.silex-capitalize {
+  text-transform: capitalize;
+}
+
+// full screen settings
+.settings-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: $z-dialog-inline;
+  pointer-events: auto;
+  overflow: hidden; /* settings scroll is on .settings-body */
+  display: flex;
+
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+
+  .silex-bar .silex-list {
+    display: flex; // This list is tabs
+  }
+
+  .settings-content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--primaryColor);
+    overflow: auto;
+    width: 920px;
+    max-width: 100%;
+    max-height: 100%;
+    margin: auto;
+  }
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--silex-border-color-strong);
+  }
+  .settings-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .settings-close {
+    color: inherit;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-body {
+    flex: 1;
+    padding: 0;
+  }
+  .settings-body .silex-form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-body .silex-sidebar-dialog {
+    flex-direction: column;
+  }
+  .settings-body .silex-info-fork {
+    margin-top: 10px;
+    color: var(--silex-status-warning);
+    background: var(--silex-bg-lighter);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-weight: 500;
+    display: inline-block;
+  }
+
+  // Repository / Publication info section
+  .silex-repo-section {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--silex-bg-lighter);
+    border-radius: 8px;
+    border: 1px solid var(--silex-border-color);
+
+    &__title {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--silex-text-primary);
+    }
+
+    &__help {
+      margin: 0 0 16px 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--silex-text-secondary);
+
+      a {
+        color: var(--silex-accent-primary);
+        text-decoration: underline;
+      }
+    }
+
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    &__empty {
+      color: var(--silex-text-secondary);
+      font-style: italic;
+      margin: 0;
+    }
+  }
+
+  // Repository field with copy/open buttons
+  .silex-repo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    &__label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--silex-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    &__status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: none;
+
+      &--success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+      }
+
+      &--failed, &--error {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      &--running, &--pending {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+      }
+
+      &--unknown {
+        background: var(--silex-bg-lighter);
+        color: var(--silex-text-secondary);
+      }
+    }
+
+    &__meta {
+      font-size: 11px;
+      color: var(--silex-text-secondary);
+      margin-top: 4px;
+
+      a {
+        color: var(--silex-accent-primary);
+      }
+    }
+
+    &__input-wrapper {
+      display: flex;
+      align-items: stretch;
+      background: var(--silex-input-bg);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--silex-border-color);
+    }
+
+    &__input {
+      flex: 1;
+      padding: 10px 12px;
+      border: none !important;
+      background: transparent !important;
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--silex-text-primary);
+      min-width: 0;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &__btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      background: transparent;
+      border: none;
+      border-left: 1px solid var(--silex-border-color);
+      color: var(--silex-text-secondary);
+      cursor: pointer;
+      transition: background-color 0.15s, color 0.15s;
+      text-decoration: none;
+
+      &:hover {
+        background: var(--silex-hover-bg);
+        color: var(--silex-accent-primary);
+      }
+
+      &--copied {
+        background: var(--silex-status-success, #22c55e) !important;
+        color: white !important;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  // Info grid for visibility, forks, stars
+  .silex-repo-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .silex-repo-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    background: var(--silex-bg-main);
+    border-radius: 6px;
+    border: 1px solid var(--silex-border-color);
+
+    &__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--silex-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    &__value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--silex-text-primary);
+    }
+
+    &__action {
+      font-size: 12px;
+      color: var(--silex-accent-primary);
+      text-decoration: underline;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    &__links {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  // Fork/template notice
+  .silex-repo-fork-notice {
+    padding: 16px;
+    background: var(--silex-bg-main);
+    border: 1px solid var(--silex-border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--silex-text-primary);
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--silex-accent-primary);
+
+      strong {
+        font-size: 14px;
+      }
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+
+    &__text {
+      margin: 0 0 12px 0;
+      line-height: 1.5;
+      color: var(--silex-text-secondary);
+
+      a {
+        color: var(--silex-accent-primary);
+        font-weight: 500;
+      }
+    }
+
+    &__actions {
+      display: flex;
+      gap: 16px;
+    }
+
+    &__link {
+      color: var(--silex-accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 13px;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    &__contribute {
+      margin: 12px 0 0 0;
+      padding-top: 12px;
+      border-top: 1px solid var(--silex-border-color);
+      font-size: 12px;
+      color: var(--silex-text-secondary);
+      font-style: italic;
+    }
+  }
+
+  // Job status
+  .silex-repo-job {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--silex-bg-main);
+    border-radius: 6px;
+    border: 1px solid var(--silex-border-color);
+    font-size: 13px;
+
+    &__label {
+      color: var(--silex-text-secondary);
+    }
+
+    &__status {
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+
+      &--success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+      }
+
+      &--failed, &--error {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      &--running, &--pending {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+      }
+
+      &--unknown {
+        background: var(--silex-bg-lighter);
+        color: var(--silex-text-secondary);
+      }
+    }
+
+    &__date {
+      color: var(--silex-text-secondary);
+    }
+  }
+  form.silex-form {
+    textarea {
+      min-height: 250px;
+    }
+  }
+  .silex-form__element {
+    padding: 10px 5px;
+    margin: 10px 0;
+    width: 98%;
+  }
+
+  footer {
+    z-index: 10;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 0;
+    background-color: var(--silex-bg-main);
+    &>*:last-child {
+      margin-right: 30px;
+    }
+    .silex-version {
+      float: left;
+      padding: 0 15px;
+      font-size: small;
+    }
+  }
+  .CodeMirror {
+    height: 57vh;
+  }
+}
+
+.silex-sidebar-dialog {
+  min-height: 70vh;
+}
+
+button.silex-button,
+input.silex-button[type="button"],
+input.silex-button[type="submit"] {
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--silex-text-inverse);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--silex-border-color);
+  border-radius: 4px;
+  box-shadow: var(--silex-shadow-sm);
+  background-color: var(--silex-button-bg);
+  padding: 5px;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--silex-focus-outline);
+  }
+
+  &:hover {
+    background-color: var(--silex-button-hover-bg);
+  }
+}
+
+.silex-button.disabled,
+.silex-button[disabled] {
+  opacity: .8;
+  cursor: unset;
+}
+
+.silex-button.silex-button--primary {
+  background-color: var(--silex-button-bg);
+}
+
+.silex-button.silex-button--secondary {
+  background-color: var(--silex-bg-main);
+}
+
+.silex-button--size {
+  max-height: 30px;
+  margin: 0 10px;
+}
+
+.silex-button--small {
+  font-size: .7em;
+  padding: 0 5px;
+}
+
+.silex-input {
+  appearance: initial;
+}
+
+.silex-label {
+  display: block;
+}
+
+.silex-sidebar-dialog,
+.silex-bar {
+  display: flex;
+  align-items: start;
+  &>* {
+    margin: 5px;
+  }
+  main {
+    width: 99%;
+  }
+}
+
+ol.silex-list,
+ul.silex-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  & > li {
+    padding: 5px;
+    border-bottom: 1px solid var(--silex-border-color-strong);
+    margin: 5px;
+  }
+
+  fieldset {
+    border-color: var(--silex-border-color-strong);
+  }
+
+  h4 {
+    // badge-like
+    display: inline-block;
+    padding: 5px;
+    padding-bottom: 2px;
+    margin: 10px 5px;
+    font-weight: normal;
+    color: var(--silex-badge-text);
+    background-color: var(--silex-badge-bg);
+  }
+  .silex-list__item__body {
+    display: flex;
+  }
+  .silex-list__item__footer {
+    display: flex;
+    justify-content: flex-end;
+    button {
+      padding: 5px;
+      margin: 5px;
+      padding-top: 8px;
+    }
+  }
+}
+
+ol.silex-list--menu,
+ul.silex-list--menu {
+  & > li {
+    padding: 15px;
+    margin: 0;
+    border: 1px solid transparent;
+    border-bottom-color: var(--silex-border-color-strong);
+    text-align: center;
+    cursor: pointer;
+
+    &:first-child {
+      border-top-color: var(--silex-border-color-strong);
+    }
+
+    &:hover {
+      color: var(--silex-accent-primary);
+      background-color: var(--silex-hover-bg);
+    }
+  }
+
+  .active {
+    color: var(--silex-accent-primary);
+    background-color: var(--silex-hover-bg);
+  }
+}
+
+form.silex-form {
+  display: flex;
+  flex-direction: column;
+
+  footer {
+    text-align: right;
+    border-top: 1px solid var(--silex-border-color-strong);
+    padding: 20px 0 10px;
+    margin: 20px 0 0;
+  }
+
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: var(--silex-input-bg);
+    color: var(--silex-text-primary);
+    padding: 5px;
+    border: none;
+  }
+  input[type=checkbox] {
+    margin: 5px;
+  }
+  textarea {
+    width: 98% !important;
+  }
+  .silex-form__element {
+    display: inline-flex;
+    flex-direction: column;
+  }
+}

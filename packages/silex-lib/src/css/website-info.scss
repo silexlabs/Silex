@@ -1,0 +1,14 @@
+@use "variables" as *;
+
+.gjs-website-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 0 10px;
+  line-height: 1;
+  min-width: 100px;
+  border: 1px solid var(--silex-border-color-strong);
+  background-color: var(--silex-bg-darker);
+}

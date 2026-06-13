@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/client/",
+    "target": "ESNext",
+    "declaration": true,
+    "sourceMap": true,
+    "module": "ESNext",
+    "removeComments": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "src/ts/types",
+      "node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/ts/client/index.ts"
+  ],
+  "plugins": [
+    {
+      "name": "ts-lit-plugin",
+      "strict": true
+    }
+  ]
+}

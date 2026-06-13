@@ -1,0 +1,37 @@
+/* Normalize css */
+@use "normalize.css/normalize";
+
+@use "_variables";
+@use "grapesjs/src/styles/scss/main";
+
+/* Theme system */
+@use "theme-base";
+@use "theme-modern";
+
+/* Silex styles imports */
+@use "silex";
+@use "loader";
+@use "footer";
+@use "dialog";
+@use "fonts";
+@use "project-bar";
+@use "page-panel";
+@use "website-info";
+@use "grapesjs";
+@use "panels";
+@use "dialogs";
+
+//@use "grapesjs-light";
+
+// Ubuntu Fonts
+@use "@fontsource/ubuntu";
+
+.container-png::before {
+  content: " ";
+  background-image: url("../assets/container.png");
+  height: 30px;
+  width: 30px;
+  margin: auto;
+  background-position: center;
+  background-repeat: no-repeat;
+}

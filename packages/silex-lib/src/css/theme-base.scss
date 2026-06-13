@@ -1,0 +1,93 @@
+/**
+ * THEME-BASE.SCSS
+ * Base theming system for Silex
+ *
+ * Philosophy:
+ * - Leverage GrapesJS variables as much as possible
+ * - Only introduce new variables when truly necessary
+ * - Provide semantic tokens for Silex-specific UI elements
+ * - Keep it minimal and maintainable
+ */
+
+@use "variables" as silex-vars;
+
+:root {
+  // ============================================================
+  // 1. OVERRIDE GRAPESJS VARIABLES (Primary theme colors)
+  // ============================================================
+  // These are set by Silex and override GrapesJS defaults
+
+  --gjs-primary-color: #{silex-vars.$primaryColor};
+  --gjs-secondary-color: #{silex-vars.$secondaryColor};
+  --gjs-tertiary-color: #{silex-vars.$tertiaryColor};
+  --gjs-quaternary-color: #{silex-vars.$quaternaryColor};
+
+  // Computed variations for Silex UI
+  --gjs-primary-darker: #{silex-vars.$darkerPrimaryColor};
+  --gjs-primary-lighter: #{silex-vars.$lighterPrimaryColor};
+
+  // ============================================================
+  // 2. SILEX-SPECIFIC SEMANTIC TOKENS
+  // ============================================================
+  // These provide semantic meaning for Silex UI components
+  // They map to GrapesJS variables where possible
+
+  // Backgrounds
+  --silex-bg-main: var(--gjs-primary-color);
+  --silex-bg-darker: var(--gjs-primary-darker);
+  --silex-bg-lighter: var(--gjs-primary-lighter);
+  --silex-bg-surface: var(--gjs-primary-color);
+
+  // Text colors
+  --silex-text-primary: var(--gjs-secondary-color);
+  --silex-text-secondary: var(--gjs-font-color);
+  --silex-text-inverse: #ffffff;
+
+  // Borders
+  --silex-border-color: var(--gjs-light-border);
+  --silex-border-color-strong: var(--gjs-primary-lighter);
+
+  // Shadows
+  --silex-shadow-color: rgba(0, 0, 0, 0.2);
+  --silex-shadow-sm: 0 0 5px var(--silex-shadow-color);
+  --silex-shadow-md: 0 0 10px var(--silex-shadow-color);
+  --silex-shadow-lg: 0 0 15px var(--silex-shadow-color);
+
+  // Interactive states
+  --silex-hover-bg: var(--gjs-primary-darker);
+  --silex-active-bg: var(--gjs-primary-lighter);
+  --silex-focus-outline: var(--gjs-tertiary-color);
+
+  // Accents
+  --silex-accent-primary: var(--gjs-tertiary-color);
+  --silex-accent-secondary: var(--gjs-quaternary-color);
+
+  // Status colors (use GrapesJS semantic colors)
+  --silex-status-info: var(--gjs-color-blue);
+  --silex-status-success: var(--gjs-color-green);
+  --silex-status-warning: var(--gjs-color-yellow);
+  --silex-status-error: var(--gjs-color-red);
+
+  // UI Specific
+  --silex-button-bg: var(--gjs-primary-lighter);
+  --silex-button-hover-bg: var(--gjs-primary-darker);
+  --silex-input-bg: var(--gjs-primary-darker);
+  --silex-badge-bg: #c4c4c4;
+  --silex-badge-text: #3d3d3d;
+
+  // Dimensions (from Silex)
+  --silex-top-bar-height: #{silex-vars.$topBarHeight};
+  --silex-project-bar-width: #{silex-vars.$projectBarWidth};
+  --silex-footer-height: #{silex-vars.$footerHeight};
+
+  // Transitions
+  --silex-transition-fast: #{silex-vars.$transitionSpeedMedium};
+  --silex-transition-medium: #{silex-vars.$transitionSpeedSlow};
+
+  // Font
+  --silex-font-family: #{silex-vars.$fontFamily};
+
+  // Z-indexes
+  --silex-z-dialog: #{silex-vars.$z-dialog-inline};
+  --silex-z-loader: #{silex-vars.$z-loader};
+}

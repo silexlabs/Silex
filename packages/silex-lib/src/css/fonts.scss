@@ -1,0 +1,29 @@
+@use "variables" as *;
+.fonts-dialog {
+  h2 {
+    font-weight: lighter;
+      background-color: var(--gjs-secondary-dark-color);
+      letter-spacing: 1px;
+      padding: 9px 10px 9px 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  }
+  .silex-form__element {
+    margin-bottom: 80px;
+  }
+  .variants-toolbar .silex-button {
+    padding: 0 !important;
+    font-weight: normal;
+    background: none;
+    border: none;
+    font-size: small;
+    text-decoration: underline;
+    border-radius: 0;
+  }
+  .silex-button {
+    background:
+    none;
+      border: none;
+      font-weight: normal !important;
+      box-shadow: none;
+  }
+}

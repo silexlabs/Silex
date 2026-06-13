@@ -1,0 +1,84 @@
+@use "variables";
+@use "mixins";
+
+.silex-main {
+  transition: opacity var(--silex-transition-fast) .5s ease;
+}
+
+.silex-dialog {
+  transition: opacity var(--silex-transition-fast) ease;
+}
+
+.silex-dialog-hide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--silex-transition-fast) ease, visibility var(--silex-transition-medium) 1s ease;
+}
+
+.silex-dialog-inline {
+  position: absolute;
+  background-color: var(--silex-bg-main);
+  z-index: var(--silex-z-dialog);
+  border-radius: 3px;
+  border: 2px solid var(--silex-border-color-strong);
+  box-shadow: var(--silex-shadow-md);
+  display: flex;
+  flex-direction: column;
+
+  header {
+    padding: 10px;
+    border-bottom: 1px solid var(--silex-border-color-strong);
+  }
+
+  main {
+    flex-grow: 1;
+    padding: 10px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  footer {
+    padding: 10px;
+    text-align: right;
+    border-top: 1px solid var(--silex-border-color-strong);
+  }
+
+  a {
+    color: var(--silex-accent-secondary);
+  }
+
+  header > * {
+    margin: 0;
+  }
+}
+
+details.silex-more summary {
+  cursor: pointer;
+}
+details.silex-more,
+.silex-help {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: 3px;
+  background-color: var(--silex-bg-lighter);
+  color: var(--silex-text-primary);
+  font-size: small;
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: var(--silex-accent-secondary);
+  }
+
+  label {
+    background-color: var(--silex-bg-main);
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--silex-focus-outline);
+  outline-offset: 2px;
+}

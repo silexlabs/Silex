@@ -1,0 +1,297 @@
+@use "variables" as *;
+
+// grapesjs-style-bg
+@use "grapick/dist/grapick.min.css";
+
+// grapesjs-style-border
+@mixin square-borders-before {
+  display: block;
+  content: '' !important;
+  border: 2px solid var(--silex-accent-primary);
+  width: 10px;
+  height: 10px;
+  margin: auto;
+}
+
+.fa-arrows::before {
+  @include square-borders-before;
+  border-color: var(--silex-text-primary);
+}
+
+.fa-long-arrow-up::before {
+  @include square-borders-before;
+  border-top-color: var(--silex-text-primary);
+}
+
+.fa-long-arrow-down::before {
+  @include square-borders-before;
+  border-bottom-color: var(--silex-text-primary);
+}
+
+.fa-long-arrow-left::before {
+  @include square-borders-before;
+  border-left-color: var(--silex-text-primary);
+}
+
+.fa-long-arrow-right::before {
+  @include square-borders-before;
+  border-right-color: var(--silex-text-primary);
+}
+
+// Hide tooltip info buttons for border properties that interfere with the visual squares
+.gjs-radio-item-label:after {
+  display: none !important;
+}
+
+// grapesjs-notifications
+.gjs-editor .gjs-notification {
+  max-height: initial;
+  text-align: left;
+}
+.gjs-editor .gjs-notification,
+.gjs-editor .gjs-notification .gjs-sm-header,
+.gjs-editor .gjs-notification .gjs-notification__item,
+.gjs-editor .gjs-notification .gjs-notification__group > details,
+.gjs-editor .gjs-notification .gjs-notification__group > details > ul,
+.gjs-editor .gjs-notification .gjs-notification__group > details > summary,
+.gjs-editor .gjs-notification .gjs-notification__group {
+  padding: 0;
+  margin: 0;
+}
+.gjs-editor .gjs-notification .gjs-notification__group,
+.gjs-editor .gjs-notification .gjs-notification__item {
+  margin: 10px 0;
+  padding: 10px 0;
+}
+
+.gjs-editor .gjs-notification .gjs-notification__group .gjs-notification__item {
+  margin-left: 10px;
+}
+
+// publication-ui
+@keyframes pub-blink {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+#publish-dialog {
+  .notice {
+    margin: 10px 0;
+    background-color: var(--gjs-color-warn);
+    color: var(--gjs-main-color);
+    border-radius: 5px;
+    padding: 10px;
+  }
+
+  progress {
+    width: 100%;
+    border-radius: 50px;
+    border: none;
+    height: 5px;
+    animation: pub-blink 0.33s infinite alternate;
+    background-color: var(--silex-accent-primary);
+  }
+
+  progress::-webkit-progress-bar {
+    background-color: var(--silex-accent-primary);
+  }
+
+  progress::-moz-progress-bar {
+    background-color: var(--silex-accent-primary);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 0.95rem;
+    transition: 200ms;
+
+    svg {
+      width: 1.4rem;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    button {
+      border: solid 2px var(--silex-border-color-strong);
+      border-radius: 50px;
+      padding: 4px 9px;
+      background-color: var(--silex-bg-darker);
+      color: var(--silex-text-primary);
+    }
+
+    .connector {
+      color: var(--silex-accent-secondary);
+    }
+  }
+
+  main {
+    max-height: none;
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      grid-row-gap: 0.5rem;
+      transition: 200ms;
+    }
+
+    svg {
+      height: 0.9rem;
+      margin-left: 5px;
+    }
+
+    h3 {
+      margin: 0;
+    }
+
+    p {
+      margin-top: 0;
+    }
+
+    details {
+      border-radius: 5px;
+      border: solid var(--silex-border-color) 2px;
+      background-color: var(--silex-bg-darker);
+      margin: 10px 0;
+      padding: 10px;
+      word-break: break-word;
+      overflow-y: auto;
+      max-height: 200px;
+      position: relative;
+
+      pre {
+        word-break: break-word;
+      }
+
+      summary {
+        font-size: 0.95rem;
+        opacity: 0.7;
+      }
+
+      .logs {
+        font-family: monospace;
+        white-space: pre-line;
+
+        * {
+          margin: 0;
+          padding-top: 3px;
+          padding-bottom: 3px;
+          border-radius: 5px;
+          list-style: '-';
+
+          &:hover {
+            transition: 200ms;
+            background-color: var(--gjs-soft-light-color);
+          }
+        }
+      }
+
+      &:hover {
+        transition: 200ms;
+        border-color: var(--silex-border-color-strong);
+        background-color: var(--silex-hover-bg);
+      }
+
+      * {
+        transition: 200ms;
+      }
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
+    }
+
+    .silex-button {
+      display: block;
+      padding: 10px;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: 200ms;
+      box-sizing: border-box;
+
+      &:hover {
+        filter: brightness(1.2);
+      }
+
+      &:active {
+        filter: brightness(0.8);
+      }
+    }
+
+    .silex-button--primary {
+      background-color: var(--silex-accent-primary);
+      color: white;
+    }
+
+    .silex-button--secondary {
+      background-color: var(--silex-button-bg, #252525);
+      color: var(--silex-text-primary, #E5E5E5);
+      border: 1px solid var(--silex-border-color-strong, #262626);
+    }
+  }
+}
+
+// Adapting the layout of the suggestion list
+.gjs-suggest {
+  max-height: 30vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-top: 7px;
+  border-bottom: solid var(--silex-bg-main) 7px;
+}
+
+// // grapesjs-tailwind plugin
+// /* Make blocks full width */
+// .gjs-block.block-full-width {
+//     padding: 0 !important;
+//     width: 100% !important;
+//     min-height: auto !important;
+// }
+//
+// /* Fit icons properly */
+// .gjs-block.block-full-width svg {
+//     width: 100%;
+// }
+// body, html {
+//   margin: 0;
+//   height: 100%;
+// }
+//
+// .change-theme-button {
+//   width: 40px;
+//   height: 40px;
+//   border: none;
+//   margin: 5px;
+//   cursor: pointer;
+// }
+//
+// .change-theme-button:focus {
+//   /* background-color: yellow; */
+//   outline: none;
+//   box-shadow: 0 0 0 2pt #c5c5c575;
+// }
+
+// Data source plugin and expressions
+:root {
+  --expression-input-dirty-background-color: transparent !important;
+  --expression-input-dirty-border-radius: 5px !important;
+  --expression-input-active-background-color: var(--gjs-main-light-color) !important;
+  --expression-input-active-color: var(--gjs-secondary-color) !important;
+  --expression-input-dirty-border-color: var(--expression-input-active-background-color) !important;
+
+}
+.property-container::part(property-container) {
+  padding: 0 !important;
+}
