@@ -1,0 +1,55 @@
+[package]
+name = "silex-server"
+version = "0.1.0"
+edition = "2021"
+description = "Silex website builder server - Rust implementation"
+license = "AGPL-3.0-or-later"
+authors = ["Silex Labs Foundation"]
+
+[dependencies]
+# Web framework
+axum = { version = "0.8", features = ["macros", "multipart"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "compression-gzip", "fs", "normalize-path"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Async traits
+async-trait = "0.1"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Session management
+tower-sessions = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Configuration
+dotenvy = "0.15"
+
+# Time/dates
+chrono = { version = "0.4", features = ["serde"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+whoami = "2"
+mime_guess = "2"
+
+
+# Embedded frontend assets (optional, for single-binary distribution)
+rust-embed = { version = "8", optional = true }
+
+[features]
+default = []
+embed-frontend = ["rust-embed"]
+
+[dev-dependencies]
+tempfile = "3"
+tokio-test = "0.4"

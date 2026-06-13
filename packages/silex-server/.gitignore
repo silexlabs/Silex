@@ -1,0 +1,20 @@
+# Build output
+/target/
+
+# Cargo lock (optional for libraries, keep for applications)
+# Cargo.lock
+
+# Runtime data
+/silex/
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
