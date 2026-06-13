@@ -30,13 +30,13 @@ use rust_embed::Embed;
 /// The folder path is relative to silex-server's Cargo.toml.
 #[cfg(feature = "embed-frontend")]
 #[derive(Embed)]
-#[folder = "../silex-lib/dist/client/"]
+#[folder = "../dist/client/"]
 struct FrontendAssets;
 
 /// Embedded dashboard assets (the landing page shown at `/` when no `?id=` param).
 #[cfg(feature = "embed-frontend")]
 #[derive(Embed)]
-#[folder = "../silex_silex-dashboard-2026/public/"]
+#[folder = "../dashboards/silex-dashboard-2026/public/"]
 struct DashboardAssets;
 
 /// Static file configuration
