@@ -1,12 +1,13 @@
 import {describe, expect, test, beforeEach, jest,} from '@jest/globals'
-import config from './config'
-import * as plugin from './plugin'
 
+// ESM module mocking: unstable_mockModule must run before the module under test
+// is imported, hence the dynamic import of ./config below.
 const PLUGIN_RESULT = { test: 'any value?', }
-jest.mock('./plugin', () => ({
-  loadPlugins: jest.fn().mockResolvedValue(PLUGIN_RESULT),
+const loadPlugins = jest.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue(PLUGIN_RESULT)
+jest.unstable_mockModule('./plugin', () => ({
+  loadPlugins,
 }))
-const loadPlugins = plugin.loadPlugins
+const { default: config } = await import('./config')
 
 describe('Config test', () => {
   let instance

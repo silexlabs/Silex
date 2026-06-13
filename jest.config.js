@@ -15,51 +15,43 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Monorepo single-package layout: map the ~/ path aliases (mirror of tsconfig "paths")
+// and the grapesjs-* plugin sources so jest resolves them like webpack/tsc do.
+const moduleNameMapper = {
+  '^~/common/(.*)$': '<rootDir>/common/$1',
+  '^~/common$': '<rootDir>/common',
+  '^~/editor/(.*)$': '<rootDir>/editor/$1',
+  '^~/server/(.*)$': '<rootDir>/server/$1',
+  '^~/plugins/(.*)$': '<rootDir>/plugins/$1',
+  '^@silexlabs/expression-input$': '<rootDir>/plugins/expression-input/src/index.ts',
+  '^@silexlabs/grapesjs-([^/]+)$': '<rootDir>/plugins/grapesjs-$1/src/index',
+}
+
+const transform = {
+  // isolatedModules: transpile-only, no type-checking during tests.
+  // Type-checking is a separate CI step (tsc/lint), like the webpack build.
+  '.ts': ['ts-jest', { useESM: true, isolatedModules: true }],
+}
+const common = {
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper,
+  transform,
+  moduleFileExtensions: ['ts', 'js', 'json', 'node'],
+}
+
 module.exports = {
   projects: [
     {
+      ...common,
       displayName: 'dom',
       testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/src/ts/client/**/*.test.ts'],
-      extensionsToTreatAsEsm: [".ts"],
-      transform: {
-        ".ts": ['ts-jest', {
-          useESM: true,
-        }],
-      },
+      testMatch: ['<rootDir>/editor/**/*.test.ts'],
     },
     {
+      ...common,
       displayName: 'node',
       testEnvironment: 'node',
-      testMatch: ['<rootDir>/src/ts/server/**/*.test.ts'],
-      extensionsToTreatAsEsm: [".ts"],
-      transform: {
-        ".ts": ['ts-jest', {
-          useESM: true,
-        }],
-      },
-    },
-    {
-      displayName: 'dom',
-      testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/src/ts/plugins/client/**/*.test.ts'],
-      extensionsToTreatAsEsm: [".ts"],
-      transform: {
-        ".ts": ['ts-jest', {
-          useESM: true,
-        }],
-      },
-    },
-    {
-      displayName: 'node',
-      testEnvironment: 'node',
-      testMatch: ['<rootDir>/src/ts/plugins/server/**/*.test.ts'],
-      extensionsToTreatAsEsm: [".ts"],
-      transform: {
-        ".ts": ['ts-jest', {
-          useESM: true,
-        }],
-      },
+      testMatch: ['<rootDir>/server/**/*.test.ts', '<rootDir>/common/**/*.test.ts'],
     },
   ],
-};
+}
