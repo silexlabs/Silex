@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { ServerConfig } from '../config'
-import { noCache } from '~/server/inline-plugins/Cache'
+import { noCache } from '~/server/plugins/Cache'
 
 import connectorApi from './connectorApi'
 import websiteApi from './websiteApi'

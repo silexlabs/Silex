@@ -19,8 +19,8 @@
  * @fileoverview This file is loaded by Silex at startup, after the user config if you specify one
  */
 
-const SslPlugin = require('./dist/server/server/inline-plugins/SslPlugin').default
-const StaticPlugin = require('./dist/server/server/inline-plugins/StaticPlugin').default
+const SslPlugin = require('./dist/server/server/plugins/SslPlugin').default
+const StaticPlugin = require('./dist/server/server/plugins/StaticPlugin').default
 const { join } = require('path')
 const nodeModules = require('node_modules-path')
 
@@ -48,8 +48,10 @@ module.exports = async function(config, options) {
             route: '/',
             path: join(__dirname, 'dist', 'client'),
           }, {
-            route: '/',
-            path: join(__dirname, 'dist', 'plugins', 'client'),
+            // SaaS client plugins (e.g. onboarding) imported by server/deploy/client-config.js.
+            // Harmless for non-SaaS: just served; only the SaaS client config imports it.
+            route: '/js/client-plugins/',
+            path: join(__dirname, 'server', 'deploy', 'client-plugins'),
           },
         ]
           // add project route for source maps
