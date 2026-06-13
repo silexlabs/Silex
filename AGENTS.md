@@ -6,11 +6,11 @@ Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, o
 
 - **Frontend**: TypeScript, GrapesJS (visual editor framework), 11ty (static site generation)
 - **Desktop**: Rust, Tauri v2
-- **Build**: Yarn workspaces mono-repo, git submodules in `packages/`
+- **Build**: single-package monorepo (no Yarn workspaces). One `package.json`, one build. Code is split by role: `editor/` (browser), `server/` (Node.js), `common/` (shared), `plugins/` (GrapesJS plugins, compiled from source), `server-rust/` + `desktop/` (Rust/Tauri, a Cargo workspace).
 
-When you change a package, rebuild it, then rebuild any packages that depend on it, we use yarn/npm workspaces for local dev.
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/plugins`) — no `../../`. `yarn build` builds the whole JS side in one pass (no per-package rebuilds).
 
-See [README.md → Development](README.md#development) for build commands, debug cycle, and submodule workflow.
+See [README.md → Development](README.md#development) for the layout, build commands and release flow.
 
 ## When designing websites in Silex (using the editor)
 
@@ -22,7 +22,7 @@ These rules apply when your AI tool controls the Silex visual editor (e.g. via M
 - **Symbols**: Use Symbols for shared header/footer across pages.
 - **Responsiveness**: Use DeviceManager breakpoints, never resize the browser window.
 
-Silex Desktop exposes MCP tools for controlling the editor. See the [silex-desktop README](packages/silex-desktop/README.md) for connection setup.
+Silex Desktop exposes MCP tools for controlling the editor. See the [desktop README](desktop/README.md) for connection setup.
 
 ## When writing code for Silex (editing source)
 

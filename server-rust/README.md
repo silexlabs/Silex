@@ -55,13 +55,13 @@ SILEX_STATIC_PATH=./dist ./target/release/silex-server
 Use `SILEX_STATIC_ROUTES` with the format `route:path,route:path`:
 
 ```bash
-# Serve Silex editor from silex-lib (full configuration with fonts)
+# Serve the Silex editor frontend (full configuration with fonts)
 SILEX_STATIC_ROUTES="\
 /css/files:../../node_modules/@fontsource/ubuntu/files,\
 /webfonts:../../node_modules/@fortawesome/fontawesome-free/webfonts,\
 /css:../../node_modules/@fortawesome/fontawesome-free/css,\
-/:../silex-lib/public,\
-/:../silex-lib/dist/client" \
+/:../public,\
+/:../dist/client" \
   ./target/release/silex-server
 ```
 
@@ -70,8 +70,8 @@ SILEX_STATIC_ROUTES="\
 INFO   /css/files -> node_modules/@fontsource/ubuntu/files
 INFO   /webfonts -> node_modules/@fortawesome/fontawesome-free/webfonts
 INFO   /css -> node_modules/@fortawesome/fontawesome-free/css
-INFO   / -> silex-lib/public
-INFO   / -> silex-lib/dist/client
+INFO   / -> public
+INFO   / -> dist/client
 ```
 
 The server will:

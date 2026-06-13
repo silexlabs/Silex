@@ -71,9 +71,21 @@ See the [Development](#development) section below for build and release workflow
 
 ### How the repo is organized
 
-This is a **monorepo**. Every Silex package lives in the `packages/` directory and they are managed together with [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) (JavaScript/TypeScript) and a [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html) (Rust). A single `git clone` gives you the whole codebase — editor, Node.js server, Rust server, desktop app and all first-party GrapesJS plugins — with each package's full git history preserved.
+This is a **monorepo** built as a **single package** (no Yarn workspaces) — one `package.json`, one build. The code is split by role:
 
-Issues and pull requests for every package live in **this single repository**. You can change several packages in one branch (e.g. a feature in `silex-lib` and the plugin that uses it).
+| Folder | What it is |
+|---|---|
+| `editor/` | the GrapesJS-based visual editor (browser); built with webpack |
+| `server/` | the Node.js server, storage/hosting connectors and `server/deploy/` (SaaS / CapRover) |
+| `common/` | shared contracts and types, plus the plugin-config system |
+| `plugins/` | the first-party GrapesJS plugins — plain source folders, compiled from source by the editor build (not published separately) |
+| `server-rust/` | the Rust server library |
+| `desktop/` | the [Tauri](https://tauri.app/) desktop app (embeds `server-rust/` + the editor frontend) |
+| `dashboards/` | dashboard sites (content, edited with Silex) |
+
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/plugins`) — no `../../`. The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
+
+Issues and pull requests all live in **this single repository**. A single branch can change several areas at once (e.g. the editor and one of its plugins).
 
 Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags: prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds; stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads.
 
@@ -83,32 +95,33 @@ Day-to-day work happens on `main` — PRs target this branch. Deployments are dr
 git clone git@github.com:silexlabs/Silex.git
 cd Silex
 nvm install        # optional — uses version from .nvmrc
-yarn install       # installs dependencies and builds all packages
-yarn start         # starts the editor at http://localhost:6805
+yarn install       # install dependencies
+yarn build         # build the editor + server
+yarn start         # start the editor at http://localhost:6805
 ```
 
-**Windows users:** Run `yarn install --ignore-scripts && yarn run build` instead.
+For the Rust side: `cargo check` (or `cargo build`) at the repo root builds `server-rust/` and `desktop/`.
 
-### Working on a package
+### Working on the code
 
 1. Fork `silexlabs/Silex` on GitHub and add your fork as a remote:
    ```sh
    git remote add fork git@github.com:<your-username>/Silex.git
    ```
-2. Create a branch, edit any package under `packages/`, commit and push to your fork:
+2. Create a branch, edit the code (anywhere under `editor/`, `server/`, `common/`, `plugins/`, `server-rust/`, `desktop/`), commit and push to your fork:
    ```sh
    git checkout -b my-fix
-   # ... make changes anywhere under packages/ ...
+   # ... make changes ...
    git commit -m "fix: description of the fix"
    git push fork my-fix
    ```
 3. Open a PR from your fork against `silexlabs/Silex`
 
-A single branch can touch several packages at once — handy when a change spans the editor and one of its plugins.
+Before pushing: `yarn lint` and `yarn test` (and `cargo test -p silex-server` for the Rust server) — these run in CI on every PR.
 
 ### Releasing
 
-Run `yarn run release` for guided version bumping across packages. Run without arguments to see help and options (prepatch, preminor, patch, minor, dry-run).
+Releases are driven by git tags. Push a tag matching `v*` and CI (`.github/workflows/`) builds the desktop apps (macOS, Windows, Linux), publishes a GitHub release with the auto-updater metadata, and deploys the server to CapRover (canary on `main`, production on a stable tag).
 
 ## AI / Vibe coding
 
