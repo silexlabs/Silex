@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-loading"]
-	path = packages/grapesjs-loading
-	url = https://github.com/silexlabs/grapesjs-loading.git
-	branch = main
 [submodule "packages/eleventy-plugin-concat"]
 	path = packages/eleventy-plugin-concat
 	url = https://github.com/silexlabs/eleventy-plugin-concat.git
