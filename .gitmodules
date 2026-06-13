@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-data-source"]
-	path = packages/grapesjs-data-source
-	url = https://github.com/silexlabs/grapesjs-data-source.git
-	branch = main
 [submodule "packages/silex-plugin-starter"]
 	path = packages/silex-plugin-starter
 	url = https://github.com/silexlabs/silex-plugin-starter.git
