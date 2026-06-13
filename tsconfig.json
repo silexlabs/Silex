@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist/client/",
+    "declaration": false,
+    "sourceMap": true,
+    "module": "ESNext",
+    "removeComments": false,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
+  },
+  "include": [
+    "editor/**/*.ts",
+    "common/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules"
+  ],
+  "plugins": [
+    {
+      "name": "ts-lit-plugin",
+      "strict": true
+    }
+  ]
+}

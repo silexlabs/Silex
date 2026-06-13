@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/common": ["common"],
+      "~/common/*": ["common/*"],
+      "~/editor/*": ["editor/*"],
+      "~/server/*": ["server/*"],
+      "~/plugins/*": ["plugins/*"]
+    }
+  }
+}
