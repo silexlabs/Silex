@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:20
 
 RUN apt-get update
 EXPOSE 6805
@@ -45,7 +45,7 @@ ENV GITLAB2_CLIENT_SECRET=
 # root captain-definition: dockerfilePath ./server/deploy/Dockerfile).
 COPY . /silex
 WORKDIR /silex
-RUN corepack enable \
+RUN npm install -g pnpm@9.14.1 \
   && pnpm install --frozen-lockfile \
   && pnpm build
 
