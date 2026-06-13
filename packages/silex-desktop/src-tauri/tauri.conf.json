@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
+  "productName": "Silex",
+  "version": "0.1.0",
+  "identifier": "org.silex.desktop",
+  "build": {
+    "frontendDist": "./frontend"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": []
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "appimage",
+      "deb",
+      "rpm",
+      "dmg",
+      "nsis"
+    ],
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/icon.png",
+      "icons/silex.png",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ0MjAzOUFERUFCQUMwQjAKUldTd3dMcnFyVGtnMUtCSFBvZ0Z4NnN1bG5MWEJsQkk2VU43Y05INi9qNDQvTWpPVVpxRUROaDgK",
+      "endpoints": [
+        "https://github.com/silexlabs/Silex/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

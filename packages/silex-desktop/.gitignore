@@ -1,0 +1,9 @@
+node_modules
+dist
+
+# Rust build artifacts
+src-tauri/target
+src-tauri/silex
+
+# Silex sites data
+silex

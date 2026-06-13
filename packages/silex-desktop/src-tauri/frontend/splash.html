@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #1e293b;
+    background-color: #f8fafc;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  img { width: 96px; height: 96px; margin-bottom: 24px; object-fit: scale-down; }
+  h1 { font-size: 28px; font-weight: 300; letter-spacing: 4px; margin-bottom: 8px; }
+  p { font-size: 14px; color: #64748b; margin-bottom: 32px; }
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+  <img src="icons/silex.png" alt="Silex">
+  <h1>Silex</h1>
+  <p>Starting your workspace...</p>
+  <div class="spinner"></div>
+</body>
+</html>
