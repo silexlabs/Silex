@@ -1,7 +1,3 @@
-[submodule "packages/silex-desktop"]
-	path = packages/silex-desktop
-	url = https://github.com/silexlabs/silex-desktop.git
-	branch = main
 [submodule "packages/grapesjs-version-flow"]
 	path = packages/grapesjs-version-flow
 	url = https://github.com/silexlabs/grapesjs-version-flow.git
