@@ -36,7 +36,7 @@ struct FrontendAssets;
 /// Embedded dashboard assets (the landing page shown at `/` when no `?id=` param).
 #[cfg(feature = "embed-frontend")]
 #[derive(Embed)]
-#[folder = "../dashboards/silex-dashboard-2026/public/"]
+#[folder = "../silex-dashboard-2026/public/"]
 struct DashboardAssets;
 
 /// Static file configuration
