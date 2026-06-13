@@ -1,7 +1,3 @@
-[submodule "packages/silex-plugin-starter"]
-	path = packages/silex-plugin-starter
-	url = https://github.com/silexlabs/silex-plugin-starter.git
-	branch = main
 [submodule "packages/grapesjs-filter-styles"]
 	path = packages/grapesjs-filter-styles
 	url = https://github.com/silexlabs/grapesjs-filter-styles.git
