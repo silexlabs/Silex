@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-symbols"]
-	path = packages/grapesjs-symbols
-	url = https://github.com/silexlabs/grapesjs-symbols.git
-	branch = main
 [submodule "packages/grapesjs-fonts"]
 	path = packages/grapesjs-fonts
 	url = https://github.com/silexlabs/grapesjs-fonts.git
