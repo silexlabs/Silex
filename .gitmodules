@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-storage-rate-limit"]
-	path = packages/grapesjs-storage-rate-limit
-	url = https://github.com/silexlabs/grapesjs-storage-rate-limit.git
-	branch = main
 [submodule "packages/expression-input"]
 	path = packages/expression-input
 	url = https://github.com/silexlabs/expression-input.git
