@@ -18,6 +18,28 @@
 const path = require('path');
 const webpack = require("webpack")
 
+// Monorepo: compile the grapesjs-* plugins from their SOURCE in a single pass,
+// instead of pulling each plugin's pre-built dist/. This removes the per-plugin
+// build step (the plugins are now plain source folders in the monorepo).
+// `$` = exact match, so subpath imports (e.g. .../src/commands) still resolve normally.
+const pluginSrc = {
+  '@silexlabs/grapesjs-filter-styles$': '../grapesjs-filter-styles/src/index.js',
+  '@silexlabs/grapesjs-symbols$': '../grapesjs-symbols/src/index.ts',
+  '@silexlabs/grapesjs-loading$': '../grapesjs-loading/src/index.ts',
+  '@silexlabs/grapesjs-fonts$': '../grapesjs-fonts/src/index.js',
+  '@silexlabs/grapesjs-css-variables$': '../grapesjs-css-variables/src/index.js',
+  '@silexlabs/grapesjs-advanced-selector$': '../grapesjs-advanced-selector/src/index.ts',
+  '@silexlabs/grapesjs-storage-rate-limit$': '../grapesjs-storage-rate-limit/src/index.js',
+  '@silexlabs/grapesjs-notifications$': '../grapesjs-notifications/src/index.ts',
+  '@silexlabs/grapesjs-keymaps-dialog$': '../grapesjs-keymaps-dialog/src/index.ts',
+  '@silexlabs/grapesjs-ai-capabilities$': '../grapesjs-ai-capabilities/src/index.js',
+  '@silexlabs/grapesjs-data-source$': '../grapesjs-data-source/src/index.ts',
+  '@silexlabs/expression-input$': '../expression-input/src/index.ts',
+}
+const pluginAliases = Object.fromEntries(
+  Object.entries(pluginSrc).map(([k, v]) => [k, path.resolve(__dirname, v)])
+)
+
 module.exports = {
   entry: './src/ts/client/index.ts',
   mode: 'production',
@@ -25,12 +47,29 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        loader: 'ts-loader',
+        // Bundling only: type-checking is a separate CI job (tsc/lint).
+        // Required to transpile the plugin sources (compiled here, not pre-built).
+        // experimentalDecorators + useDefineForClassFields:false: the lit-based
+        // plugins (data-source, advanced-selector, expression-input) use legacy
+        // decorators (@property/@state); ESNext target would otherwise break them.
+        options: {
+          transpileOnly: true,
+          compilerOptions: {
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true,
+            useDefineForClassFields: false,
+          },
+        },
       },
     ]
   },
   resolve: {
   extensions: ['.tsx', '.ts', '.js'],
+  // TS ESM sources (e.g. expression-input) import siblings as "./x.js" while the
+  // file is "x.ts"; let webpack resolve a ".js" specifier to its ".ts" source.
+  extensionAlias: { '.js': ['.ts', '.js'], '.mjs': ['.mts', '.mjs'] },
+  alias: pluginAliases,
   modules: [
     path.resolve(__dirname, 'src'), // default src directory
     path.resolve(__dirname, '../../node_modules'),
