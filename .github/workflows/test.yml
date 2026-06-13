@@ -18,13 +18,15 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+
+      # pnpm via action-setup AFTER setup-node so its standalone binary wins in PATH
+      # over node's bundled corepack shim (whose signing keys are stale and break
+      # `pnpm` invocations). No cache:pnpm — it would call corepack during setup-node.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
