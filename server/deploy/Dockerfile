@@ -46,12 +46,11 @@ ENV GITLAB2_CLIENT_SECRET=
 COPY . /silex
 WORKDIR /silex
 RUN corepack enable \
-  && yarn config set registry https://registry.npmjs.org \
-  && yarn install --ignore-scripts --frozen-lockfile \
-  && yarn build
+  && pnpm install --frozen-lockfile \
+  && pnpm build
 
 # SaaS config (server + client) shipped in server/deploy/
 ENV SILEX_CONFIG=/silex/server/deploy/.silex.js
 ENV SILEX_CLIENT_CONFIG=/silex/server/deploy/client-config.js
 
-CMD ["yarn", "start"]
+CMD ["pnpm", "start"]

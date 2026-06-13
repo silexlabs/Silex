@@ -95,9 +95,9 @@ Day-to-day work happens on `main` — PRs target this branch. Deployments are dr
 git clone git@github.com:silexlabs/Silex.git
 cd Silex
 nvm install        # optional — uses version from .nvmrc
-yarn install       # install dependencies
-yarn build         # build the editor + server
-yarn start         # start the editor at http://localhost:6805
+pnpm install       # install dependencies
+pnpm build         # build the editor + server
+pnpm start         # start the editor at http://localhost:6805
 ```
 
 For the Rust side: `cargo check` (or `cargo build`) at the repo root builds `server-rust/` and `desktop/`.
@@ -117,7 +117,7 @@ For the Rust side: `cargo check` (or `cargo build`) at the repo root builds `ser
    ```
 3. Open a PR from your fork against `silexlabs/Silex`
 
-Before pushing: `yarn lint` and `yarn test` (and `cargo test -p silex-server` for the Rust server) — these run in CI on every PR.
+Before pushing: `pnpm lint` and `pnpm test` (and `cargo test -p silex-server` for the Rust server) — these run in CI on every PR.
 
 ### Releasing
 
