@@ -43,14 +43,15 @@ jobs:
         with:
           submodules: true
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+
+      # pnpm after setup-node so its standalone binary wins over node's corepack shim
+      # (stale signing keys); no cache:pnpm to avoid corepack during setup-node.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
