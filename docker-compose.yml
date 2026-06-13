@@ -1,0 +1,38 @@
+version: '3'
+services:
+  silex:
+    build:
+      context: .
+    volumes:
+      - $PWD/storage:/silex/silex/storage
+      - $PWD/hosting:/silex/silex/hosting
+    ports:
+      - "6805:6805"
+
+#  wordpress:
+#    image: wordpress:latest
+#    ports:
+#      - "8000:80"
+#    environment:
+#      WORDPRESS_DB_HOST: db:3306
+#      WORDPRESS_DB_USER: wordpress
+#      WORDPRESS_DB_PASSWORD: wordpress
+#      WORDPRESS_DB_NAME: wordpress
+#    volumes:
+#      - wordpress_data:/var/www/html
+#    depends_on:
+#      - db
+#
+#  db:
+#    image: mysql:5.7
+#    environment:
+#      MYSQL_ROOT_PASSWORD: somewordpress
+#      MYSQL_DATABASE: wordpress
+#      MYSQL_USER: wordpress
+#      MYSQL_PASSWORD: wordpress
+#    volumes:
+#      - db_data:/var/lib/mysql
+#
+#volumes:
+#  db_data:
+#  wordpress_data:

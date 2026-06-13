@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "compilerOptions": {
+    "outDir": "dist/server/",
+    "rootDir": ".",
+    "target": "esnext",
+    "sourceMap": false,
+    "module": "CommonJS",
+    "removeComments": true,
+    "declaration": false
+  },
+  "include": [
+    "server/**/*.ts",
+    "common/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "node_modules"
+  ]
+}

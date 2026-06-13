@@ -1,45 +1,212 @@
 {
-  "name": "silex-meta",
-  "version": "3.8.0-canary.2",
-  "description": "Meta repo for Silex development",
-  "private": true,
+  "name": "@silexlabs/silex",
+  "version": "3.7.0-canary.3",
+  "description": "Free and easy website builder for everyone.",
+  "author": "Alex Hoyau (https://lexoyo.me/)",
+  "license": "AGPL-3.0",
+  "main": "dist/server/server/index.js",
+  "bin": {
+    "silex": "dist/server/server/cli.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist/",
+    "editor/",
+    "server/",
+    "common/",
+    "plugins/",
+    ".silex.js",
+    ".env.default",
+    "public",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/silexlabs/silex-meta.git"
+    "url": "git+https://github.com/silexlabs/Silex.git"
   },
-  "type": "module",
-  "engines": {
-    "node": ">=16"
+  "homepage": "https://www.silex.me",
+  "bugs": {
+    "url": "https://short.silex.me/community"
   },
   "keywords": [
-    "contribution",
-    "silex",
+    "page builder",
+    "cloud",
+    "SaaS",
+    "template builder",
+    "web page editor",
+    "html5 editor",
+    "free",
+    "open source",
+    "online editor",
+    "silex website",
+    "free",
     "website builder",
-    "Silex website builder"
+    "online",
+    "silex website builder",
+    "silex.me",
+    "silex",
+    "html editor",
+    "free website builder",
+    "silex cms",
+    "online website builder open source",
+    "Create a free website",
+    "Wix.com open source alternative",
+    "designer",
+    "webdesigner",
+    "web master",
+    "webmaster",
+    "open source CMS",
+    "CSS",
+    "HTML",
+    "Javascript",
+    "WYSIWYG",
+    "silex",
+    "jekyll"
   ],
-  "author": "lexoyo",
-  "license": "GPL-3.0-or-later",
-  "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
-    "preinstall": "node scripts/ensure-yarn.js",
-    "build": "node scripts/build-packages.js",
-    "postinstall": "yarn build",
-    "start": "node packages/silex-lib/",
-    "release": "scripts/release.sh",
-    "test": "node scripts/check-internal-deps.js",
-    "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors",
-    "exec": "scripts/exec.js",
+    "build": "run-s build:css build:html build:client build:server build:plugins:client build:public",
+    "build:css": "sass --load-path node_modules --no-source-map editor/css/index.scss dist/client/css/admin.css",
+    "build:html": "pug editor/html/index.pug --out dist/client/ --no-debug",
+    "build:client": "webpack --config webpack.config.js",
+    "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
+    "build:plugins:client": "tsc -p tsconfig-plugins-client.json && tsc-alias -p tsconfig-plugins-client.json",
+    "build:public": "node scripts/copy-assets.mjs",
+    "start": "node dist/server/server/",
+    "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
+    "dev": "run-p watch start:debug",
+    "watch": "npm-watch",
+    "lint": "eslint \"{editor,server,common}/**/*.ts\"",
+    "lint:fix": "yarn lint --fix",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "prepare": "husky"
   },
-  "workspaces": [
-    "packages/*",
-    "plugins/*"
-  ],
-  "devDependencies": {
-    "dependency-graph": "^1.0.0",
-    "glob": "^11.0.2",
-    "husky": "^9.1.7",
-    "js-ini": "^1.6.0"
+  "watch": {
+    "build:css:debug": {
+      "patterns": [
+        "editor/css/"
+      ],
+      "extensions": "scss"
+    },
+    "build:html:debug": {
+      "patterns": [
+        "editor/html/"
+      ],
+      "extensions": "pug"
+    },
+    "build:client:debug": {
+      "patterns": [
+        "editor/",
+        "editor/inline-plugins/"
+      ],
+      "extensions": [
+        "ts"
+      ]
+    },
+    "build:server:debug": {
+      "patterns": [
+        "server/",
+        "server/inline-plugins/"
+      ],
+      "extensions": [
+        "ts"
+      ]
+    },
+    "build:plugins:server": {
+      "patterns": [
+        "server/inline-plugins/"
+      ],
+      "extensions": [
+        "ts"
+      ]
+    },
+    "build:plugins:client": {
+      "patterns": [
+        "editor/inline-plugins/"
+      ],
+      "extensions": [
+        "ts"
+      ]
+    }
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "dependencies": {
+    "@apollo/client": "^3.13.8",
+    "@fontsource/ubuntu": "^5.2.8",
+    "@fortawesome/fontawesome-free": "6.6.0",
+    "@types/archiver": "^6.0.2",
+    "adm-zip": "0.5.14",
+    "archiver": "^7.0.1",
+    "backbone": "*",
+    "basic-ftp": "^5.0.5",
+    "body-parser": "1.20.2",
+    "cli": "1.0.1",
+    "component-emitter": "^2.0.0",
+    "compression": "1.8.1",
+    "cookie-parser": "1.4.7",
+    "cookie-session": "2.1.1",
+    "cors": "2.8.6",
+    "cross-env": "7.0.3",
+    "dedent": "^1.5.3",
+    "dedent-js": "^1.0.1",
+    "deepmerge": "^4.3.1",
+    "dotenv": "^16.4.5",
+    "dts-bundle-generator": "^9.5.1",
+    "express": "4.19.2",
+    "express-force-ssl": "0.3.2",
+    "formidable": "3.5.4",
+    "fs-extra": "^11.2.0",
+    "grapesjs": "^0.22.14",
+    "grapesjs-blocks-basic": "1.0.2",
+    "grapesjs-custom-code": "1.0.2",
+    "grapesjs-parser-postcss": "^1.0.3",
+    "grapesjs-plugin-forms": "2.0.6",
+    "grapesjs-style-bg": "^2.0.2",
+    "grapesjs-style-border": "1.0.4",
+    "grapesjs-style-filter": "^1.0.2",
+    "html-minifier": "^4.0.0",
+    "jquery": "*",
+    "lit": "*",
+    "lit-html": "3.3.2",
+    "mkdirp": "3.0.1",
+    "node-fetch": "2.6.9",
+    "node_modules-path": "2.4.0-canary.0",
+    "normalize.css": "8.0.1",
+    "npm-run-all": "^4.1.5",
+    "object-path": "0.11.8",
+    "sass": "1.98.0",
+    "serve-static": "1.15.0",
+    "specificity": "^1.0.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.25.1",
+    "@types/express": "4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "22.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
+    "css-loader": "7.1.4",
+    "eslint": "^8.31.0",
+    "file-loader": "6.2.0",
+    "glob": "^11.0.2",
+    "globals": "^16.0.0",
+    "http-server": "^14.1.1",
+    "husky": "^9.1.7",
+    "jest": "29.7.0",
+    "jest-environment-jsdom": "29.7.0",
+    "livereload": "0.9.3",
+    "nodemon": "3.1.14",
+    "npm-watch": "0.13.0",
+    "pug-cli": "1.0.0-alpha6",
+    "style-loader": "4.0.0",
+    "ts-jest": "29.4.9",
+    "ts-loader": "9.5.7",
+    "tsc-alias": "^1.8.10",
+    "typescript": "5.5.4",
+    "webpack": "5.93.0",
+    "webpack-cli": "5.1.4"
+  }
 }
