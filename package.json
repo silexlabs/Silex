@@ -64,12 +64,11 @@
     "jekyll"
   ],
   "scripts": {
-    "build": "run-s build:css build:html build:client build:server build:plugins:client build:public",
+    "build": "run-s build:css build:html build:client build:server build:public",
     "build:css": "sass --load-path node_modules --no-source-map editor/css/index.scss dist/client/css/admin.css",
     "build:html": "pug editor/html/index.pug --out dist/client/ --no-debug",
     "build:client": "webpack --config webpack.config.js",
     "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
-    "build:plugins:client": "tsc -p tsconfig-plugins-client.json && tsc-alias -p tsconfig-plugins-client.json",
     "build:public": "node scripts/copy-assets.mjs",
     "start": "node dist/server/server/",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
@@ -108,14 +107,6 @@
       "patterns": [
         "server/",
         "common/"
-      ],
-      "extensions": [
-        "ts"
-      ]
-    },
-    "build:plugins:client": {
-      "patterns": [
-        "editor/inline-plugins/"
       ],
       "extensions": [
         "ts"
