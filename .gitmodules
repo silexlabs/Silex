@@ -1,7 +1,3 @@
-[submodule "packages/silex-server"]
-	path = packages/silex-server
-	url = https://github.com/silexlabs/silex-server.git
-	branch = main
 [submodule "packages/grapesjs-css-variables"]
 	path = packages/grapesjs-css-variables
 	url = https://github.com/silexlabs/grapesjs-css-variables.git
