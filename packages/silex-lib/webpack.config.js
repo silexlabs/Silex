@@ -23,18 +23,18 @@ const webpack = require("webpack")
 // build step (the plugins are now plain source folders in the monorepo).
 // `$` = exact match, so subpath imports (e.g. .../src/commands) still resolve normally.
 const pluginSrc = {
-  '@silexlabs/grapesjs-filter-styles$': '../grapesjs-filter-styles/src/index.js',
-  '@silexlabs/grapesjs-symbols$': '../grapesjs-symbols/src/index.ts',
-  '@silexlabs/grapesjs-loading$': '../grapesjs-loading/src/index.ts',
-  '@silexlabs/grapesjs-fonts$': '../grapesjs-fonts/src/index.js',
-  '@silexlabs/grapesjs-css-variables$': '../grapesjs-css-variables/src/index.js',
-  '@silexlabs/grapesjs-advanced-selector$': '../grapesjs-advanced-selector/src/index.ts',
-  '@silexlabs/grapesjs-storage-rate-limit$': '../grapesjs-storage-rate-limit/src/index.js',
-  '@silexlabs/grapesjs-notifications$': '../grapesjs-notifications/src/index.ts',
-  '@silexlabs/grapesjs-keymaps-dialog$': '../grapesjs-keymaps-dialog/src/index.ts',
-  '@silexlabs/grapesjs-ai-capabilities$': '../grapesjs-ai-capabilities/src/index.js',
-  '@silexlabs/grapesjs-data-source$': '../grapesjs-data-source/src/index.ts',
-  '@silexlabs/expression-input$': '../expression-input/src/index.ts',
+  '@silexlabs/grapesjs-filter-styles$': '../../plugins/grapesjs-filter-styles/src/index.js',
+  '@silexlabs/grapesjs-symbols$': '../../plugins/grapesjs-symbols/src/index.ts',
+  '@silexlabs/grapesjs-loading$': '../../plugins/grapesjs-loading/src/index.ts',
+  '@silexlabs/grapesjs-fonts$': '../../plugins/grapesjs-fonts/src/index.js',
+  '@silexlabs/grapesjs-css-variables$': '../../plugins/grapesjs-css-variables/src/index.js',
+  '@silexlabs/grapesjs-advanced-selector$': '../../plugins/grapesjs-advanced-selector/src/index.ts',
+  '@silexlabs/grapesjs-storage-rate-limit$': '../../plugins/grapesjs-storage-rate-limit/src/index.js',
+  '@silexlabs/grapesjs-notifications$': '../../plugins/grapesjs-notifications/src/index.ts',
+  '@silexlabs/grapesjs-keymaps-dialog$': '../../plugins/grapesjs-keymaps-dialog/src/index.ts',
+  '@silexlabs/grapesjs-ai-capabilities$': '../../plugins/grapesjs-ai-capabilities/src/index.js',
+  '@silexlabs/grapesjs-data-source$': '../../plugins/grapesjs-data-source/src/index.ts',
+  '@silexlabs/expression-input$': '../../plugins/expression-input/src/index.ts',
 }
 const pluginAliases = Object.fromEntries(
   Object.entries(pluginSrc).map(([k, v]) => [k, path.resolve(__dirname, v)])

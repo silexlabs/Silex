@@ -32,7 +32,8 @@
     "prepare": "husky"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "plugins/*"
   ],
   "devDependencies": {
     "dependency-graph": "^1.0.0",
