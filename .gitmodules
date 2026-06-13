@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-advanced-selector"]
-	path = packages/grapesjs-advanced-selector
-	url = https://github.com/silexlabs/grapesjs-advanced-selector.git
-	branch = main
 [submodule "packages/silex-lib"]
 	path = packages/silex-lib
 	url = https://github.com/silexlabs/silex-lib.git
