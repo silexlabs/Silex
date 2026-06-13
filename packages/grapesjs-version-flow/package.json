@@ -1,0 +1,77 @@
+{
+  "name": "@silexlabs/grapesjs-version-flow",
+  "version": "1.3.0-canary.0",
+  "description": "GrapesJS plugin for managing version upgrades and migrations with sequential upgrade flow and modal UI",
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "grapesjs-plugin",
+    "version",
+    "upgrade",
+    "migration",
+    "flow",
+    "modal",
+    "ui"
+  ],
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/grapesjs-version-flow.git"
+  },
+  "bugs": {
+    "url": "https://github.com/silexlabs/grapesjs-version-flow/issues"
+  },
+  "homepage": "https://github.com/silexlabs/grapesjs-version-flow#readme",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "bump": "npm version patch -m 'Bump v%s'"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js"
+    ],
+    "moduleNameMapper": {
+      "^canvas$": "<rootDir>/tests/__mocks__/canvas.js"
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@types/jest": "^30.0.0",
+    "babel-jest": "^30.0.5",
+    "canvas": "^3.2.3",
+    "grapesjs-cli": "^4.1.3",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0"
+  },
+  "license": "AGPL-v3"
+}
