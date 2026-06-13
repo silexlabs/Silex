@@ -1,0 +1,37 @@
+{
+  "name": "@silexlabs/silex-platform",
+  "version": "1.5.0-canary.2",
+  "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
+  "bin": "./bin/silex-platform",
+  "scripts": {
+    "release": "",
+    "start": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js",
+    "dev": "npm start -- --debug"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "@silexlabs/silex": "3.7.0-canary.3",
+    "@silexlabs/silex-dashboard": "1.6.0-canary.2",
+    "dotenv": "^16.4.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:silexlabs/silex-platform.git"
+  },
+  "keywords": [
+    "silex",
+    "website",
+    "builder",
+    "free",
+    "foss",
+    "website builder",
+    "diy"
+  ]
+}
