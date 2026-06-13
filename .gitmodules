@@ -1,4 +1,0 @@
-[submodule "packages/silex_docs"]
-	path = packages/silex_docs
-	url = https://gitlab.com/silexlabs/silex_docs.git
-	branch = main
