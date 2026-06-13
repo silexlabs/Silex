@@ -1,26 +1,22 @@
-# Silex Platform by Silex Labs
+# Silex SaaS deployment config (`server/deploy/`)
 
-Ready-to-deploy Silex instance maintained by Silex Labs. Comes with Docker support and many plugins enabled by default.
-
-It has convenient environment variables and many plugins enabled by default, and it is ready to be deployed on CapRover.
+The ready-to-deploy Silex instance maintained by Silex Labs. This is **not a separate repo** anymore — it is the SaaS deployment configuration living inside the Silex monorepo. It bundles convenient environment variables, many plugins enabled by default, the `Dockerfile`/`captain-definition`, and the server + client config files used by the hosted instances.
 
 Check [the docs for how to run it with Docker or nodejs](https://docs.silex.me/en/dev/run).
 
-> **Note:** There is no npm package for this repo, it is meant to be run as a standalone instance that you can configure with env vars and config files, not a CLI tool. Use `@silexlabs/silex` for the CLI tool and use the config files of this repo to get the same result.
+> **Note:** this is run as a standalone instance configured with env vars and config files, not a CLI tool. The repo root publishes the `@silexlabs/silex` CLI; the files here (`.silex.js`, `client-config.js`, `client-plugins/`, `server-plugins/`) layer the SaaS configuration on top of it.
 
-## Why this package?
+## What it is
 
-This package is a good example of how to customize Silex, and it is a good starting point to create your own instance of Silex.
-
-This repo holds the code behind these Silex instances:
+A good example of how to customize Silex and a starting point to create your own instance. It holds the configuration behind these Silex instances:
 
 * [Silex instance hosted for free by Silex Labs foundation](https://v3.silex.me)
 * [The legacy Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me)
 * [Silex one click app on CapRover](https://github.com/caprover/one-click-apps/blob/master/public/v4/apps/silex-platform.yml)
 
-### [silex-lib repository](https://github.com/silexlabs/silex-lib/) VS this Silex Platform repository
+### Default Silex VS this SaaS deployment config
 
-| Feature | Main Silex repository | Silex Platform repository |
+| Feature | Default Silex | This SaaS deploy config |
 |---------|-----------------------|---------------------------|
 | Customizable | Yes | Yes |
 | Docker image | Yes | Yes |
@@ -29,9 +25,9 @@ This repo holds the code behind these Silex instances:
 | Env vars to enable or disable cloud services | No | Yes |
 | Env vars to customize the instance | Yes ([doc](https://docs.silex.me/en/dev/options)) | Yes ([doc](#environment-variables)) |
 
-### Plugins enabled by default in this repo, not in the main Silex repo:
+### Plugins enabled by default in this repo, not in default Silex:
 
-| Plugin | Main Silex repository | Silex Platform repository |
+| Plugin | Default Silex | This SaaS deploy config |
 |--------|-----------------------|---------------------------|
 | Silex CMS plugin | No | Yes |
 | Dashboard plugin for multi-site edition | No | Yes |
@@ -47,7 +43,7 @@ This repo holds the code behind these Silex instances:
 This code adds features to the editor specific to our instance (in `index.js` and `index.pug`):
 
 * [x] Multi-site with the Dashboard plugin
-* [x] Automatic deployment to [CapRover](https://caprover.com/) (see the captain-definition file and the file `.github/workflows/caprover.yml`)
+* [x] Automatic deployment to [CapRover](https://caprover.com/) (see the captain-definition file and the file `.github/workflows/deploy.yml`)
 * [x] Onboarding: Send an email with [brevo the 1st time we see a user](https://brevo.com/) + use Silex notification system to guide users through the first steps
 * [x] Enable or disable cloud services and hosting providers with env vars
 * [x] [Docker image](https://hub.docker.com/r/silexlabs/silex-platform)

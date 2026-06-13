@@ -11,7 +11,7 @@ Desktop application for [Silex](https://www.silex.me), the free/libre no-code we
 ## Development
 
 ```bash
-cd packages/silex-desktop
+cd desktop
 npm install
 npm run dev
 ```
@@ -19,8 +19,8 @@ npm run dev
 The server reads configuration from environment variables. Create a `.env` file in `src-tauri/` for local development:
 
 ```
-SILEX_DASHBOARD_PATH=../../silex_silex-dashboard-2026/public
-SILEX_STATIC_ROUTES=/:../../silex-lib/dist/client
+SILEX_DASHBOARD_PATH=../../dashboards/silex-dashboard-2026/public
+SILEX_STATIC_ROUTES=/:../../dist/client
 ```
 
 ## Build
