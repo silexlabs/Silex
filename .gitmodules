@@ -1,7 +1,3 @@
-[submodule "packages/grapesjs-css-variables"]
-	path = packages/grapesjs-css-variables
-	url = https://github.com/silexlabs/grapesjs-css-variables.git
-	branch = main
 [submodule "packages/grapesjs-ai-capabilities"]
 	path = packages/grapesjs-ai-capabilities
 	url = https://github.com/silexlabs/grapesjs-ai-capabilities.git
