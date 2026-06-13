@@ -41,9 +41,17 @@ ENV GITLAB2_DOMAIN=
 ENV GITLAB2_CLIENT_ID=
 ENV GITLAB2_CLIENT_SECRET=
 
+# Monorepo single-package build. Build context is the repo root (see the
+# root captain-definition: dockerfilePath ./server/deploy/Dockerfile).
 COPY . /silex
 WORKDIR /silex
-RUN npm install
-# RUN npm run build
+RUN corepack enable \
+  && yarn config set registry https://registry.npmjs.org \
+  && yarn install --ignore-scripts --frozen-lockfile \
+  && yarn build
 
-CMD ["npm", "start"]
+# SaaS config (server + client) shipped in server/deploy/
+ENV SILEX_CONFIG=/silex/server/deploy/.silex.js
+ENV SILEX_CLIENT_CONFIG=/silex/server/deploy/client-config.js
+
+CMD ["yarn", "start"]
