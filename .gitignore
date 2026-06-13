@@ -10,3 +10,6 @@ target/
 # Developer-specific configs
 .mcp.json
 
+
+# Silex local runtime storage
+silex/

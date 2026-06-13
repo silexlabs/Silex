@@ -27,7 +27,7 @@
     "start": "node packages/silex-lib/",
     "release": "scripts/release.sh",
     "test": "node scripts/check-internal-deps.js",
-    "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors",
+    "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors",
     "exec": "scripts/exec.js",
     "prepare": "husky"
   },
