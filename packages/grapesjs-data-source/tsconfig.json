@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "target": "es6",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+  },
+  "buildOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules/@types/mocha",
+    "./node_modules/**/*",
+    "./dist/**/*",
+    "./old/**/*",
+    "./__mocks__/**/*",
+    "node_modules",
+    "dist",
+    "old",
+    "__mocks__",
+    "**/*.test.ts"
+  ]
+}

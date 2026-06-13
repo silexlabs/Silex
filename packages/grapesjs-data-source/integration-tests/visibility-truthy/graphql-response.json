@@ -1,0 +1,1056 @@
+{
+  "data": {
+    "__typename": "Query",
+    "continents": [
+      {
+        "__typename": "Continent",
+        "code": "AF",
+        "name": "Africa",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "Angola"
+          },
+          {
+            "__typename": "Country",
+            "name": "Burkina Faso"
+          },
+          {
+            "__typename": "Country",
+            "name": "Burundi"
+          },
+          {
+            "__typename": "Country",
+            "name": "Benin"
+          },
+          {
+            "__typename": "Country",
+            "name": "Botswana"
+          },
+          {
+            "__typename": "Country",
+            "name": "Democratic Republic of the Congo"
+          },
+          {
+            "__typename": "Country",
+            "name": "Central African Republic"
+          },
+          {
+            "__typename": "Country",
+            "name": "Republic of the Congo"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ivory Coast"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cameroon"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cape Verde"
+          },
+          {
+            "__typename": "Country",
+            "name": "Djibouti"
+          },
+          {
+            "__typename": "Country",
+            "name": "Algeria"
+          },
+          {
+            "__typename": "Country",
+            "name": "Egypt"
+          },
+          {
+            "__typename": "Country",
+            "name": "Western Sahara"
+          },
+          {
+            "__typename": "Country",
+            "name": "Eritrea"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ethiopia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Gabon"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ghana"
+          },
+          {
+            "__typename": "Country",
+            "name": "Gambia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guinea"
+          },
+          {
+            "__typename": "Country",
+            "name": "Equatorial Guinea"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guinea-Bissau"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kenya"
+          },
+          {
+            "__typename": "Country",
+            "name": "Comoros"
+          },
+          {
+            "__typename": "Country",
+            "name": "Liberia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Lesotho"
+          },
+          {
+            "__typename": "Country",
+            "name": "Libya"
+          },
+          {
+            "__typename": "Country",
+            "name": "Morocco"
+          },
+          {
+            "__typename": "Country",
+            "name": "Madagascar"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mali"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mauritania"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mauritius"
+          },
+          {
+            "__typename": "Country",
+            "name": "Malawi"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mozambique"
+          },
+          {
+            "__typename": "Country",
+            "name": "Namibia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Niger"
+          },
+          {
+            "__typename": "Country",
+            "name": "Nigeria"
+          },
+          {
+            "__typename": "Country",
+            "name": "Réunion"
+          },
+          {
+            "__typename": "Country",
+            "name": "Rwanda"
+          },
+          {
+            "__typename": "Country",
+            "name": "Seychelles"
+          },
+          {
+            "__typename": "Country",
+            "name": "Sudan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Helena"
+          },
+          {
+            "__typename": "Country",
+            "name": "Sierra Leone"
+          },
+          {
+            "__typename": "Country",
+            "name": "Senegal"
+          },
+          {
+            "__typename": "Country",
+            "name": "Somalia"
+          },
+          {
+            "__typename": "Country",
+            "name": "South Sudan"
+          },
+          {
+            "__typename": "Country",
+            "name": "São Tomé and Príncipe"
+          },
+          {
+            "__typename": "Country",
+            "name": "Swaziland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Chad"
+          },
+          {
+            "__typename": "Country",
+            "name": "Togo"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tunisia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tanzania"
+          },
+          {
+            "__typename": "Country",
+            "name": "Uganda"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mayotte"
+          },
+          {
+            "__typename": "Country",
+            "name": "South Africa"
+          },
+          {
+            "__typename": "Country",
+            "name": "Zambia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Zimbabwe"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "AN",
+        "name": "Antarctica",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "Antarctica"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bouvet Island"
+          },
+          {
+            "__typename": "Country",
+            "name": "South Georgia and the South Sandwich Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Heard Island and McDonald Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "French Southern Territories"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "AS",
+        "name": "Asia",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "United Arab Emirates"
+          },
+          {
+            "__typename": "Country",
+            "name": "Afghanistan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Armenia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Azerbaijan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bangladesh"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bahrain"
+          },
+          {
+            "__typename": "Country",
+            "name": "Brunei"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bhutan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cocos [Keeling] Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "China"
+          },
+          {
+            "__typename": "Country",
+            "name": "Christmas Island"
+          },
+          {
+            "__typename": "Country",
+            "name": "Georgia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Hong Kong"
+          },
+          {
+            "__typename": "Country",
+            "name": "Indonesia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Israel"
+          },
+          {
+            "__typename": "Country",
+            "name": "India"
+          },
+          {
+            "__typename": "Country",
+            "name": "British Indian Ocean Territory"
+          },
+          {
+            "__typename": "Country",
+            "name": "Iraq"
+          },
+          {
+            "__typename": "Country",
+            "name": "Iran"
+          },
+          {
+            "__typename": "Country",
+            "name": "Jordan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Japan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kyrgyzstan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cambodia"
+          },
+          {
+            "__typename": "Country",
+            "name": "North Korea"
+          },
+          {
+            "__typename": "Country",
+            "name": "South Korea"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kuwait"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kazakhstan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Laos"
+          },
+          {
+            "__typename": "Country",
+            "name": "Lebanon"
+          },
+          {
+            "__typename": "Country",
+            "name": "Sri Lanka"
+          },
+          {
+            "__typename": "Country",
+            "name": "Myanmar [Burma]"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mongolia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Macao"
+          },
+          {
+            "__typename": "Country",
+            "name": "Maldives"
+          },
+          {
+            "__typename": "Country",
+            "name": "Malaysia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Nepal"
+          },
+          {
+            "__typename": "Country",
+            "name": "Oman"
+          },
+          {
+            "__typename": "Country",
+            "name": "Philippines"
+          },
+          {
+            "__typename": "Country",
+            "name": "Pakistan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Palestine"
+          },
+          {
+            "__typename": "Country",
+            "name": "Qatar"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saudi Arabia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Singapore"
+          },
+          {
+            "__typename": "Country",
+            "name": "Syria"
+          },
+          {
+            "__typename": "Country",
+            "name": "Thailand"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tajikistan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Turkmenistan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Turkey"
+          },
+          {
+            "__typename": "Country",
+            "name": "Taiwan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Uzbekistan"
+          },
+          {
+            "__typename": "Country",
+            "name": "Vietnam"
+          },
+          {
+            "__typename": "Country",
+            "name": "Yemen"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "EU",
+        "name": "Europe",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "Andorra"
+          },
+          {
+            "__typename": "Country",
+            "name": "Albania"
+          },
+          {
+            "__typename": "Country",
+            "name": "Austria"
+          },
+          {
+            "__typename": "Country",
+            "name": "Åland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bosnia and Herzegovina"
+          },
+          {
+            "__typename": "Country",
+            "name": "Belgium"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bulgaria"
+          },
+          {
+            "__typename": "Country",
+            "name": "Belarus"
+          },
+          {
+            "__typename": "Country",
+            "name": "Switzerland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cyprus"
+          },
+          {
+            "__typename": "Country",
+            "name": "Czech Republic"
+          },
+          {
+            "__typename": "Country",
+            "name": "Germany"
+          },
+          {
+            "__typename": "Country",
+            "name": "Denmark"
+          },
+          {
+            "__typename": "Country",
+            "name": "Estonia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Spain"
+          },
+          {
+            "__typename": "Country",
+            "name": "Finland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Faroe Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "France"
+          },
+          {
+            "__typename": "Country",
+            "name": "United Kingdom"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guernsey"
+          },
+          {
+            "__typename": "Country",
+            "name": "Gibraltar"
+          },
+          {
+            "__typename": "Country",
+            "name": "Greece"
+          },
+          {
+            "__typename": "Country",
+            "name": "Croatia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Hungary"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ireland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Isle of Man"
+          },
+          {
+            "__typename": "Country",
+            "name": "Iceland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Italy"
+          },
+          {
+            "__typename": "Country",
+            "name": "Jersey"
+          },
+          {
+            "__typename": "Country",
+            "name": "Liechtenstein"
+          },
+          {
+            "__typename": "Country",
+            "name": "Lithuania"
+          },
+          {
+            "__typename": "Country",
+            "name": "Luxembourg"
+          },
+          {
+            "__typename": "Country",
+            "name": "Latvia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Monaco"
+          },
+          {
+            "__typename": "Country",
+            "name": "Moldova"
+          },
+          {
+            "__typename": "Country",
+            "name": "Montenegro"
+          },
+          {
+            "__typename": "Country",
+            "name": "North Macedonia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Malta"
+          },
+          {
+            "__typename": "Country",
+            "name": "Netherlands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Norway"
+          },
+          {
+            "__typename": "Country",
+            "name": "Poland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Portugal"
+          },
+          {
+            "__typename": "Country",
+            "name": "Romania"
+          },
+          {
+            "__typename": "Country",
+            "name": "Serbia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Russia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Sweden"
+          },
+          {
+            "__typename": "Country",
+            "name": "Slovenia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Svalbard and Jan Mayen"
+          },
+          {
+            "__typename": "Country",
+            "name": "Slovakia"
+          },
+          {
+            "__typename": "Country",
+            "name": "San Marino"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ukraine"
+          },
+          {
+            "__typename": "Country",
+            "name": "Vatican City"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kosovo"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "NA",
+        "name": "North America",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "Antigua and Barbuda"
+          },
+          {
+            "__typename": "Country",
+            "name": "Anguilla"
+          },
+          {
+            "__typename": "Country",
+            "name": "Aruba"
+          },
+          {
+            "__typename": "Country",
+            "name": "Barbados"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Barthélemy"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bermuda"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bonaire"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bahamas"
+          },
+          {
+            "__typename": "Country",
+            "name": "Belize"
+          },
+          {
+            "__typename": "Country",
+            "name": "Canada"
+          },
+          {
+            "__typename": "Country",
+            "name": "Costa Rica"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cuba"
+          },
+          {
+            "__typename": "Country",
+            "name": "Curacao"
+          },
+          {
+            "__typename": "Country",
+            "name": "Dominica"
+          },
+          {
+            "__typename": "Country",
+            "name": "Dominican Republic"
+          },
+          {
+            "__typename": "Country",
+            "name": "Grenada"
+          },
+          {
+            "__typename": "Country",
+            "name": "Greenland"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guadeloupe"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guatemala"
+          },
+          {
+            "__typename": "Country",
+            "name": "Honduras"
+          },
+          {
+            "__typename": "Country",
+            "name": "Haiti"
+          },
+          {
+            "__typename": "Country",
+            "name": "Jamaica"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Kitts and Nevis"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cayman Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Lucia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Martin"
+          },
+          {
+            "__typename": "Country",
+            "name": "Martinique"
+          },
+          {
+            "__typename": "Country",
+            "name": "Montserrat"
+          },
+          {
+            "__typename": "Country",
+            "name": "Mexico"
+          },
+          {
+            "__typename": "Country",
+            "name": "Nicaragua"
+          },
+          {
+            "__typename": "Country",
+            "name": "Panama"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Pierre and Miquelon"
+          },
+          {
+            "__typename": "Country",
+            "name": "Puerto Rico"
+          },
+          {
+            "__typename": "Country",
+            "name": "El Salvador"
+          },
+          {
+            "__typename": "Country",
+            "name": "Sint Maarten"
+          },
+          {
+            "__typename": "Country",
+            "name": "Turks and Caicos Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Trinidad and Tobago"
+          },
+          {
+            "__typename": "Country",
+            "name": "United States"
+          },
+          {
+            "__typename": "Country",
+            "name": "Saint Vincent and the Grenadines"
+          },
+          {
+            "__typename": "Country",
+            "name": "British Virgin Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "U.S. Virgin Islands"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "OC",
+        "name": "Oceania",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "American Samoa"
+          },
+          {
+            "__typename": "Country",
+            "name": "Australia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Cook Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Fiji"
+          },
+          {
+            "__typename": "Country",
+            "name": "Micronesia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guam"
+          },
+          {
+            "__typename": "Country",
+            "name": "Kiribati"
+          },
+          {
+            "__typename": "Country",
+            "name": "Marshall Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Northern Mariana Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "New Caledonia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Norfolk Island"
+          },
+          {
+            "__typename": "Country",
+            "name": "Nauru"
+          },
+          {
+            "__typename": "Country",
+            "name": "Niue"
+          },
+          {
+            "__typename": "Country",
+            "name": "New Zealand"
+          },
+          {
+            "__typename": "Country",
+            "name": "French Polynesia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Papua New Guinea"
+          },
+          {
+            "__typename": "Country",
+            "name": "Pitcairn Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Palau"
+          },
+          {
+            "__typename": "Country",
+            "name": "Solomon Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tokelau"
+          },
+          {
+            "__typename": "Country",
+            "name": "East Timor"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tonga"
+          },
+          {
+            "__typename": "Country",
+            "name": "Tuvalu"
+          },
+          {
+            "__typename": "Country",
+            "name": "U.S. Minor Outlying Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "Vanuatu"
+          },
+          {
+            "__typename": "Country",
+            "name": "Wallis and Futuna"
+          },
+          {
+            "__typename": "Country",
+            "name": "Samoa"
+          }
+        ]
+      },
+      {
+        "__typename": "Continent",
+        "code": "SA",
+        "name": "South America",
+        "countries": [
+          {
+            "__typename": "Country",
+            "name": "Argentina"
+          },
+          {
+            "__typename": "Country",
+            "name": "Bolivia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Brazil"
+          },
+          {
+            "__typename": "Country",
+            "name": "Chile"
+          },
+          {
+            "__typename": "Country",
+            "name": "Colombia"
+          },
+          {
+            "__typename": "Country",
+            "name": "Ecuador"
+          },
+          {
+            "__typename": "Country",
+            "name": "Falkland Islands"
+          },
+          {
+            "__typename": "Country",
+            "name": "French Guiana"
+          },
+          {
+            "__typename": "Country",
+            "name": "Guyana"
+          },
+          {
+            "__typename": "Country",
+            "name": "Peru"
+          },
+          {
+            "__typename": "Country",
+            "name": "Paraguay"
+          },
+          {
+            "__typename": "Country",
+            "name": "Suriname"
+          },
+          {
+            "__typename": "Country",
+            "name": "Uruguay"
+          },
+          {
+            "__typename": "Country",
+            "name": "Venezuela"
+          }
+        ]
+      }
+    ]
+  }
+}

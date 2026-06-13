@@ -1,0 +1,355 @@
+query {
+__typename
+queryPageContents(skip: 0) {
+  __typename
+  data {
+    __typename
+    slug {
+      __typename
+      fr
+      en
+
+    }
+    modules {
+      __typename
+      en {
+        __typename
+        item__Dynamic
+
+      }
+
+    }
+
+  }
+  flatData {
+    __typename
+    shareImage {
+      __typename
+      url
+
+    }
+    description
+    lang
+    slugFr
+    slugEn
+    slug
+    listImage {
+      __typename
+      url
+
+    }
+    title
+    pubDate
+    type
+    modules {
+      __typename
+
+    item {
+        ...on HeroWordSliderComponent {
+        __typename
+        type
+        before
+        words {
+          __typename
+          word
+
+        }
+        after
+        cTAUrl
+        cTALabel
+
+      }
+}
+    item {
+        ...on SimpleHeroComponent {
+        __typename
+        type
+        text
+        secondaryUrl
+        secondaryLabel
+        cTAUrl
+        cTALabel
+
+      }
+}
+    item {
+        ...on SectionSlideshowUpComponent {
+        __typename
+        type
+
+      }
+}
+    item {
+        ...on SectionImageUpComponent {
+        __typename
+        type
+        image {
+          __typename
+          url
+          fileName
+
+        }
+
+      }
+}
+    item {
+        ...on SpecialHeadingComponent {
+        __typename
+        styleBg
+        type
+        title
+        subtitle
+        text
+        uRLSecondary
+        labelSecondary
+        uRL
+        label
+
+      }
+}
+    item {
+        ...on SectionPatternGridComponent {
+        __typename
+        type
+        style
+        title
+        subtitle
+        text
+        uRLSecondary
+        labelSecondary
+        uRL
+        label
+        image {
+          __typename
+          url
+          slug
+
+        }
+        shadow
+
+      }
+}
+    item {
+        ...on SectionCodeComponent {
+        __typename
+        type
+        code
+
+      }
+}
+    item {
+        ...on SectionFriendsComponent {
+        __typename
+        type
+
+      }
+}
+    item {
+        ...on SectionSquaresComponent {
+        __typename
+        type
+        styleBg
+        mainTitle
+        mainSubtitle
+        mainText
+        cards {
+          __typename
+          image {
+            __typename
+            url
+            fileName
+
+          }
+          title
+          text
+          uRL
+          label
+
+        }
+        cTAUrl
+        cTALabel
+
+      }
+}
+    item {
+        ...on SectionSquaresFeaturesComponent {
+        __typename
+        type
+        featureTitle
+        featureSubtitle
+        featureText
+
+      }
+}
+    item {
+        ...on SectionSquaresPagesComponent {
+        __typename
+        type
+        filterByType
+
+      }
+}
+    item {
+        ...on SectionSquaresMastodonComponent {
+        __typename
+        type
+        ctasLabel
+
+      }
+}
+    item {
+        ...on SpecialHeadingImgComponent {
+        __typename
+        type
+        image {
+          __typename
+          url
+          slug
+
+        }
+        title
+        subtitle
+        text
+        uRLSecondary
+        labelSecondary
+        uRL
+        label
+
+      }
+}
+    item {
+        ...on SectionRectBgComponent {
+        __typename
+        type
+        title
+        subtitle
+        cards {
+          __typename
+          link
+          image {
+            __typename
+            url
+            fileName
+
+          }
+          title
+          text
+
+        }
+
+      }
+}
+    item {
+        ...on SectionNetworkComponent {
+        __typename
+        type
+        title
+        subtitle
+        cards {
+          __typename
+          link
+          image {
+            __typename
+            url
+            fileName
+
+          }
+          title
+          text
+
+        }
+
+      }
+}
+    item {
+        ...on SectionBlogDataComponent {
+        __typename
+        type
+        author {
+          __typename
+          flatData {
+            __typename
+            name
+
+          }
+
+        }
+        date
+
+      }
+}
+    }
+
+  }
+
+}
+findGlobalSingleton {
+  __typename
+  flatData {
+    __typename
+    favicon {
+      __typename
+      url
+
+    }
+    url
+    nav {
+      __typename
+      label
+      url
+      title
+
+    }
+    footerHeadingsTitle
+    footerHeadingsSubtitle
+    footerHeadingsText
+    uRLSecondary
+    labelSecondary
+    uRL
+    label
+    links {
+      __typename
+      title
+      content
+
+    }
+    footerLegal
+
+  }
+
+}
+queryGlobalContents(skip: 0) {
+  __typename
+  flatData {
+    __typename
+    banner {
+      __typename
+      html(indentation: 4)
+
+    }
+    bannerLink
+    ctaCardsLabel
+
+  }
+
+}
+queryFeatureContents(skip: 0) {
+  __typename
+  flatData {
+    __typename
+    image {
+      __typename
+      url
+      fileName
+
+    }
+    title
+    text
+    uRL
+    label
+
+  }
+
+}
+
+}

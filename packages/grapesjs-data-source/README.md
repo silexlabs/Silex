@@ -1,0 +1,674 @@
+# GrapesJs Data Source plugin
+
+This GrapesJS plugin integrates various APIs into the editor, providing powerful data-driven website building capabilities.
+
+It makes a new [expressions UI](#expressions-ui) available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
+
+The plugin also has data management features needed to manage component states, expressions made of tokens, build queries from component states, and render dynamic content on the canvas.
+
+Finally there is a [settings dialog](#settings-dialog) to manage the data sources and save them with the website.
+
+> This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+
+[DEMO](https://codepen.io/lexoyo/full/xxMbxeB)
+
+Discussions, bug reports in [Silex community forums](https://community.silex.me/) or [GitHub issues](https://github.com/silexlabs/grapesjs-data-source/issues)
+
+## Features
+
+* ✅ **Import data from data source** (GraphQL APIs) in the editor
+* ✅ **Configure data sources** from config and runtime
+* ✅ **Data source management dialog** to add, edit, and test data sources
+* ✅ **Dynamic component properties** - Edit attributes, innerHTML, visibility conditions, and loops
+* ✅ **State management** - Create reusable states and expressions
+* ✅ **Liquid filters** - Transform data with built-in and custom filters
+* ✅ **GraphQL query generation** - Automatically generate optimized queries from component states
+* ✅ **Data persistence** - Save data sources with website data
+* ✅ **Real-time canvas preview** - See live data on the canvas with loop rendering and conditional visibility
+* ✅ **Loop rendering** - Duplicate components for each item in arrays with proper indexing
+* ✅ **Visibility conditions** - Show/hide components based on data conditions with binary and unary operators
+* ✅ **Interactive canvas** - Click on loop instances to select and edit original template components
+* ✅ **Preview controls** - Commands to activate/deactivate/refresh data preview on canvas
+* ✅ **Nested loops** - Support for loops within loops with proper context management
+* ✅ **Compatible** with [GrapesJS notifications plugin](https://github.com/silexlabs/grapesjs-notifications)
+* ✅ **Comprehensive API** - Events and functions to manage data, expressions, and queries
+* ✅ **Expression editor** - Web component for building and editing expressions
+* 🔄 **Add more liquid filters** (ongoing)
+* 🔄 **Add more data sources** (REST, Open API) (planned)
+
+## Supported CMS and APIs
+
+This plugin suports only GraphQL for now, contribution are welcome for support of other REST specific APIs or more generic Open API
+
+Here is [a list of GraphQL APIs you can use](https://github.com/graphql-kit/graphql-apis), it includes fake data and demo public APIs. Also consider these open source self hostable services:
+
+* [Strapi headless CMS](https://strapi.io/)
+* [Directus headless CMS](https://directus.io/)
+* [Supabase database (a Firebase alternative)](https://supabase.com/)
+* [Tina markdown files to GraphQL tool](https://tina.io/docs/graphql/overview/)
+* [WordPress](https://wordpress.org/) with [WPGraphQL](https://www.wpgraphql.com/)
+* Drupal, supabase... All have GraphQL support
+
+Contributions welcome for documenting the use of these data sources
+
+## Definitions
+
+**Expressions** are made of tokens, which are the building blocks of the expressions. Tokens are the properties of the data source, like `post.data.attributes.title` or `post.data.attributes.content`.
+
+**States** belong to a component, they are expressions which are not output in the final website, they are made to be included in other expressions. Also they are used in the generated GraphQL query.
+
+**Attributes** are the HTML attributes of a component, like `src` or `href` or any other attribute. Special attributes are `class` and `style` which if you put several of them will not override each other but will be merged.
+
+**Properties** are the dynamic properties of a component which include the HTML content (innerHTML), the visibility (a condition to show or hide the component), a loop property (to repeat the component for each item in a list).
+
+**Data source** is a service which provides the data to the editor. For now it has to be a GraphQL API, maybe I'll add open API later.
+
+## Included UI elements
+
+### Expressions UI
+
+This UI is used to manage the states, attributes and dynamic properties of the components. It is a panel which shows the expressions of the selected component and allows the user to add, edit, and remove them.
+
+![Screenshot from 2024-04-26 11-18-05](https://github.com/silexlabs/Silex/assets/715377/ca61e3e6-e3ba-4000-9d15-cff9fafac0ac)
+
+### Settings dialog
+
+This dialog is used to manage the data sources. It allows the user to add, edit, and remove data sources. It also allows the user to test the data sources and (comming in v2) see the data they provide.
+
+![Screenshot from 2024-04-26 11-16-29](https://github.com/silexlabs/Silex/assets/715377/f3fd9cd3-4732-44ef-b223-1214851da048)
+
+## Usage
+
+The output of this plugin is component states which are stored on the components. This data then needs to be used by other plugins or your application. For example you can implement a "publish" feature to generate pages and data files for a static site generator or CMSs. Or you can make a vue app generator with it, by implementing a "renderer" which takes the states and adds the vue code to the generated website.
+
+Here is how your application can use the data generated by the user with this plugin:
+
+1. Components states
+
+Each component in the GrapesJS editor can have states that are classified into public and private states.
+
+- **Public States**: These are states that are exposed to child components and can be used in expressions. The component's "states" displayed in components properties are public states: reusable in child component's expressions. The loop item and loop indexes are public states too.
+
+- **Private States**: In contrast, private states are meant to be internal to the component. Private states are typically used for values which will be rendered with the component, i.e. innerHTML, HTML attributes, visibility condition.
+
+  ```js
+  import { getStateIds, getState } from '@silexlabs/grapesjs-data-source'
+  // ...
+  const component = editor.getSelected()
+
+  // Get one specific state
+  // innerHTML is a private state on the component, so we pass `false` for param "exported"
+  console.log('innerHTML state:', getState(component, 'innerHTML', false))
+
+  // Display all states of the component
+  const stateIdsPublic = getStateIds(component, true)
+  const stateIdsPrivate = getStateIds(component, false)
+  console.log('Public states:', stateIdsPublic.map(stateId => getState(component, stateId, true)));
+  console.log('Private States:', stateIdsPrivate.map(stateId => getState(component, stateId, false)));
+
+  // Detect state changes
+  editor.on('component:state:changed', ({state, component}) => {
+    console.log('State changed:', {state, component})
+  }
+  ```
+
+  Here is an example output:
+
+  ```
+  innerHTML state: {"expression":[{"type":"property","propType":"field","fieldId":"post","label":"post","typeIds":["PostEntityResponse"],"dataSourceId":"strapi","kind":"object","options":{"id":"1"}},{"type":"property","propType":"field","fieldId":"data","label":"data","typeIds":["PostEntity"],"dataSourceId":"strapi","kind":"object"},{"type":"property","propType":"field","fieldId":"attributes","label":"attributes","typeIds":["Post"],"dataSourceId":"strapi","kind":"object"},{"type":"property","propType":"field","fieldId":"title","label":"title","typeIds":["String"],"dataSourceId":"strapi","kind":"scalar"}]}
+  All states: [{"expression":[{"type":"property","propType":"field","fieldId":"post","label":"post","typeIds":["PostEntityResponse"],"dataSourceId":"strapi","kind":"object","options":{"id":"1"}},{"type":"property","propType":"field","fieldId":"data","label":"data","typeIds":["PostEntity"],"dataSourceId":"strapi","kind":"object"},{"type":"property","propType":"field","fieldId":"attributes","label":"attributes","typeIds":["Post"],"dataSourceId":"strapi","kind":"object"},{"type":"property","propType":"field","fieldId":"title","label":"title","typeIds":["String"],"dataSourceId":"strapi","kind":"scalar"}]}]
+  ```
+1. GraphQL query to get the data needed for the current page
+
+This is what you need to get the resulting query for a page. It is also used to get the live preview of the data.
+
+  ```js
+  import { getPageQuery } from '@silexlabs/grapesjs-data-source'
+
+  // Get the current page
+  const page = editor.Pages.getSelected()
+
+  // Get the GraphQL query - used by both preview and 11ty site generation
+  const query = getPageQuery(page, editor)
+  console.log(query)
+  ```
+
+  Here is an example output:
+
+  ```json
+  {
+    "strapi": "posts {\n  data {\n  attributes {\n  title\n  content\n}\n}\n}"
+  }
+  ```
+
+Use the API functions to handle data sources and expressions:
+
+```js
+import { getAllDataSources, getValue } from '@silexlabs/grapesjs-data-source'
+
+const dataSources = getAllDataSources()
+
+// Evaluate expressions with preview data
+const result = getValue(
+  [{
+    type: "property",
+    fieldId: "fixed",
+    options: { value: 'test' },
+  }, {
+    type: "filter",
+    id: "upcase",
+    apply: input => input.toUpperCase()
+  }],
+  editor.getSelected() // This is never used as the expression only refers to hard coded values, no state in the expression
+)
+console.log('will write "TEST":', result)
+```
+
+### Canvas Preview Functionality
+
+The plugin provides powerful canvas preview capabilities that show live data directly on the design canvas:
+
+#### Loop Rendering
+Components with `__data` states automatically render multiple instances based on array data:
+
+```js
+// Component with __data state pointing to an array will duplicate for each item
+// Original component shows data for index 0
+// Additional instances are created for indices 1, 2, 3...
+```
+
+#### Visibility Conditions
+Components with condition states are shown/hidden based on data evaluation:
+
+```js
+// Binary operators: ==, !=, >, <, >=, <=
+// Unary operators: truthy, falsy, empty array, not empty array
+// Components that don't match conditions are removed from DOM (not just hidden)
+```
+
+#### Interactive Canvas
+Click on duplicated loop instances to select and edit the original template component. The plugin maintains the connection between preview instances and their source templates.
+
+#### Preview Controls
+Control canvas preview state programmatically:
+
+```js
+// Start with preview disabled in plugin options
+editor.plugins.add('@silexlabs/grapesjs-data-source', {
+  previewActive: false,
+  // ... other options
+})
+
+// Or control at runtime
+editor.runCommand('data-source:preview:activate')   // Show live data
+editor.runCommand('data-source:preview:deactivate') // Show templates
+editor.runCommand('data-source:preview:refresh')    // Refresh data
+```
+
+## API Reference
+
+### Available Events
+
+These event names are exposed in the API and can be used to listen for changes and rendering lifecycle:
+
+export const DATA_SOURCE_READY = 'data-source:ready'
+export const DATA_SOURCE_ERROR = 'data-source:error'
+export const DATA_SOURCE_CHANGED = 'data-source:changed'
+export const COMPONENT_STATE_CHANGED = 'component:state:changed'
+export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
+export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
+export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
+
+export const PREVIEW_RENDER_START = 'data-source:start:preview'
+export const PREVIEW_RENDER_END = 'data-source:start:end'
+export const PREVIEW_RENDER_ERROR = 'data-source:start:error'
+
+These constants are exported by the API of the plugin, e.g.
+```ts
+import { PREVIEW_RENDER_END } from '@silexlabs/grapess-data-source'
+editor.on(PREVIEW_RENDER_END, () => console.log('render success!'))
+```
+
+### Available Commands
+
+These command names are exposed in the API and can be used to control data source and preview behavior:
+
+export const COMMAND_REFRESH = 'data-source:refresh'
+export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
+export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
+export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
+export const COMMAND_ADD_DATA_SOURCE = 'data-source:add'
+
+These constants are exported by the API of the plugin, e.g.
+
+```ts
+import { COMMAND_REFRESH } from '@silexlabs/grapess-data-source'
+editor.runCommand(COMMAND_REFRESH) // or editor.runCommand('data-source:refresh')
+```
+
+### Data Source Management
+
+```js
+import {
+  getAllDataSources,
+  getDataSource,
+  addDataSource,
+  removeDataSource,
+  refreshDataSources
+} from '@silexlabs/grapesjs-data-source'
+
+// Get all data sources
+const dataSources = getAllDataSources()
+
+// Get a specific data source
+const dataSource = getDataSource('my-data-source-id')
+
+// Add a new data source
+await addDataSource(newDataSource)
+
+// Remove a data source
+removeDataSource(dataSource)
+
+// Refresh preview data
+refreshDataSources()
+```
+
+### Query Generation
+```js
+import { getPageQuery, buildPageQueries } from '@silexlabs/grapesjs-data-source'
+
+// Generate query for a single page (used by both preview and production)
+const query = getPageQuery(page, editor)
+
+// Generate queries for multiple pages (useful for site generation)
+const queries = buildPageQueries(pages, editor)
+```
+
+### Preview Data Management
+```js
+import {
+  loadPreviewData,
+  getPreviewData,
+  clearPreviewData
+} from '@silexlabs/grapesjs-data-source'
+
+// Load preview data for current page
+await loadPreviewData()
+
+// Get current preview data
+const previewData = getPreviewData()
+
+// Clear preview data
+clearPreviewData()
+```
+
+### Expression Evaluation
+```js
+import { getValue, getPageExpressions, getCompletion } from '@silexlabs/grapesjs-data-source'
+
+// Evaluate an expression with current preview data
+const result = getValue(expression, component)
+
+// Get all expressions used by components on a page
+const expressions = getPageExpressions(page)
+
+// Get auto-completion for expressions
+const completion = getCompletion({ component, expression })
+```
+
+## Available commands
+
+The plugin adds several commands for managing data sources and preview functionality:
+
+### Data Source Management
+```js
+// Refresh data sources (fetch fresh data)
+editor.runCommand('data-source:refresh')
+```
+
+### Preview Controls
+```js
+// Activate data preview on canvas (show live data)
+editor.runCommand('data-source:preview:activate')
+
+// Deactivate data preview (show original template)
+editor.runCommand('data-source:preview:deactivate')
+
+// Refresh preview data (re-fetch and update canvas)
+editor.runCommand('data-source:preview:refresh')
+```
+
+These commands allow you to control whether the canvas shows live data from your data sources or the original template content. When preview is active, components with loop data will duplicate for each item, and visibility conditions will be evaluated in real-time.
+
+## Available events
+
+The plugin emits events to notify the application of changes in the data sources, states, and expressions. Here are some of the events you can listen to:
+* `data-source:changed`: Emitted when a data source is changed.
+* `data-source:ready`: Emitted when a data source is ready (connected).
+* `data-source:error`: Emitted when there is an error with a data source.
+* `data-source:data-load:start`: Emitted when preview data loading starts.
+* `data-source:data-load:end`: Emitted when preview data loading completes.
+* `data-source:data-load:cancel`: Emitted when preview data loading is cancelled.
+* `component:state:changed`: Emitted when a component state is changed.
+
+These events are emitted on the editor instance, so you can listen to them like this:
+
+```js
+editor.on('data-source:changed', (dataSource) => {
+  console.log('Data source changed:', dataSource)
+})
+editor.on('data-source:ready', (dataSource) => {
+  console.log('Data source ready:', dataSource)
+})
+editor.on('data-source:error', (error) => {
+  console.error('Data source error:', error)
+})
+editor.on('data-source:data-load:start', () => {
+  console.log('Preview data loading started')
+})
+editor.on('data-source:data-load:end', (previewData) => {
+  console.log('Preview data loaded:', previewData)
+})
+editor.on('component:state:changed', ({state, component}) => {
+  console.log('State changed:', {state, component})
+})
+```
+
+## Configuration
+
+Here is a simple example of how to use the plugin in your application
+
+### HTML
+```html
+<link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+<script src="https://unpkg.com/grapesjs"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-data-source"></script>
+
+<div id="gjs"></div>
+```
+
+### JS
+```js
+const editor = grapesjs.init({
+	container: '#gjs',
+  height: '100%',
+  fromElement: true,
+  storageManager: false,
+  plugins: ['@silexlabs/grapesjs-data-source'],
+  pluginsOpts: {
+    '@silexlabs/grapesjs-data-source': {
+      dataSources: [{
+        id: 'countries',
+        type: 'graphql',
+        label: 'Countries',
+        url: 'https://countries.trevorblades.com/graphql',
+        method: 'POST',
+        headers: {},
+      }],
+      properties: {
+        el: () => editor.Panels.getPanel('views-container').view.el,
+        button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+      },
+      filters: 'liquid',
+    }
+  }
+});
+```
+
+### CSS
+```css
+body, html {
+  margin: 0;
+  height: 100%;
+}
+```
+
+## Local tests and development
+
+Use a local strapi to test GraphQL data source
+
+```sh
+$ cd strapi
+$ yarn develop
+```
+
+Strapi admin
+
+* `http://localhost:1337/admin/`
+* Login: `alex@test.com`
+* Password: `test_TEST1`
+
+Strapi GraphQL:
+
+* `http://localhost:1337/graphql`
+* `Bearer 456fe45a764921a26a81abd857bf987cd1735fbdbe58951ff5fc45a1c0ed2c52ab920cc0498b17411cd03954da7bb3e62e6bae612024360fb89717bd2274493ce190f3be14cdf47fccd33182fd795a67e48624e37f7276d9f84e98b2ec6945926d7a150e8c5deafa272aa9d9d97ee89e227c1edb1d6740ffd37a16b2298b3cc8`
+
+Use this as a data source in the plugin options:
+
+```js
+grapesjs.init({
+  // ...
+  // Your config here
+  // ...
+
+  plugins: ['@silexlabs/grapesjs-data-source'],
+  pluginsOpts: {
+    '@silexlabs/grapesjs-data-source': {
+      dataSources: [
+        {
+          id: 'strapi',
+          type: 'graphql',
+          name: 'Strapi',
+          url: 'http://localhost:1337/graphql',
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer 79c9e74b3cf4a9f5ce2836b81fd8aaf8a986b5696769456d3646a3213f5d7228634a1a15a8bbad4e87c09ab864c501499c6f8955cf350e49b89311764009aee68589a4b78f22c06b7e09835b48cd6f21fb84311ce873cd5672bd4652fde3f5f0db6afb258dfe7b93371b7632b551ecdd969256ffc076ab8f735b5d8c7d228825',
+            'Content-Type': 'application/json',
+          },
+        },
+      ],
+      properties: {
+        el: () => editor.Panels.getPanel('views-container').view.el,
+        button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+      },
+      filters: 'liquid',
+    }
+  }
+});
+```
+
+## Configuration examples
+
+You can find examples in [Silex CMS documentation](https://docs.silex.me/en/user/cms)
+
+Here are examples of APIs I tested:
+
+Strapi
+
+```
+{
+  id: 'strapi',
+  type: 'graphql',
+  name: 'Strapi',
+  url: 'http://localhost:1337/graphql',
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
+    'Content-Type': 'application/json',
+  },
+}
+```
+
+Supabase (I had a CORS problem, let's discuss this in an issue if you want to give it a try)
+
+```
+{
+  id: 'supabase',
+  type: 'graphql',
+  name: 'Supabase',
+  url: `https://api.supabase.io/platform/projects/jpslgeqihfj/api/graphql`,
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  },
+}
+```
+
+## Options
+
+| Option | Description | Default |
+|-|-|-
+| `dataSources` | List of data sources, see config examples and the plugin code for docs ([data source options](./src/index.ts) and [GraphQL data source options](./src/datasources/GraphQL.ts)) | `[]` |
+| `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/liquid.ts`) | `[]` |
+| `previewActive` | Whether data preview should be active by default on canvas | `true` |
+| `view` | Options for the UIs included with this plugin | N/A |
+| `view.el` | UI element to attach [the expressions UI](#expressions-ui) | `.gjs-pn-panel.gjs-pn-views-container` |
+| `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide [the expressions UI](#expressions-ui), it's just a helper to save you from doing it yourself. | `undefined` which means no button |
+| `view.settingsEl` | UI element to attach the [settings dialog](#settings-dialog). You can provide a string (css selector), a function which returns a DOM element, or a DOM element directly. | `.gjs-pn-views` |
+| `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
+| `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
+| `view.defaultFixed` | If true, the UI shows fixed by default or if false it shows expression by default | `false` |
+
+### Canvas Preview Features
+
+The plugin now includes comprehensive canvas preview functionality:
+
+- **Loop Rendering**: Components with `__data` states automatically duplicate for each array item
+- **Visibility Conditions**: Components with condition states show/hide based on data evaluation
+- **Interactive Elements**: Click on duplicated loop instances to select and edit the original template
+- **Preview Controls**: Use commands to toggle preview mode on/off
+- **Nested Loops**: Full support for loops within loops with proper context isolation
+- **Real-time Updates**: Canvas updates automatically when data sources change
+
+## Download
+
+* CDN
+  * `https://unpkg.com/@silexlabs/grapesjs-data-source`
+* NPM
+  * `npm i @silexlabs/grapesjs-data-source`
+* GIT
+  * `git clone https://github.com/silexlabs/grapesjs-data-source.git`
+
+## Usage
+
+Directly in the browser
+```html
+<link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
+<script src="https://unpkg.com/grapesjs"></script>
+<script src="path/to/grapesjs-data-source.min.js"></script>
+
+<div id="gjs"></div>
+
+<script type="text/javascript">
+  var editor = grapesjs.init({
+      container: '#gjs',
+      // ...
+      plugins: ['@silexlabs/grapesjs-data-source'],
+      pluginsOpts: {
+        '@silexlabs/grapesjs-data-source': { /* options */ }
+      }
+  });
+</script>
+```
+
+Modern javascript
+```js
+import grapesjs from 'grapesjs';
+import plugin from '@silexlabs/grapesjs-data-source';
+import 'grapesjs/dist/css/grapes.min.css';
+
+const editor = grapesjs.init({
+  container : '#gjs',
+  // ...
+  plugins: [plugin],
+  pluginsOpts: {
+    [plugin]: { /* options */ }
+  }
+  // or
+  plugins: [
+    editor => plugin(editor, { /* options */ }),
+  ],
+});
+```
+
+
+
+## Development
+
+Clone the repository
+
+```sh
+$ git clone https://github.com/silexlabs/grapesjs-data-source.git
+$ cd grapesjs-data-source
+```
+
+Install dependencies
+
+```sh
+$ npm i
+```
+
+Start the dev server
+
+```sh
+$ npm start
+```
+
+Build the source
+
+```sh
+$ npm run build
+```
+
+### State Management API
+```js
+import {
+  getState,
+  setState,
+  removeState,
+  getStateIds,
+  getPersistantId,
+  getOrCreatePersistantId
+} from '@silexlabs/grapesjs-data-source'
+
+// Get component states
+const publicStates = getStateIds(component, true)  // exported states
+const privateStates = getStateIds(component, false) // internal states
+
+// Get a specific state
+const state = getState(component, 'innerHTML', false) // false = private state
+
+// Set a state
+setState(component, 'myState', { expression: [...] }, true) // true = exported
+
+// Component persistent ID management
+const id = getPersistantId(component) // may return null
+const guaranteedId = getOrCreatePersistantId(component) // always returns an ID
+```
+
+### Token and Expression Utilities
+```js
+import {
+  fromStored,
+  toExpression,
+  getExpressionResultType
+} from '@silexlabs/grapesjs-data-source'
+
+// Convert stored tokens to full tokens
+const fullToken = fromStored(storedToken, component.getId())
+
+// Convert string/JSON to expression
+const expression = toExpression('[{"type":"property","fieldId":"title"}]')
+
+// Get the result type of an expression
+const resultType = getExpressionResultType(expression, component)
+```
+
+
+
+## License
+
+MIT

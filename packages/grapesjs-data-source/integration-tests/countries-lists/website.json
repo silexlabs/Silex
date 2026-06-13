@@ -1,0 +1,422 @@
+{
+  "dataSources": [],
+  "assets": [],
+  "styles": [
+    {
+      "selectors": [
+        "#i1xl-2"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#i1xl-2"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#itbip"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "test"
+      ],
+      "style": {
+        "margin": "10px 10px 10px 10px",
+        "padding": "10px 10px 10px 10px",
+        "background-color": "rgba(0,0,0,0.12)"
+      }
+    },
+    {
+      "selectors": [
+        "#izij"
+      ],
+      "wrapper": 1,
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#ikc8"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#i4ygv"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#imvvm"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "test2"
+      ],
+      "style": {
+        "margin": "10px 10px 10px 10px",
+        "padding": "10px 10px 10px 10px",
+        "display": "block"
+      }
+    }
+  ],
+  "pages": [
+    {
+      "frames": [
+        {
+          "component": {
+            "type": "wrapper",
+            "stylable": [
+              "background",
+              "background-color",
+              "background-image",
+              "background-repeat",
+              "background-attachment",
+              "background-position",
+              "background-size"
+            ],
+            "attributes": {
+              "id": "izij"
+            },
+            "components": [
+              {
+                "classes": [
+                  "test"
+                ],
+                "attributes": {
+                  "id": "i1xl-2"
+                },
+                "components": [
+                  {
+                    "tagName": "h1",
+                    "type": "text",
+                    "attributes": {
+                      "id": "ikc8"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "About this demo"
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "innerHTML",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i1xl-2-5246",
+                            "previewIndex": 6,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Continent)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "name",
+                            "label": "name",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "scalar",
+                            "options": {}
+                          }
+                        ]
+                      },
+                      {
+                        "id": "condition",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i1xl-2-5246",
+                            "previewIndex": 6,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Continent)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "name",
+                            "label": "name",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "scalar",
+                            "options": {}
+                          }
+                        ]
+                      },
+                      {
+                        "id": "condition2",
+                        "expression": [
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "fixed",
+                            "label": "Fixed value",
+                            "kind": "scalar",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "options": {
+                              "value": "Oceania"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "conditionOperator": "!="
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "itbip"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "For this test I configured the plugin with a demo country API:\n          https://studio.apollographql.com/public/countries/variant/current/home"
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "innerHTML",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i1xl-2-5246",
+                            "previewIndex": 6,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Continent)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "code",
+                            "label": "code",
+                            "typeIds": [
+                              "ID"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "scalar",
+                            "options": {}
+                          }
+                        ]
+                      },
+                      {
+                        "id": "itbip-xvnpk5lwtm",
+                        "label": "title",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i1xl-2-5246",
+                            "previewIndex": 6,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Continent)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "name",
+                            "label": "name",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "scalar",
+                            "options": {}
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "strong",
+                    "type": "text",
+                    "classes": [
+                      "test2"
+                    ],
+                    "attributes": {
+                      "id": "imvvm"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Select a component and check it's settings on the right"
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "__data",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i1xl-2-5246",
+                            "previewIndex": 13,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Continent)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "countries",
+                            "label": "countries",
+                            "typeIds": [
+                              "Country"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "list",
+                            "options": {},
+                            "previewIndex": 13
+                          }
+                        ]
+                      },
+                      {
+                        "id": "innerHTML",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "imvvm-1398",
+                            "previewIndex": 13,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Country)"
+                          },
+                          {
+                            "options": {
+                              "lang": ""
+                            },
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "name",
+                            "label": "name",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "dataSourceId": "countries",
+                            "kind": "scalar",
+                            "previewIndex": 13
+                          }
+                        ]
+                      },
+                      {
+                        "id": "imvvm-xn9syhnpkcl",
+                        "expression": [],
+                        "label": "new-attribute"
+                      }
+                    ],
+                    "id-plugin-data-source": "imvvm-1398"
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "i4ygv"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "This plugin lets you set \"states\" on components with the data coming from the API"
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "innerHTML",
+                        "expression": [
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "fixed",
+                            "label": "Fixed value",
+                            "kind": "scalar",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "options": {
+                              "value": "THE END"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "i4ygv-ze39827mhf",
+                        "expression": [
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "fixed",
+                            "label": "Fixed value",
+                            "kind": "scalar",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "options": {
+                              "value": "ok"
+                            }
+                          }
+                        ],
+                        "label": "data-test-attr"
+                      }
+                    ]
+                  }
+                ],
+                "privateStates": [
+                  {
+                    "id": "__data",
+                    "expression": [
+                      {
+                        "options": {
+                          "filter": "{}"
+                        },
+                        "type": "property",
+                        "propType": "field",
+                        "fieldId": "continents",
+                        "label": "continents",
+                        "typeIds": [
+                          "Continent"
+                        ],
+                        "dataSourceId": "countries",
+                        "kind": "list",
+                        "previewIndex": 6
+                      }
+                    ]
+                  }
+                ],
+                "id-plugin-data-source": "i1xl-2-5246"
+              }
+            ],
+            "head": {
+              "type": "head"
+            },
+            "docEl": {
+              "tagName": "html"
+            }
+          },
+          "id": "CWkwORyYHAzFZcwo"
+        }
+      ],
+      "id": "yrhlf8hT03KZ8BbD"
+    }
+  ],
+  "symbols": []
+}
