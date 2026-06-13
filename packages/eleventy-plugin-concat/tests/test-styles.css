@@ -1,0 +1,10 @@
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+}
+
+.test {
+    background-color: #000000;
+}
