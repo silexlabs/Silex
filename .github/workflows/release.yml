@@ -62,11 +62,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Enable Corepack (provides yarn)
+      - name: Enable Corepack (provides pnpm)
         run: corepack enable
-
-      - name: Use npm registry (yarnpkg.com has intermittent 500s)
-        run: yarn config set registry https://registry.npmjs.org
 
       # Patch the desktop version from the tag BEFORE any Tauri build so every
       # bundle (and the updater metadata) carries the release version — no
@@ -82,7 +79,7 @@ jobs:
 
       - name: Install JS dependencies and build frontend
         shell: bash
-        run: yarn install --ignore-scripts && yarn run build
+        run: pnpm install --frozen-lockfile && pnpm run build
 
       # Fail early if the frontend wasn't built (prevents broken embedded assets)
       - name: Verify frontend was built
@@ -107,7 +104,7 @@ jobs:
           GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
           projectPath: desktop
-          tauriScript: yarn tauri
+          tauriScript: pnpm tauri
           args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # Write a temp config to disable updater artifacts (they require signing keys)
@@ -124,7 +121,7 @@ jobs:
           GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
           projectPath: desktop
-          tauriScript: yarn tauri
+          tauriScript: pnpm tauri
           args: --config tauri.ci.json ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.

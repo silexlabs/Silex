@@ -22,17 +22,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Enable Corepack (provides yarn)
+      - name: Enable Corepack (provides pnpm)
         run: corepack enable
 
-      - name: Use npm registry (yarnpkg.com has intermittent 500s)
-        run: yarn config set registry https://registry.npmjs.org
-
       - name: Install dependencies
-        run: yarn install --ignore-scripts --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build (single package)
-        run: yarn build
+        run: pnpm build
 
       - name: Verify build output
         run: |
@@ -42,10 +39,10 @@ jobs:
           done
 
       - name: Lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Test
-        run: yarn test
+        run: pnpm test
 
   # ── Rust: server-rust library ────────────────────────────────────
   rust:

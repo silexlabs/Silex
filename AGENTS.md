@@ -8,7 +8,7 @@ Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, o
 - **Desktop**: Rust, Tauri v2
 - **Build**: single-package monorepo (no Yarn workspaces). One `package.json`, one build. Code is split by role: `editor/` (browser), `server/` (Node.js), `common/` (shared), `plugins/` (GrapesJS plugins, compiled from source), `server-rust/` + `desktop/` (Rust/Tauri, a Cargo workspace).
 
-Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/plugins`) — no `../../`. `yarn build` builds the whole JS side in one pass (no per-package rebuilds).
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/plugins`) — no `../../`. `pnpm build` builds the whole JS side in one pass (no per-package rebuilds).
 
 See [README.md → Development](README.md#development) for the layout, build commands and release flow.
 
@@ -27,7 +27,7 @@ Silex Desktop exposes MCP tools for controlling the editor. See the [desktop REA
 ## When writing code for Silex (editing source)
 
 - Prefer small, focused changes.
-- Run `yarn run build`, `yarn lint`, `yarn test` when applicable before any commit.
+- Run `pnpm run build`, `pnpm lint`, `pnpm test` when applicable before any commit.
 - Include screenshots to any PR, please prove to me that you have done proper testing.
 
 See [Contribute](https://docs-66e101.gitlab.io/fr/designer/contribute/) for the full contributor guide.
