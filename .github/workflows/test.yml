@@ -1,0 +1,73 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── JS: build + lint + unit tests ────────────────────────────────
+  js:
+    name: build / lint / test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Force LF line endings
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack (provides yarn)
+        run: corepack enable
+
+      - name: Use npm registry (yarnpkg.com has intermittent 500s)
+        run: yarn config set registry https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: yarn install --ignore-scripts --frozen-lockfile
+
+      - name: Build (single package)
+        run: yarn build
+
+      - name: Verify build output
+        run: |
+          for f in dist/client/js/main.js dist/client/index.html dist/client/css/admin.css \
+                   dist/server/server/index.js dist/server/server/cli.js; do
+            [ -f "$f" ] || { echo "::error::missing build output $f"; exit 1; }
+          done
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Test
+        run: yarn test
+
+  # ── Rust: server-rust library ────────────────────────────────────
+  rust:
+    name: rust (server-rust)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Check
+        run: cargo check -p silex-server
+
+      - name: Clippy (informational; pre-existing lints not yet enforced)
+        run: cargo clippy -p silex-server
+
+      - name: Test
+        run: cargo test -p silex-server

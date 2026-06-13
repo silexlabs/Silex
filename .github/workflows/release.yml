@@ -76,8 +76,8 @@ jobs:
         shell: bash
         run: |
           V="${GITHUB_REF_NAME#v}"
-          jq --arg v "$V" '.version = $v' packages/silex-desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
-          mv /tmp/tauri.conf.json packages/silex-desktop/src-tauri/tauri.conf.json
+          jq --arg v "$V" '.version = $v' desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
+          mv /tmp/tauri.conf.json desktop/src-tauri/tauri.conf.json
           echo "Desktop version set to $V"
 
       - name: Install JS dependencies and build frontend
@@ -88,8 +88,8 @@ jobs:
       - name: Verify frontend was built
         shell: bash
         run: |
-          if [ ! -f packages/silex-lib/dist/client/index.html ]; then
-            echo "::error::Frontend build failed — packages/silex-lib/dist/client/index.html not found"
+          if [ ! -f dist/client/index.html ]; then
+            echo "::error::Frontend build failed — dist/client/index.html not found"
             exit 1
           fi
 
@@ -106,7 +106,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
-          projectPath: packages/silex-desktop
+          projectPath: desktop
           tauriScript: yarn tauri
           args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
@@ -114,7 +114,7 @@ jobs:
       - name: Disable updater artifacts config
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         shell: bash
-        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > packages/silex-desktop/tauri.ci.json
+        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > desktop/tauri.ci.json
 
       - name: Build Tauri app (unsigned)
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
@@ -123,7 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
-          projectPath: packages/silex-desktop
+          projectPath: desktop
           tauriScript: yarn tauri
           args: --config tauri.ci.json ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
