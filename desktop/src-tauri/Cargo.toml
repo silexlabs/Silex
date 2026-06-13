@@ -38,4 +38,4 @@ dirs = "6"
 sentry = { version = "0.35", features = ["tracing"] }
 
 # Silex server as a library
-silex-server = { path = "../../silex-server", features = ["embed-frontend"] }
+silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
