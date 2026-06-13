@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Deploy to CapRover (canary)
         uses: caprover/deploy-from-github@v1.1.2
         with:
@@ -35,6 +37,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Deploy to CapRover (production)
         uses: caprover/deploy-from-github@v1.1.2
         with:
