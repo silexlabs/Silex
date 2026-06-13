@@ -1,0 +1,8 @@
+[submodule "dashboards/silex-dashboard"]
+	path = dashboards/silex-dashboard
+	url = https://github.com/silexlabs/silex-dashboard.git
+	branch = main
+[submodule "dashboards/silex-dashboard-2026"]
+	path = dashboards/silex-dashboard-2026
+	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
+	branch = main
