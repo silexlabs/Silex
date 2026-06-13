@@ -14972,9 +14972,6 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-node_modules-path@^2.4.0-canary.0, node_modules-path@2.4.0-canary.0, "node_modules-path@file:/home/lexoyo/_/Silex/packages/node_modules-path":
-  version "2.4.0-canary.0"
-  resolved "file:packages/node_modules-path"
 
 node-abi@^3.3.0:
   version "3.77.0"
