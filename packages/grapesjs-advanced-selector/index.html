@@ -1,0 +1,353 @@
+<html>
+<head>
+  <title>Advanced Selector</title>
+  <script src="./index.js"></script>
+  <link href="http://127.0.0.1:8081/dist/css/grapes.min.css" rel="stylesheet">
+  <script src="http://127.0.0.1:8081/dist/grapes.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      height: 100%;
+    }
+    /*
+    hr {
+      margin: 50px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
+    h3 {
+      text-align: left;
+    }
+    :root {
+      --gjs-left-width: 50%;
+    }
+    simple-selector {
+      display: inline-block;
+    }
+    .selection {
+      text-align: left;
+      pre {
+        display: inline;
+        background-color: #f9f9f9;
+        padding: 0 5px;
+        border-radius: 3px;
+        margin: 0;
+        text-wrap: wrap;
+      }
+    }
+    .gjs-pn-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 100%;
+      max-width: 350px;
+      height: 100%;
+      overflow: auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-right: 1px solid #ccc;
+      padding: 20px;
+    }
+    :root {
+      --gjs-main-color: #444;
+      --gjs-primary-color: #444;
+      --gjs-secondary-color: #dddddd73;
+      --gjs-tertiary-color: #804f7b;
+      --gjs-quaternary-color: #d278c9;
+      --gjs-font-color: #ddd;
+      --gjs-font-color-active: #f8f8f8;
+      --gjs-main-dark-color: rgba(0, 0, 0, 0.2);
+      --gjs-secondary-dark-color: rgba(0, 0, 0, 0.1);
+      --gjs-main-light-color: rgba(255, 255, 255, 0.1);
+      --gjs-secondary-light-color: rgba(255, 255, 255, 0.7);
+      --gjs-soft-light-color: rgba(255, 255, 255, 0.015);
+      --gjs-color-blue: #3b97e3;
+      --gjs-color-red: #dd3636;
+      --gjs-color-yellow: #ffca6f;
+      --gjs-color-green: #62c462;
+      --gjs-left-width: 15%;
+      --gjs-color-highlight: #71b7f1;
+      --gjs-color-warn: #ffca6f;
+      --gjs-handle-margin: -5px;
+      --gjs-light-border: rgba(255, 255, 255, 0.05);
+      --gjs-arrow-color: rgba(255, 255, 255, 0.7);
+      --gjs-dark-text-shadow: rgba(0, 0, 0, 0.2);
+      --gjs-color-input-padding: 22px;
+      --gjs-input-padding: 5px;
+      --gjs-padding-elem-classmanager: 5px 6px;
+      --gjs-upload-padding: 150px 10px;
+      --gjs-animation-duration: 0.2s;
+      --gjs-main-font: Helvetica, sans-serif;
+      --gjs-font-size: 0.75rem;
+      --gjs-placeholder-background-color: var(--gjs-color-green);
+      --gjs-canvas-top: 40px;
+      --gjs-flex-item-gap: 5px;
+    }
+      */
+    :root {
+      --gjs-left-width: 35%;
+      --gjs-main-dark-color: #363636;
+    }
+  </style>
+</head>
+<body>
+<!-- --
+  <div class="gjs-pn-panel gjs-editor" style="background-color: rgba(250, 235, 215, 0.767); z-index: 999;">
+
+
+    <h3>Complex Selector test</h3>
+    <complex-selector></complex-selector>
+    <current-selector-display></current-selector-display>
+    <script type="module">
+      (function() {
+        const cs = document.querySelector('complex-selector')
+        const currentSelectorDisplay = document.querySelector('current-selector-display')
+        function updatePre() {
+          currentSelectorDisplay.value = cs.value
+        }
+        cs.value = {
+          mainSelector: {
+            selectors: [],
+          },
+          operator: null,
+          relatedSelector: {
+            selectors: [],
+          },
+        }
+        // cs.value = {
+        //   mainSelector: {
+        //     selectors: [
+        //       { type: 'tag', value: 'div', active: true },
+        //       { type: 'class', value: 'bg-red-500', active: true },
+        //       //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //       //{ type: 'id', value: 'my-id', active: true },
+        //     ],
+        //     pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //   },
+        //   operator: {
+        //     type: ' ',
+        //     hasParam: false,
+        //     sentencePre: 'When it is inside (',
+        //     sentencePost: ')',
+        //     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
+        //     isCombinator: true,
+        //   },
+        //   relatedSelector: {
+        //     selectors: [
+        //       { type: 'tag', value: 'p', active: true },
+        //       //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //       //{ type: 'id', value: 'my-id', active: true },
+        //     ],
+        //     pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //   }
+        // }
+        cs.onchange = (event) => {
+          console.info('Complex selector changed', event.detail)
+          updatePre()
+        }
+        updatePre()
+      })()
+    </script>
+
+    <!-- --
+
+    <hr>
+    <h3>Compound Selector test</h3>
+    <compound-selector></compound-selector>
+    <p id="pre" class="selection"></p>
+
+    <script type="module">
+      (function() {
+        const cs = document.querySelector('compound-selector')
+        const pre = document.querySelector('#pre')
+        function updatePre() {
+          pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
+        }
+        cs.value = {
+          selectors: [
+            { type: 'tag', value: 'div', active: true },
+            { type: 'class', value: 'bg-red-500', active: true },
+            { type: 'class', value: 'bg-blue-500', active: true },
+            //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+            //{ type: 'id', value: 'my-id', active: true },
+          ],
+          pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        }
+        cs.suggestions = [
+          // Classes (example: the tailwind classes)
+          { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
+          // Attributes
+          { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' },
+          // Ids
+          { type: 'id', value: 'my-id' },
+        ]
+        cs.onchange = (event) => {
+          console.info('Compound selector changed', event.detail)
+          updatePre()
+        }
+        updatePre()
+      })()
+    </script>
+
+
+    <hr>
+    <h3>Simple Selector test</h3>
+    <simple-selector></simple-selector>
+    <simple-selector></simple-selector>
+    <script type="module">
+      document.querySelectorAll('simple-selector')
+      .forEach(selector => {
+        selector.suggestions = [
+          // Classes (example: the tailwind classes)
+          { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
+          // Attributes
+          { 'type': 'attribute', 'value': 'id' }, { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' }, { 'type': 'attribute', 'value': 'data-foo' }, { 'type': 'attribute', 'value': 'data-bar' },
+          // Custom tags
+          { type: 'tag', value: 'my-custom-tag' }, { type: 'tag', value: 'my-other-custom-tag' }, { type: 'tag', value: 'my-third-custom-tag' },
+          // Ids
+          { type: 'id', value: 'my-id' }, { type: 'id', value: 'my-other-id' }, { type: 'id', value: 'my-third-id' },
+        ]
+        // Add active
+        .map(s => ({ ...s, active: true}))
+        const active = true
+        const selectors = [{}, {"type":"attribute","value":"data-foo","operator":"=","attributeValue":"bar", active}, { type: 'tag', value: 'div', active }, { type: 'class', value: 'bg-red-500', active }, { type: 'attribute', value: 'data-foo', active }, { type: 'id', value: 'my-id', active }]
+        const idx = Math.floor(Math.random() * selectors.length)
+        selector.value = selectors[idx]
+
+        selector.onchange = (event) => {
+          selector.value = event.detail
+        }
+      })
+    </script>
+
+    <hr>
+    <h3>Pseudo Class test</h3>
+    <inline-select
+      id="pseudo-class"
+    ></inline-select>
+    <script>
+      const pseudoClass = document.querySelector('#pseudo-class')
+      pseudoClass.options = [
+        { hasParam: false, type: 'hover', sentencePre: 'On mouse', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover' },
+        { hasParam: false, type: 'active', sentencePre: 'When', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:active' },
+        { hasParam: false, type: 'focus', sentencePre: 'When it has the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus' },
+        { hasParam: false, type: 'focus-within', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-within' },
+        { hasParam: false, type: 'focus-visible', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible' },
+      ]
+      pseudoClass.onchange = () => {
+        console.info('Pseudo class changed', pseudoClass.value)
+      }
+    </script>
+
+
+  </div>
+
+<!-- -->
+<!-- -->
+  <div id="gjs">
+    <div class="container" id="main-container" data-role="section">
+      <p class="child highlight" id="text-element">This is a child</p>
+      <p class="child" data-state="active">Another child with data attribute</p>
+      <button class="btn primary" id="main-button" data-action="submit">Click Me</button>
+      <a href="#" class="link special" id="styled-link">A Styled Link</a>
+      <input type="text" class="input-field" placeholder="Type here..." />
+      <ul class="list">
+        <li class="item">Item 1</li>
+        <li class="item" data-selected="true">Item 2 (selected)</li>
+        <li class="item">Item 3</li>
+      </ul>
+    </div>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+      }
+  
+      .container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 40px auto;
+      }
+  
+      .title {
+        font-size: 24px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+  
+      .child {
+        font-size: 16px;
+        color: #666;
+      }
+  
+      .highlight {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+  
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.3s;
+      }
+  
+      .btn:hover {
+        background: #2980b9;
+      }
+  
+      .link {
+        color: #e67e22;
+        text-decoration: none;
+      }
+  
+      .input-field {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+  
+      .list {
+        padding: 0;
+        list-style: none;
+      }
+  
+      .item {
+        background: #ecf0f1;
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 4px;
+      }
+  
+      .item[data-selected="true"] {
+        background: #2ecc71;
+        color: white;
+      }
+    </style>
+  </div>
+  <script>
+      const editor = grapesjs.init({
+        container: '#gjs',
+        height: '100%',
+        fromElement: true,
+        selectorManager: {
+          custom: true, // This should not be needed, check index.js
+          escapeName: (name) => `${name}`,
+        },
+        plugins: ['@silexlabs/grapesjs-advanced-selector'],
+      });
+  </script>
+  <!-- -->
+</body>
+</html>
