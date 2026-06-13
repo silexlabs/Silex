@@ -84,39 +84,33 @@
     "prepare": "husky"
   },
   "watch": {
-    "build:css:debug": {
+    "build:css": {
       "patterns": [
         "editor/css/"
       ],
       "extensions": "scss"
     },
-    "build:html:debug": {
+    "build:html": {
       "patterns": [
         "editor/html/"
       ],
       "extensions": "pug"
     },
-    "build:client:debug": {
+    "build:client": {
       "patterns": [
         "editor/",
-        "editor/inline-plugins/"
+        "common/",
+        "plugins/"
       ],
       "extensions": [
-        "ts"
+        "ts",
+        "js"
       ]
     },
-    "build:server:debug": {
+    "build:server": {
       "patterns": [
         "server/",
-        "server/inline-plugins/"
-      ],
-      "extensions": [
-        "ts"
-      ]
-    },
-    "build:plugins:server": {
-      "patterns": [
-        "server/inline-plugins/"
+        "common/"
       ],
       "extensions": [
         "ts"
