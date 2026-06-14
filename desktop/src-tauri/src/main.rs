@@ -377,10 +377,13 @@ fn main() {
             let transaction = sentry::start_transaction(tx_ctx);
             sentry::configure_scope(|scope| scope.set_span(Some(transaction.clone().into())));
 
-            // Use Tauri's app_data_dir for user-writable storage
+            // Silex website data lives under app_data_dir/"websites".
+            // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
+            // localStorage/IndexedDB origins, and FsStorage would then scan those origin
+            // dirs as if they were websites (→ metadata errors + "No such file or directory").
             let data_path = app.path().app_data_dir()
                 .expect("failed to resolve app data dir")
-                .join("storage");
+                .join("websites");
 
             // On first launch, ask the user for telemetry consent.
             // The choice is saved and takes effect on next launch.
