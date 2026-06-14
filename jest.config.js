@@ -22,9 +22,9 @@ const moduleNameMapper = {
   '^~/common$': '<rootDir>/common',
   '^~/editor/(.*)$': '<rootDir>/editor/$1',
   '^~/server/(.*)$': '<rootDir>/server/$1',
-  '^~/plugins/(.*)$': '<rootDir>/plugins/$1',
-  '^@silexlabs/expression-input$': '<rootDir>/plugins/expression-input/src/index.ts',
-  '^@silexlabs/grapesjs-([^/]+)$': '<rootDir>/plugins/grapesjs-$1/src/index',
+  '^~/grapesjs-plugins/(.*)$': '<rootDir>/grapesjs-plugins/$1',
+  '^@silexlabs/expression-input$': '<rootDir>/grapesjs-plugins/expression-input/src/index.ts',
+  '^@silexlabs/grapesjs-([^/]+)$': '<rootDir>/grapesjs-plugins/grapesjs-$1/src/index',
 }
 
 const transform = {
