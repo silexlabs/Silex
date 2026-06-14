@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const { ServerEvent } = require('@silexlabs/silex').events
+const { ServerEvent } = require('../../../dist/server/server/events')
 const express = require('express')
 const ONBOADRDING_STEPS = require('../onboarding.json')
 

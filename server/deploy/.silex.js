@@ -1,57 +1,43 @@
-const { ConnectorType } = require('@silexlabs/silex/dist/server/types')
-const FtpConnector = require('@silexlabs/silex/dist/plugins/server/plugins/server/FtpConnector').default
-const DownloadConnector = require('@silexlabs/silex/dist/plugins/server/plugins/server/DownloadConnector').default
-const GitlabConnector = require('@silexlabs/silex/dist/plugins/server/plugins/server/GitlabConnector').default
-const GitlabHostingConnector = require('@silexlabs/silex/dist/plugins/server/plugins/server/GitlabHostingConnector').default
-const { FsStorage } = require('@silexlabs/silex/dist/server/server/connectors/FsStorage')
-const { FsHosting } = require('@silexlabs/silex/dist/server/server/connectors/FsHosting')
-const dash = require('@silexlabs/silex-dashboard')
-const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
-const node_modules = require('node_modules-path')
-const onboarding = require(__dirname + '/server-plugins/onboarding.js')
+/*
+ * Silex website builder, free/libre no-code tool for makers.
+ * Copyright (c) 2023 lexoyo and Silex Labs foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @fileoverview Default Silex server config = the full SaaS (the v3.silex.me / canary setup).
+ * Serves the editor (StaticPlugin), the multi-site dashboard, the onboarding email backend,
+ * and the storage/hosting connectors selected by env vars. Loaded by default at startup
+ * (see server/config.ts: configFilePath). Runtime paths target the monorepo dist.
+ */
 const { join } = require('path')
+const nodeModules = require('node_modules-path')
+
+const SslPlugin = require('../../dist/server/server/plugins/SslPlugin').default
+const StaticPlugin = require('../../dist/server/server/plugins/StaticPlugin').default
+const { ConnectorType } = require('../../dist/server/common/types')
+const FtpConnector = require('../../dist/server/server/plugins/FtpConnector').default
+const DownloadConnector = require('../../dist/server/server/plugins/DownloadConnector').default
+const GitlabConnector = require('../../dist/server/server/plugins/GitlabConnector').default
+const GitlabHostingConnector = require('../../dist/server/server/plugins/GitlabHostingConnector').default
+const { FsStorage } = require('../../dist/server/server/connectors/FsStorage')
+const { FsHosting } = require('../../dist/server/server/connectors/FsHosting')
+const dashboard = require('./server-plugins/dashboard.js')
+const onboarding = require('./server-plugins/onboarding.js')
 
 // Load .env file
 require('dotenv').config()
-
-module.exports = async function (config) {
-  await config.addPlugin(dash)
-  await config.addPlugin(onboarding)
-
-  initConnectors(config)
-  //config.setHostingConnectors([
-  //  new FtpConnector(config, {
-  //    type: ConnectorType.HOSTING,
-  //  }),
-  //  new DownloadPlugin(config),
-  //])
-
-  //config.setStorageConnectors([
-  //  new FtpConnector(config, {
-  //    type: ConnectorType.STORAGE,
-  //  }),
-  //  new GitlabConnector(config, {
-  //    clientId: process.env.GITLAB_CLIENT_ID,
-  //    clientSecret: process.env.GITLAB_CLIENT_SECRET,
-  //    domain: process.env.GITLAB_DOMAIN,
-  //  }),
-  //  new FramagitConnector(config, {
-  //    clientId: process.env.FRAMAGIT_CLIENT_ID,
-  //    clientSecret: process.env.FRAMAGIT_CLIENT_SECRET,
-  //    domain: process.env.FRAMAGIT_DOMAIN,
-  //  }),
-  //])
-
-  // CMS Plugin
-  config.addPlugin(StaticPlugin, {
-    routes: [
-      {
-        route: '/js/client-plugins/',
-        path: './client-plugins/',
-      },
-    ],
-  })
-}
 
 const env = {
   STORAGE_CONNECTORS: process.env.STORAGE_CONNECTORS || 'ftp',
@@ -181,4 +167,54 @@ function initConnectors(config) {
       }
     })
   }
+}
+
+module.exports = async function(config) {
+  // SaaS multi-site dashboard FIRST: its "/" handler redirects to the localized
+  // dashboard before StaticPlugin can serve the editor's index.html at "/".
+  // (STARTUP_START handlers run in addPlugin order → dashboard routes mount first.)
+  await config.addPlugin(dashboard, {})
+
+  try {
+    // Core: serve the editor client, fonts and public assets
+    await config.addPlugin([
+      SslPlugin,
+      StaticPlugin,
+    ], {
+      [StaticPlugin]: {
+        routes: [
+          {
+            route: '/',
+            path: join(__dirname, '../../public'),
+          }, {
+            route: '/css/',
+            path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/css/',
+          }, {
+            route: '/webfonts/',
+            path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
+          }, {
+            route: '/css/files/',
+            path: nodeModules('@fontsource/ubuntu') + '/@fontsource/ubuntu/files/',
+          }, {
+            route: '/',
+            path: join(__dirname, '../../dist/client'),
+          }, {
+            // SaaS client plugins (e.g. onboarding) imported by ./client-config.js
+            route: '/js/client-plugins/',
+            path: join(__dirname, 'client-plugins'),
+          },
+        ],
+      },
+    })
+  } catch (e) {
+    console.error(e)
+  }
+
+  // SaaS: onboarding email backend
+  await config.addPlugin(onboarding, {})
+
+  // Storage and hosting connectors selected by env vars
+  initConnectors(config)
+
+  return {}
 }

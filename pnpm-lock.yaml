@@ -113,6 +113,9 @@ importers:
       lit-html:
         specifier: 3.3.2
         version: 3.3.2
+      locale:
+        specifier: 0.1.0
+        version: 0.1.0
       mkdirp:
         specifier: 3.0.1
         version: 3.0.1
@@ -2646,6 +2649,10 @@ packages:
   loader-runner@4.3.2:
     resolution: {integrity: sha512-DFEqQ3ihfS9blba08cLfYf1NRAIEm+dDjic073DRDc3/JspI/8wYmtDsHwd3+4hwvdxSK7PGaElfTmm0awWJ4w==}
     engines: {node: '>=6.11.5'}
+
+  locale@0.1.0:
+    resolution: {integrity: sha512-rY3ZMnUkMfaZEix1fp/pjdwsHJkDQcE0UEcXHuYI77J03K8gddL3iD+UuJCLAmT2Z2oz5A70/0QS4J9OLCCvXw==}
+    engines: {node: '>0.8.x'}
 
   locate-path@5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
@@ -7036,6 +7043,8 @@ snapshots:
       strip-bom: 3.0.0
 
   loader-runner@4.3.2: {}
+
+  locale@0.1.0: {}
 
   locate-path@5.0.0:
     dependencies:
