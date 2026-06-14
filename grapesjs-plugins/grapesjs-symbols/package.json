@@ -31,7 +31,7 @@
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "pnpm run lint -- --fix",
     "test": "jest",
-    "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "bump": "pnpm version patch -m 'Bump v%s'",
     "prepare": "husky"
   },
