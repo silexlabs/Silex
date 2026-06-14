@@ -82,7 +82,9 @@ jobs:
 
       - name: Install JS dependencies and build frontend
         shell: bash
-        run: pnpm install --frozen-lockfile && pnpm run build
+        # App only (--filter): plugins are compiled from source by the editor build via
+        # webpack aliases; their workspace devDeps (grapesjs-cli, playwright) aren't needed.
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex && pnpm run build
 
       # Fail early if the frontend wasn't built (prevents broken embedded assets)
       - name: Verify frontend was built
