@@ -15,70 +15,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ClientEvent } from '~/editor/events.js'
+import type { Editor } from 'grapesjs'
 import { WebsiteMeta } from '~/common/types.js'
 
-interface WebsiteInfoOptions {
-  websiteId: string
-  connectorId: string
-  appendTo: 'commands' | 'options' | 'views' | 'project-bar-container' | 'project-bar-panel' | 'views-container'
-}
-
-// Silex plugin
-export default async function(config) {
+// GrapesJS plugin: shows the website name + current page in the top bar.
+// Added to the editor plugin list in ./index.ts. The Silex config (api, ids) is read
+// from the editor model — set on it after init — only inside event handlers (lazy).
+export default function websiteInfoPlugin(editor: Editor) {
   let websiteMeta: WebsiteMeta | null = null
-  config.on(ClientEvent.GRAPESJS_START, async () => {
-    // GrapesJs plugin
-    const grapesPlugin = (editor, opts: Partial<WebsiteInfoOptions>) => {
-      const options = {
-        appendTo: 'commands',
-        ...opts,
-      } as WebsiteInfoOptions
-      editor.on('storage:end:load', async () => {
-        // Get website meta data
-        const { websiteId, connectorId } = options
-        // Get the website meta data
-        websiteMeta = await config.api.websiteMetaRead({ websiteId, connectorId })
-        displayWebsiteMeta()
-      })
-      return {}
-    }
+  const getConfig = () => editor.getModel().get('config')
 
-    // Add the plugin to the GrapeJS
-    config.grapesJsConfig.plugins.push(grapesPlugin)
-    config.grapesJsConfig.pluginsOpts[grapesPlugin.toString()] = {
-      websiteId: config.websiteId,
-      connectorId: config.storageId,
-    }
+  editor.on('storage:end:load', async () => {
+    const config = getConfig()
+    websiteMeta = await config.api.websiteMetaRead({ websiteId: config.websiteId, connectorId: config.storageId })
+    displayWebsiteMeta()
   })
 
-  config.on(ClientEvent.GRAPESJS_END, async ({editor}) => {
-    // Detect when the page changes
-    editor.on('page:select', async () => {
-      displayWebsiteMeta()
-    })
-  })
+  // Refresh when the page changes
+  editor.on('page:select', () => displayWebsiteMeta())
 
-
-  // Display the website meta data
   function displayWebsiteMeta() {
-    // Get or create the container
-    const container = document.querySelector('#gjs-website-meta') ?? (function() {
+    const container = document.querySelector('#gjs-website-meta') ?? (function () {
       const c = document.createElement('div')
       c.id = 'gjs-website-meta'
       c.classList.add('gjs-website-meta')
-      // Add the container to the UI
-      // Add the name of the website in the top bar
-      const topBar = document.querySelector('.gjs-pn-devices-c')
-      topBar?.appendChild(c)
+      // Add the website name in the top bar
+      document.querySelector('.gjs-pn-devices-c')?.appendChild(c)
       return c
     })()
-    // Get the current page
-    const currentPage = config.getEditor().Pages?.getSelected()
-    // Display the website meta data
+    const currentPage = editor.Pages?.getSelected()
     container.innerHTML = `
         ${websiteMeta?.imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${websiteMeta?.imageUrl});"></div>` : ''}
-        <div class="gjs-website-meta-name">${websiteMeta?.name ?? 'Unknown'} | ${currentPage.get('name') ?? currentPage.get('type')}</div>
+        <div class="gjs-website-meta-name">${websiteMeta?.name ?? 'Unknown'} | ${currentPage?.get('name') ?? currentPage?.get('type')}</div>
       `
   }
 }

@@ -40,6 +40,7 @@ import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
 import cssVariablesPlugin from '@silexlabs/grapesjs-css-variables'
 import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
 import bodyRemapPlugin from './body-remap'
+import websiteInfoPlugin from './website-info'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
@@ -82,6 +83,7 @@ const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
   {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
+  {name: './website-info', value: websiteInfoPlugin},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
   {name: '@silexlabs/grapesjs-css-variables', value: cssVariablesPlugin},
   {name: '@silexlabs/grapesjs-advanced-selector', value: selectorPlugin},
