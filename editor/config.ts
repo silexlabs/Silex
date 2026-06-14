@@ -29,7 +29,6 @@ import { addSection, removeSection } from './grapesjs/settings'
 // Plugins
 import publishCustomCodeBlock from './publish-custom-code-block'
 import publishFonts from './publish-fonts'
-import websiteInfoPlugin from './grapesjs/website-info'
 import { EleventyPluginOptions } from './grapesjs/cms'
 
 /**
@@ -220,7 +219,6 @@ export class ClientConfig extends Config {
     await this.addPlugin([
       publishCustomCodeBlock,
       publishFonts,
-      websiteInfoPlugin,
     ], {})
   }
 }
