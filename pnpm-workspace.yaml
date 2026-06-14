@@ -1,0 +1,13 @@
+# pnpm workspace — used ONLY for installing / linting / testing / publishing the
+# grapesjs-plugins as independent packages. The Silex app itself (root package) is
+# NOT split into workspace packages: it stays a single package, and its build imports
+# the plugin *sources* directly via webpack alias + tsconfig "paths" (see webpack.config.js
+# / tsconfig.base.json) — NOT via node_modules linking. So the editor build does not
+# depend on this workspace at all.
+#
+# Release coupling: the plugins are versioned and published INDEPENDENTLY. We do NOT use
+# the `workspace:` protocol between them, EXCEPT for `@silexlabs/expression-input` (a shared
+# internal lib consumed by advanced-selector and data-source) which is linked locally so
+# those plugins always build/test against its current source.
+packages:
+  - 'grapesjs-plugins/*'

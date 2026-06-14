@@ -44,7 +44,7 @@ ENV GITLAB2_CLIENT_SECRET=
 COPY . /silex
 WORKDIR /silex
 RUN npm install -g pnpm@9.14.1 \
-  && pnpm install --frozen-lockfile \
+  && pnpm install --frozen-lockfile --filter @silexlabs/silex \
   && pnpm build
 
 # The default SaaS config (server + client) lives in server/deploy/ and is loaded by

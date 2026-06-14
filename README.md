@@ -71,28 +71,58 @@ See the [Development](#development) section below for build and release workflow
 
 ### How the repo is organized
 
-This is a **monorepo** built as a **single package** (no Yarn workspaces) — one `package.json`, one build. The code is split by role:
+This is a **monorepo**. The **Silex app itself is a single package** (one `package.json`, one build) — the editor, server and common code are *not* split into separate packages. The code is split by role:
 
 | Folder | What it is |
 |---|---|
 | `editor/` | the GrapesJS-based visual editor (browser); built with webpack |
 | `server/` | the Node.js server, storage/hosting connectors and `server/deploy/` (SaaS / CapRover) |
 | `common/` | shared contracts and types, plus the plugin-config system |
-| `plugins/` | the first-party GrapesJS plugins — plain source folders, compiled from source by the editor build (not published separately) |
+| `grapesjs-plugins/` | the first-party GrapesJS plugins — **independently publishable** packages (see *Workspaces* below) whose source the editor build compiles directly |
 | `server-rust/` | the Rust server library |
 | `desktop/` | the [Tauri](https://tauri.app/) desktop app (embeds `server-rust/` + the editor frontend) |
-| `dashboards/` | dashboard sites (content, edited with Silex) |
+| `silex-dashboard/`, `silex-dashboard-2026/` | the multi-site SaaS dashboards — **git submodules** (see *Submodules* below) |
 
-Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/plugins`) — no `../../`. The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/grapesjs-plugins`) — no `../../`. The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
 
 Issues and pull requests all live in **this single repository**. A single branch can change several areas at once (e.g. the editor and one of its plugins).
+
+#### Workspaces (the `grapesjs-plugins/`)
+
+We use a [pnpm workspace](https://pnpm.io/workspaces) (`pnpm-workspace.yaml`) **only** for the plugins under `grapesjs-plugins/*` — to install, lint, test and **publish them as independent packages**. Two things to understand:
+
+- **The Silex app build does *not* use the workspace.** The editor compiles each plugin's *source* directly, resolved through webpack aliases + tsconfig `paths` (see `webpack.config.js`) — not through `node_modules` linking. So building/running Silex never depends on the plugins being installed as packages. The app's own install stays lean (`pnpm install --filter @silexlabs/silex`, as in `server/deploy/Dockerfile`).
+- **The plugins are versioned and released independently.** We deliberately do **not** use the `workspace:` protocol between them — a Silex release does not force a plugin release, and vice-versa. The **only** exception is `@silexlabs/expression-input`, a small internal lib used by `grapesjs-advanced-selector` and `grapesjs-data-source`: it is linked locally (`"@silexlabs/expression-input": "workspace:*"`) so those plugins always build and test against its current source.
+
+Per-plugin tasks (each plugin keeps its own `package.json`, build, lint and test):
+
+```sh
+pnpm test:plugins     # run each plugin's own test
+pnpm lint:plugins     # run each plugin's own lint
+pnpm build:plugins    # build each plugin (for publishing)
+# or target one:  pnpm --filter @silexlabs/grapesjs-symbols run test
+```
+
+> The plugins come from separate repos and still have heterogeneous toolchains (some scripts call `yarn`, some use `web-test-runner`). Normalizing them to pnpm and getting every plugin green is ongoing — contributions welcome.
+
+#### Submodules (the dashboards)
+
+`silex-dashboard/` and `silex-dashboard-2026/` are **git submodules** — they are *content* (multi-site dashboards built with Silex), not core code, so they live in their own repos and are pinned here. Clone with submodules:
+
+```sh
+git clone --recurse-submodules git@github.com:silexlabs/Silex.git
+# already cloned? pull them in with:
+git submodule update --init --recursive
+```
+
+The SaaS server serves the pre-built dashboard from `silex-dashboard/_site` (see `server/deploy/server-plugins/dashboard.js`). You don't need the submodules to develop the editor — only to run the full multi-site SaaS.
 
 Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags: prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds; stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads.
 
 ### Dev setup
 
 ```sh
-git clone git@github.com:silexlabs/Silex.git
+git clone --recurse-submodules git@github.com:silexlabs/Silex.git
 cd Silex
 nvm install        # optional — uses version from .nvmrc
 pnpm install       # install dependencies
@@ -108,7 +138,7 @@ For the Rust side: `cargo check` (or `cargo build`) at the repo root builds `ser
    ```sh
    git remote add fork git@github.com:<your-username>/Silex.git
    ```
-2. Create a branch, edit the code (anywhere under `editor/`, `server/`, `common/`, `plugins/`, `server-rust/`, `desktop/`), commit and push to your fork:
+2. Create a branch, edit the code (anywhere under `editor/`, `server/`, `common/`, `grapesjs-plugins/`, `server-rust/`, `desktop/`), commit and push to your fork:
    ```sh
    git checkout -b my-fix
    # ... make changes ...

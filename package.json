@@ -76,6 +76,9 @@
     "lint": "eslint \"{editor,server,common}/**/*.ts\"",
     "lint:fix": "pnpm lint --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:plugins": "pnpm -r --filter \"./grapesjs-plugins/*\" run test",
+    "lint:plugins": "pnpm -r --filter \"./grapesjs-plugins/*\" run lint",
+    "build:plugins": "pnpm -r --filter \"./grapesjs-plugins/*\" run build",
     "prepare": "husky",
     "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors"
   },
