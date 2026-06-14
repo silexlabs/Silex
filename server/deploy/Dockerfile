@@ -15,14 +15,12 @@ ENV SILEX_PORT=6805
 ENV SILEX_HOST=localhost
 ENV SILEX_PROTOCOL=http
 ENV SILEX_DEBUG=FALSE
-ENV SILEX_CONFIG=
 ENV SILEX_SSL_PORT=
 ENV SILEX_FORCE_HTTPS=
 ENV SILEX_SSL_PRIVATE_KEY=
 ENV SILEX_SSL_CERTIFICATE=
 ENV SILEX_FORCE_HTTPS_TRUST_XFP_HEADER=
 ENV SILEX_CORS_URL=
-ENV SILEX_CLIENT_CONFIG=
 ENV SILEX_FS_ROOT=
 ENV SILEX_URL=http://localhost:6805
 
@@ -49,8 +47,8 @@ RUN npm install -g pnpm@9.14.1 \
   && pnpm install --frozen-lockfile \
   && pnpm build
 
-# SaaS config (server + client) shipped in server/deploy/
-ENV SILEX_CONFIG=/silex/server/deploy/.silex.js
-ENV SILEX_CLIENT_CONFIG=/silex/server/deploy/client-config.js
+# The default SaaS config (server + client) lives in server/deploy/ and is loaded by
+# default — see server/config.ts (configFilePath / client config). Override per-instance
+# with SILEX_SERVER_CONFIG / SILEX_CLIENT_CONFIG env vars if self-hosting a custom setup.
 
 CMD ["pnpm", "start"]

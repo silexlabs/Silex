@@ -51,7 +51,7 @@ export class ServerConfig extends Config {
   public debug = process.env.SILEX_DEBUG === 'true'
   public url = process.env.SILEX_URL?.replace(/\/$/, '') ?? `${process.env.SILEX_PROTOCOL}://${process.env.SILEX_HOST}:${process.env.SILEX_PORT}`
   public userConfigPath: Plugin | undefined = process.env.SILEX_SERVER_CONFIG
-  public configFilePath: Plugin = resolve(__dirname, '../../../.silex.js')
+  public configFilePath: Plugin = resolve(__dirname, '../../../server/deploy/.silex.js')
 
   // All connectors or just the storage or hosting connectors
   getConnectors(type: ConnectorType | string | null = null): Connector[] {
@@ -101,7 +101,9 @@ export class ServerConfig extends Config {
    * Add routes to serve the client config file
    */
   async addRoutes(app: Application) {
-    const path = process.env.SILEX_CLIENT_CONFIG
+    // Default to the SaaS client config (onboarding plugin), so `pnpm start` matches
+    // the deployed SaaS without extra env. Override with SILEX_CLIENT_CONFIG.
+    const path = process.env.SILEX_CLIENT_CONFIG || resolve(__dirname, '../../../server/deploy/client-config.js')
     if (path) {
       console.info(`> Serving client side config ${path} at ${CLIENT_CONFIG_FILE_NAME}`)
       try {

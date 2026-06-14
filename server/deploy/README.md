@@ -4,7 +4,7 @@ The ready-to-deploy Silex instance maintained by Silex Labs. This is **not a sep
 
 Check [the docs for how to run it with Docker or nodejs](https://docs.silex.me/en/dev/run).
 
-> **Note:** this is run as a standalone instance configured with env vars and config files, not a CLI tool. The repo root publishes the `@silexlabs/silex` CLI; the files here (`.silex.js`, `client-config.js`, `client-plugins/`, `server-plugins/`) layer the SaaS configuration on top of it.
+> **Note:** this is run as a standalone instance configured with env vars and config files. The files here (`.silex.js`, `client-config.js`, `client-plugins/`, `server-plugins/`) are the **default** Silex server + client config — the monorepo server loads `server/deploy/.silex.js` and `server/deploy/client-config.js` by default at startup (see `server/config.ts`). Override per-instance with the `SILEX_SERVER_CONFIG` / `SILEX_CLIENT_CONFIG` env vars.
 
 ## What it is
 
@@ -75,15 +75,15 @@ More info:
 To run the code locally:
 
 ```bash
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 Or for development:
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Environment variables
