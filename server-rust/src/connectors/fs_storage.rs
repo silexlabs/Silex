@@ -91,42 +91,14 @@ impl FsStorage {
         self.website_path(website_id).join(&self.assets_folder)
     }
 
-    /// Initialize the data directory and create a default website if needed
-    pub async fn init(&self, default_website_id: &str) -> ConnectorResult<()> {
-        let default_path = self.website_path(default_website_id);
-
-        // Check if the default website already exists
-        if fs::metadata(&default_path).await.is_ok() {
-            return Ok(());
-        }
-
-        // Create the default website directory with assets folder
-        fs::create_dir_all(self.assets_path(default_website_id)).await?;
-
-        // Create the default metadata
-        let meta = WebsiteMetaFileContent {
-            name: "Default website".to_string(),
-            image_url: None,
-            connector_user_settings: Default::default(),
-        };
-        let default_id = default_website_id.to_string();
-        self.set_website_meta(&serde_json::json!({}), &default_id, &meta)
-            .await?;
-
-        // Create the default website data
-        self.update_website(
-            &serde_json::json!({}),
-            &default_id,
-            &WebsiteData::default(),
-        )
-        .await?;
-
-        tracing::info!(
-            "Created default website '{}' in {}",
-            default_website_id,
-            self.data_path.display()
-        );
-
+    /// Ensure the data directory (the storage root) exists.
+    ///
+    /// We intentionally do NOT create a default website: on a fresh install the
+    /// dashboard should open empty, and the user creates their first site from there.
+    /// Creating the directory is enough for `list_websites` to return `[]` cleanly
+    /// instead of failing with "No such file or directory".
+    pub async fn init(&self, _default_website_id: &str) -> ConnectorResult<()> {
+        fs::create_dir_all(&self.data_path).await?;
         Ok(())
     }
 
