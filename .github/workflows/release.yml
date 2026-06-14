@@ -78,6 +78,13 @@ jobs:
           V="${GITHUB_REF_NAME#v}"
           jq --arg v "$V" '.version = $v' desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
           mv /tmp/tauri.conf.json desktop/src-tauri/tauri.conf.json
+          # Guard: fail loudly if the version wasn't actually patched (placeholder leak).
+          # Tauri reads the app/updater version from tauri.conf.json (verified: Cargo.toml's
+          # 0.1.0 is ignored), so a stale value would ship a build that nags users to "update".
+          ACTUAL="$(jq -r '.version' desktop/src-tauri/tauri.conf.json)"
+          if [ "$ACTUAL" != "$V" ]; then
+            echo "::error::Desktop version not patched (expected '$V', got '$ACTUAL')"; exit 1
+          fi
           echo "Desktop version set to $V"
 
       - name: Install JS dependencies and build frontend
