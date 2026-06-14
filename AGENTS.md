@@ -22,7 +22,7 @@ These rules apply when your AI tool controls the Silex visual editor (e.g. via M
 - **Symbols**: Use Symbols for shared header/footer across pages.
 - **Responsiveness**: Use DeviceManager breakpoints, never resize the browser window.
 
-Silex Desktop exposes MCP tools for controlling the editor. See the [desktop README](desktop/README.md) for connection setup.
+Silex Desktop exposes MCP tools for controlling the editor. Connect your AI tool to the MCP server at `http://localhost:6807/mcp` — e.g. `claude mcp add --transport http silex http://localhost:6807/mcp`, or the equivalent for Cursor/OpenCode/Goose. Your MCP client config (e.g. `.mcp.json`) is per-developer and git-ignored — don't commit it. See the [desktop README](desktop/README.md) for details.
 
 ## When writing code for Silex (editing source)
 
