@@ -13,7 +13,7 @@
     "editor/",
     "server/",
     "common/",
-    "plugins/",
+    "grapesjs-plugins/",
     ".silex.js",
     ".env.default",
     "public",
@@ -97,7 +97,7 @@
       "patterns": [
         "editor/",
         "common/",
-        "plugins/"
+        "grapesjs-plugins/"
       ],
       "extensions": [
         "ts",

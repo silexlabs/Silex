@@ -12,7 +12,7 @@
       "~/common/*": ["common/*"],
       "~/editor/*": ["editor/*"],
       "~/server/*": ["server/*"],
-      "~/plugins/*": ["plugins/*"]
+      "~/grapesjs-plugins/*": ["grapesjs-plugins/*"]
     }
   }
 }
