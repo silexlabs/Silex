@@ -14,26 +14,17 @@ const REPO_URL = 'https://github.com/silexlabs/Silex';
 // Authors to exclude (bots, placeholders)
 const EXCLUDE = /ubuntu|john doe|^undefined$|grrhosting|gitter badger/i;
 
-// Normalize author names (different git identities → single name)
-const AUTHOR_ALIASES = {
-  'lexoyo': 'Alex Hoyau',
-  'lexa': 'Alex Hoyau',
-  'Alexandre Hoyau': 'Alex Hoyau',
-  'pierreozoux': 'Pierre Ozoux',
-  'JbIPS': 'Jean-Baptiste Richardet',
-  'ioleo': 'Piotr Golebiewski',
-};
-
-function normalizeName(name) {
-  return AUTHOR_ALIASES[name] || name;
-}
+// Author identity normalization (e.g. lexoyo / lexa / Alexandre Hoyau → Alex Hoyau) is
+// handled by git via .mailmap: `git log %aN` applies it. No hardcoded alias map here —
+// .mailmap is the single source of truth (kept local / untracked).
 
 function getContributors(dir) {
   try {
-    const output = execSync('git log --format="%an|%H|%aI" --all', {
+    const output = execSync('git log --format="%aN|%H|%aI" --all', {
       cwd: dir,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      maxBuffer: 256 * 1024 * 1024, // full monorepo history exceeds the 1MB default
     });
     return output.trim().split('\n').filter(Boolean).map(line => {
       const [name, hash, date] = line.split('|');
@@ -51,7 +42,7 @@ function main() {
   // Group by author+year, keep the latest commit per author per year
   const byAuthorYear = {};
   for (const c of allContributions) {
-    const name = normalizeName(c.name);
+    const name = c.name; // already normalized by git via .mailmap (%aN)
     if (EXCLUDE.test(name)) continue;
     const year = c.date.substring(0, 4);
     const key = `${name}|${year}`;
