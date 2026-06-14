@@ -77,7 +77,8 @@
     "lint": "eslint \"{editor,server,common}/**/*.ts\"",
     "lint:fix": "pnpm lint --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors"
   },
   "watch": {
     "build:css": {
