@@ -10,6 +10,7 @@
     "outDir": "./dist/es6",
     "rootDir": "./src",
     "strict": true,
+    "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
