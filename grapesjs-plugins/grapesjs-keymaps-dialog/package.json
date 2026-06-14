@@ -17,7 +17,7 @@
     "start": "grapesjs-cli serve --patch=false",
     "build:without-declaration": "grapesjs-cli build --patch=false --dts skip",
     "build:declarations": "tsc --declaration --emitDeclarationOnly --outDir dist",
-    "build": "yarn build:without-declaration && yarn build:declarations",
+    "build": "pnpm build:without-declaration && pnpm build:declarations",
     "comment": "This mess to build the declarations separately is because of the error in the dts-bundle-generator: Error: Something went wrong - value cannot be null"
   },
   "keywords": [
