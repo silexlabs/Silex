@@ -449,8 +449,12 @@ fn main() {
             // Finish the startup transaction (sends to GlitchTip Performance)
             transaction.finish();
 
-            // Check for updates in the background
-            check_for_updates(app.handle().clone());
+            // Check for updates in the background — release builds only.
+            // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.1.0,
+            // so the updater would otherwise prompt "update to <latest release>" on every launch.
+            if !cfg!(debug_assertions) {
+                check_for_updates(app.handle().clone());
+            }
 
             // Handle window close with unsaved changes
             let app_handle = app.handle().clone();
