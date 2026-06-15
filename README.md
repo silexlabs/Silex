@@ -46,13 +46,15 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 
 **Desktop app (alpha)** — [download for Windows, macOS or Linux](https://github.com/silexlabs/Silex/releases/latest). Work offline, no account needed.
 
-**Run with Node.js:**
+**Run it yourself:**
 
 ```sh
-npx @silexlabs/silex
+git clone --recurse-submodules https://github.com/silexlabs/Silex.git
+cd Silex
+pnpm install && pnpm build && pnpm start
 ```
 
-Then open [http://localhost:6805](http://localhost:6805).
+Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me).
 
 ## Contributing
 
