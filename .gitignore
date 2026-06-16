@@ -19,6 +19,3 @@ dist/
 
 # Contributor alias map — local only, updated at releases (never commit)
 .mailmap
-
-# Local trash bin — dead files pending review, never commit
-trash/
