@@ -8,7 +8,7 @@ Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, o
 - **Desktop**: Rust, Tauri v2
 - **Build**: Yarn workspaces mono-repo, git submodules in `packages/`
 
-When you change a package, rebuild it, then rebuild any packages that depend on it.
+When you change a package, rebuild it, then rebuild any packages that depend on it, we use yarn/npm workspaces for local dev.
 
 See [README.md → Development](README.md#development) for build commands, debug cycle, and submodule workflow.
 
@@ -27,7 +27,7 @@ Silex Desktop exposes MCP tools for controlling the editor. See the [silex-deskt
 ## When writing code for Silex (editing source)
 
 - Prefer small, focused changes.
-- Run `yarn run build` for affected packages and verify no regressions before delivering.
-- Do not commit, push, or modify git history unless explicitly asked.
+- Run `yarn run build`, `yarn lint`, `yarn test` when applicable before any commit.
+- Include screenshots to any PR, please prove to me that you have done proper testing.
 
 See [Contribute](https://docs-66e101.gitlab.io/fr/designer/contribute/) for the full contributor guide.
