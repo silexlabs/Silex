@@ -1,8 +1,9 @@
-import { createWriteStream } from 'fs'
+import { createWriteStream, unlink } from 'fs'
 import archiver from 'archiver'
 import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types'
 import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors'
 import { tmpdir } from 'os'
+import { basename, join } from 'path'
 import { JobManager } from '~/server/jobs'
 import { ServerConfig } from '~/server/config'
 import { ServerEvent } from '~/server/events'
@@ -29,16 +30,25 @@ export default class implements HostingConnector<DownloadConnectorSession> {
     // Add a route to serve the zip file
     config.on(ServerEvent.STARTUP_END, ({app}) => {
       app.get('/download/:tmpZipFile', async (req: Request, res: Response) => {
-        const path = `${tmpdir()}/${req.params.tmpZipFile}`
+        const {tmpZipFile} = req.params
+        if (basename(tmpZipFile) !== tmpZipFile) {
+          res.status(400).send('Invalid download file')
+          return
+        }
+        const path = join(tmpdir(), tmpZipFile)
         res.sendFile(path, {}, (err) => {
           if (err) {
             console.error('[DownloadConnector] Error while sending file', err)
-            res.status(500).send(`
+            if (!res.headersSent) res.status(500).send(`
               <h1>Error</h1>
               <p>There was an error while getting the zip file of your website</p>
               <p>${err.message}</p>
             `)
+            return
           }
+          unlink(path, (unlinkErr) => {
+            if (unlinkErr) console.error('[DownloadConnector] Error while deleting temporary zip file', unlinkErr)
+          })
         })
       })
     })
