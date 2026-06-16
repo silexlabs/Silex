@@ -187,33 +187,33 @@ Silex is the work of contributors from all over the world. This project is maint
 
 <!-- Auto generated contributors -->
 
-**2026** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/e37630f00ab55ded290a6194ba6f10514ff9d58a), [Ola Mohamed](https://github.com/silexlabs/Silex/commit/d48941d14f4e4e61530a47cd9e83746cbc64e280), [Syed Ishmum Ahnaf](https://github.com/silexlabs/Silex/commit/b1f1fd5aa7afdf048a7981838eae1222022ddea3), [Safal2004](https://github.com/silexlabs/Silex/commit/1a0dcb59bc28fc480dc5cc3927e43e1b083c3a01), [Wassim Triki](https://github.com/silexlabs/Silex/commit/ad0d0c27b41fe0813dcfc81ec74993899bd04bd6)
+**2026** — [Alex Hoyau](https://github.com/lexoyo), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Safal2004](https://github.com/Safal2004), [Wassim Triki](https://github.com/wassim-triki)
 
-**2025** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/4f3dbd2bbfa189d6d6ef0062a7abe9f42e08497f), [ceubri](https://github.com/silexlabs/Silex/commit/b52dbc16b98e101a6cba59b0c9951bd2302bb008), [Mazen Kamal](https://github.com/silexlabs/Silex/commit/17b6769949773c00eae073c6ca8b9978ecdad3a9), [Piotr Golebiewski](https://github.com/silexlabs/Silex/commit/857b49eeefb2026df5beffe902383903956053c6), [oliviermgx](https://github.com/silexlabs/Silex/commit/5ec66e5d0c4f20f98a1a8b1f58f162fc5838882e)
+**2025** — [Alex Hoyau](https://github.com/lexoyo), [ceubri](https://github.com/ceubri), [Mazen Kamal](https://github.com/Mazen050), Piotr Golebiewski, [oliviermgx](https://github.com/oliviermgx)
 
-**2024** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/f363c73328a726dc8e699d9a75e5c75b2651c4b5), [oliviermgx](https://github.com/silexlabs/Silex/commit/6a55b1ddc9f7191d7db3e39a56184bfe1f26f43f), [JeremyZXi](https://github.com/silexlabs/Silex/commit/5c08b50e10c4a5aab012f07c53187c758d338c6d), [SuperDelphi](https://github.com/silexlabs/Silex/commit/77832471c46bde4aad944f9bae79a45a4e21cd75)
+**2024** — [Alex Hoyau](https://github.com/lexoyo), [oliviermgx](https://github.com/oliviermgx), [JeremyZXi](https://github.com/JeremyZXi), [SuperDelphi](https://github.com/SuperDelphi)
 
-**2023** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/1d52146f38186e0c265bb438662e04ce3acca120), [Eskeminha](https://github.com/silexlabs/Silex/commit/387313bbcf212026e27908a4e85682e45ea839ae), [Ari Karageorgos](https://github.com/silexlabs/Silex/commit/eadfce5e0ab89a3e4cc1fa763666020ab0ae114a)
+**2023** — [Alex Hoyau](https://github.com/lexoyo), [Eskeminha](https://github.com/Eskeminha), [Ari Karageorgos](https://github.com/arisk)
 
-**2022** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/5a71922f6e1acfceb822685a17822ddc0c4d9f9e), [Khaled Bentoumi](https://github.com/silexlabs/Silex/commit/2f3b5ced749e770f6a20b80c54ea9a1f2c4d493d)
+**2022** — [Alex Hoyau](https://github.com/lexoyo), [Khaled Bentoumi](https://github.com/BentoumiTech)
 
-**2021** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/c438c6f69fbc3ac63c838a1609b5b6d9a6640f66)
+**2021** — [Alex Hoyau](https://github.com/lexoyo)
 
-**2020** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/bf45d1f896b59705401e6607edf4f78c0315e55b)
+**2020** — [Alex Hoyau](https://github.com/lexoyo)
 
-**2019** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/5964d0c46a120522aaae5ff0a1830aadb4c7a921)
+**2019** — [Alex Hoyau](https://github.com/lexoyo)
 
-**2018** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/92f62a9d0ba016c01ede2309022fa7628d0118d3), [Jean-Baptiste Richardet](https://github.com/silexlabs/Silex/commit/3b81dfad359ec73cc196c3612fbec1fcd9562a33), [jotakar](https://github.com/silexlabs/Silex/commit/859d24a6c53f202f661c44bf9f0d89cf820df13d), [swakarm](https://github.com/silexlabs/Silex/commit/7a4d6979de9f685086a9aa3f561e780019d31868)
+**2018** — [Alex Hoyau](https://github.com/lexoyo), [Jean-Baptiste Richardet](https://github.com/JbIPS), [jotakar](https://github.com/jotakar), [swakarm](https://github.com/swakarm)
 
-**2017** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/2a4835116055dcb8251e24063360ded641c357f1), [Jean-Baptiste Richardet](https://github.com/silexlabs/Silex/commit/3108529302a6afdfdb6d348eba7e3aebfea1272c), [Jenn Parker](https://github.com/silexlabs/Silex/commit/fc129b8ccec4e3bb09b7d33fbd42f1fe72462fcc), [Rapenne Solène](https://github.com/silexlabs/Silex/commit/4e91fb89cab3d6b3ff9d6ab525b795b0a9ea5699), [tariqbenezza](https://github.com/silexlabs/Silex/commit/52e0bb1ff3e36e5d788f120a606f3c626658fc60), [singchan](https://github.com/silexlabs/Silex/commit/34a9cc9537738843ee0a7fc4de4ead9c5d153877)
+**2017** — [Alex Hoyau](https://github.com/lexoyo), [Jean-Baptiste Richardet](https://github.com/JbIPS), [Jenn Parker](https://github.com/jennparker), [Rapenne Solène](https://github.com/rapenne-s), [tariqbenezza](https://github.com/tariqbenezza), [singchan](https://github.com/singchan)
 
-**2016** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/99b57279fdd73448770fb13cad21877d8afa710b), [singchan](https://github.com/silexlabs/Silex/commit/2794c835bf819d34978dba68f66d15e7ca401344), [Pierre Ozoux](https://github.com/silexlabs/Silex/commit/80bcbeea30114c7d4de1fb1398712a191ea5027f)
+**2016** — [Alex Hoyau](https://github.com/lexoyo), [singchan](https://github.com/singchan), [Pierre Ozoux](https://github.com/pierreozoux)
 
-**2015** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/fdba661185c530ffc1f6e86a3616dcd663003475), [singchan](https://github.com/silexlabs/Silex/commit/c9edb6fb4be71b6b8cc5b6a62217fa54501be2a0), [Christophe](https://github.com/silexlabs/Silex/commit/945108e1b15fa62085cc17d6774610cb2198382e), [Pierre Ozoux](https://github.com/silexlabs/Silex/commit/94ba6133c3d6b71b5ef926129684a3143c6d4aea), [René Föhring](https://github.com/silexlabs/Silex/commit/856ed96545887721d91c242ff7469cb991351b0f), [christian-bromann](https://github.com/silexlabs/Silex/commit/a700472aea2c2872be98d8c27624809d403a5cbf)
+**2015** — [Alex Hoyau](https://github.com/lexoyo), [singchan](https://github.com/singchan), [Christophe](https://github.com/ondrejec), [Pierre Ozoux](https://github.com/pierreozoux), [René Föhring](https://github.com/rrrene), [christian-bromann](https://github.com/christian-bromann)
 
-**2014** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/997c77eeb0eea7a7c51b0995eb68ffd47787b54b), [Camille Gérard-Hirne](https://github.com/silexlabs/Silex/commit/004cb78c1d22d7c98a813db1c248b37dcaadc59a), [neocorp64](https://github.com/silexlabs/Silex/commit/7826c144740512054fb4da780416101a9b865aad), [Michele Martone](https://github.com/silexlabs/Silex/commit/afb6f843ec5798e6bae8c6927ff48da5cd7abb84), [peoslaap](https://github.com/silexlabs/Silex/commit/78af56973f05537c1a087791d8985523875e9d15)
+**2014** — [Alex Hoyau](https://github.com/lexoyo), [Camille Gérard-Hirne](https://github.com/camcrock), [neocorp64](https://github.com/NeoCorp), Michele Martone, [peoslaap](https://github.com/peoslaap)
 
-**2013** — [Alex Hoyau](https://github.com/silexlabs/Silex/commit/4b794ed0c92477c818e634ec93c92a21a532a861), [Yann Le Scouarnec](https://github.com/silexlabs/Silex/commit/061734c0ad044ed819530b6667805e76e2f7585a), [TheCause](https://github.com/silexlabs/Silex/commit/a9dc6da9cbef495e7c89ae15e1d9c8fc1496804c), [yanhick](https://github.com/silexlabs/Silex/commit/b24de1f9cfcfd0378aa018940ebb540b00a4a8d0), [Thomas Fetiveau](https://github.com/silexlabs/Silex/commit/c39b1045e0ee33c9d164f956081a8fa71fed4264)
+**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, TheCause, yanhick, Thomas Fetiveau
 
 
 
