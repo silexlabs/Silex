@@ -31,12 +31,29 @@ New to the project? Look for issues labeled [good first issue](https://github.co
 
 ## Branches and releases
 
-Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags:
+We use a trunk-based model: `main` is the single, always-releasable branch.
 
-- Prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds
-- Stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads
+- `main` is protected — no direct pushes. All work lands via PR.
+- Use short-lived branches (`feat/...`, `fix/...`) and open a PR against `main`.
+- PRs are **squash-merged**; the squash title must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`), since it drives the changelog.
+- Unreleased work can live on `main` safely: only tagged commits are deployed (see below), so nothing ships until you tag it.
 
-Releases are cut by maintainers.
+Deployments are driven by git tags:
+
+- Prerelease tags (e.g. `v3.8.0-canary.1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds
+- Stable tags (e.g. `v3.8.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads
+
+Releases are cut by maintainers by tagging `main`.
+
+### Hotfixes
+
+To patch a release without shipping everything currently on `main`:
+
+1. Branch from the last stable tag: `git checkout -b hotfix/v3.8.1 v3.8.0`
+2. Apply the fix and tag the patch (`v3.8.1`) — the tag triggers the deploy.
+3. Forward-port the same fix to `main` so it isn't lost in the next release.
+
+A maintenance branch (e.g. `v3-maintenance`) is created on demand only when an older line must be supported while `main` moves ahead.
 
 ## Coding standards
 
