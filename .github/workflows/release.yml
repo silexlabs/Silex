@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  # ── Build silex-server + silex-desktop per platform ──────────────
+  # ── Build silex-desktop (Tauri) per platform ──────────────
   build:
     name: build (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
@@ -21,17 +21,13 @@ jobs:
         include:
           - platform: linux
             os: ubuntu-latest
-            binary: silex-server
           - platform: macos-arm
             os: macos-latest
-            binary: silex-server
           - platform: macos-x64
             os: macos-latest
             rust-target: x86_64-apple-darwin
-            binary: silex-server
           - platform: windows
             os: windows-latest
-            binary: silex-server.exe
 
     steps:
       # Prevent CRLF conversion on Windows (eslint requires LF)
@@ -89,9 +85,10 @@ jobs:
 
       - name: Install JS dependencies and build frontend
         shell: bash
-        # App only (--filter): plugins are compiled from source by the editor build via
-        # webpack aliases; their workspace devDeps (grapesjs-cli, playwright) aren't needed.
-        run: pnpm install --frozen-lockfile --filter @silexlabs/silex && pnpm run build
+        # App + desktop (--filter): plugins are compiled from source by the editor build via
+        # webpack aliases, so their workspace devDeps aren't needed — but silex-desktop needs
+        # its deps installed (@tauri-apps/cli) for the Tauri build step below.
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop && pnpm run build
 
       # Fail early if the frontend wasn't built (prevents broken embedded assets)
       - name: Verify frontend was built
@@ -152,18 +149,6 @@ jobs:
             target/**/release/bundle/**/*.tar.gz
             target/**/release/bundle/**/*.zip
 
-      # ── silex-server (single binary with embedded frontend) ─────
-      # Built after Tauri to reuse the compiled silex-server library.
-      - name: Build silex-server
-        run: cargo build --release -p silex-server --features embed-frontend ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
-
-      - name: Upload server artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: silex-server-${{ matrix.platform }}
-          path: target/**/release/${{ matrix.binary }}
-          retention-days: 5
-
   # ── Create GitHub release on tag push ────────────────────────────
   release:
     needs: build
@@ -210,6 +195,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+          # Only the build artifacts — not the docker job's buildx record (.dockerbuild)
+          pattern: silex-*
 
       - name: Prepare release files
         env:
@@ -217,12 +204,6 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           mkdir -p release
-
-          # Server binaries — find inside artifact dirs (upload preserves target/ path)
-          find artifacts/silex-server-linux   -name 'silex-server' -type f -exec cp {} release/silex-server-linux-amd64 \;
-          find artifacts/silex-server-macos-arm -name 'silex-server' -type f -exec cp {} release/silex-server-macos-arm64 \;
-          find artifacts/silex-server-macos-x64 -name 'silex-server' -type f -exec cp {} release/silex-server-macos-x64 \;
-          find artifacts/silex-server-windows -name 'silex-server.exe' -type f -exec cp {} release/silex-server-windows-amd64.exe \;
 
           # Desktop installers + updater artifacts (flatten into release/).
           # Tauri v2 updater artifacts are the bundles themselves + .sig:
@@ -302,3 +283,53 @@ jobs:
           draft: true
           prerelease: ${{ contains(github.ref_name, 'canary') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
           files: release/*
+
+  # ── Publish the SaaS server image to Docker Hub ──────────────────
+  # Single source of truth for silexlabs/silex-platform — replaces the build
+  # in the legacy silexlabs/silex-platform repo. Builds server/deploy/Dockerfile
+  # from the monorepo (the same image used by v3.silex.me + the CapRover one-click
+  # app). Requires repo secrets DOCKER_USERNAME / DOCKER_PASSWORD.
+  docker:
+    name: publish docker image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Compute tags
+        id: tags
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # Moving tag: prereleases (canary/alpha/beta) must NOT advance `latest`.
+          if [[ "$VERSION" == *-* ]]; then
+            echo "moving=prerelease" >> "$GITHUB_OUTPUT"
+          else
+            echo "moving=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+        with:
+          context: .
+          file: server/deploy/Dockerfile
+          push: true
+          tags: |
+            silexlabs/silex-platform:${{ steps.tags.outputs.version }}
+            silexlabs/silex-platform:${{ steps.tags.outputs.moving }}

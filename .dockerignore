@@ -1,8 +1,24 @@
+# Version control & CI meta
 .git
 .gitmodules
-docs
+.github
+
+# Dependencies — reinstalled inside the image by `pnpm install`
 node_modules
+**/node_modules
+
+# Build artifacts — regenerated inside the image by `pnpm build`.
+# `target/` is Rust output (server-rust + desktop/Tauri), several GB, and is
+# NOT needed by the Node server image. Leaving it out is what keeps the build
+# context (and image) lean — its omission previously bloated builds to ~27 GB.
+**/target
+
+# Docs & dev-only cruft not needed at runtime
+docs
+trash
+
+# The Dockerfile itself + the legacy local data dir
 Dockerfile
-!.
-!.env.default
 silex
+
+!.env.default
