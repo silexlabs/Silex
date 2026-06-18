@@ -68,7 +68,7 @@ function buildPackage(packageName) {
     console.log(`✅ ${packageName} built successfully`);
   } catch (error) {
     console.error(`❌ Failed to build ${packageName}:`, error.message);
-    // Don't exit - continue with other packages
+    process.exit(1);
   }
 }
 
