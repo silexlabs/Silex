@@ -35,7 +35,7 @@ export default async function silex() {
   // Load env vars from .env file if any
   const curDirEnv = dotenv.config()
   if (curDirEnv.error) {
-    if(curDirEnv.error['code'] === 'ENOENT') {
+    if((curDirEnv.error as NodeJS.ErrnoException).code === 'ENOENT') {
       console.info('> No .env file found in current directory')
     } else {
       throw curDirEnv.error
@@ -49,7 +49,7 @@ export default async function silex() {
   const DEFAULT_ENV_FILE = join(__dirname, '../../../.env.default')
   const rootDirEnv = dotenv.config({ path: DEFAULT_ENV_FILE })
   if (rootDirEnv.error) {
-    if(rootDirEnv.error['code'] === 'ENOENT') {
+    if((rootDirEnv.error as NodeJS.ErrnoException).code === 'ENOENT') {
       throw new Error(`\n\nFailed to load default env vars. File not found ${DEFAULT_ENV_FILE}\n\n`)
     } else {
       throw new Error(`\n\nFailed to load default env vars. Error in ${DEFAULT_ENV_FILE}: ${ rootDirEnv.error.message }\n\n`)

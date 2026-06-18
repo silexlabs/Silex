@@ -249,7 +249,7 @@ export class FsStorage implements StorageConnector<FsSession> {
   async deleteWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
     const path = join(this.options.path, id)
-    return fs.rmdir(path, { recursive: true })
+    return fs.rm(path, { recursive: true, force: true })
   }
 
   async duplicateWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
