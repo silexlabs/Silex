@@ -83,7 +83,7 @@ This is a **monorepo**. The **Silex app itself is a single package** (one `packa
 | `desktop/` | the [Tauri](https://tauri.app/) desktop app (embeds `server-rust/` + the editor frontend) |
 | `silex-dashboard/`, `silex-dashboard-2026/` | the multi-site SaaS dashboards — **git submodules** (see *Submodules* below) |
 
-Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`, `~/grapesjs-plugins`) — no `../../`. The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`) — no `../../`. The first-party plugins are imported by package name (`@silexlabs/grapesjs-*`), resolved to their source via webpack aliases (see *Workspaces* below). The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
 
 Issues and pull requests all live in **this single repository**. A single branch can change several areas at once (e.g. the editor and one of its plugins).
 

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, opencode, Copilot, etc.).
+Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, opencode, Copilot, …). Use whatever tool and model provider you prefer — local models included. Silex endorses none in particular.
 
 ## Tech Stack
 
@@ -28,7 +28,7 @@ pnpm run dev
 - Prefer small, focused changes. If a change can be a plugin, make it a plugin.
 - **Test your change before opening a PR, and put a screenshot of that test in the PR** — show it works, don't just claim it.
 - Run `pnpm build`, `pnpm lint` and `pnpm test` before committing. CI runs the same checks and a red CI will not be merged.
-- **Commits**: [Conventional Commits](https://www.conventionalcommits.org/), one line (`type(scope): description`, lowercase). Do **not** add AI attribution — no `Co-Authored-By`, no "Generated with…".
+- **Commits**: use [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`).
 - PRs target `main`. Discuss non-trivial changes first (see CONTRIBUTING.md).
 
 ## When designing websites in Silex (using the editor)
@@ -41,4 +41,4 @@ These rules apply when your AI tool controls the Silex visual editor (e.g. via M
 - **Symbols**: Use Symbols for shared header/footer across pages.
 - **Responsiveness**: Use DeviceManager breakpoints, never resize the browser window.
 
-Silex Desktop exposes MCP tools for controlling the editor. Connect your AI tool to the MCP server at `http://localhost:6807/mcp` — e.g. `claude mcp add --transport http silex http://localhost:6807/mcp`, or the equivalent for Cursor/OpenCode/Goose. Your MCP client config (e.g. `.mcp.json`) is per-developer and git-ignored — don't commit it. See the [desktop README](desktop/README.md) for details.
+Silex Desktop exposes MCP tools for controlling the editor, on the endpoint `http://localhost:6807/mcp` (distinct from the editor server on `6805`). Each AI tool registers an HTTP MCP server its own way — for Claude Code: `claude mcp add --transport http silex http://localhost:6807/mcp`; Cursor, opencode, Goose, etc. have equivalents. Your MCP client config (e.g. `.mcp.json`) is per-developer and git-ignored — don't commit it. See the [desktop README](desktop/README.md) for details.
