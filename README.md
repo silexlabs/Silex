@@ -110,19 +110,19 @@ pnpm build:plugins    # build each plugin (for publishing)
 `silex-dashboard/` and `silex-dashboard-2026/` are **git submodules** — they are *content* (multi-site dashboards built with Silex), not core code, so they live in their own repos and are pinned here. Clone with submodules:
 
 ```sh
-git clone --recurse-submodules git@github.com:silexlabs/Silex.git
+git clone --recurse-submodules https://github.com/silexlabs/Silex.git
 # already cloned? pull them in with:
 git submodule update --init --recursive
 ```
 
 The SaaS server serves the pre-built dashboard from `silex-dashboard/_site` (see `server/deploy/server-plugins/dashboard.js`). You don't need the submodules to develop the editor — only to run the full multi-site SaaS.
 
-Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags: prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds; stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads.
+Day-to-day work happens on `main` — PRs target this branch. Releases are driven by git tags (see *Releasing* below).
 
 ### Dev setup
 
 ```sh
-git clone --recurse-submodules git@github.com:silexlabs/Silex.git
+git clone --recurse-submodules https://github.com/silexlabs/Silex.git
 cd Silex
 nvm install        # optional — uses version from .nvmrc
 pnpm install       # install dependencies
@@ -151,7 +151,10 @@ Before pushing: `pnpm lint` and `pnpm test` (and `cargo test -p silex-server` fo
 
 ### Releasing
 
-Releases are driven by git tags. Push a tag matching `v*` and CI (`.github/workflows/`) builds the desktop apps (macOS, Windows, Linux), publishes a GitHub release with the auto-updater metadata, and deploys the server to CapRover (canary on `main`, production on a stable tag).
+Releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
+
+- **`v*`** (e.g. `v3.8.1`) — server/web release: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover (canary on `main` pushes, production on stable tags; a tag is treated as prerelease only if it contains `-canary`, `-alpha` or `-beta`).
+- **`desktop-v*`** (e.g. `desktop-v1.2.0`) — desktop release: builds the Tauri apps (macOS, Windows, Linux) and publishes the GitHub release with auto-updater metadata.
 
 ## AI / Vibe coding
 

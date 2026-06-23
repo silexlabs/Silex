@@ -1,0 +1,50 @@
+name: 🐛 Bug report
+description: Report something that is broken or behaves incorrectly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! For quick questions, the [community chat](https://short.silex.me/chat) is often faster.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected instead.
+      placeholder: When I do X, Y happens, but I expected Z.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps so we can see it too.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See error
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Silex version
+      description: Editor footer, npm version, or git commit. Mention if self-hosted or on v3.silex.me.
+      placeholder: "v3.8.0 / self-hosted / v3.silex.me"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser + OS, and Node/pnpm versions if running locally.
+      placeholder: "Firefox 126, Linux — Node 20, pnpm 9"
+    validations:
+      required: false
+  - type: textarea
+    id: extra
+    attributes:
+      label: Logs, screenshots, or anything else
+      description: Console errors, screenshots or a screen recording help a lot.
+    validations:
+      required: false

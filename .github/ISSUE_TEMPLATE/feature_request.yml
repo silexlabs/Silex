@@ -1,0 +1,41 @@
+name: 💡 Feature request
+description: Suggest a new feature or improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Big or design-level ideas are best discussed first on the [forum](https://short.silex.me/community_en) or [roadmap](https://roadmap.silex.me) — that's where direction is decided. Use this form for a concrete, scoped request.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the need or pain point, not just the solution.
+      placeholder: As a designer, I can't ... which makes ... hard.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What you'd like to see happen.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches, existing plugins, or workarounds you've tried.
+    validations:
+      required: false
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Could this be a plugin?
+      description: Silex is extensible — many features fit better as a plugin than a core change.
+      options:
+        - Not sure
+        - "Yes, this could be a plugin"
+        - "No, it needs to be in core"
+    validations:
+      required: false
