@@ -19,3 +19,9 @@ dist/
 
 # Contributor alias map — local only, updated at releases (never commit)
 .mailmap
+
+# Local AI tooling & scratch dirs (never commit)
+.claude/
+.playwright-mcp/
+agent/
+trash/
