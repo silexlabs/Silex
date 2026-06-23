@@ -38,7 +38,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 - **Desktop app (coming soon)** — work offline, no account needed, AI-ready with built-in [MCP server](#ai--vibe-coding). Built with [Tauri](https://tauri.app/) for Windows, macOS, Linux. [Follow progress](https://roadmap.silex.me/posts/3/silex-desktop).
 - **Plugin system** — extend with server and client plugins in JS/TS
 - **SEO tools** — meta tags, Open Graph, per-page settings
-- **Self-hosting** — Docker, Node.js, or one-click deploy on [CapRover](https://caprover.com/), [YunoHost](https://yunohost.org/)
+- **Self-hosting** — Docker, Node.js, or one-click deploy on [CapRover](https://caprover.com/)
 
 ## Quick start
 
@@ -46,7 +46,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 
 **Desktop app (alpha)** — [download for Windows, macOS or Linux](https://github.com/silexlabs/Silex/releases/latest). Work offline, no account needed.
 
-**Run it yourself:**
+## Contribute
 
 ```sh
 git clone --recurse-submodules https://github.com/silexlabs/Silex.git
@@ -56,9 +56,7 @@ pnpm install && pnpm build && pnpm start
 
 Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me).
 
-## Contributing
-
-Silex has been built by contributors from around the world since 2009. Today, over 1,000 people use it every week, and 23,000+ accounts have been created. It's a small, friendly community — you'll get noticed, your PRs get reviewed, and your work has real impact.
+Useful links to get you contributing fast:
 
 - **[Good first issues](https://github.com/silexlabs/Silex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — start here
 - **[Contributing guide](./CONTRIBUTING.md)** — coding standards, PR process, discuss-first rule
@@ -93,7 +91,7 @@ Issues and pull requests all live in **this single repository**. A single branch
 
 We use a [pnpm workspace](https://pnpm.io/workspaces) (`pnpm-workspace.yaml`) **only** for the plugins under `grapesjs-plugins/*` — to install, lint, test and **publish them as independent packages**. Two things to understand:
 
-- The Silex app build does *not* use the workspace. The editor compiles each plugin's *source* directly, resolved through webpack aliases + tsconfig `paths` (see `webpack.config.js`) — not through `node_modules` linking. So building/running Silex never depends on the plugins being installed as packages. The app's own install stays lean (`pnpm install --filter @silexlabs/silex`, as in `server/deploy/Dockerfile`).
+- The Silex app build does *not* use the workspace. The editor compiles each plugin's *source* directly, resolved through webpack aliases + tsconfig `paths` (see `webpack.config.js`) — not through `node_modules` linking. So building/running Silex never depends on the plugins being installed as packages. The app's own install stays lean (`pnpm install --filter @silexlabs/silex`, as in `Dockerfile`).
 - The plugins are versioned and released independently. We deliberately do **not** use the `workspace:` protocol between them — a Silex release does not force a plugin release, and vice-versa. The **only** exception is `@silexlabs/expression-input`, a small internal lib used by `grapesjs-advanced-selector` and `grapesjs-data-source`: it is linked locally (`"@silexlabs/expression-input": "workspace:*"`) so those plugins always build and test against its current source.
 
 Per-plugin tasks (each plugin keeps its own `package.json`, build, lint and test):
