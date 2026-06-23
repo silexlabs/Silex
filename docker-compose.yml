@@ -1,8 +1,8 @@
-version: '3'
 services:
   silex:
     build:
       context: .
+      dockerfile: Dockerfile
     volumes:
       - $PWD/storage:/silex/silex/storage
       - $PWD/hosting:/silex/silex/hosting

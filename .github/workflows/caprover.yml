@@ -1,6 +1,6 @@
 name: Deploy to CapRover
 
-# Deploys the server image (server/deploy/Dockerfile, referenced by the root
+# Deploys the server image (root Dockerfile, referenced by the root
 # captain-definition) to CapRover. CapRover tars the repo and builds the Dockerfile.
 #
 # Required secrets:

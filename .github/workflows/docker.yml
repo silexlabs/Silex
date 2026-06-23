@@ -1,6 +1,6 @@
 name: Docker image
 
-# Builds and publishes the silexlabs/silex-platform image (server/deploy/Dockerfile) —
+# Builds and publishes the silexlabs/silex-platform image (root Dockerfile) —
 # the same image used by v3.silex.me and the CapRover one-click app. Single source of
 # truth, replacing the legacy silexlabs/silex-platform repo autobuild.
 # Requires repo/org secrets DOCKER_USERNAME / DOCKER_PASSWORD.
@@ -48,7 +48,7 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
-          file: server/deploy/Dockerfile
+          file: Dockerfile
           push: true
           tags: |
             silexlabs/silex-platform:${{ steps.tags.outputs.version }}

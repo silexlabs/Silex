@@ -30,7 +30,7 @@ jobs:
 
       # App only (--filter): the grapesjs-plugins are workspace packages with their
       # own heavy devDeps (grapesjs-cli, playwright), not needed to build/lint/test
-      # the Silex app. They get their own job below. Matches server/deploy/Dockerfile.
+      # the Silex app. They get their own job below. Matches the Dockerfile.
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --filter @silexlabs/silex
 
