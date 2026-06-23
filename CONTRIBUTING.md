@@ -16,18 +16,30 @@ Describe what you want to change and why. Wait for feedback from a maintainer be
 
 ## Getting started
 
-1. Fork and clone the repository: `git clone https://github.com/<your-username>/Silex.git`
-2. Follow the setup instructions in [Running from Node.js](https://docs.silex.me/en/developer/self-hosting/node/)
-3. Create a branch for your changes
+1. Fork and clone the repository (with submodules):
+   ```sh
+   git clone --recurse-submodules https://github.com/<your-username>/Silex.git
+   cd Silex
+   pnpm install
+   pnpm build && pnpm start   # editor at http://localhost:6805
+   ```
+   See [README → Dev setup](README.md#dev-setup) for more.
+2. Create a branch for your changes (`feat/...` or `fix/...`).
 
 New to the project? Look for issues labeled [good first issue](https://github.com/silexlabs/Silex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 ## Submitting changes
 
-1. Reference the issue or discussion where your change was agreed upon
-2. Keep pull requests focused — one feature or fix per PR
-3. Include a clear description of what changed and how to test it
-4. Make sure existing tests pass
+1. Reference the issue or discussion where your change was agreed upon.
+2. Keep pull requests focused — one feature or fix per PR.
+3. **Test before opening the PR, and include a screenshot of that test** in the description.
+4. Run the checks that match what you changed (CI runs all of them on the PR):
+   - **App** (`editor/`, `server/`, `common/`): `pnpm build`, `pnpm lint`, `pnpm test`.
+   - **A plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` — or scope to one: `pnpm --filter @silexlabs/grapesjs-<name> run test`.
+   - **Rust** (`server-rust/`, `desktop/`): `cargo check -p silex-server` and `cargo test -p silex-server`.
+
+   There is no pre-commit hook — CI on the PR is the gate, so run the relevant checks yourself before pushing.
+5. The PR is **squash-merged**, so its **title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`) — it becomes the changelog entry.
 
 ## Branches and releases
 
@@ -38,10 +50,10 @@ We use a trunk-based model: `main` is the single, always-releasable branch.
 - PRs are **squash-merged**; the squash title must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`), since it drives the changelog.
 - Unreleased work can live on `main` safely: only tagged commits are deployed (see below), so nothing ships until you tag it.
 
-Deployments are driven by git tags:
+Releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
 
-- Prerelease tags (e.g. `v3.8.0-canary.1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds
-- Stable tags (e.g. `v3.8.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads
+- **`v*`** (e.g. `v3.8.1`) — server/web: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover (production on stable `v*`, canary on `main` pushes; a tag counts as prerelease only if it contains `-canary`, `-alpha` or `-beta`).
+- **`desktop-v*`** (e.g. `desktop-v1.2.0`) — desktop: builds the Tauri apps (macOS/Windows/Linux) and publishes the GitHub release with auto-updater metadata.
 
 Releases are cut by maintainers by tagging `main`.
 

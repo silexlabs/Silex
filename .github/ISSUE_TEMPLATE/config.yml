@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community chat
+    url: https://short.silex.me/chat
+    about: Quick questions and real-time help — start here if you're unsure.
+  - name: 🗣️ Community forum
+    url: https://short.silex.me/community_en
+    about: Feature proposals and design discussions. Please discuss before coding.
+  - name: 🗺️ Roadmap
+    url: https://roadmap.silex.me
+    about: See what's planned and vote on features.
+  - name: 📚 Documentation
+    url: https://docs.silex.me
+    about: Guides for users, designers and developers.
