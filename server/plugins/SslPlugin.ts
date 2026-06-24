@@ -36,7 +36,7 @@ export default async function(config, opts = {}) {
     trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
     privateKey: process.env.SILEX_SSL_PRIVATE_KEY,
     certificate: process.env.SILEX_SSL_CERTIFICATE,
-    sslPort: process.env.SSL_PORT || '443',
+    sslPort: process.env.SILEX_SSL_PORT || process.env.SSL_PORT || '443',
     ...opts,
   }
 
