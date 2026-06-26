@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
       - name: Deploy to CapRover (canary)
         uses: caprover/deploy-from-github@v1.1.2
         with:
@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
       - name: Deploy to CapRover (production)
         uses: caprover/deploy-from-github@v1.1.2
         with:
