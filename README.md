@@ -240,6 +240,10 @@ Silex stands on the shoulders of these open-source projects and their communitie
 - [Tauri](https://tauri.app/) — desktop app framework (Rust + WebView)
 - [TypeScript](https://www.typescriptlang.org/) — language used across packages
 
+## Funding
+
+An [OW2 project](https://projects.ow2.org/view/silex/), funded by the [NGI0 Commons Fund](https://www.silex.me/nlnet), supported by its [sponsors and volunteers](https://opencollective.com/silex).
+
 ## Credits
 
 Brought to you since 2009 by [Alex Hoyau](https://lexoyo.me) and the Silex community.
