@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-filter-styles",
-  "version": "1.4.0-canary.0",
+  "version": "1.4.0",
   "description": "Grapesjs Filter Styles",
   "main": "dist/index.js",
   "files": [
