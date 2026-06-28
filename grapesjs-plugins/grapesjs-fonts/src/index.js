@@ -6,27 +6,27 @@ import fr from './locale/fr.js'
 
 export default (editor, opts = {}) => {
 
-    const options = { ...{
-        // default options
-        i18n: {},
-        preserveDefaultFonts: true,
-    },  ...opts }
+  const options = { ...{
+    // default options
+    i18n: {},
+    preserveDefaultFonts: true,
+  },  ...opts }
 
 
-    // Load i18n files
-    editor.I18n && editor.I18n.addMessages({
-        en,
-        fr,
-        ...options.i18n,
-    })
+  // Load i18n files
+  editor.I18n && editor.I18n.addMessages({
+    en,
+    fr,
+    ...options.i18n,
+  })
 
-    commands(editor, options)
-    fontsDialogPlugin(editor, options)
+  commands(editor, options)
+  fontsDialogPlugin(editor, options)
 
-    // Register AI capabilities if grapesjs-ai-capabilities is loaded
-    editor.on('ai-capabilities:ready', (addCapability) => {
-        registerCapabilities(addCapability)
-    })
+  // Register AI capabilities if grapesjs-ai-capabilities is loaded
+  editor.on('ai-capabilities:ready', (addCapability) => {
+    registerCapabilities(addCapability)
+  })
 }
 
 // Expose commands to the app
