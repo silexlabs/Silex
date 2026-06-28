@@ -16,17 +16,17 @@ jobs:
       - name: Force LF line endings
         run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
 
       # pnpm via action-setup AFTER setup-node so its standalone binary wins in PATH
       # over node's bundled corepack shim (whose signing keys are stale and break
       # `pnpm` invocations). No cache:pnpm — it would call corepack during setup-node.
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       # App only (--filter): the grapesjs-plugins are workspace packages with their
       # own heavy devDeps (grapesjs-cli, playwright), not needed to build/lint/test
@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -86,14 +86,14 @@ jobs:
     continue-on-error: true
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       # Full workspace install (plugin devDeps: grapesjs-cli, web-test-runner, …)
       - name: Install dependencies
