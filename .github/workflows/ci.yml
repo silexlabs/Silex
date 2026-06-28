@@ -76,14 +76,11 @@ jobs:
         run: cargo test -p silex-server
 
   # ── grapesjs-plugins: build + lint + test each plugin (workspace) ────
-  # Informational for now (continue-on-error): the plugins come from separate repos
-  # with heterogeneous toolchains and are not all green yet. Surfaces their state
-  # without blocking the app CI; flip to enforced once normalized. This is where the
-  # plugins get linted/tested — NOT in the git pre-commit hook (kept fast, app-only).
+  # Enforced gate: each plugin must build, lint and test green. This is where the
+  # plugins get linted/tested, NOT in the git pre-commit hook (kept fast, app-only).
   plugins:
-    name: grapesjs-plugins (informational)
+    name: grapesjs-plugins
     runs-on: ubuntu-latest
-    continue-on-error: true
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -107,9 +104,7 @@ jobs:
         run: pnpm build:plugins
 
       - name: Lint plugins
-        continue-on-error: true
         run: pnpm lint:plugins
 
       - name: Test plugins
-        continue-on-error: true
         run: pnpm test:plugins
