@@ -48,11 +48,11 @@ We use a trunk-based model: `main` is the single, always-releasable branch.
 - `main` is protected — no direct pushes. All work lands via PR.
 - Use short-lived branches (`feat/...`, `fix/...`) and open a PR against `main`.
 - PRs are **squash-merged**; the squash title must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`), since it drives the changelog.
-- Unreleased work can live on `main` safely: only tagged commits are deployed (see below), so nothing ships until you tag it.
+- `main` is deployed continuously to **canary** ([canary.silex.me](https://canary.silex.me)) for preview; **production** ships only when you tag, so nothing reaches production until you tag it.
 
-Releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
+Production releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
 
-- **`v*`** (e.g. `v3.8.1`) — server/web: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover (production on stable `v*`, canary on `main` pushes; a tag counts as prerelease only if it contains `-canary`, `-alpha` or `-beta`).
+- **`v*`** (e.g. `v3.8.1`) — server/web: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover production ([v3.silex.me](https://v3.silex.me)).
 - **`desktop-v*`** (e.g. `desktop-v1.2.0`) — desktop: builds the Tauri apps (macOS/Windows/Linux) and publishes the GitHub release with auto-updater metadata.
 
 Releases are cut by maintainers by tagging `main`.

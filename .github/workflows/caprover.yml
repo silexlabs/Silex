@@ -37,7 +37,7 @@ jobs:
 
   production:
     name: deploy production
-    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref_name, 'canary') && !contains(github.ref_name, 'alpha') && !contains(github.ref_name, 'beta')
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
