@@ -1,7 +1,7 @@
 name: Deploy to CapRover
 
-# Deploys the server image (root Dockerfile, referenced by the root
-# captain-definition) to CapRover. CapRover tars the repo and builds the Dockerfile.
+# Deploys the server (root Dockerfile, referenced by the root captain-definition)
+# to CapRover: tar the tracked files (git archive) and upload via the caprover CLI.
 #
 # Required secrets:
 #   CAPROVER_SERVER        e.g. https://captain.your-domain.com
@@ -23,12 +23,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
+      # Direct caprover CLI (the deploy-from-github action passes the tar as a
+      # positional arg, which caprover CLI 2.x rejects). We tar the tracked files
+      # ourselves (captain-definition + Dockerfile + source) and upload with --tarFile.
       - name: Deploy to CapRover (canary)
-        uses: caprover/deploy-from-github@v1.1.2
-        with:
-          server: ${{ secrets.CAPROVER_SERVER }}
-          app: ${{ secrets.CAPROVER_APP_CANARY }}
-          token: ${{ secrets.CAPROVER_APP_TOKEN_CANARY }}
+        run: |
+          git archive --format=tar -o deploy.tar HEAD
+          npx -y caprover@2.3.1 deploy \
+            --caproverUrl "${{ secrets.CAPROVER_SERVER }}" \
+            --appName "${{ secrets.CAPROVER_APP_CANARY }}" \
+            --appToken "${{ secrets.CAPROVER_APP_TOKEN_CANARY }}" \
+            --tarFile deploy.tar
 
   production:
     name: deploy production
@@ -40,8 +45,10 @@ jobs:
         with:
           submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
       - name: Deploy to CapRover (production)
-        uses: caprover/deploy-from-github@v1.1.2
-        with:
-          server: ${{ secrets.CAPROVER_SERVER }}
-          app: ${{ secrets.CAPROVER_APP_PROD }}
-          token: ${{ secrets.CAPROVER_APP_TOKEN_PROD }}
+        run: |
+          git archive --format=tar -o deploy.tar HEAD
+          npx -y caprover@2.3.1 deploy \
+            --caproverUrl "${{ secrets.CAPROVER_SERVER }}" \
+            --appName "${{ secrets.CAPROVER_APP_PROD }}" \
+            --appToken "${{ secrets.CAPROVER_APP_TOKEN_PROD }}" \
+            --tarFile deploy.tar
