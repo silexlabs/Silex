@@ -151,9 +151,9 @@ Before pushing: `pnpm lint` and `pnpm test` (and `cargo test -p silex-server` fo
 
 ### Releasing
 
-Releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
+`main` is deployed continuously to **canary** ([canary.silex.me](https://canary.silex.me)). Production releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
 
-- **`v*`** (e.g. `v3.8.1`) — server/web release: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover (canary on `main` pushes, production on stable tags; a tag is treated as prerelease only if it contains `-canary`, `-alpha` or `-beta`).
+- **`v*`** (e.g. `v3.8.1`) — server/web release: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover production ([v3.silex.me](https://v3.silex.me)).
 - **`desktop-v*`** (e.g. `desktop-v1.2.0`) — desktop release: builds the Tauri apps (macOS, Windows, Linux) and publishes the GitHub release with auto-updater metadata.
 
 ## AI / Vibe coding
