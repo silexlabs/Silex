@@ -1,7 +1,7 @@
 name: Deploy to CapRover
 
 # Deploys the server (root Dockerfile, referenced by the root captain-definition)
-# to CapRover: tar the tracked files (git archive) and upload via the caprover CLI.
+# to CapRover: tar the tracked files (incl. submodule content) and upload via the caprover CLI.
 #
 # Required secrets:
 #   CAPROVER_SERVER        e.g. https://captain.your-domain.com
@@ -22,13 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
-      # Direct caprover CLI (the deploy-from-github action passes the tar as a
-      # positional arg, which caprover CLI 2.x rejects). We tar the tracked files
-      # ourselves (captain-definition + Dockerfile + source) and upload with --tarFile.
+          submodules: true  # the SaaS serves silex-dashboard/_site
       - name: Deploy to CapRover (canary)
         run: |
-          git archive --format=tar -o deploy.tar HEAD
+          git ls-files --recurse-submodules -z | tar --null --no-recursion -cf deploy.tar -T -
           npx -y caprover@2.3.1 deploy \
             --caproverUrl "${{ secrets.CAPROVER_SERVER }}" \
             --appName "${{ secrets.CAPROVER_APP_CANARY }}" \
@@ -43,10 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true  # not recursive: silex-dashboard's nested SSH submodule (dashboard-silexv3) isn't CI-cloneable and isn't needed to build the Dockerfile (meta-repo used true too)
+          submodules: true  # the SaaS serves silex-dashboard/_site
       - name: Deploy to CapRover (production)
         run: |
-          git archive --format=tar -o deploy.tar HEAD
+          git ls-files --recurse-submodules -z | tar --null --no-recursion -cf deploy.tar -T -
           npx -y caprover@2.3.1 deploy \
             --caproverUrl "${{ secrets.CAPROVER_SERVER }}" \
             --appName "${{ secrets.CAPROVER_APP_PROD }}" \
