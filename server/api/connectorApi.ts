@@ -1,9 +1,9 @@
 import { Request, Response, Router } from 'express'
-import { API_CONNECTOR_LIST, API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_LOGIN, API_CONNECTOR_SETTINGS, API_PATH, API_CONNECTOR_PATH } from '~/common/constants'
-import { ServerConfig } from '../config'
-import { requiredParam } from '../utils/validation'
-import { Connector, getConnector, toConnectorData, toConnectorEnum } from '../connectors/connectors'
-import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ConnectorId, ApiConnectorLoginCbkQuery, ApiConnectorLoginCbkBody, ConnectorOptions, ApiResponseError, ConnectorType } from '~/common/types'
+import { API_CONNECTOR_LIST, API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_LOGIN, API_CONNECTOR_SETTINGS, API_PATH, API_CONNECTOR_PATH } from '~/common/constants.js'
+import { ServerConfig } from '../config.js'
+import { requiredParam } from '../utils/validation.js'
+import { Connector, getConnector, toConnectorData, toConnectorEnum } from '../connectors/connectors.js'
+import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ConnectorId, ApiConnectorLoginCbkQuery, ApiConnectorLoginCbkBody, ConnectorOptions, ApiResponseError, ConnectorType } from '~/common/types.js'
 
 /**
  * @fileoverview The connector API adds routes to handle the connectors and the methods they implement, this includes authentication and user data.

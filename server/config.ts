@@ -24,16 +24,16 @@
  * @class default config for Silex server
  */
 
-import { Config, Plugin } from '~/common/silex-plugins'
+import { Config, Plugin } from '~/common/silex-plugins/index.js'
 import { join, resolve } from 'path'
-import { CLIENT_CONFIG_FILE_NAME } from '~/common/constants'
+import { CLIENT_CONFIG_FILE_NAME } from '~/common/constants.js'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
-import { HostingConnector, StorageConnector, toConnectorEnum } from './connectors/connectors'
-import { FsStorage } from './connectors/FsStorage'
-import { Connector } from './connectors/connectors'
-import { ConnectorType } from '~/common/types'
-import { FsHosting } from './connectors/FsHosting'
+import { HostingConnector, StorageConnector, toConnectorEnum } from './connectors/connectors.js'
+import { FsStorage } from './connectors/FsStorage.js'
+import { Connector } from './connectors/connectors.js'
+import { ConnectorType } from '~/common/types.js'
+import { FsHosting } from './connectors/FsHosting.js'
 
 /**
  * Config types definitions
@@ -123,7 +123,7 @@ export class ServerConfig extends Config {
         })
       } catch (e) {
         console.error(`Error loading client config file ${path}`, e)
-        throw new Error(`Error loading client config file ${path}: ${e.message}`)
+        throw new Error(`Error loading client config file ${path}: ${e.message}`, { cause: e })
       }
     }
   }
@@ -150,7 +150,7 @@ export class ServerConfig extends Config {
         // Initiate the process with the config file which is just another plugin
         await this.addPlugin(this.userConfigPath, {})
       } catch (e) {
-        throw new Error(`\nUser config file ${this.userConfigPath} error:\n\n\t${e.message}\n\n`)
+        throw new Error(`\nUser config file ${this.userConfigPath} error:\n\n\t${e.message}\n\n`, { cause: e })
       }
     }
   }
@@ -169,7 +169,7 @@ export class ServerConfig extends Config {
       if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) {
         console.info('> /!\\ Config file not found', this.configFilePath)
       } else {
-        throw new Error(`Error in config file ${this.configFilePath}: ${e.message}`)
+        throw new Error(`Error in config file ${this.configFilePath}: ${e.message}`, { cause: e })
       }
     }
   }

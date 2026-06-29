@@ -1,2 +1,2 @@
-export * from './config'
-export * from './plugin'
+export * from './config.js'
+export * from './plugin.js'

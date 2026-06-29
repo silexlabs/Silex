@@ -16,4 +16,4 @@
  */
 
 
-export * as events from './events'
+export * as events from './events.js'

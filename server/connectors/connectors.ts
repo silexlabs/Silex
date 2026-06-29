@@ -16,9 +16,9 @@
  */
 
 import { Readable } from 'stream'
-import { ServerConfig } from '../config'
-import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions } from '~/common/types'
-import { JobManager } from '../jobs'
+import { ServerConfig } from '../config.js'
+import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions } from '~/common/types.js'
+import { JobManager } from '../jobs.js'
 
 /**
  * @fileoverview define types for Silex connectors

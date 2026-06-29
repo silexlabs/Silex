@@ -2,6 +2,8 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist/client/",
+    "rootDir": ".",
+    "moduleResolution": "bundler",
     "declaration": false,
     "sourceMap": true,
     "module": "ESNext",

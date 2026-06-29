@@ -16,17 +16,16 @@
  */
 
 import { Router } from 'express'
-import formidable from 'formidable'
-import PersistentFile from 'formidable/src/PersistentFile'
-import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE, API_WEBSITE_FORK } from '~/common/constants'
+import formidable, { PersistentFile } from 'formidable'
+import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE, API_WEBSITE_FORK } from '~/common/constants.js'
 import { createReadStream } from 'fs'
-import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '~/common/types'
-import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
+import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '~/common/types.js'
+import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors.js'
 import { Readable } from 'stream'
-import { requiredParam } from '../utils/validation'
+import { requiredParam } from '../utils/validation.js'
 import { basename, join } from 'path'
-import { ServerConfig } from '../config'
-import { ServerEvent, WebsiteStoreEndEventType, WebsiteStoreStartEventType, WebsiteAssetStoreStartEventType, WebsiteAssetStoreEndEventType } from '../events'
+import { ServerConfig } from '../config.js'
+import { ServerEvent, WebsiteStoreEndEventType, WebsiteStoreStartEventType, WebsiteAssetStoreStartEventType, WebsiteAssetStoreEndEventType } from '../events.js'
 
 /**
  * @fileoverview Website plugin for Silex

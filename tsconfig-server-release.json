@@ -6,7 +6,9 @@
     "rootDir": ".",
     "target": "esnext",
     "sourceMap": false,
-    "module": "CommonJS",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": false,
     "removeComments": true,
     "declaration": false
   },

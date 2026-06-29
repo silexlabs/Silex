@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { JobData, JobStatus, JobId } from '~/common/types'
+import { JobData, JobStatus, JobId } from '~/common/types.js'
 
 // Delay after which the job is deleted from memory
 const TIME_TO_KEEP_AFTER_STOP = 60*10*1000 // 10 min

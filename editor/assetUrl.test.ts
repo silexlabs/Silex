@@ -4,18 +4,7 @@ import { removeTempDataFromStyles, isExternalUrl } from './assetUrl'
 describe('assetUrl', () => {
   beforeEach(() => {
     jest.resetModules()
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: 'http://localhost:6800/',
-        pathname: '',
-        origin: 'http://localhost:6800',
-      },
-    })
-    Object.assign(window.location, {
-      href: 'http://localhost:6800/',
-      pathname: '',
-      origin: 'http://localhost:6800',
-    })
+    window.history.replaceState({}, '', '/')
   })
 
   it('store url to display url', async () => {
@@ -39,11 +28,7 @@ describe('assetUrl', () => {
   })
 
   it('store url to display url with a root path', async () => {
-    Object.assign(window.location, {
-      href: 'http://localhost:6800/silex',
-      pathname: '/silex',
-      origin: 'http://localhost:6800',
-    })
+    window.history.replaceState({}, '', '/silex')
     const { displayedToStored, storedToDisplayed } = await import('./assetUrl')
     // Convert a valid URL as stored
     expect(storedToDisplayed('/assets/test.webp', 'test-id', 'test-connector'))
@@ -54,11 +39,7 @@ describe('assetUrl', () => {
   })
 
   it('display url to store url with a root path', async () => {
-    Object.assign(window.location, {
-      href: 'http://localhost:6800/silex',
-      pathname: '/silex',
-      origin: 'http://localhost:6800',
-    })
+    window.history.replaceState({}, '', '/silex')
     const { displayedToStored, storedToDisplayed } = await import('./assetUrl')
     // Convert a valid URL as displayed
     expect(displayedToStored('/silex/api/website/assets/test.webp?websiteId=test-id&connectorId=test-connector'))
@@ -69,11 +50,7 @@ describe('assetUrl', () => {
   })
 
   it('store url to display url with escapable chars', async () => {
-    Object.assign(window.location, {
-      href: 'http://localhost:6800/silex%20with%20spaces',
-      pathname: '/silex%20with%20spaces',
-      origin: 'http://localhost:6800',
-    })
+    window.history.replaceState({}, '', '/silex%20with%20spaces')
     const { displayedToStored, storedToDisplayed } = await import('./assetUrl')
     // Convert a valid URL as displayed
     expect(displayedToStored('/silex%20with%20spaces/api/website/assets/test.webp?websiteId=test-id&connectorId=test-connector'))
@@ -84,11 +61,7 @@ describe('assetUrl', () => {
   })
 
   it('display url to store url with escapable chars', async () => {
-    Object.assign(window.location, {
-      href: 'http://localhost:6800/silex%20with%20spaces',
-      pathname: '/silex%20with%20spaces',
-      origin: 'http://localhost:6800',
-    })
+    window.history.replaceState({}, '', '/silex%20with%20spaces')
     const { displayedToStored, storedToDisplayed } = await import('./assetUrl')
     // Convert a valid URL as stored
     expect(storedToDisplayed('/assets/test.webp', 'test-id', 'test-connector'))
@@ -168,7 +141,7 @@ describe('assetUrl', () => {
     // }
     // jest.mock('./assetUrl', () => (mocked))
     //addTempDataToStyles([toStyle(bgImageDisplayed)], websiteId, connectorId)
-    //expect(mocked.displayedToStored).toBeCalledTimes(1)
+    //expect(mocked.displayedToStored).toHaveBeenCalledTimes(1)
     const { addTempDataToStyles } = await import('./assetUrl')
 
     const websiteId = 'test-id'

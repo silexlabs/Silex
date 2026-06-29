@@ -16,11 +16,11 @@
  */
 
 import fs from 'fs/promises'
-import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors'
+import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors.js'
 import { join } from 'path'
-import { FsStorage } from './FsStorage'
-import { ConnectorType, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types'
-import { JobManager } from '../jobs'
+import { FsStorage } from './FsStorage.js'
+import { ConnectorType, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
+import { JobManager } from '../jobs.js'
 
 type FsSession = ConnectorSession
 

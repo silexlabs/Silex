@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ConnectorId, PublicationData, WebsiteData, WebsiteId } from '~/common/types'
-import { ConnectorFile } from './connectors/connectors'
+import { ConnectorId, PublicationData, WebsiteData, WebsiteId } from '~/common/types.js'
+import { ConnectorFile } from './connectors/connectors.js'
 
 export enum ServerEvent {
   STARTUP_START = 'startup-start',
