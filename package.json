@@ -6,7 +6,7 @@
   "license": "AGPL-3.0",
   "main": "dist/server/server/index.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "files": [
     "dist/",
@@ -123,7 +123,6 @@
     "@types/archiver": "^6.0.4",
     "adm-zip": "0.5.17",
     "archiver": "^7.0.1",
-    "backbone": "*",
     "basic-ftp": "^6.0.1",
     "body-parser": "1.20.5",
     "component-emitter": "^2.0.0",
@@ -149,8 +148,7 @@
     "grapesjs-style-border": "1.0.4",
     "grapesjs-style-filter": "^1.0.2",
     "html-minifier": "^4.0.0",
-    "jquery": "*",
-    "lit": "*",
+    "lit": "^3.3.3",
     "lit-html": "3.3.3",
     "locale": "0.1.0",
     "mkdirp": "3.0.1",
@@ -172,7 +170,7 @@
     "@types/node": "25.9.3",
     "@typescript-eslint/eslint-plugin": "^8.61.1",
     "@typescript-eslint/parser": "^8.61.1",
-    "eslint": "^8.57.1",
+    "eslint": "^9.39.4",
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "jest": "29.7.0",
