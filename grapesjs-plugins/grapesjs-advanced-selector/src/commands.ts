@@ -34,7 +34,7 @@ export default function registerCommands(editor: Editor) {
         editStyle(editor, selector)
       } catch(e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
-        throw new Error(`Invalid selector "${selector}". ${msg}. Valid formats: ".class", "#id", "tag", ".parent > .child", ".el:hover", ".el:has(.child)", ".el:not(.excluded)". Pseudo-classes: ${PSEUDO_CLASS_NAMES.slice(0, 10).join(', ')} (${PSEUDO_CLASS_NAMES.length} total — use selector:info for full list). Operators: ${OPERATOR_NAMES.join(', ')}`)
+        throw new Error(`Invalid selector "${selector}". ${msg}. Valid formats: ".class", "#id", "tag", ".parent > .child", ".el:hover", ".el:has(.child)", ".el:not(.excluded)". Pseudo-classes: ${PSEUDO_CLASS_NAMES.slice(0, 10).join(', ')} (${PSEUDO_CLASS_NAMES.length} total — use selector:info for full list). Operators: ${OPERATOR_NAMES.join(', ')}`, { cause: e })
       }
     },
   })
@@ -61,7 +61,7 @@ export default function registerCommands(editor: Editor) {
         editStyle(editor, selector)
       } catch(e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
-        throw new Error(`Cannot edit style for "${selector}". ${msg}`)
+        throw new Error(`Cannot edit style for "${selector}". ${msg}`, { cause: e })
       }
     },
   })

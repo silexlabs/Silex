@@ -7,7 +7,7 @@ import { Editor } from "grapesjs"
 export default (editor: Editor) => {
   // Save and load data sources
   editor.on('storage:start:store', (data: any) => {
-    data.dataSources = getAllDataSources()
+    (data as { dataSources: GraphQLOptions[] }).dataSources = getAllDataSources()
       .filter((ds: IDataSource) => typeof ds.readonly === 'undefined' || ds.readonly === false)
       .map((ds: IDataSource) => {
         const baseData = {
@@ -29,12 +29,12 @@ export default (editor: Editor) => {
           }
         }
         return baseData
-      })
+      }) as unknown as GraphQLOptions[]
   })
 
-  editor.on('storage:end:load', async (data: { dataSources: GraphQLOptions[] }) => {
+  editor.on('storage:end:load', async (data) => {
     // Connect the data sources
-    const newDataSources: IDataSource[] = (data.dataSources || [] as GraphQLOptions[])
+    const newDataSources: IDataSource[] = ((data as { dataSources: GraphQLOptions[] }).dataSources || [] as GraphQLOptions[])
       .map((ds: GraphQLOptions) => new GraphQL(ds))
 
     // Get all data sources

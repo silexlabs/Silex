@@ -71,7 +71,7 @@ export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?
     editor.on('selector:custom component:update', debounce(() => updateUi(editor, options)))
   } else {
     // Keep listening
-    editor.once('selector:custom', (props) => initASM(editor, options, props))
+    editor.once('selector:custom', (props) => initASM(editor, options, props as CustomSelectorEventProps))
   }
 }
 
