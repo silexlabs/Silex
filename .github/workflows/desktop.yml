@@ -1,16 +1,7 @@
 name: Desktop release
 
-# Builds the Silex Desktop (Tauri) app and publishes its GitHub release + updater feed.
-# Desktop has its own version line, released on demand via `desktop-v*` tags — so a
-# server release (v*) never ships a desktop update. GitHub Releases are desktop-only,
-# so the updater endpoint (releases/latest/download/latest.json) always resolves to the
-# latest published desktop release.
-#   push main / PR → unsigned build (CI smoke test)
-#   tag desktop-v* → signed build + draft GitHub release (publish it to ship the update)
-
 on:
   push:
-    branches: [main]
     tags: ['desktop-v*']
   pull_request:
     branches: [main]
@@ -19,22 +10,30 @@ permissions:
   contents: write
 
 jobs:
+  # Linux-only on PRs (Rust+TS is shared, so linux catches almost all breakage);
+  # full 4-platform matrix only on desktop-v* tags, where the costly macOS/Windows
+  # runners are worth it. No per-commit main build — the PR already covered it.
+  set-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - id: m
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/desktop-v* ]]; then
+            echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"},{"platform":"macos-arm","os":"macos-latest"},{"platform":"macos-x64","os":"macos-latest","rust-target":"x86_64-apple-darwin"},{"platform":"windows","os":"windows-latest"}]}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: set-matrix
     name: build (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
-      matrix:
-        include:
-          - platform: linux
-            os: ubuntu-latest
-          - platform: macos-arm
-            os: macos-latest
-          - platform: macos-x64
-            os: macos-latest
-            rust-target: x86_64-apple-darwin
-          - platform: windows
-            os: windows-latest
+      matrix: ${{ fromJSON(needs.set-matrix.outputs.matrix) }}
 
     steps:
       # Prevent CRLF conversion on Windows (eslint requires LF)
