@@ -2,13 +2,12 @@
   "name": "@silexlabs/grapesjs-symbols",
   "version": "1.5.0",
   "description": "Symbols for GrapesJS",
-  "main": "dist/es5/index.js",
+  "main": "dist/es6/index.js",
   "module": "dist/es6/index.js",
   "types": "dist/es6/index.d.ts",
   "browser": "dist/bundle.iife.js",
   "exports": {
     "import": "./dist/es6/index.js",
-    "require": "./dist/es5/index.js",
     "types": "./dist/es6/index.d.ts"
   },
   "files": [
@@ -26,7 +25,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "rimraf dist && tsc && tsc --build tsconfig.es5.json && pnpm run bundle",
+    "build": "rimraf dist && tsc && pnpm run bundle",
     "bundle": "rollup -c",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "pnpm run lint -- --fix",
