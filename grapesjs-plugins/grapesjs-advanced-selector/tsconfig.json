@@ -5,7 +5,7 @@
     "esModuleInterop": true, // For grapesjs in headless mode
     "target": "es2019",
     "module": "es2020",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2022", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
