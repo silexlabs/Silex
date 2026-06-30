@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       # pnpm via action-setup AFTER setup-node so its standalone binary wins in PATH
       # over node's bundled corepack shim (whose signing keys are stale and break
@@ -87,7 +87,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6

@@ -6,7 +6,7 @@
   "license": "AGPL-3.0",
   "main": "dist/server/server/index.js",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "files": [
     "dist/",
