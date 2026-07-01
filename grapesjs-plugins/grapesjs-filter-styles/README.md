@@ -43,7 +43,6 @@ body, html {
 
 | Option | Description | Default |
 |-|-|-
-| `option1` | Description option | `default value` |
 | `placeholder` | Text in the empty text input | 'Search...' |
 | `appendTo` | Element where the text input shoud be added, can be CSS selector or an HTML element | null |
 | `appendBefore` | Element where the text input shoud be added, can be CSS selector or an HTML element | null |
