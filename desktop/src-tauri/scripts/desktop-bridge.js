@@ -6,27 +6,38 @@
   const { listen } = window.__TAURI__.event;
 
   // Frontend error tracking (GlitchTip / Sentry-compatible).
-  // DSN is read from the same GLITCHTIP_DSN env var via a Tauri command.
-  invoke('get_glitchtip_dsn').then((dsn) => {
-    if (!dsn) return;
+  // Real version, channel, anonymous install id and OS/arch come from Rust so the
+  // webview reports the same identity as the native side (not a hardcoded 0.1.0).
+  invoke('get_telemetry_context').then((ctx) => {
+    if (!ctx?.dsn) return;
     const script = document.createElement('script');
     script.src = 'https://browser.sentry-cdn.com/8.46.0/bundle.tracing.min.js';
     script.crossOrigin = 'anonymous';
     script.onload = () => {
-      if (window.Sentry) {
-        window.Sentry.init({
-          dsn,
-          release: '0.1.0',
-          environment: 'production',
-          tracesSampleRate: 1.0,
-          integrations: [window.Sentry.browserTracingIntegration()],
-        });
-        window.Sentry.setTag('os', navigator.platform);
-        window.Sentry.setTag('context', 'webview');
-      }
+      if (!window.Sentry) return;
+      window.Sentry.init({
+        dsn: ctx.dsn,
+        release: ctx.release,
+        environment: ctx.environment,
+        tracesSampleRate: 1.0,
+        integrations: [window.Sentry.browserTracingIntegration()],
+      });
+      window.Sentry.setUser({ id: ctx.user_id });
+      window.Sentry.setTag('os', ctx.os);
+      window.Sentry.setTag('arch', ctx.arch);
+      window.Sentry.setTag('context', 'webview');
     };
     document.head.appendChild(script);
-  }).catch(() => { /* GLITCHTIP_DSN not set — telemetry disabled */ });
+  }).catch(() => { /* no consent / DSN not set — telemetry disabled */ });
+
+  // Wrap listen() so a rejected Tauri IPC (plugin:event|listen) becomes a breadcrumb +
+  // handled capture with a culprit, instead of an UnhandledRejection with an empty one.
+  const safeListen = (event, handler) => {
+    window.Sentry?.addBreadcrumb?.({ category: 'tauri', message: `listen ${event}`, level: 'info' });
+    return listen(event, handler).catch((err) => {
+      window.Sentry?.captureException?.(err, { tags: { tauri_command: `plugin:event|listen:${event}` } });
+    });
+  };
 
   const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th', 'label', 'blockquote'];
 
@@ -314,9 +325,9 @@
     });
 
     // Listen for menu events from Tauri (triggered by MCP or quit dialog)
-    listen('menu-save', () => editor.store());
-    listen('menu-undo', () => editor.UndoManager.undo());
-    listen('menu-redo', () => editor.UndoManager.redo());
-    listen('menu-close-project', () => { window.location.href = '/'; });
+    safeListen('menu-save', () => editor.store());
+    safeListen('menu-undo', () => editor.UndoManager.undo());
+    safeListen('menu-redo', () => editor.UndoManager.redo());
+    safeListen('menu-close-project', () => { window.location.href = '/'; });
   });
 })();

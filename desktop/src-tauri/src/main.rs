@@ -146,15 +146,64 @@ fn log_debug(message: String) {
     tracing::debug!("[webview] {message}");
 }
 
-#[tauri::command]
-fn get_glitchtip_dsn() -> Option<String> {
-    // Only expose DSN to the frontend if the user has opted in
-    let data_dir = dirs::data_dir()?.join("org.silex.desktop");
-    if read_telemetry_consent(&data_dir) == Some(true) {
-        option_env!("GLITCHTIP_DSN").map(String::from)
+/// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
+fn telemetry_environment(version: &str) -> &'static str {
+    if cfg!(debug_assertions) {
+        "development"
+    } else if version.contains("canary") {
+        "canary"
+    } else if version.contains("alpha") {
+        "alpha"
+    } else if version.contains("beta") {
+        "beta"
     } else {
-        None
+        "stable"
     }
+}
+
+/// Persistent anonymous install id (UUID v4), generated on first launch. No PII.
+fn get_or_create_install_id(data_dir: &PathBuf) -> String {
+    let path = data_dir.join("install_id");
+    if let Ok(existing) = std::fs::read_to_string(&path) {
+        let existing = existing.trim();
+        if !existing.is_empty() {
+            return existing.to_string();
+        }
+    }
+    let id = uuid::Uuid::new_v4().to_string();
+    let _ = std::fs::create_dir_all(data_dir);
+    let _ = std::fs::write(&path, &id);
+    id
+}
+
+/// Telemetry config handed to the frontend Sentry init (real version, channel, install id, OS).
+#[derive(serde::Serialize)]
+struct TelemetryContext {
+    dsn: String,
+    release: String,
+    environment: String,
+    user_id: String,
+    os: String,
+    arch: String,
+}
+
+#[tauri::command]
+fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
+    // Only expose telemetry config to the frontend if the user has opted in
+    let data_dir = dirs::data_dir()?.join("org.silex.desktop");
+    if read_telemetry_consent(&data_dir) != Some(true) {
+        return None;
+    }
+    let dsn = option_env!("GLITCHTIP_DSN")?.to_string();
+    let version = app.package_info().version.to_string();
+    Some(TelemetryContext {
+        dsn,
+        release: version.clone(),
+        environment: telemetry_environment(&version).to_string(),
+        user_id: get_or_create_install_id(&data_dir),
+        os: std::env::consts::OS.to_string(),
+        arch: std::env::consts::ARCH.to_string(),
+    })
 }
 
 fn show_quit_dialog(app: &tauri::AppHandle) {
@@ -303,6 +352,13 @@ fn main() {
         .join("org.silex.desktop");
     let _ = std::fs::create_dir_all(&app_data_dir);
 
+    // Real app version comes from tauri.conf.json (patched from the tag in CI), not
+    // CARGO_PKG_VERSION (stuck at the 0.1.0 placeholder). The context is built once here
+    // and moved into .run() below.
+    let context = tauri::generate_context!();
+    let app_version = context.package_info().version.to_string();
+    let install_id = get_or_create_install_id(&app_data_dir);
+
     // Initialize error tracking (GlitchTip / Sentry-compatible).
     // Sentry is always initialized when GLITCHTIP_DSN is set, but events are only
     // sent if the user has opted in. This way consent takes effect immediately
@@ -312,10 +368,8 @@ fn main() {
     let _sentry_guard = sentry::init(sentry::ClientOptions {
         dsn: option_env!("GLITCHTIP_DSN")
             .and_then(|s| s.parse().ok()),
-        release: Some(env!("CARGO_PKG_VERSION").into()),
-        environment: Some(
-            if cfg!(debug_assertions) { "development" } else { "production" }.into(),
-        ),
+        release: Some(app_version.clone().into()),
+        environment: Some(telemetry_environment(&app_version).into()),
         before_send: Some(std::sync::Arc::new(move |event| {
             if read_telemetry_consent(&consent_dir_for_send) == Some(true) {
                 Some(event)
@@ -340,6 +394,11 @@ fn main() {
     sentry::configure_scope(|scope| {
         scope.set_tag("os", std::env::consts::OS);
         scope.set_tag("arch", std::env::consts::ARCH);
+        // Anonymous install id → distinguishes distinct installs from repeat crashes.
+        scope.set_user(Some(sentry::protocol::User {
+            id: Some(install_id.clone()),
+            ..Default::default()
+        }));
     });
 
     tracing_subscriber::registry()
@@ -362,7 +421,7 @@ fn main() {
             mark_unsaved,
             open_folder,
             log_debug,
-            get_glitchtip_dsn,
+            get_telemetry_context,
         ])
         .setup(|app| {
             // Log app launch with OS/arch info (visible in Issues even without errors)
@@ -471,6 +530,6 @@ fn main() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
