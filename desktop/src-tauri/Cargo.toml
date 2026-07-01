@@ -34,6 +34,9 @@ open = "5"
 # Platform-specific directories (for telemetry consent before Tauri init)
 dirs = "6"
 
+# Anonymous install id (persistent UUID for telemetry user count)
+uuid = { version = "1", features = ["v4"] }
+
 # Error tracking / telemetry (GlitchTip / Sentry-compatible)
 sentry = { version = "0.35", features = ["tracing"] }
 
