@@ -187,5 +187,5 @@
     "webpack": "5.108.2",
     "webpack-cli": "7.1.0"
   },
-  "packageManager": "pnpm@9.15.9"
+  "packageManager": "pnpm@10.34.4"
 }
