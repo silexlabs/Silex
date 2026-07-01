@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { EMPTY_PAGES, WebsiteData } from '~/common/types'
+import { EMPTY_PAGES, WebsiteData } from '~/common/types.js'
 import { Page } from 'grapesjs'
-import { getPageSlug } from '~/common/page'
-import { LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_DATA_FILE } from '~/common/constants'
+import { getPageSlug } from '~/common/page.js'
+import { LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_DATA_FILE } from '~/common/constants.js'
 
 /**
  * Serialize JSON with stable formatting for git

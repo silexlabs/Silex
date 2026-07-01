@@ -18,10 +18,11 @@
 // Monorepo single-package layout: map the ~/ path aliases (mirror of tsconfig "paths")
 // and the grapesjs-* plugin sources so jest resolves them like webpack/tsc do.
 const moduleNameMapper = {
-  '^~/common/(.*)$': '<rootDir>/common/$1',
+  '^(\\.{1,2}/.*)\\.js$': '$1',
   '^~/common$': '<rootDir>/common',
-  '^~/editor/(.*)$': '<rootDir>/editor/$1',
-  '^~/server/(.*)$': '<rootDir>/server/$1',
+  '^~/common/(.*?)(?:\\.js)?$': '<rootDir>/common/$1',
+  '^~/editor/(.*?)(?:\\.js)?$': '<rootDir>/editor/$1',
+  '^~/server/(.*?)(?:\\.js)?$': '<rootDir>/server/$1',
   '^~/grapesjs-plugins/(.*)$': '<rootDir>/grapesjs-plugins/$1',
   '^@silexlabs/expression-input$': '<rootDir>/grapesjs-plugins/expression-input/src/index.ts',
   '^@silexlabs/grapesjs-([^/]+)$': '<rootDir>/grapesjs-plugins/grapesjs-$1/src/index',
@@ -45,6 +46,7 @@ module.exports = {
       ...common,
       displayName: 'dom',
       testEnvironment: 'jsdom',
+      testEnvironmentOptions: { url: 'http://localhost:6800/' },
       testMatch: ['<rootDir>/editor/**/*.test.ts'],
     },
     {

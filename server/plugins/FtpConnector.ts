@@ -17,18 +17,18 @@
 
 import { Client } from 'basic-ftp'
 import { Readable } from 'stream'
-import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '~/server/connectors/connectors'
-import { requiredParam } from '~/server/utils/validation'
-import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '~/common/constants'
-import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, EMPTY_WEBSITE, WebsiteData, ConnectorOptions } from '~/common/types'
-import { ServerConfig } from '~/server/config'
+import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '~/server/connectors/connectors.js'
+import { requiredParam } from '~/server/utils/validation.js'
+import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '~/common/constants.js'
+import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, EMPTY_WEBSITE, WebsiteData, ConnectorOptions } from '~/common/types.js'
+import { ServerConfig } from '~/server/config.js'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { v4 as uuid } from 'uuid'
-import { JobManager } from '~/server/jobs'
+import { JobManager } from '~/server/jobs.js'
 import { mkdtemp, rm, rmdir } from 'fs/promises'
 import { createReadStream } from 'fs'
-import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteDataSerialization.js'
 
 /**
  * @fileoverview FTP connector for Silex

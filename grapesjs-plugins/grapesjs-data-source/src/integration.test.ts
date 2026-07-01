@@ -23,6 +23,7 @@ import { doRender } from './view/canvas'
 ;import { act } from 'react'
 (global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
+;(global as any).ReadableStream = require('stream/web').ReadableStream
 const { JSDOM } = require('jsdom')
 // ////
 

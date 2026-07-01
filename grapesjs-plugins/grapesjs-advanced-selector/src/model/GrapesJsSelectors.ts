@@ -636,7 +636,7 @@ function getChildren(component: Component): Component[] {
 }
 
 function getParents(component: Component): Component[] {
-  const parents = []
+  const parents: Component[] = []
   let parent = component.parent()
   while (parent) {
     parents.push(parent)

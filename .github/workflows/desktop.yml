@@ -48,7 +48,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       # pnpm after setup-node so its standalone binary wins over node's corepack shim
       # (stale signing keys); no cache:pnpm to avoid corepack during setup-node.

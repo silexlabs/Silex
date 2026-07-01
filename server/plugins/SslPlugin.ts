@@ -19,7 +19,7 @@ import express from 'express'
 import { readFileSync } from 'fs'
 import { createServer } from 'https'
 import forceSSL from 'express-force-ssl'
-import { ServerEvent } from '~/server/events'
+import { ServerEvent } from '~/server/events.js'
 
 // interface SslOptions {
 //   forceHttps?: boolean

@@ -17,17 +17,17 @@
 
 import fs from 'fs/promises'
 import { createWriteStream } from 'fs'
-import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors'
+import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors.js'
 import { dirname, join } from 'path'
-import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, EMPTY_WEBSITE, ConnectorOptions } from '~/common/types'
+import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, EMPTY_WEBSITE, ConnectorOptions } from '~/common/types.js'
 import { userInfo } from 'os'
-import { requiredParam } from '../utils/validation'
-import { ServerConfig } from '../config'
-import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '~/common/constants'
+import { requiredParam } from '../utils/validation.js'
+import { ServerConfig } from '../config.js'
+import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '~/common/constants.js'
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
 import { fileURLToPath } from 'url'
-import { stringify, split, merge, getPagesFolder } from '../utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '../utils/websiteDataSerialization.js'
 
 // Variables needed for jest tests
 if(!globalThis.__dirname) {

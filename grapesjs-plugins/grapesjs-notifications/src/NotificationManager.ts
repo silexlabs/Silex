@@ -1,6 +1,6 @@
 import { Editor } from "grapesjs"
 import { Notification, NotificationOptions as BaseNotificationOptions } from "./Notification"
-import { StyleInfo } from "lit/directives/style-map"
+import { StyleInfo } from "lit/directives/style-map.js"
 
 export interface NotificationOptions extends BaseNotificationOptions {
   id?: string

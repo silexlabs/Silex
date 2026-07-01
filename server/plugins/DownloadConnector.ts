@@ -1,12 +1,11 @@
 import { createWriteStream, unlink } from 'fs'
-import archiver from 'archiver'
-import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types'
-import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors'
+import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
+import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors.js'
 import { tmpdir } from 'os'
 import { basename, join } from 'path'
-import { JobManager } from '~/server/jobs'
-import { ServerConfig } from '~/server/config'
-import { ServerEvent } from '~/server/events'
+import { JobManager } from '~/server/jobs.js'
+import { ServerConfig } from '~/server/config.js'
+import { ServerEvent } from '~/server/events.js'
 
 import { Request, Response } from 'express'
 
@@ -30,7 +29,7 @@ export default class implements HostingConnector<DownloadConnectorSession> {
     // Add a route to serve the zip file
     config.on(ServerEvent.STARTUP_END, ({app}) => {
       app.get('/download/:tmpZipFile', async (req: Request, res: Response) => {
-        const {tmpZipFile} = req.params
+        const tmpZipFile = req.params.tmpZipFile as string
         if (basename(tmpZipFile) !== tmpZipFile) {
           res.status(400).send('Invalid download file')
           return
@@ -87,6 +86,7 @@ export default class implements HostingConnector<DownloadConnectorSession> {
 
   async startPublishingInBackground(session: DownloadConnectorSession, websiteId: WebsiteId, files: ConnectorFile[], job: PublicationJobData): Promise<void> {
     const fileName = `${websiteId}-${Date.now()}-${Math.random().toString(36).substring(7)}.zip`
+    const archiver = (await import('archiver') as any).default
     return new Promise<string>((resolve, reject) => {
       let resolved = false
       try {

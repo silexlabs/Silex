@@ -53,7 +53,7 @@ export function fromStored<T extends Token = Token>(token: StoredToken, componen
       ...original,
       ...token,
       type: 'filter',
-    } as T
+    } as unknown as T
   }
   case 'property': {
     if ((token as Property).optionsForm) return token as T
@@ -67,7 +67,7 @@ export function fromStored<T extends Token = Token>(token: StoredToken, componen
       ...token,
       type: 'property',
       propType: 'field',
-    } as T
+    } as unknown as T
   }
   case 'state':
     return token as T

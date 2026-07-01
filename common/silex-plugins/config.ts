@@ -1,4 +1,4 @@
-import { Plugin, loadPlugins, } from './plugin'
+import { Plugin, loadPlugins, } from './plugin.js'
 import EventEmitter from 'component-emitter'
 
 export default function( baseUrl: string = null) {

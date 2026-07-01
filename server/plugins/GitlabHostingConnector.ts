@@ -23,11 +23,11 @@
  */
 
 import dedent from 'dedent'
-import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector'
-import { HostingConnector, ConnectorFile } from '~/server/connectors/connectors'
-import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '~/common/types'
-import { JobManager } from '~/server/jobs'
-import { ServerConfig } from '~/server/config'
+import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector.js'
+import { HostingConnector, ConnectorFile } from '~/server/connectors/connectors.js'
+import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '~/common/types.js'
+import { JobManager } from '~/server/jobs.js'
+import { ServerConfig } from '~/server/config.js'
 import { setTimeout } from 'timers/promises'
 
 const waitTimeOut = 5000 /* for wait loop waiting for job to appear */

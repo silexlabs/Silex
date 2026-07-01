@@ -295,7 +295,7 @@ export default class GraphQL implements IDataSource {
       return { types, queryTypeName }
     } catch (e) {
       console.error('[GraphQL] Failed to fetch type names:', (e as Error).message)
-      throw new Error(`Failed to fetch type names: ${(e as Error).message}`)
+      throw new Error(`Failed to fetch type names: ${(e as Error).message}`, { cause: e })
     }
   }
 

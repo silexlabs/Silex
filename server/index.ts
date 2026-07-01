@@ -15,15 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as silexApp from './express'
-import api from './api/api'
-import { ServerConfig } from './config'
+import * as silexApp from './express.js'
+import api from './api/api.js'
+import { ServerConfig } from './config.js'
 import dotenv from 'dotenv'
 import { join } from 'path'
-import { DEV_MESSAGE } from '~/common/constants'
+import { DEV_MESSAGE } from '~/common/constants.js'
 
 // Expose API to calling app as function silex()
-export * from './expose'
+export * from './expose.js'
 
 // Main app
 export default async function silex() {

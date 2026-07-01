@@ -15,19 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_PAGES_FOLDER } from '~/common/constants'
-import { ServerConfig } from '~/server/config'
-import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '~/server/connectors/connectors'
-import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, EMPTY_WEBSITE } from '~/common/types'
-import fetch, { Response, RequestInit } from 'node-fetch'
+import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_PAGES_FOLDER } from '~/common/constants.js'
+import { ServerConfig } from '~/server/config.js'
+import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '~/server/connectors/connectors.js'
+import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, EMPTY_WEBSITE } from '~/common/types.js'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
-import { Agent } from 'https'
-import { getPageSlug } from '~/common/page'
+import { getPageSlug } from '~/common/page.js'
 import e from 'express'
 import { fork } from 'child_process'
 import { Page } from 'grapesjs'
-import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteDataSerialization.js'
 
 /**
  * Gitlab connector
@@ -337,12 +335,10 @@ export default class GitlabConnector implements StorageConnector {
         })
       }
       response = await this.fetchWithRetry(url, requestBody && method !== 'GET' ? {
-        agent: this.getAgent(),
         method,
         headers,
         body,
       } : {
-        agent: this.getAgent(),
         method,
         headers,
       })
@@ -399,14 +395,13 @@ export default class GitlabConnector implements StorageConnector {
           client_secret: this.options.clientSecret,
         }
         const response = await fetch(this.options.domain + '/oauth/token', {
-          agent: this.getAgent(),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(body)
         })
-        const refreshJson = await response.json()
+        const refreshJson = await response.json() as any
         if (response.ok) {
           this.setSessionToken(session, {
             token: {
@@ -486,7 +481,6 @@ export default class GitlabConnector implements StorageConnector {
     // GET /projects/:id/repository/files/:file_path/raw
     const rawUrl = `${domain}/api/v4/projects/${projectId}/repository/files/${encodeURIComponent(filePath)}/raw?ref=${branch}&access_token=${token}`
     const fileRes = await this.fetchWithRetry(rawUrl, {
-      agent: this.getAgent(),
     })
 
     const contentType = fileRes.headers.get('content-type')
@@ -517,7 +511,7 @@ export default class GitlabConnector implements StorageConnector {
     }
 
     try {
-      const buffer = await fileRes.buffer()
+      const buffer = Buffer.from(await fileRes.arrayBuffer())
       return buffer
     } catch (e) {
       console.error('[GitlabConnector] Error reading binary content from GitLab raw file', e)
@@ -545,16 +539,6 @@ export default class GitlabConnector implements StorageConnector {
   private getRedirect() {
     const params = `connectorId=${this.connectorId}&type=${this.connectorType}`
     return `${this.config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?${params}`
-  }
-
-  // Force IPv4 when running locally
-  private getAgent(): Agent | undefined {
-    if (this.config.url.startsWith('http://localhost')) {
-      return new Agent({
-        family: 4,
-      })
-    }
-    return undefined
   }
 
   // GitLab returns transient 5xx (e.g. 500, 503 "Upstream Gitaly has been exhausted")
@@ -656,7 +640,6 @@ export default class GitlabConnector implements StorageConnector {
     }
 
     const response = await fetch(this.options.domain + '/oauth/token', {
-      agent: this.getAgent(),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -671,7 +654,7 @@ export default class GitlabConnector implements StorageConnector {
       }),
     })
 
-    const token = await response.json()
+    const token = await response.json() as any
 
     // Store the token in the session
     this.setSessionToken(session, {

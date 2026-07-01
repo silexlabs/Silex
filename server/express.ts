@@ -22,8 +22,8 @@ import cookieParser from 'cookie-parser'
 import session from 'cookie-session'
 import cors from 'cors'
 
-import { ServerConfig } from './config'
-import { ServerEvent } from './events'
+import { ServerConfig } from './config.js'
+import { ServerEvent } from './events.js'
 
 export function create(config: ServerConfig): Application {
   // Express app

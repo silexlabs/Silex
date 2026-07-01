@@ -186,7 +186,7 @@ export const internalLinksPlugin = (editor, opts) => {
     // `elInput` is the result HTMLElement you get from `createInput`
     onEvent({ elInput, component, event }) {
       const inputType = elInput.querySelector('.href-next__type')
-      let href = ''
+      let href: string
       // Compute the new HREF value
       switch (inputType.value) {
       case 'page':

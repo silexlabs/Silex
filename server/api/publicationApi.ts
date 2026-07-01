@@ -16,13 +16,13 @@
  */
 
 import { Router } from 'express'
-import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ } from '~/common/constants'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationData, ConnectorType, ConnectorId, WebsiteId, ClientSideFile, ClientSideFileWithContent, ClientSideFileWithSrc} from '~/common/types'
-import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
-import { ServerConfig } from '../config'
-import { requiredParam } from '../utils/validation'
-import { PublishEndEventType, PublishStartEventType, ServerEvent } from '../events'
-import { getJob, jobManager } from '../jobs'
+import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ } from '~/common/constants.js'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationData, ConnectorType, ConnectorId, WebsiteId, ClientSideFile, ClientSideFileWithContent, ClientSideFileWithSrc} from '~/common/types.js'
+import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors.js'
+import { ServerConfig } from '../config.js'
+import { requiredParam } from '../utils/validation.js'
+import { PublishEndEventType, PublishStartEventType, ServerEvent } from '../events.js'
+import { getJob, jobManager } from '../jobs.js'
 
 /**
  * @fileoverview Publication plugin for Silex

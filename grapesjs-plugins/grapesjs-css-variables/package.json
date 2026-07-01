@@ -31,7 +31,7 @@
     "design-tokens"
   ],
   "devDependencies": {
-    "eslint": "^8.57.0",
+    "eslint": "^10.6.0",
     "grapesjs-cli": "^4.1.3"
   },
   "peerDependencies": {
@@ -42,6 +42,5 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "GPL-3.0",
-  "dependencies": {}
+  "license": "GPL-3.0"
 }

@@ -17,8 +17,8 @@
 
 import express from 'express'
 import serveStatic from 'serve-static'
-import { withCache } from './Cache'
-import { ServerEvent } from '~/server/events'
+import { withCache } from './Cache.js'
+import { ServerEvent } from '~/server/events.js'
 
 type StaticOptions = {
   routes: {
