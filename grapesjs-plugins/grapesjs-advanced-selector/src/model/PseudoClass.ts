@@ -35,6 +35,7 @@ export enum PseudoClassType {
   AFTER = 'after',
   FIRST_LINE = 'first-line',
   FIRST_LETTER = 'first-letter',
+  SELECTION = 'selection',
 
   // Form states
   ENABLED = 'enabled',
@@ -60,6 +61,7 @@ export interface PseudoClass {
   type: PseudoClassType
   hasParam: boolean
   param?: string | null
+  isPseudoElement?: boolean
   sentencePre: string
   sentencePost?: string
   helpLink?: string
@@ -99,10 +101,11 @@ export const PSEUDO_CLASSES: PseudoClass[] = [
   { type: PseudoClassType.ROOT, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:root' },
   { type: PseudoClassType.SCOPE, hasParam: false, sentencePre: 'When it is within', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:scope' },
   { type: PseudoClassType.TARGET, hasParam: false, sentencePre: 'When URL matches', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:target' },
-  { type: PseudoClassType.BEFORE, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::before' },
-  { type: PseudoClassType.AFTER, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::after' },
-  { type: PseudoClassType.FIRST_LINE, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-line' },
-  { type: PseudoClassType.FIRST_LETTER, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-letter' },
+  { type: PseudoClassType.BEFORE, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::before' },
+  { type: PseudoClassType.AFTER, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::after' },
+  { type: PseudoClassType.FIRST_LINE, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-line' },
+  { type: PseudoClassType.FIRST_LETTER, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-letter' },
+  { type: PseudoClassType.SELECTION, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::selection' },
 
   // Form states
   { type: PseudoClassType.ENABLED, hasParam: false, sentencePre: 'When it is', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:enabled' },
@@ -121,10 +124,11 @@ export const PSEUDO_CLASSES: PseudoClass[] = [
 // Functions
 
 export function toString(pseudoClass: PseudoClass): string {
+  const prefix = pseudoClass.isPseudoElement ? '::' : ':'
   if (pseudoClass.hasParam) {
-    return `:${pseudoClass.type}(${pseudoClass.param ?? ''})`
+    return `${prefix}${pseudoClass.type}(${pseudoClass.param ?? ''})`
   } else {
-    return `:${pseudoClass.type}`
+    return `${prefix}${pseudoClass.type}`
   }
 }
 
@@ -133,7 +137,7 @@ export function toString(pseudoClass: PseudoClass): string {
  * @example fromString(':nth-child(2n+1) // { type: 'nth-child', hasParam: true, param: '2n+1', sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-child' }
  */
 export function fromString(pseudoClassStr: string): PseudoClass {
-  const pseudoMatch = pseudoClassStr.match(/:([-\w]+)(\([^)]*\))?/)
+  const pseudoMatch = pseudoClassStr.match(/::?([-\w]+)(\([^)]*\))?/)
   if (!pseudoMatch) {
     throw new Error(`Invalid pseudo-class: ${pseudoClassStr}`)
   }
