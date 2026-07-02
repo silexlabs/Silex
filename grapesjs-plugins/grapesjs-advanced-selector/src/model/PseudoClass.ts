@@ -101,10 +101,12 @@ export const PSEUDO_CLASSES: PseudoClass[] = [
   { type: PseudoClassType.ROOT, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:root' },
   { type: PseudoClassType.SCOPE, hasParam: false, sentencePre: 'When it is within', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:scope' },
   { type: PseudoClassType.TARGET, hasParam: false, sentencePre: 'When URL matches', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:target' },
-  { type: PseudoClassType.BEFORE, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::before' },
-  { type: PseudoClassType.AFTER, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::after' },
-  { type: PseudoClassType.FIRST_LINE, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-line' },
-  { type: PseudoClassType.FIRST_LETTER, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-letter' },
+  // Legacy pseudo-elements keep the single colon: existing sites saved them as :before etc.,
+  // and switching to :: would break their stored selectors. Migrate via grapesjs-version-flow later.
+  { type: PseudoClassType.BEFORE, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::before' },
+  { type: PseudoClassType.AFTER, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::after' },
+  { type: PseudoClassType.FIRST_LINE, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-line' },
+  { type: PseudoClassType.FIRST_LETTER, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-letter' },
   { type: PseudoClassType.SELECTION, hasParam: false, isPseudoElement: true, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::selection' },
 
   // Form states

@@ -5,11 +5,11 @@ describe('PseudoClass', () => {
     expect(toString(PSEUDO_CLASSES.find(p => p.type === 'hover')!)).toBe(':hover')
     expect(toString(PSEUDO_CLASSES.find(p => p.type === 'nth-child')!)).toBe(':nth-child()')
   })
-  test('toString should use :: for pseudo-elements', () => {
-    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'before')!)).toBe('::before')
-    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'after')!)).toBe('::after')
-    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'first-line')!)).toBe('::first-line')
-    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'first-letter')!)).toBe('::first-letter')
+  test('toString uses :: only for ::selection, single colon for legacy pseudo-elements', () => {
+    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'before')!)).toBe(':before')
+    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'after')!)).toBe(':after')
+    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'first-line')!)).toBe(':first-line')
+    expect(toString(PSEUDO_CLASSES.find(p => p.type === 'first-letter')!)).toBe(':first-letter')
     expect(toString(PSEUDO_CLASSES.find(p => p.type === 'selection')!)).toBe('::selection')
   })
   test('fromString should return correct pseudo-class object', () => {
