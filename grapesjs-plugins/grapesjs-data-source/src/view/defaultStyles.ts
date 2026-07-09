@@ -104,14 +104,18 @@ export const PROPERTY_STYLES = `
     */
   }
   .ds-state-editor__options {
+    /* Popin = light surface, so this is a coherent LIGHT palette: every
+       surface (box, steps, chips, buttons) is light and every fg (text) is
+       dark. Keeping buttons/chips dark here (as before) put dark text on dark
+       chips inside the light popin — unreadable. */
     --ds-secondary: #252525;
     --ds-tertiary: #E5E5E5;
     --ds-lowlight: #333;
-    --ds-button-color: #E5E5E5;
-    --ds-button-bg: #1A1A1A;
-    --ds-button-border: #333;
+    --ds-button-color: #252525;
+    --ds-button-bg: #D5D5D5;
+    --ds-button-border: #C4C4C4;
     --expression-input-dirty-background-color: var(--ds-button-bg);
-    --expression-input-dirty-border-color: #333;
+    --expression-input-dirty-border-color: #C4C4C4;
     --expression-input-dirty-color: var(--ds-highlight);
     --expression-input-active-color: #1A1A1A;
     --expression-input-active-background-color: var(--ds-highlight);
@@ -178,17 +182,17 @@ export const PROPERTY_STYLES = `
     color: var(--ds-secondary);
   }
   expression-input::part(property-container) {
-    background-color: var(--ds-tertiary);
-    border-radius: 2px;
     box-sizing: border-box;
-    padding: 5px;
-    margin: 5px 0;
-    border: 1px solid var(--silex-border-color-strong);
+    /* Paint from the component's own --ds-* palette (fg/bg pair that flips per
+       scope) so the box stays readable on any dialog background — dark in the
+       dark panel, light in the light popin — instead of the fixed silex-global
+       colors that ignored the popin theme. */
+    border: 1px solid var(--ds-lowlight);
     border-radius: 4px;
     appearance: none;
     padding: var(--gjs-input-padding);
     margin: 2px;
-    background: var(--darkerPrimaryColor);
+    background: var(--ds-tertiary);
   }
   expression-input::part(scroll-container) {
     overflow: auto;
@@ -297,7 +301,7 @@ export const PROPERTY_STYLES = `
       appearance: none;
       padding: 10px var(--gjs-input-padding);
       margin: 2px;
-      background: var(--darkerPrimaryColor);
+      background: var(--ds-tertiary);
     }
     .ds-expression-input__add {
       max-width: 40px;
