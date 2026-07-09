@@ -6,7 +6,7 @@
 
 /* Theme system */
 @use "theme-base";
-@use "theme-modern";
+@use "design-system";
 
 /* Silex styles imports */
 @use "silex";
@@ -20,8 +20,6 @@
 @use "grapesjs";
 @use "panels";
 @use "dialogs";
-
-//@use "grapesjs-light";
 
 // Ubuntu Fonts
 @use "@fontsource/ubuntu";

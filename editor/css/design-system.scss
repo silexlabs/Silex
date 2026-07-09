@@ -1,6 +1,7 @@
 /**
- * THEME-MODERN.SCSS
- * Modern Dark Theme 2025 for Silex
+ * DESIGN-SYSTEM.SCSS
+ * The Silex editor design system (there is no theme-switching — this is THE
+ * look): --silex-* semantic tokens + the styling of the editor's UI components.
  *
  * Design Philosophy:
  * - Minimalisme structuré
@@ -477,6 +478,12 @@ textarea {
 // Trait rows — tighter
 .gjs-trt-trait {
   padding: 3px 10px;
+}
+
+// GrapesJS renders an empty trait-category label bar; hide it (the data-source
+// section labels carry text and live in shadow DOM, so they're unaffected)
+.gjs-traits-label:empty {
+  display: none;
 }
 
 // Trait category titles — match sector style

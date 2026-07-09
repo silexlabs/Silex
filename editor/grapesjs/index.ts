@@ -177,7 +177,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       messages: {
         en: {
           traitManager: {
-            label: 'Element settings',
+            label: '',
           },
           styleManager: {
             sectors: {
