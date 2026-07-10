@@ -343,15 +343,16 @@ textarea {
 
 // Composite properties (margin, padding) — tinted purple sub-group
 .gjs-sm-property.gjs-sm-composite {
-  background-color: rgba(136, 115, 254, 0.04);
-  border: 1px solid rgba(136, 115, 254, 0.08);
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--silex-border-color);
   border-radius: 6px;
   padding: 8px;
   margin-top: 4px;
 
-  // Composite label (e.g., "Margin", "Padding") — purple uppercase
+  // Composite label (e.g., "Margin", "Padding") — neutral, not accent
+  // (purple is reserved for active states — issue #1711)
   > .gjs-sm-label {
-    color: var(--silex-accent-primary);
+    color: var(--silex-text-secondary);
     text-transform: uppercase;
     font-size: 9px;
     font-weight: 700;
@@ -365,34 +366,34 @@ textarea {
 
   // Inner fields — no extra border inside composite
   .gjs-field {
-    border-color: rgba(136, 115, 254, 0.12);
+    border-color: var(--silex-border-color);
   }
 }
 
-// Sliders — purple accent
+// Sliders — neutral, not accent (purple is reserved for active states, #1711)
 .gjs-field-range input[type="range"] {
-  accent-color: var(--silex-accent-primary);
+  accent-color: var(--silex-text-secondary);
 
   &::-webkit-slider-thumb {
-    background-color: var(--silex-accent-primary);
+    background-color: var(--silex-text-primary);
   }
 
   &::-webkit-slider-runnable-track {
-    background-color: var(--silex-accent-primary);
+    background-color: var(--silex-text-secondary);
     opacity: 0.4;
   }
 
   &::-moz-range-thumb {
-    background-color: var(--silex-accent-primary);
+    background-color: var(--silex-text-primary);
   }
 
   &::-moz-range-track {
-    background-color: var(--silex-accent-primary);
+    background-color: var(--silex-text-secondary);
     opacity: 0.4;
   }
 
   &::-moz-range-progress {
-    background-color: var(--silex-accent-primary);
+    background-color: var(--silex-text-secondary);
   }
 }
 
@@ -400,6 +401,13 @@ textarea {
 .gjs-sm-sector .gjs-sm-label {
   font-size: 10px;
   color: var(--silex-text-secondary);
+}
+
+// ...but a MODIFIED property (grapesjs adds .gjs-four-color) keeps the accent,
+// so the accent means "this property is set" — not decoration (issue #1711)
+.gjs-sm-sector .gjs-sm-label.gjs-four-color,
+.gjs-sm-property.gjs-sm-composite > .gjs-sm-label.gjs-four-color {
+  color: var(--gjs-quaternary-color);
 }
 
 // Tighter property spacing
