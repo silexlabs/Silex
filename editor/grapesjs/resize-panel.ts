@@ -14,7 +14,8 @@ export default function(editor) {
       document.documentElement.style.setProperty('--viewsPanelWidth', '40%')
     },
     stop: (editor, sender) => {
-      document.documentElement.style.setProperty('--viewsPanelWidth', '20%')
+      // restore the default width (from CSS) instead of forcing a smaller one
+      document.documentElement.style.removeProperty('--viewsPanelWidth')
     },
   })
 }
