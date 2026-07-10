@@ -67,6 +67,8 @@ export const PROPERTY_STYLES = `
     --ds-button-color: #E5E5E5;
     --ds-button-bg: #252525;
     --ds-button-border: var(--ds-button-bg);
+    --ds-input-bg: #111111;
+    --ds-input-border: #262626;
 
     --expression-input-dirty-background-color: var(--ds-button-bg);
     --expression-input-dirty-border-color: var(--ds-tertiary);
@@ -104,21 +106,18 @@ export const PROPERTY_STYLES = `
     */
   }
   .ds-state-editor__options {
-    /* Popin = light surface, so this is a coherent LIGHT palette: every
-       surface (box, steps, chips, buttons) is light and every fg (text) is
-       dark. Keeping buttons/chips dark here (as before) put dark text on dark
-       chips inside the light popin — unreadable. */
+    /* popin sits on a light dialog → full light palette, incl. buttons/chips
+       (else dark text lands on dark chips = unreadable) */
     --ds-secondary: #252525;
     --ds-tertiary: #E5E5E5;
     --ds-lowlight: #333;
     --ds-button-color: #252525;
     --ds-button-bg: #D5D5D5;
     --ds-button-border: #C4C4C4;
-    --expression-input-dirty-background-color: var(--ds-button-bg);
-    --expression-input-dirty-border-color: #C4C4C4;
-    --expression-input-dirty-color: var(--ds-highlight);
-    --expression-input-active-color: #1A1A1A;
-    --expression-input-active-background-color: var(--ds-highlight);
+    --ds-input-bg: #E5E5E5;
+    --ds-input-border: rgba(0, 0, 0, 0.15);
+    --expression-input-active-color: var(--ds-secondary);
+    --expression-input-active-background-color: rgba(0, 0, 0, 0.08);
   }
   .gjs-traits-label {
     font-family: inherit;
@@ -126,13 +125,23 @@ export const PROPERTY_STYLES = `
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 8px 10px;
+    padding: 4px 10px;
     text-align: left;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 30px;
     border-bottom: 1px solid var(--ds-lowlight);
+  }
+  /* each state and each property (a section with content) is a distinct card;
+     section wrappers (header-only .ds-section) and nested state-editor
+     .ds-section have no <main>, so they stay full-width */
+  .ds-states__item,
+  .ds-section:has(main) {
+    background: var(--ds-tertiary);
+    border: 1px solid var(--ds-lowlight);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 10px;
   }
   expression-input {
     padding: 10px;
@@ -174,6 +183,10 @@ export const PROPERTY_STYLES = `
     padding-top: 0;
     padding-left: 5px;
   }
+  label[slot='label'] {
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
   expression-input::part(property-input) {
     padding: 4px;
     border: medium;
@@ -183,42 +196,36 @@ export const PROPERTY_STYLES = `
   }
   expression-input::part(property-container) {
     box-sizing: border-box;
-    /* Paint from the component's own --ds-* palette (fg/bg pair that flips per
-       scope) so the box stays readable on any dialog background — dark in the
-       dark panel, light in the light popin — instead of the fixed silex-global
-       colors that ignored the popin theme. */
-    border: 1px solid var(--ds-lowlight);
+    border: 1px solid var(--ds-input-border);
     border-radius: 4px;
     appearance: none;
     padding: var(--gjs-input-padding);
     margin: 2px;
-    background: var(--ds-tertiary);
+    background: var(--ds-input-bg);
+  }
+  expression-input::part(property-container):focus-within {
+    border-color: var(--ds-highlight);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-highlight) 12%, transparent);
   }
   expression-input::part(scroll-container) {
     overflow: auto;
     box-sizing: border-box;
-
     /* inner shadow to make it visible when content is overflowing */
     box-shadow: inset 0 0 5px 0 rgba(0,0,0,.3);
-
   }
   expression-input::part(steps-container) {
     display: flex;
     align-items: center;
     background-color: var(--ds-button-bg);
     border-radius: 2px;
-    padding: 5px;
-    margin: 5px 0;
+    padding: 3px;
+    margin: 0;
     width: max-content;
     min-width: 100%;
     box-sizing: border-box;
   }
   expression-input::part(dirty-icon) {
     cursor: pointer;
-    margin: 0 10px;
-    color: var(--ds-highlight);
-  }
-  expression-input::part(dirty-icon) {
     color: var(--ds-highlight);
     vertical-align: bottom;
     display: inline-flex;
@@ -251,6 +258,21 @@ export const PROPERTY_STYLES = `
       cursor: pointer;
       padding: 10px 0;
     }
+    .ds-states__help summary {
+      list-style: none;
+      padding: 0;
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid var(--ds-button-border);
+      font-size: 0.65rem;
+      opacity: 0.6;
+    }
+    .ds-states__help summary::-webkit-details-marker { display: none; }
+    .ds-states__help summary:hover { opacity: 1; }
     details a {
       color: var(--ds-link-color);
     }
@@ -265,7 +287,7 @@ export const PROPERTY_STYLES = `
       padding: 10px;
     }
     .gjs-traits-label {
-      background-color: var(--ds-tertiary);
+      background-color: var(--ds-lowlight);
       span {
         display: flex;
         align-items: center;
@@ -284,42 +306,40 @@ export const PROPERTY_STYLES = `
       appearance: none;
       width: 150px;
       flex: 0;
-      margin: 5px;
-      padding: 5px;
+      margin: 2px;
+      padding: 2px 4px;
+      font-size: 0.8rem;
+      line-height: 1.4;
       background-color: var(--ds-button-bg);
       border-radius: 2px;
       color: var(--ds-secondary);
       border: 1px solid var(--ds-tertiary);
       cursor: pointer;
-      font-size: medium;
     }
     input.ds-expression-input__fixed {
       color: var(--ds-secondary);
       width: 98%;
       box-sizing: border-box;
+      border: none;
+      outline: none;
       border-radius: 4px;
       appearance: none;
-      padding: 10px var(--gjs-input-padding);
-      margin: 2px;
-      background: var(--ds-tertiary);
+      padding: 5px var(--gjs-input-padding);
+      margin: 1px;
+      background: var(--ds-input-bg);
     }
     .ds-expression-input__add {
-      max-width: 40px;
+      width: 24px;
+      min-width: 24px;
+      height: 24px;
+      padding: 0;
       text-align: center;
-      font-size: large;
-      padding-right: 9px;
+      font-size: 0.8rem;
       -webkit-appearance: none;
       -moz-appearance: none;
-      text-indent: 1px;
-      text-overflow: '';
-      margin-right: 150px;
     }
     .ds-expression-input__add {
-      option {
-        font-size: medium;
-      }
       optgroup option {
-        /* all options but the "+" */
         text-align: left;
       }
     }
@@ -329,7 +349,7 @@ export const PROPERTY_STYLES = `
       color: var(--ds-secondary);
       cursor: pointer;
       padding: 0;
-      margin: 10px;
+      margin: 6px;
       margin-left: 0;
     }
     label.ds-label {
@@ -363,11 +383,31 @@ export const PROPERTY_STYLES = `
       cursor: pointer;
       border: 1px solid var(--ds-button-border);
       border-radius: 2px;
-      padding: 5px;
       background: var(--ds-button-bg);
       color: var(--ds-button-color);
-      margin: 5px;
-      padding: 7px 14px;
+      margin: 2px;
+      padding: 0 6px;
+    }
+    .ds-states__button:not(.ds-states__button--disabled):hover {
+      color: var(--ds-highlight);
+    }
+    .ds-states__add-button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      line-height: 1;
+      color: var(--ds-secondary);
+      background: var(--ds-input-bg);
+      border: 1px solid var(--ds-input-border);
+      opacity: 0.75;
+      &:hover {
+        opacity: 1;
+      }
     }
     .ds-states__button--disabled {
       opacity: 0.5;
@@ -375,12 +415,6 @@ export const PROPERTY_STYLES = `
     }
     .ds-states__remove-button {
       margin-left: 1em;
-    }
-    .ds-states__sep {
-      width: 100%;
-      border: none;
-      height: 1px;
-      background: var(--ds-button-bg);
     }
   /* real data */
   .ds-real-data {

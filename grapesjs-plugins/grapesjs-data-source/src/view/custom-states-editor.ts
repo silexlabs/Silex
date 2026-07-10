@@ -123,7 +123,7 @@ export class CustomStatesEditor extends LitElement {
               ` : ''}
               ${this.helpText ? html`
               <details class="ds-states__help">
-              <summary>Help</summary>
+              <summary title="Help">?</summary>
               <div class="ds-states__help--tooltip">
               <span>${ this.helpText }</span>
               ${this.helpLink ? html`
@@ -185,7 +185,7 @@ export class CustomStatesEditor extends LitElement {
     this.removeState(selected, item.name)
     this.requestUpdate()
   }}
-                  >x</button>
+                  >×</button>
                 <button
                   title="Rename this state"
                   class="ds-states__rename-button ds-states__button"
@@ -215,7 +215,6 @@ export class CustomStatesEditor extends LitElement {
                   >\u2193</button>
               </div>
             </div>
-            <hr class="ds-states__sep" />
           `)}
         </div>
       </div>
