@@ -36,6 +36,11 @@
       background-color: var(--silex-accent-secondary);
       color: var(--silex-text-inverse);
     }
+
+    // the "+" (fa-plus) reads thinner than the filled icons — bump it up
+    .#{$pn-prefix}btn.block-manager-btn {
+      font-size: 22px;
+    }
   }
 
   .logo {
