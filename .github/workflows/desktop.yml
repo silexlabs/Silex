@@ -303,6 +303,28 @@ jobs:
           [ -n "$INNER" ] && echo "$(cat "$INNER")  silex-desktop [reproducible binary — see scripts/README.md]" > SHA256SUMS.inner
           echo "--- SHA256SUMS ---"; cat SHA256SUMS SHA256SUMS.inner 2>/dev/null
 
+      # Version-less copies of each installer, so the download page can use permanent
+      # links like releases/latest/download/Silex_amd64.AppImage (asset names carry the
+      # version, which would otherwise break the link on every release).
+      - name: Add version-less download aliases
+        working-directory: release
+        run: |
+          shopt -s nullglob
+          copy_alias() {  # $1 = glob of the versioned file, $2 = stable name
+            for f in $1; do
+              [ "$f" = "$2" ] && continue
+              cp -f "$f" "$2" && echo "$2 <- $f"
+              return
+            done
+          }
+          copy_alias '*_amd64.AppImage' Silex_amd64.AppImage
+          copy_alias '*_amd64.deb'      Silex_amd64.deb
+          copy_alias '*.x86_64.rpm'     Silex_x86_64.rpm
+          copy_alias '*_aarch64.dmg'    Silex_aarch64.dmg
+          copy_alias '*_x64.dmg'        Silex_x64.dmg
+          copy_alias '*_x64-setup.exe'  Silex_x64-setup.exe
+          ls -1
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
