@@ -45,7 +45,9 @@ jobs:
 
   production:
     name: deploy production
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # Stable tags only. Prerelease tags (v3.9.0-canary.1, -alpha, -beta …) must never
+    # reach production — they are used to publish desktop builds without a SaaS release.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
