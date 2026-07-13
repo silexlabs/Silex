@@ -247,6 +247,7 @@ fn check_for_updates(app: tauri::AppHandle) {
         match app.updater().expect("updater not configured").check().await {
             Ok(Some(update)) => {
                 let version = update.version.clone();
+                tracing::info!("Update available: v{}", version);
                 let app_clone = app.clone();
 
                 app.dialog()
