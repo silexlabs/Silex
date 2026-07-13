@@ -3,7 +3,7 @@ name = "silex-desktop"
 version = "0.1.0"
 edition = "2021"
 description = "Silex website builder - desktop app"
-license = "GPL-3.0-or-later"
+license = "AGPL-3.0-or-later"
 authors = ["Silex Labs Foundation"]
 
 [build-dependencies]
