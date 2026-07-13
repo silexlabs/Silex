@@ -98,6 +98,33 @@ jobs:
             exit 1
           fi
 
+      # Reproducible Linux build: pin timestamps/paths and normalize the mtimes
+      # rust-embed bakes into the binary, so the bundle is verifiable against source.
+      - name: Set deterministic build environment (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          EPOCH="$(git log -1 --pretty=%ct)"
+          echo "SOURCE_DATE_EPOCH=$EPOCH" >> "$GITHUB_ENV"
+          echo "CARGO_INCREMENTAL=0" >> "$GITHUB_ENV"
+          echo "CARGO_NET_LOCKED=true" >> "$GITHUB_ENV"
+          echo "TZ=UTC" >> "$GITHUB_ENV"
+          echo "LC_ALL=C.UTF-8" >> "$GITHUB_ENV"
+          echo "RUSTFLAGS=--remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$GITHUB_WORKSPACE=/build" >> "$GITHUB_ENV"
+          for dir in dist/client silex-dashboard-2026/public; do
+            [ -d "$dir" ] && find "$dir" -exec touch -h -d "@$EPOCH" {} +
+          done
+
+      # Record the sha256 of the compiled binary before Tauri stamps it per bundle
+      # type; this is the reproducibility reference (scripts/verify-reproducible.sh).
+      - name: Record reproducibility hash (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          cargo build --release --locked --manifest-path desktop/src-tauri/Cargo.toml
+          sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
+          echo "reproducible binary sha256: $(cat silex-desktop.sha256)"
+
       # Sign updater artifacts only on desktop-v* tags (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
         if: startsWith(github.ref, 'refs/tags/desktop-v')
@@ -134,6 +161,7 @@ jobs:
         with:
           name: silex-desktop-${{ matrix.platform }}
           path: |
+            silex-desktop.sha256
             target/**/release/bundle/**/*.dmg
             target/**/release/bundle/**/*.AppImage
             target/**/release/bundle/**/*.deb
@@ -259,6 +287,21 @@ jobs:
           cat release/latest.json
           echo "--- release files ---"
           ls -lh release/
+
+      # Reproducibility checksums for the Linux artifacts. SHA256SUMS is download
+      # integrity for the installers; SHA256SUMS.inner is the compiled binary hash
+      # that scripts/verify-reproducible.sh rebuilds and matches (the installers
+      # wrap a per-format-stamped copy, so the binary is the reproducible unit).
+      - name: Compute reproducibility checksums (Linux)
+        working-directory: release
+        run: |
+          shopt -s nullglob
+          LINUX=( *_amd64.AppImage *.deb *.rpm )
+          [ ${#LINUX[@]} -eq 0 ] && { echo "no Linux artifacts, skipping"; exit 0; }
+          sha256sum "${LINUX[@]}" > SHA256SUMS
+          INNER="$(find .. -name silex-desktop.sha256 | head -1)"
+          [ -n "$INNER" ] && echo "$(cat "$INNER")  silex-desktop [reproducible binary — see scripts/README.md]" > SHA256SUMS.inner
+          echo "--- SHA256SUMS ---"; cat SHA256SUMS SHA256SUMS.inner 2>/dev/null
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
