@@ -2,7 +2,7 @@ name: Desktop release
 
 on:
   push:
-    tags: ['desktop-v*']
+    tags: ['v*']
   pull_request:
     branches: [main]
 
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   # Linux-only on PRs (Rust+TS is shared, so linux catches almost all breakage);
-  # full 4-platform matrix only on desktop-v* tags, where the costly macOS/Windows
+  # full 4-platform matrix only on v* tags, where the costly macOS/Windows
   # runners are worth it. No per-commit main build — the PR already covered it.
   set-matrix:
     runs-on: ubuntu-latest
@@ -21,7 +21,7 @@ jobs:
       - id: m
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/desktop-v* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"},{"platform":"macos-arm","os":"macos-latest"},{"platform":"macos-x64","os":"macos-latest","rust-target":"x86_64-apple-darwin"},{"platform":"windows","os":"windows-latest"}]}' >> "$GITHUB_OUTPUT"
           else
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
@@ -73,10 +73,10 @@ jobs:
       # updater metadata carry the release version (Tauri reads it from tauri.conf.json;
       # a stale value would nag users to "update" to the same version).
       - name: Patch desktop version from tag
-        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
-          V="${GITHUB_REF_NAME#desktop-v}"
+          V="${GITHUB_REF_NAME#v}"
           jq --arg v "$V" '.version = $v' desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
           mv /tmp/tauri.conf.json desktop/src-tauri/tauri.conf.json
           ACTUAL="$(jq -r '.version' desktop/src-tauri/tauri.conf.json)"
@@ -125,9 +125,9 @@ jobs:
           sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
           echo "reproducible binary sha256: $(cat silex-desktop.sha256)"
 
-      # Sign updater artifacts only on desktop-v* tags (secrets unavailable on fork PRs).
+      # Sign updater artifacts only on v* tags (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
-        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -140,12 +140,12 @@ jobs:
           args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       - name: Disable updater artifacts config
-        if: ${{ !startsWith(github.ref, 'refs/tags/desktop-v') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         shell: bash
         run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > desktop/tauri.ci.json
 
       - name: Build Tauri app (unsigned)
-        if: ${{ !startsWith(github.ref, 'refs/tags/desktop-v') }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -173,7 +173,7 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -190,9 +190,9 @@ jobs:
           # Previous desktop tag of the same type (prerelease or stable)
           CURRENT="${GITHUB_REF_NAME}"
           if [[ "$CURRENT" == *-* ]]; then
-            PREV=$(git tag --sort=-version:refname | grep -E '^desktop-v.*-' | grep -v "^${CURRENT}$" | head -1)
+            PREV=$(git tag --sort=-version:refname | grep -E '^v.*-' | grep -v "^${CURRENT}$" | head -1)
           else
-            PREV=$(git tag --sort=-version:refname | grep -E '^desktop-v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${CURRENT}$" | head -1)
+            PREV=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${CURRENT}$" | head -1)
           fi
           echo "tag=${PREV:-}" >> "$GITHUB_OUTPUT"
           echo "Previous tag: ${PREV:-none}"
@@ -234,7 +234,7 @@ jobs:
           # macOS updater bundles are named Silex.app.tar.gz on both arches — rename per-arch.
           # Cross-builds leave an unsigned native bundle next to the signed one: pick only
           # the bundle that has its .sig sibling.
-          V="${VERSION#desktop-v}"
+          V="${VERSION#v}"
           for pair in "macos-arm aarch64" "macos-x64 x64"; do
             set -- $pair
             SRC=$(find "artifacts/silex-desktop-$1" -name '*.app.tar.gz' ! -name '*.sig' \
