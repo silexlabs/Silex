@@ -40,8 +40,6 @@ export class PublicationError extends Error {
   }
 }
 
-const PROJECT_ROOT = require.main ? require.main.path : process.cwd()
-
 // Limit parallel storage reads so we don't overwhelm the upstream API
 // (GitLab returns 5xx for the same project under high concurrent load)
 const PUBLISH_STORAGE_CONCURRENCY = 5

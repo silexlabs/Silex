@@ -29,12 +29,7 @@ import { v4 as uuid } from 'uuid'
 import { fileURLToPath } from 'url'
 import { stringify, split, merge, getPagesFolder } from '../utils/websiteDataSerialization.js'
 
-// Variables needed for jest tests
-if(!globalThis.__dirname) {
-  // @ts-ignore
-  globalThis.__dirname = dirname(process.cwd() + '/server/connectors/FsStorage.ts')
-  console.info('Redefining __dirname', globalThis.__dirname)
-}
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Copy a folder recursively
 async function copyDir(src, dest) {

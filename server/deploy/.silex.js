@@ -21,23 +21,27 @@
  * and the storage/hosting connectors selected by env vars. Loaded by default at startup
  * (see server/config.ts: configFilePath). Runtime paths target the monorepo dist.
  */
-const { join } = require('path')
-const nodeModules = require('node_modules-path')
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import nodeModules from 'node_modules-path'
+import dotenv from 'dotenv'
 
-const SslPlugin = require('../../dist/server/server/plugins/SslPlugin').default
-const StaticPlugin = require('../../dist/server/server/plugins/StaticPlugin').default
-const { ConnectorType } = require('../../dist/server/common/types')
-const FtpConnector = require('../../dist/server/server/plugins/FtpConnector').default
-const DownloadConnector = require('../../dist/server/server/plugins/DownloadConnector').default
-const GitlabConnector = require('../../dist/server/server/plugins/GitlabConnector').default
-const GitlabHostingConnector = require('../../dist/server/server/plugins/GitlabHostingConnector').default
-const { FsStorage } = require('../../dist/server/server/connectors/FsStorage')
-const { FsHosting } = require('../../dist/server/server/connectors/FsHosting')
-const dashboard = require('./server-plugins/dashboard.js')
-const onboarding = require('./server-plugins/onboarding.js')
+import SslPlugin from '../../dist/server/server/plugins/SslPlugin.js'
+import StaticPlugin from '../../dist/server/server/plugins/StaticPlugin.js'
+import { ConnectorType } from '../../dist/server/common/types.js'
+import FtpConnector from '../../dist/server/server/plugins/FtpConnector.js'
+import DownloadConnector from '../../dist/server/server/plugins/DownloadConnector.js'
+import GitlabConnector from '../../dist/server/server/plugins/GitlabConnector.js'
+import GitlabHostingConnector from '../../dist/server/server/plugins/GitlabHostingConnector.js'
+import { FsStorage } from '../../dist/server/server/connectors/FsStorage.js'
+import { FsHosting } from '../../dist/server/server/connectors/FsHosting.js'
+import dashboard from './server-plugins/dashboard.js'
+import onboarding from './server-plugins/onboarding.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Load .env file
-require('dotenv').config()
+dotenv.config()
 
 const env = {
   STORAGE_CONNECTORS: process.env.STORAGE_CONNECTORS || 'ftp',
@@ -169,7 +173,7 @@ function initConnectors(config) {
   }
 }
 
-module.exports = async function(config) {
+export default async function(config) {
   // SaaS multi-site dashboard FIRST: its "/" handler redirects to the localized
   // dashboard before StaticPlugin can serve the editor's index.html at "/".
   // (STARTUP_START handlers run in addPlugin order → dashboard routes mount first.)

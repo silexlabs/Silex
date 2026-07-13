@@ -1,6 +1,11 @@
-const { ServerEvent } = require('../../../dist/server/server/events')
-const express = require('express')
-const ONBOADRDING_STEPS = require('../onboarding.json')
+import { readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import express from 'express'
+import { ServerEvent } from '../../../dist/server/server/events.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const ONBOADRDING_STEPS = JSON.parse(readFileSync(join(__dirname, '../onboarding.json'), 'utf8'))
 
 /**
  * @fileoverview
@@ -164,7 +169,7 @@ async function saveUserToDatabase(user, type, lang, rgpdAllowFeedback, rgpdAllow
 }
 
 
-module.exports = async function(config, options) {
+export default async function(config, options) {
   console.info('> Silex onboarding plugin starting', {options})
 
   // Check the environment variables

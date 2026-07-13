@@ -19,8 +19,11 @@ import * as silexApp from './express.js'
 import api from './api/api.js'
 import { ServerConfig } from './config.js'
 import dotenv from 'dotenv'
-import { join } from 'path'
+import { join, dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 import { DEV_MESSAGE } from '~/common/constants.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Expose API to calling app as function silex()
 export * from './expose.js'
@@ -99,6 +102,10 @@ async function startLiverReload() {
   server.watch(dist)
 }
 
-if (require.main === module) {
+// Run the server only when this file is the entry point (ESM has no require.main).
+// Handles both `node dist/server/server/` (argv[1] = dir) and `node .../index.js`.
+const entry = process.argv[1] ? resolve(process.argv[1]) : ''
+const thisFile = fileURLToPath(import.meta.url)
+if (entry && (thisFile === entry || thisFile === resolve(entry, 'index.js'))) {
   silex()
 }

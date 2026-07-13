@@ -25,7 +25,8 @@
  */
 
 import { Config, Plugin } from '~/common/silex-plugins/index.js'
-import { join, resolve } from 'path'
+import { join, resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { CLIENT_CONFIG_FILE_NAME } from '~/common/constants.js'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
@@ -38,6 +39,8 @@ import { FsHosting } from './connectors/FsHosting.js'
 /**
  * Config types definitions
  */
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
 export class ServerConfig extends Config {
   public expressOptions = {
     jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT,

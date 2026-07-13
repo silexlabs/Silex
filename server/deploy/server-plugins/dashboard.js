@@ -23,17 +23,19 @@
  * StaticPlugin). Re-implemented against the monorepo dist so the silex-dashboard
  * submodule stays pure content (no stale `@silexlabs/silex/dist/...` requires).
  */
-const fs = require('node:fs/promises')
-const { join } = require('node:path')
-const express = require('express')
-const serveStatic = require('serve-static')
-const locale = require('locale')
-const { withCache } = require('../../../dist/server/server/plugins/Cache')
-const { ServerEvent } = require('../../../dist/server/server/events')
+import fs from 'node:fs/promises'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import express from 'express'
+import serveStatic from 'serve-static'
+import locale from 'locale'
+import { withCache } from '../../../dist/server/server/plugins/Cache.js'
+import { ServerEvent } from '../../../dist/server/server/events.js'
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const DASHBOARD_ROOT = join(__dirname, '../../../silex-dashboard')
 
-module.exports = async function(config, options) {
+export default async function(config, options) {
   console.log('> Silex dashboard plugin starting', { options })
 
   const opts = {

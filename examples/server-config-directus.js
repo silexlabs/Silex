@@ -17,7 +17,7 @@
 
 // const StaticPlugin = require('../dist/plugins/server/plugins/server/StaticPlugin').default
 
-module.exports = async function (config, options) {
+export default async function (config, options) {
   // config.addPlugin(StaticPlugin, {
   //   routes: [{
   //     route: '/js/grapesjs-directus-storage/',

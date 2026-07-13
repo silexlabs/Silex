@@ -4,6 +4,7 @@
   "description": "Free and easy website builder for everyone.",
   "author": "Alex Hoyau (https://lexoyo.me/)",
   "license": "AGPL-3.0",
+  "type": "module",
   "main": "dist/server/server/index.js",
   "engines": {
     "node": ">=24"
@@ -66,7 +67,7 @@
     "build": "run-s build:css build:html build:client build:server build:public",
     "build:css": "sass --load-path node_modules --no-source-map editor/css/index.scss dist/client/css/admin.css",
     "build:html": "pug editor/html/index.pug --out dist/client/ --no-debug",
-    "build:client": "webpack --config webpack.config.js",
+    "build:client": "webpack --config webpack.config.cjs",
     "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
     "build:public": "node scripts/copy-assets.mjs",
     "start": "node dist/server/server/",

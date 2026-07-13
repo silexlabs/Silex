@@ -1,6 +1,10 @@
-const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import StaticPlugin from '@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin.js'
 
-module.exports = (config, opts) => {
+const __dirname = dirname(fileURLToPath(import.meta.url))
+
+export default (config, opts) => {
   config.addPlugin(StaticPlugin, {
     routes: [
       {

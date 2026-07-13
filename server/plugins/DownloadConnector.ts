@@ -86,8 +86,8 @@ export default class implements HostingConnector<DownloadConnectorSession> {
 
   async startPublishingInBackground(session: DownloadConnectorSession, websiteId: WebsiteId, files: ConnectorFile[], job: PublicationJobData): Promise<void> {
     const fileName = `${websiteId}-${Date.now()}-${Math.random().toString(36).substring(7)}.zip`
-    // archiver v8 is ESM and dropped the default factory (archiver('zip', ...)) in
-    // favour of named format classes. Use ZipArchive directly. See forum #250.
+    // archiver v8 is ESM-only and dropped the default factory; import the named
+    // ZipArchive class lazily so tests can mock 'fs' without pulling archiver in.
     const { ZipArchive } = await import('archiver')
     return new Promise<string>((resolve, reject) => {
       let resolved = false

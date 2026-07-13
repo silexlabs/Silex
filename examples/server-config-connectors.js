@@ -39,12 +39,12 @@
  *
  */
 
-const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector').default
-const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
-const GitlabHostingConnector = require('../dist/plugins/server/plugins/server/GitlabHostingConnector').default
-const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
-const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
-const node_modules = require('node_modules-path')
+import FtpConnector from '../dist/plugins/server/plugins/server/FtpConnector.js'
+import GitlabConnector from '../dist/plugins/server/plugins/server/GitlabConnector.js'
+import GitlabHostingConnector from '../dist/plugins/server/plugins/server/GitlabHostingConnector.js'
+import DownloadPlugin from '../dist/plugins/server/plugins/server/DownloadConnector.js'
+import StaticPlugin from '@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin.js'
+import node_modules from 'node_modules-path'
 
 class FramaGitConnector extends GitlabConnector {
   connectorId = 'framagit'
@@ -54,7 +54,7 @@ class FramaGitConnector extends GitlabConnector {
   }
 }
 
-module.exports = async function (config, options) {
+export default async function (config, options) {
   if (!FtpConnector) throw new Error('FtpConnector not found')
   if (!GitlabConnector) throw new Error('GitlabConnector not found')
   if (!DownloadPlugin) throw new Error('DownloadPlugin not found')

@@ -1,5 +1,5 @@
 // This example is used in unit tests
-module.exports = function(config) {
+export default function(config) {
   return {
     test: 'example',
   }
