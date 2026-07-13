@@ -48,14 +48,14 @@ We use a trunk-based model: `main` is the single, always-releasable branch.
 - `main` is protected — no direct pushes. All work lands via PR.
 - Use short-lived branches (`feat/...`, `fix/...`) and open a PR against `main`.
 - PRs are **squash-merged**; the squash title must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`), since it drives the changelog.
-- `main` is deployed continuously to **canary** ([canary.silex.me](https://canary.silex.me)) for preview; **production** ships only when you tag, so nothing reaches production until you tag it.
+- Nothing auto-deploys from `main`. Deployments and releases are driven by git tags, so untested `main` never reaches production. Server (web) and desktop ship together from the same tag.
 
-Production releases are driven by git tags, in **two independent channels** (a server release never ships a desktop update, and vice-versa):
+Two kinds of tags:
 
-- **`v*`** (e.g. `v3.8.1`) — server/web: publishes the `silexlabs/silex-platform` Docker image and deploys to CapRover production ([v3.silex.me](https://v3.silex.me)).
-- **`desktop-v*`** (e.g. `desktop-v1.2.0`) — desktop: builds the Tauri apps (macOS/Windows/Linux) and publishes the GitHub release with auto-updater metadata.
+- **Prerelease tags** (e.g. `v3.9.0-canary.1`, `-alpha`, `-beta`) — deploy to **canary** ([canary.silex.me](https://canary.silex.me)) for testing, and publish a GitHub *prerelease* of the desktop apps. Nothing reaches production, and prerelease builds are never offered to stable users by the auto-updater.
+- **Stable tags** (e.g. `v3.9.0`) — deploy the server to CapRover **production** ([v3.silex.me](https://v3.silex.me)), publish the `silexlabs/silex-platform` Docker image, and publish the stable desktop release (macOS/Windows/Linux) with auto-updater metadata.
 
-Releases are cut by maintainers by tagging `main`.
+To test a build, cut a prerelease tag (it lands on canary); to release, cut a stable tag once canary is validated. Releases are cut by maintainers by tagging `main`.
 
 ### Hotfixes
 
