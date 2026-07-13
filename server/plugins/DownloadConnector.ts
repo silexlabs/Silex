@@ -86,7 +86,9 @@ export default class implements HostingConnector<DownloadConnectorSession> {
 
   async startPublishingInBackground(session: DownloadConnectorSession, websiteId: WebsiteId, files: ConnectorFile[], job: PublicationJobData): Promise<void> {
     const fileName = `${websiteId}-${Date.now()}-${Math.random().toString(36).substring(7)}.zip`
-    const archiver = (await import('archiver') as any).default
+    // archiver v8 is ESM and dropped the default factory (archiver('zip', ...)) in
+    // favour of named format classes. Use ZipArchive directly. See forum #250.
+    const { ZipArchive } = await import('archiver')
     return new Promise<string>((resolve, reject) => {
       let resolved = false
       try {
@@ -94,7 +96,7 @@ export default class implements HostingConnector<DownloadConnectorSession> {
         const path = `${tmpdir()}/${fileName}`
         // create a file to stream archive data to.
         const output = createWriteStream(path)
-        const archive = archiver('zip', {
+        const archive = new ZipArchive({
           zlib: { level: 9 } // Sets the compression level.
         })
 
