@@ -60,6 +60,13 @@ jobs:
         with:
           targets: ${{ matrix.rust-target || '' }}
 
+      # The build runs under the toolchain pinned by desktop/src-tauri/rust-toolchain.toml,
+      # which only ships the host target — add the cross target to it too.
+      - name: Add cross target to pinned toolchain
+        if: matrix.rust-target
+        working-directory: desktop/src-tauri
+        run: rustup target add ${{ matrix.rust-target }}
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
 
