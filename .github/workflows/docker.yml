@@ -29,10 +29,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Compute version
+      # Every v* tag publishes its versioned image. Prerelease tags (v3.9.0-canary.1)
+      # move :canary, stable tags move :latest — a prerelease never touches :latest.
+      - name: Compute image tags
         id: tags
         shell: bash
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          TAGS="silexlabs/silex-platform:${V}"
+          if [[ "$V" == *-* ]]; then
+            TAGS="${TAGS},silexlabs/silex-platform:canary"
+          else
+            TAGS="${TAGS},silexlabs/silex-platform:latest"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -42,6 +52,4 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: |
-            silexlabs/silex-platform:${{ steps.tags.outputs.version }}
-            silexlabs/silex-platform:latest
+          tags: ${{ steps.tags.outputs.tags }}

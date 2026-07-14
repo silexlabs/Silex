@@ -10,7 +10,7 @@ Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, o
 
 Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`) — never `../../`. The first-party plugins are imported by their **package name** (`@silexlabs/grapesjs-*`), which the build resolves to their **source** via webpack aliases (`webpack.config.js`) — not installed from npm. `pnpm build` builds the whole JS side in one pass.
 
-See [README.md → Development](README.md#development) for the layout, and [CONTRIBUTING.md](CONTRIBUTING.md) for the branch / PR / release flow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the repo layout and the branch / PR / release flow.
 
 ## Run it locally
 
