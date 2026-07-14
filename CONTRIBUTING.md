@@ -102,8 +102,8 @@ We use a trunk-based model: `main` is the single, always-releasable branch.
 
 Two kinds of tags:
 
-- **Prerelease tags** (e.g. `v3.9.0-canary.1`, `-alpha`, `-beta`) — deploy to **canary** ([canary.silex.me](https://canary.silex.me)) for testing, publish a GitHub *prerelease* of the desktop apps, and publish the versioned `silexlabs/silex-platform` Docker image (also tagged `:canary`, never `:latest`). Nothing reaches production, and prerelease builds are never offered to stable users by the auto-updater.
-- **Stable tags** (e.g. `v3.9.0`) — deploy the server to CapRover **production** ([v3.silex.me](https://v3.silex.me)), publish the `silexlabs/silex-platform` Docker image (versioned + `:latest`), and publish the stable desktop release (macOS/Windows/Linux) with auto-updater metadata.
+- **Prerelease tags** (e.g. `v3.9.0-canary.1`, `-alpha`, `-beta`) — deploy to **canary** ([canary.silex.me](https://canary.silex.me)) for testing, publish a GitHub *prerelease* of the desktop apps, publish the versioned `silexlabs/silex-platform` Docker image (also tagged `:canary`, never `:latest`), and publish `@silexlabs/silex` to npm under the `canary` dist-tag. Nothing reaches production, and prerelease builds are never offered to stable users by the auto-updater.
+- **Stable tags** (e.g. `v3.9.0`) — deploy the server to CapRover **production** ([v3.silex.me](https://v3.silex.me)), publish the `silexlabs/silex-platform` Docker image (versioned + `:latest`), publish `@silexlabs/silex` to npm as `latest`, and publish the stable desktop release (macOS/Windows/Linux) with auto-updater metadata.
 
 In both cases the desktop GitHub release is created as a **draft** — a maintainer reviews and publishes it (the SaaS/Docker deploys are immediate). To test a build, cut a prerelease tag (it lands on canary); to release, cut a stable tag once canary is validated. Releases are cut by maintainers by tagging `main`.
 

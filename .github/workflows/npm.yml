@@ -1,0 +1,58 @@
+name: npm package
+
+# Publishes @silexlabs/silex on every v* tag: prerelease tags (v3.9.0-canary.1)
+# go to the `canary` dist-tag, stable tags to `latest`. The version is patched
+# from the tag at build time (package.json is not bumped in git).
+# Auth: npm Trusted Publisher (OIDC) — the package settings on npmjs.com trust
+# this repo + workflow file, no token or secret involved.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  id-token: write  # OIDC token for npm trusted publishing
+  contents: read
+
+jobs:
+  publish:
+    name: build and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # pnpm via action-setup AFTER setup-node so its standalone binary wins in PATH
+      # over node's bundled corepack shim (whose signing keys are stale and break
+      # `pnpm` invocations). No cache:pnpm — it would call corepack during setup-node.
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex
+
+      - name: Build
+        run: pnpm build
+
+      # Tags are not gated by the CI workflow — lint and test before publishing,
+      # like the legacy silex-lib npm-publish.yml did.
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Patch version from tag
+        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version
+
+      # OIDC trusted publishing needs npm >= 11.5.1 (node's bundled npm may lag)
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Publish (OIDC trusted publisher)
+        run: npm publish --provenance --access public --tag ${{ contains(github.ref_name, '-') && 'canary' || 'latest' }}
