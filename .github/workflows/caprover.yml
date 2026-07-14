@@ -3,8 +3,8 @@ name: Deploy to CapRover
 # Deploys the server (root Dockerfile, referenced by the root captain-definition)
 # to CapRover: tar the tracked files (incl. submodule content) and upload via the caprover CLI.
 #
-# Canary deploys only after the CI workflow succeeds on main (workflow_run gate), so a
-# red build never reaches canary.silex.me. Production deploys on version tags.
+# Nothing deploys from main. Prerelease tags (v3.9.0-canary.1) deploy to canary.silex.me
+# for testing; stable tags (v3.9.0) deploy to production. So untested main never reaches prod.
 #
 # Required secrets:
 #   CAPROVER_SERVER        e.g. https://captain.your-domain.com
@@ -12,28 +12,21 @@ name: Deploy to CapRover
 #   CAPROVER_APP_PROD      production app name     + CAPROVER_APP_TOKEN_PROD
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
   push:
     tags: ['v*']
 
 jobs:
   canary:
     name: deploy canary
-    # Only when CI passed on main. workflow_run also fires for pull_request CI runs,
-    # hence the head_branch guard.
-    if: >-
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.conclusion == 'success'
+    # Prerelease tags (v3.9.0-canary.1, -alpha, -beta …) deploy to canary for testing.
+    # Nothing auto-deploys from main: a canary release is a deliberate prerelease tag.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true  # the SaaS serves silex-dashboard/_site
-          ref: ${{ github.event.workflow_run.head_sha }}  # deploy exactly what CI validated
       - name: Deploy to CapRover (canary)
         run: |
           git ls-files --recurse-submodules -z | tar --null --no-recursion -cf deploy.tar -T -
@@ -45,7 +38,9 @@ jobs:
 
   production:
     name: deploy production
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    # Stable tags only. Prerelease tags (v3.9.0-canary.1, -alpha, -beta …) must never
+    # reach production — they are used to publish desktop builds without a SaaS release.
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
