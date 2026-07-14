@@ -123,7 +123,8 @@ collect_submodule_commits() {
   while IFS= read -r line; do
     [[ -z "$line" ]] && continue
     ALL_COMMITS+="${line}${SEP}${name}"$'\n'
-  done < <(git --no-pager log "${from_sha}..${to_sha}" --pretty=format:"%s${SEP}%an" 2>/dev/null || true)
+  # tformat (not format): terminates the last record with \n, otherwise `read` drops it
+  done < <(git --no-pager log "${from_sha}..${to_sha}" --pretty=tformat:"%s${SEP}%an" 2>/dev/null || true)
   cd "$REPO_ROOT"
 }
 
@@ -131,7 +132,8 @@ collect_submodule_commits() {
 while IFS= read -r line; do
   [[ -z "$line" ]] && continue
   ALL_COMMITS+="${line}${SEP}monorepo"$'\n'
-done < <(git --no-pager log "${FROM_TAG}..${TO_TAG}" --pretty=format:"%s${SEP}%an" 2>/dev/null || true)
+# tformat (not format): terminates the last record with \n, otherwise `read` drops it
+done < <(git --no-pager log "${FROM_TAG}..${TO_TAG}" --pretty=tformat:"%s${SEP}%an" 2>/dev/null || true)
 
 for_each_submodule collect_submodule_commits
 
@@ -293,16 +295,6 @@ if [[ -n "$DESKTOP_VERSION" ]]; then
 else
   echo "_Desktop version not available for this release._"
 fi
-echo ""
-
-echo "### Server binary (advanced)"
-echo ""
-echo "The standalone server embedded in Silex Desktop — useful to try Silex from the command line. Not meant for production self-hosting (no OAuth): to self-host Silex, follow [the docs](https://docs.silex.me) (Docker or Node.js)."
-echo ""
-echo "- [Linux x64](${BASE}/silex-server-linux-amd64)"
-echo "- [macOS Apple Silicon](${BASE}/silex-server-macos-arm64)"
-echo "- [macOS Intel](${BASE}/silex-server-macos-x64)"
-echo "- [Windows x64](${BASE}/silex-server-windows-amd64.exe)"
 echo ""
 
 echo "**Full Changelog**: https://github.com/silexlabs/Silex/compare/${FROM_TAG}...${TO_TAG}"
