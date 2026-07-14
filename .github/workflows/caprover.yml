@@ -27,6 +27,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true  # the SaaS serves silex-dashboard/_site
+      - name: Patch version from tag
+        run: ./scripts/set-version.sh "${GITHUB_REF_NAME#v}"
       - name: Deploy to CapRover (canary)
         run: |
           git ls-files --recurse-submodules -z | tar --null --no-recursion -cf deploy.tar -T -
@@ -47,6 +49,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true  # the SaaS serves silex-dashboard/_site
+      - name: Patch version from tag
+        run: ./scripts/set-version.sh "${GITHUB_REF_NAME#v}"
       - name: Deploy to CapRover (production)
         run: |
           git ls-files --recurse-submodules -z | tar --null --no-recursion -cf deploy.tar -T -

@@ -14,6 +14,9 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 source scripts/repro-env.sh
 
+TAG=$(git describe --tags --exact-match 2>/dev/null || true)
+[ -n "$TAG" ] && ./scripts/set-version.sh "${TAG#v}"
+
 corepack enable >/dev/null 2>&1 || true
 pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop
 pnpm run build

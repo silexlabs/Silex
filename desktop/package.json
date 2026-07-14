@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/silex-desktop",
-  "version": "0.2.0-canary.0",
+  "version": "0.0.0-dev",
   "description": "Silex website builder - desktop app powered by Tauri",
   "license": "GPL-3.0-or-later",
   "scripts": {

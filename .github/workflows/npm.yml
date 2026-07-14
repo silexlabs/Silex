@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --filter @silexlabs/silex
 
+      - name: Patch version from tag
+        run: ./scripts/set-version.sh "${GITHUB_REF_NAME#v}"
+
       - name: Build
         run: pnpm build
 
@@ -46,9 +49,6 @@ jobs:
 
       - name: Test
         run: pnpm test
-
-      - name: Patch version from tag
-        run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version
 
       # OIDC trusted publishing needs npm >= 11.5.1 (node's bundled npm may lag)
       - name: Update npm
