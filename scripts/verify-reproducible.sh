@@ -3,7 +3,7 @@
 #
 # Run from a clean checkout at the release tag:
 #   git clone --recurse-submodules https://github.com/silexlabs/Silex && cd Silex
-#   git checkout desktop-v0.1.0
+#   git checkout v3.9.0   # the tag of the release you are verifying
 #   ./scripts/verify-reproducible.sh [expected-sha256]
 #
 # Rebuilds the binary with the deterministic env + pinned toolchain and compares

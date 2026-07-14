@@ -12,7 +12,7 @@ rebuilt from a tag and matched byte-for-byte against the release's
 
 ```bash
 git clone --recurse-submodules https://github.com/silexlabs/Silex && cd Silex
-git checkout desktop-v0.1.0
+git checkout v3.9.0   # the tag of the release you are verifying
 ./scripts/verify-reproducible.sh <sha256-from-SHA256SUMS.inner>
 ```
 
