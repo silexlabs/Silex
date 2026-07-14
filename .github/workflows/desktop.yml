@@ -84,8 +84,7 @@ jobs:
         shell: bash
         run: |
           V="${GITHUB_REF_NAME#v}"
-          jq --arg v "$V" '.version = $v' desktop/src-tauri/tauri.conf.json > /tmp/tauri.conf.json
-          mv /tmp/tauri.conf.json desktop/src-tauri/tauri.conf.json
+          ./scripts/set-version.sh "$V"
           ACTUAL="$(jq -r '.version' desktop/src-tauri/tauri.conf.json)"
           if [ "$ACTUAL" != "$V" ]; then
             echo "::error::Desktop version not patched (expected '$V', got '$ACTUAL')"; exit 1
