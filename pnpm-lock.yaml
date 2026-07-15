@@ -162,6 +162,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.62.0
         version: 8.62.0(eslint@10.6.0)(typescript@6.0.3)
+      connect-livereload:
+        specifier: ^0.6.1
+        version: 0.6.1
       css-loader:
         specifier: ^7.1.4
         version: 7.1.4(webpack@5.108.2)
@@ -3993,6 +3996,9 @@ packages:
   connect-history-api-fallback@2.0.0:
     resolution: {integrity: sha512-U73+6lQFmfiNPrYbXqr6kZ1i1wiRqXnp2nhMsINseWXO8lDau0LGEffJ8kQi4EjLZympVgRdvqjAgiZ1tgzDDA==}
     engines: {node: '>=0.8'}
+
+  connect-livereload@0.6.1:
+    resolution: {integrity: sha512-3R0kMOdL7CjJpU66fzAkCe6HNtd3AavCS4m+uW4KtJjrdGPT0SQEZieAYd+cm+lJoBznNQ4lqipYWkhBMgk00g==}
 
   construct-style-sheets-polyfill@3.1.0:
     resolution: {integrity: sha512-HBLKP0chz8BAY6rBdzda11c3wAZeCZ+kIG4weVC2NM3AXzxx09nhe8t0SQNdloAvg5GLuHwq/0SPOOSPvtCcKw==}
@@ -12314,6 +12320,8 @@ snapshots:
   concat-map@0.0.1: {}
 
   connect-history-api-fallback@2.0.0: {}
+
+  connect-livereload@0.6.1: {}
 
   construct-style-sheets-polyfill@3.1.0: {}
 
