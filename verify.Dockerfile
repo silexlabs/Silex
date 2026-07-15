@@ -1,7 +1,7 @@
 # Rebuild the reproducible reference binary in the pinned environment and compare
 # it to the hash published with the release. Exit code 0 = reproducible.
 # Usage: docker build --build-arg TAG=v3.9.0 - < verify.Dockerfile
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS build
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates build-essential pkg-config jq \
@@ -25,3 +25,6 @@ RUN REBUILT=$(sha256sum target/release/silex-desktop | cut -d' ' -f1); echo "reb
  if [ -z "$EXP" ]; then echo "no published hash yet - reference build"; \
  elif [ "$REBUILT" = "$EXP" ]; then echo "REPRODUCIBLE OK"; \
  else echo "MISMATCH (expected $EXP)"; exit 1; fi
+
+FROM scratch AS export
+COPY --from=build /src/target/release/silex-desktop /silex-desktop

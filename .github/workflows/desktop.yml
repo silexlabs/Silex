@@ -127,20 +127,36 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
-          docker build -t silex-repro --build-arg TAG="$GITHUB_REF_NAME" - < verify.Dockerfile
-          docker run --rm silex-repro sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
+          docker build --build-arg TAG="$GITHUB_REF_NAME" -o target/release - < verify.Dockerfile
+          sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
           grep -qE '^[a-f0-9]{64}$' silex-desktop.sha256
           echo "reproducible binary sha256: $(cat silex-desktop.sha256)"
 
+      # The runtime DSN ships as a bundle resource (not compiled in — the binary stays
+      # reproducible); the committed file is empty, releases carry the real one.
+      - name: Write telemetry DSN resource
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: printf '%s' "${{ secrets.GLITCHTIP_DSN }}" > desktop/src-tauri/resources/glitchtip.dsn
+
+      # Linux ships the reference binary itself: bundle it without recompiling.
+      - name: Bundle desktop from the reference binary (Linux, signed)
+        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: pnpm --dir desktop exec tauri bundle
+
       # Sign updater artifacts only on v* tags (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'ubuntu-latest'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
           projectPath: desktop
           tauriScript: pnpm tauri
@@ -156,7 +172,6 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GLITCHTIP_DSN: ${{ secrets.GLITCHTIP_DSN }}
         with:
           projectPath: desktop
           tauriScript: pnpm tauri
