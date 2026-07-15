@@ -25,7 +25,7 @@ for d in dist/client silex-dashboard-2026/public; do
 done
 cargo build --release --locked --manifest-path desktop/src-tauri/Cargo.toml
 
-REBUILT="$(sha256sum desktop/src-tauri/target/release/silex-desktop | cut -d' ' -f1)"
+REBUILT="$(sha256sum target/release/silex-desktop | cut -d' ' -f1)"
 echo "rebuilt binary sha256: $REBUILT"
 
 EXPECTED="${1:-}"

@@ -50,7 +50,7 @@ import liPlugin from './li'
 import flexPlugin from './flex'
 import cssPropsPlugin from './css-props'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
-import borderPugin from 'grapesjs-style-border'
+import borderPlugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
 import notificationsPlugin, { NOTIFICATION_CHANGED } from '@silexlabs/grapesjs-notifications'
@@ -115,7 +115,7 @@ const plugins = [
   {name: './css-props', value: cssPropsPlugin},
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
-  {name: 'grapesjs-style-border', value: borderPugin},
+  {name: 'grapesjs-style-border', value: borderPlugin},
   {name: './resize-panel', value: resizePanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},

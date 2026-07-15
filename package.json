@@ -63,15 +63,13 @@
     "jekyll"
   ],
   "scripts": {
-    "build": "run-s build:css build:html build:client build:server build:public",
-    "build:css": "sass --load-path node_modules --no-source-map editor/css/index.scss dist/client/css/admin.css",
-    "build:html": "pug editor/html/index.pug --out dist/client/ --no-debug",
+    "build": "run-s build:client build:server build:public",
     "build:client": "webpack --config webpack.config.js",
     "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
     "build:public": "node scripts/copy-assets.mjs",
     "start": "node dist/server/server/",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
-    "dev": "run-p watch start:debug",
+    "dev": "pnpm run build:server && pnpm run build:client && run-p watch start:debug",
     "watch": "npm-watch",
     "lint": "eslint \"{editor,server,common}/**/*.ts\"",
     "lint:fix": "pnpm lint --fix",
@@ -83,28 +81,15 @@
     "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors"
   },
   "watch": {
-    "build:css": {
-      "patterns": [
-        "editor/css/"
-      ],
-      "extensions": "scss"
-    },
-    "build:html": {
-      "patterns": [
-        "editor/html/"
-      ],
-      "extensions": "pug"
-    },
     "build:client": {
       "patterns": [
         "editor/",
         "common/",
-        "grapesjs-plugins/"
+        "grapesjs-plugins/",
+        "editor/css/",
+        "editor/html/"
       ],
-      "extensions": [
-        "ts",
-        "js"
-      ]
+      "extensions": "js,pug,scss,ts"
     },
     "build:server": {
       "patterns": [
@@ -170,15 +155,18 @@
     "@types/node": "26.0.1",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
+    "css-loader": "^7.1.4",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
+    "html-webpack-plugin": "^5.6.7",
     "husky": "^9.1.7",
     "jest": "30.4.2",
     "jest-environment-jsdom": "30.4.1",
     "livereload": "0.10.3",
+    "mini-css-extract-plugin": "^2.10.2",
     "nodemon": "3.1.14",
     "npm-watch": "0.13.0",
-    "pug-cli": "1.0.0-alpha6",
+    "sass-loader": "^17.0.0",
     "terser-webpack-plugin": "^5.6.1",
     "ts-jest": "29.4.11",
     "ts-loader": "9.6.2",
