@@ -146,6 +146,19 @@ fn log_debug(message: String) {
     tracing::debug!("[webview] {message}");
 }
 
+/// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
+/// in, so the binary stays reproducible. The committed file is empty; releases
+/// carry the real one.
+fn glitchtip_dsn(resource_dir: Option<PathBuf>) -> Option<String> {
+    let dsn = std::fs::read_to_string(resource_dir?.join("glitchtip.dsn")).ok()?;
+    let dsn = dsn.trim().to_string();
+    if dsn.is_empty() {
+        None
+    } else {
+        Some(dsn)
+    }
+}
+
 /// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
 fn telemetry_environment(version: &str) -> &'static str {
     if cfg!(debug_assertions) {
@@ -194,7 +207,7 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     if read_telemetry_consent(&data_dir) != Some(true) {
         return None;
     }
-    let dsn = option_env!("GLITCHTIP_DSN")?.to_string();
+    let dsn = glitchtip_dsn(app.path().resource_dir().ok())?;
     let version = app.package_info().version.to_string();
     Some(TelemetryContext {
         dsn,
@@ -359,6 +372,10 @@ fn main() {
     let context = tauri::generate_context!();
     let app_version = context.package_info().version.to_string();
     let install_id = get_or_create_install_id(&app_data_dir);
+    let dsn = glitchtip_dsn(
+        tauri::utils::platform::resource_dir(context.package_info(), &tauri::Env::default()).ok(),
+    );
+    let dsn_available = dsn.is_some();
 
     // Initialize error tracking (GlitchTip / Sentry-compatible).
     // Sentry is always initialized when GLITCHTIP_DSN is set, but events are only
@@ -367,8 +384,7 @@ fn main() {
     let consent_dir_for_send = app_data_dir.clone();
     let consent_dir_for_traces = app_data_dir.clone();
     let _sentry_guard = sentry::init(sentry::ClientOptions {
-        dsn: option_env!("GLITCHTIP_DSN")
-            .and_then(|s| s.parse().ok()),
+        dsn: dsn.as_deref().and_then(|s| s.parse().ok()),
         release: Some(app_version.clone().into()),
         environment: Some(telemetry_environment(&app_version).into()),
         before_send: Some(std::sync::Arc::new(move |event| {
@@ -424,7 +440,7 @@ fn main() {
             log_debug,
             get_telemetry_context,
         ])
-        .setup(|app| {
+        .setup(move |app| {
             // Log app launch with OS/arch info (visible in Issues even without errors)
             sentry::capture_event(sentry::protocol::Event {
                 message: Some("app_started".into()),
@@ -449,7 +465,7 @@ fn main() {
             // The choice is saved and takes effect on next launch.
             let consent_dir = app.path().app_data_dir()
                 .expect("failed to resolve app data dir");
-            if option_env!("GLITCHTIP_DSN").is_some()
+            if dsn_available
                 && read_telemetry_consent(&consent_dir).is_none()
             {
                 prompt_telemetry_consent(app.handle(), consent_dir);
