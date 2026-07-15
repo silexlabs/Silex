@@ -89,7 +89,7 @@
         "editor/css/",
         "editor/html/"
       ],
-      "extensions": "js,pug,scss,ts"
+      "extensions": "ejs,js,scss,ts"
     },
     "build:server": {
       "patterns": [
