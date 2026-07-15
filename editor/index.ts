@@ -21,6 +21,7 @@
  *
  */
 
+import './css/index.scss'
 import { Editor } from 'grapesjs'
 import { DEV_MESSAGE } from '~/common/constants'
 import { ClientConfig } from './config'

@@ -17,6 +17,8 @@
 
 const path = require('path');
 const webpack = require("webpack")
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 // Monorepo: compile the grapesjs-* plugins from their SOURCE in a single pass,
 // instead of pulling each plugin's pre-built dist/. This removes the per-plugin
@@ -58,6 +60,17 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          { loader: 'css-loader', options: { url: false } },
+          {
+            loader: 'sass-loader',
+            options: { sassOptions: { loadPaths: ['node_modules'], quietDeps: true } },
+          },
+        ],
+      },
+      {
         test: /\.tsx?$/,
         loader: 'ts-loader',
         // Bundling only: type-checking is a separate CI job (tsc/lint).
@@ -88,8 +101,8 @@ module.exports = {
 },
 
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'dist/client/js'),
+    filename: 'js/[name].[contenthash:8].js',
+    path: path.resolve(__dirname, 'dist/client'),
     library: 'silex',
   },
   plugins: [
@@ -99,6 +112,29 @@ module.exports = {
     new webpack.IgnorePlugin({
       resourceRegExp: /^jquery$/,
       contextRegExp: /backbone/
-    })
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'css/admin.[contenthash:8].css',
+    }),
+    new HtmlWebpackPlugin({
+      template: './editor/index.ejs',
+      filename: 'index.html',
+      inject: false,
+    }),
+    // The dashboards (silex-dashboard submodules) load the editor at /js/main.js:
+    // also emit the bundle under its stable name
+    {
+      apply(compiler) {
+        compiler.hooks.thisCompilation.tap('StableMainAlias', (compilation) => {
+          compilation.hooks.processAssets.tap(
+            { name: 'StableMainAlias', stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_REPORT },
+            (assets) => {
+              const hashed = Object.keys(assets).find((name) => /^js\/main\..*\.js$/.test(name))
+              if (hashed) compilation.emitAsset('js/main.js', assets[hashed])
+            }
+          )
+        })
+      },
+    },
   ]
 };

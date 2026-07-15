@@ -63,6 +63,11 @@ export default async function silex() {
   // start silex
   const app = silexApp.create(config)
 
+  if (config.debug) {
+    const { default: livereload } = await import('connect-livereload')
+    app.use(livereload())
+  }
+
   // Serve the client config file
   await config.addRoutes(app)
 
