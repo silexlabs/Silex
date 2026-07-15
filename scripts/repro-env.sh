@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Deterministic build environment for Silex Desktop (Linux).
-# Source it — don't execute. Used by CI and verify-reproducible.sh.
+# Source it — don't execute. Used by verify.Dockerfile.
 set -eu
 
 : "${SOURCE_DATE_EPOCH:=$(git log -1 --pretty=%ct)}"

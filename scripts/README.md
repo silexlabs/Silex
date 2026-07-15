@@ -13,13 +13,14 @@ rebuilt from a tag and matched byte-for-byte against the release's
 ```bash
 git clone --recurse-submodules https://github.com/silexlabs/Silex && cd Silex
 git checkout v3.9.0   # the tag of the release you are verifying
-./scripts/verify-reproducible.sh <sha256-from-SHA256SUMS.inner>
+docker build --build-arg TAG=v3.9.0 - < verify.Dockerfile
 ```
 
-`✅ reproducible` means your rebuild produced the same binary as the release.
+`REPRODUCIBLE OK` (docker build exit code 0) means your rebuild produced the same binary as the release.
 
 What makes it reproducible:
-- `desktop/src-tauri/rust-toolchain.toml` pins the Rust compiler.
+- `verify.Dockerfile` pins the build environment (same one CI uses for the reference hash).
+- `rust-toolchain.toml` pins the Rust compiler.
 - `Cargo.lock` + `pnpm-lock.yaml` pin every dependency (`--locked`, `--frozen-lockfile`).
 - `repro-env.sh` pins `SOURCE_DATE_EPOCH`, remaps build paths out of the binary,
   disables incremental compilation, forces UTC/C locale.
@@ -48,7 +49,7 @@ Requires `rsign` (`cargo install rsign2`) or `minisign`, plus `jq` and `curl`.
 
 | Script | Purpose |
 |--------|---------|
-| `verify-reproducible.sh` | Rebuild the current tag and compare to `SHA256SUMS.inner` |
+| `verify.Dockerfile` (repo root) | Rebuild the tag in the pinned environment and compare to `SHA256SUMS.inner` |
 | `verify-update-signature.sh` | Verify the update feed's signature against the embedded key |
 | `build-desktop-repro.sh` | Produce the release build deterministically (used by CI) |
 | `repro-env.sh` | Deterministic build environment (sourced by the above) |

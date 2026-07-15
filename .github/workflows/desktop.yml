@@ -121,14 +121,15 @@ jobs:
             [ -d "$dir" ] && find "$dir" -exec touch -h -d "@$EPOCH" {} +
           done
 
-      # Record the sha256 of the compiled binary before Tauri stamps it per bundle
-      # type; this is the reproducibility reference (scripts/verify-reproducible.sh).
+      # The reproducibility reference is built in the same pinned container that
+      # verifiers use (verify.Dockerfile), so their rebuild can match this hash.
       - name: Record reproducibility hash (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
-          cargo build --release --locked --manifest-path desktop/src-tauri/Cargo.toml
-          sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
+          docker build -t silex-repro --build-arg TAG="$GITHUB_REF_NAME" - < verify.Dockerfile
+          docker run --rm silex-repro sha256sum target/release/silex-desktop | cut -d' ' -f1 > silex-desktop.sha256
+          grep -qE '^[a-f0-9]{64}$' silex-desktop.sha256
           echo "reproducible binary sha256: $(cat silex-desktop.sha256)"
 
       # Sign updater artifacts only on v* tags (secrets unavailable on fork PRs).
@@ -296,7 +297,7 @@ jobs:
 
       # Reproducibility checksums for the Linux artifacts. SHA256SUMS is download
       # integrity for the installers; SHA256SUMS.inner is the compiled binary hash
-      # that scripts/verify-reproducible.sh rebuilds and matches (the installers
+      # that verify.Dockerfile rebuilds and matches (the installers
       # wrap a per-format-stamped copy, so the binary is the reproducible unit).
       - name: Compute reproducibility checksums (Linux)
         working-directory: release
