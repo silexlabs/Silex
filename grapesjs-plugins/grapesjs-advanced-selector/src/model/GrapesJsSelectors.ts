@@ -92,7 +92,7 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
 /**
  * Function to edit or add style based on the selector
  */
-export function editStyle(editor: Editor, selector: string) {
+export function getOrCreateRule(editor: Editor, selector: string) {
   const currentWidth = editor.DeviceManager.getSelected()?.get('widthMedia')
 
   const opts = {
@@ -100,11 +100,14 @@ export function editStyle(editor: Editor, selector: string) {
     atRuleParams: currentWidth ? `(max-width: ${currentWidth})` : '',
   }
   const old = editor.CssComposer.getRule(selector, opts)
-  const rule = editor.CssComposer.setRule(selector, old?.getStyle(), {
+  return editor.CssComposer.setRule(selector, old?.getStyle(), {
     addStyles: !!old?.getStyle(),
     ...opts,
   })
-  editor.StyleManager.select(rule)
+}
+
+export function editStyle(editor: Editor, selector: string) {
+  editor.StyleManager.select(getOrCreateRule(editor, selector))
 }
 
 /**
