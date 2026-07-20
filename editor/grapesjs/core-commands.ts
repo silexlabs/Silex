@@ -101,39 +101,6 @@ export default (editor: Editor) => {
     }
   })
 
-  // Styles (operate on the active CSS rule, not inline styles)
-  editor.Commands.add('styles:get', () => {
-    const rule = (editor as any).StyleManager?.getSelected?.()
-    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
-    return {
-      selector: rule.selectorsToString?.() ?? '',
-      style: rule.getStyle(),
-      mediaText: rule.get('mediaText') ?? '',
-    }
-  })
-  editor.Commands.add('styles:set', (_ed, _sender, options: any = {}) => {
-    const rule = (editor as any).StyleManager?.getSelected?.()
-    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
-    const { property, value, ...rest } = options
-    const existing = rule.getStyle?.() ?? {}
-    if (property && value !== undefined) {
-      rule.setStyle({ ...existing, [property]: value })
-    } else if (Object.keys(rest).length) {
-      rule.setStyle({ ...existing, ...rest })
-    } else {
-      throw new Error('Required: {property, value} or CSS key-value pairs. Example: {property: "color", value: "red"} or {"color": "red", "font-size": "16px"}')
-    }
-  })
-  editor.Commands.add('styles:remove', (_ed, _sender, options: any = {}) => {
-    const rule = (editor as any).StyleManager?.getSelected?.()
-    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
-    const { property } = options
-    if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
-    const style = rule.getStyle()
-    delete style[property]
-    rule.setStyle(style)
-  })
-
   // CSS Classes
   editor.Commands.add('classes:list', () => {
     const selected = editor.getSelected()
@@ -264,40 +231,6 @@ export default (editor: Editor) => {
         },
       },
       tags: ['components'],
-    })
-    addCapability({
-      id: 'styles:get',
-      command: 'styles:get',
-      description: 'Get CSS styles from the active selector (set via selector:edit-style)',
-      readOnly: true,
-      tags: ['styles'],
-    })
-    addCapability({
-      id: 'styles:set',
-      command: 'styles:set',
-      description: 'Set CSS style on the active selector (set via selector:edit-style)',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          property: { type: 'string' },
-          value: { type: 'string' },
-        },
-      },
-      tags: ['styles'],
-    })
-    addCapability({
-      id: 'styles:remove',
-      command: 'styles:remove',
-      description: 'Remove a CSS property from the active selector (set via selector:edit-style)',
-      destructive: true,
-      inputSchema: {
-        type: 'object',
-        required: ['property'],
-        properties: {
-          property: { type: 'string' },
-        },
-      },
-      tags: ['styles'],
     })
     addCapability({
       id: 'classes:list',

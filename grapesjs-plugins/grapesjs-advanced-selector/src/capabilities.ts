@@ -27,17 +27,38 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     tags: ['selectors'],
   })
   addCapability({
-    id: 'selector:edit-style',
-    command: 'selector:edit-style',
-    description: 'Activate a selector for styling (use before styles:set)',
+    id: 'styles:get',
+    command: 'styles:get',
+    description: 'Get CSS styles from the active selector (set via selector:set)',
+    readOnly: true,
+    tags: ['styles'],
+  })
+  addCapability({
+    id: 'styles:set',
+    command: 'styles:set',
+    description: 'Set CSS style on the active selector (set via selector:set)',
     inputSchema: {
       type: 'object',
-      required: ['selector'],
       properties: {
-        selector: { type: 'string', description: 'CSS selector to activate for style editing' },
+        property: { type: 'string' },
+        value: { type: 'string' },
       },
     },
-    tags: ['selectors'],
+    tags: ['styles'],
+  })
+  addCapability({
+    id: 'styles:remove',
+    command: 'styles:remove',
+    description: 'Remove a CSS property from the active selector (set via selector:set)',
+    destructive: true,
+    inputSchema: {
+      type: 'object',
+      required: ['property'],
+      properties: {
+        property: { type: 'string' },
+      },
+    },
+    tags: ['styles'],
   })
   addCapability({
     id: 'selector:info',

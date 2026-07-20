@@ -1,6 +1,6 @@
 import { Editor } from 'grapesjs'
-import { getComponentSelector, setComponentSelector, editStyle, getSelectors } from './model/GrapesJsSelectors'
-import { toString as complexSelectorToString, fromString as complexSelectorFromString } from './model/ComplexSelector'
+import { getComponentSelector, setComponentSelector, editStyle, getSelectors, getOrCreateRule } from './model/GrapesJsSelectors'
+import { toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
 import { PseudoClassType } from './model/PseudoClass'
 import { OperatorType } from './model/Operator'
 
@@ -53,16 +53,54 @@ export default function registerCommands(editor: Editor) {
     },
   })
 
-  editor.Commands.add('selector:edit-style', {
-    run(_ed: Editor, _sender: unknown, cmdOpts: { selector?: string } = {}) {
-      const { selector } = cmdOpts
-      if (!selector) throw new Error('Required: selector (CSS selector string to activate for styling). Use selector:get to see current selector, or selector:list-rules to see all rules.')
-      try {
-        editStyle(editor, selector)
-      } catch(e: unknown) {
-        const msg = e instanceof Error ? e.message : String(e)
-        throw new Error(`Cannot edit style for "${selector}". ${msg}`, { cause: e })
+  // Resolve the styling target from the component's stored selector at call
+  // time — StyleManager.getSelected() is unreliable here: it is set by a race
+  // between GrapesJS's native targeting and the panel's debounced re-selection
+  const activeRule = () => {
+    const components = editor.getSelectedAll()
+    const cs = getSelector(components)
+    if (!cs) throw new Error('No component selected. Use components:select first.')
+    const selStr = complexSelectorToString(cs)
+    if (!selStr) throw new Error('No selector active. Use selector:set first.')
+    const rule = getOrCreateRule(editor, selStr)
+    editor.StyleManager.select(rule)
+    return rule
+  }
+
+  editor.Commands.add('styles:get', {
+    run() {
+      const rule = activeRule()
+      return {
+        selector: rule.selectorsToString?.() ?? '',
+        style: rule.getStyle(),
+        mediaText: rule.get('mediaText') ?? '',
       }
+    },
+  })
+
+  editor.Commands.add('styles:set', {
+    run(_ed: Editor, _sender: unknown, cmdOpts: Record<string, string> = {}) {
+      const rule = activeRule()
+      const { property, value, ...rest } = cmdOpts
+      const existing = rule.getStyle?.() ?? {}
+      if (property && value !== undefined) {
+        rule.setStyle({ ...existing, [property]: value })
+      } else if (Object.keys(rest).length) {
+        rule.setStyle({ ...existing, ...rest })
+      } else {
+        throw new Error('Required: {property, value} or CSS key-value pairs. Example: {property: "color", value: "red"} or {"color": "red", "font-size": "16px"}')
+      }
+    },
+  })
+
+  editor.Commands.add('styles:remove', {
+    run(_ed: Editor, _sender: unknown, cmdOpts: { property?: string } = {}) {
+      const rule = activeRule()
+      const { property } = cmdOpts
+      if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
+      const style = rule.getStyle()
+      delete style[property]
+      rule.setStyle(style)
     },
   })
 
