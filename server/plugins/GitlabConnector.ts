@@ -572,16 +572,16 @@ export default class GitlabConnector implements StorageConnector {
     // Create the code challenge
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
 
-    // Store the code verifier and code challenge in the session
-    this.setSessionToken(session, {
-      ...this.getSessionToken(session),
-      state,
-      codeVerifier,
-      codeChallenge,
-    })
-    return `${this.options.domain}/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${this.getSessionToken(session).state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+    // Keep the transient OAuth data per role, not in the shared token slot:
+    // storage and hosting share the same connectorId (and token), so two
+    // concurrent login flows would otherwise overwrite each other's state,
+    // making one of the callbacks fail with "Invalid state".
+    this.setPendingAuth(session, { state, codeVerifier, codeChallenge })
+    return `${this.options.domain}/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
   }
 
+  // Token, userId and username are shared between the storage and hosting roles
+  // of the same connectorId (a single GitLab login serves both).
   getSessionToken(session: GitlabSession | undefined): GitlabToken {
     return (session ?? {})[this.connectorId] ?? {}
   }
@@ -590,6 +590,21 @@ export default class GitlabConnector implements StorageConnector {
   }
   resetSessionToken(session: GitlabSession): void {
     delete session[this.connectorId]
+  }
+
+  // Transient OAuth data (state/codeVerifier/codeChallenge) is kept per role so
+  // concurrent storage/hosting login flows don't clobber each other.
+  private pendingAuthKey(): string {
+    return `${this.connectorId}:auth:${this.connectorType}`
+  }
+  getPendingAuth(session: GitlabSession | undefined): GitlabToken {
+    return (session ?? {})[this.pendingAuthKey()] ?? {}
+  }
+  setPendingAuth(session: GitlabSession, pending: GitlabToken): void {
+    session[this.pendingAuthKey()] = pending
+  }
+  clearPendingAuth(session: GitlabSession): void {
+    delete session[this.pendingAuthKey()]
   }
 
   getOptions(formData: object): object {
@@ -614,7 +629,7 @@ export default class GitlabConnector implements StorageConnector {
    * OAuth2 Step #2 from https://docs.gitlab.com/ee/api/oauth2.html#authorization-code-with-proof-key-for-code-exchange-pkce
    */
   async setToken(session: GitlabSession, loginResult: any): Promise<void> {
-    const sessionToken = this.getSessionToken(session)
+    const pendingAuth = this.getPendingAuth(session)
     // Handle state that may be JSON with redirect info or a plain string
     // Redirect info is when the user is comming from the /fork/ page of the dashboard
     let receivedState = loginResult.state
@@ -626,16 +641,18 @@ export default class GitlabConnector implements StorageConnector {
     } catch {
       // Plain text
     }
-    if (!receivedState || receivedState !== sessionToken?.state) {
-      this.logout(session)
+    // On a failed OAuth validation, only drop the transient pending data — never
+    // the shared token, which may still be valid for the other role.
+    if (!receivedState || receivedState !== pendingAuth?.state) {
+      this.clearPendingAuth(session)
       throw new ApiError('Invalid state', 401)
     }
-    if (!sessionToken?.codeVerifier) {
-      this.logout(session)
+    if (!pendingAuth?.codeVerifier) {
+      this.clearPendingAuth(session)
       throw new ApiError('Missing code verifier', 401)
     }
-    if (!sessionToken?.codeChallenge) {
-      this.logout(session)
+    if (!pendingAuth?.codeChallenge) {
+      this.clearPendingAuth(session)
       throw new ApiError('Missing code challenge', 401)
     }
 
@@ -650,13 +667,16 @@ export default class GitlabConnector implements StorageConnector {
         code: loginResult.code,
         grant_type: 'authorization_code',
         redirect_uri: this.getRedirect(),
-        code_verifier: sessionToken.codeVerifier,
+        code_verifier: pendingAuth.codeVerifier,
       }),
     })
 
     const token = await response.json() as any
 
-    // Store the token in the session
+    // The transient OAuth data has served its purpose
+    this.clearPendingAuth(session)
+
+    // Store the token in the session (shared between storage and hosting roles)
     this.setSessionToken(session, {
       ...this.getSessionToken(session),
       token,
