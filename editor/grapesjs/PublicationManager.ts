@@ -223,7 +223,12 @@ export class PublicationManager {
 
   async goLogout() {
     try {
-      await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
+      // Logging out of the hosting would also kill the storage session when both
+      // use the same connector (e.g. gitlab): switching hosting must not log out (#1712)
+      const storageId = (this.editor.getModel().get('user') as ConnectorUser)?.storage?.connectorId
+      if (this.settings.connector.connectorId !== storageId) {
+        await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
+      }
       this.settings = {}
       this.dialog && this.dialog.displayPending(this.job, this.status)
     } catch (e) {
