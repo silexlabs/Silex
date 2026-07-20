@@ -2,6 +2,9 @@
   "identifier": "default",
   "description": "Default capabilities for Silex desktop",
   "windows": ["main"],
+  "remote": {
+    "urls": ["http://localhost:*", "http://127.0.0.1:*"]
+  },
   "permissions": [
     "core:default",
     "core:event:default",
