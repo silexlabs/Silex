@@ -286,7 +286,8 @@ impl SilexMcp {
             };
 
             let tool = Tool {
-                name: cap.id.clone().into(),
+                // ':' in capability ids is not allowed in tool names (clients require ^[a-zA-Z0-9_-]+$)
+                name: cap.id.replace(':', "_").into(),
                 title: None,
                 description: Some(cap.description.into()),
                 input_schema: Arc::new(schema_obj),
