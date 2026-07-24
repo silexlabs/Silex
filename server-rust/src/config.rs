@@ -54,7 +54,9 @@ impl Config {
     /// Load configuration from environment variables
     ///
     /// Environment variables:
-    /// - SILEX_URL: Base URL (default: "http://localhost:6805")
+    /// - SILEX_URL: Base URL; when unset, falls back to
+    ///   `${SILEX_PROTOCOL:-http}://${SILEX_HOST:-localhost}:${SILEX_PORT}`
+    /// - SILEX_PROTOCOL / SILEX_HOST: used to build the URL when SILEX_URL is unset
     /// - SILEX_PORT: Port number (default: 6805)
     /// - SILEX_DATA_PATH: Website data storage path (default: "./data")
     /// - SILEX_HOSTING_PATH: Publication output path (default: "./public")
@@ -68,7 +70,15 @@ impl Config {
             .and_then(|p| p.parse().ok())
             .unwrap_or(6805);
 
-        let url = env::var("SILEX_URL").unwrap_or_else(|_| format!("http://localhost:{}", port));
+        // Mirror the Node server (server/config.ts): explicit SILEX_URL wins (trailing
+        // slash trimmed), otherwise build it from protocol/host/port so SILEX_HOST is honored.
+        let url = env::var("SILEX_URL")
+            .map(|u| u.trim_end_matches('/').to_string())
+            .unwrap_or_else(|_| {
+                let protocol = env::var("SILEX_PROTOCOL").unwrap_or_else(|_| "http".to_string());
+                let host = env::var("SILEX_HOST").unwrap_or_else(|_| "localhost".to_string());
+                format!("{}://{}:{}", protocol, host, port)
+            });
 
         let data_path = env::var("SILEX_DATA_PATH")
             .or_else(|_| env::var("SILEX_FS_ROOT"))
