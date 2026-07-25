@@ -531,6 +531,15 @@ export default class GraphQL implements IDataSource {
 
         // Cursor type (internal pagination)
         'Cursor',
+
+        // Relay node(nodeId) refetch interface (not data, breaks static publish)
+        'Node',
+
+        // Filter enum (query argument, not data)
+        'FilterIs',
+
+        // Connection pagination info (hasNextPage / cursors) — plumbing, not data
+        'PageInfo',
       ]
 
       // Patterns to blacklist
@@ -550,9 +559,6 @@ export default class GraphQL implements IDataSource {
         // Filter types (query params, not data)
         /Filter$/,
         /FilterInput$/,
-
-        // Edge types (keep Connection but not Edge for simpler queries)
-        /Edge$/,
       ]
 
       const isBlacklisted = (name: string): boolean => {
@@ -712,6 +718,8 @@ export default class GraphQL implements IDataSource {
           // Include if the type exists in schemaTypes or is a builtin type
           return schemaTypes.some(t => t.name === typeName) || builtinTypeIds.includes(typeName)
         })
+        // Hide plumbing fields (e.g. Relay cursors) that survive the type blacklist
+        .filter((field: GQLField) => !this.getHiddenFieldNames().includes(field.name))
         // Map to Field
         .map((field: GQLField) => this.graphQLToField(field))
 
@@ -721,6 +729,20 @@ export default class GraphQL implements IDataSource {
       return this.triggerError(`GraphQL introspection failed: ${(e as Error).message}`)
     }
   }
+
+  /**
+   * Field names hidden from the expression UI for the current backend — plumbing
+   * that is never useful as data (e.g. the Relay pagination `cursor`). Applied on
+   * top of the type-level blacklist (getDefaultEnabledTypes), because these are
+   * scalar fields that survive type filtering (scalars are always kept).
+   */
+  protected getHiddenFieldNames(): string[] {
+    switch (this.backendType) {
+    case 'supabase': return ['cursor']
+    default: return []
+    }
+  }
+
   protected graphQLToField(field: GQLField): Field {
     const kind = this.ofKindToKind(field.type)
     return {
@@ -838,6 +860,8 @@ export default class GraphQL implements IDataSource {
         // FIXME: somehow this happens with fields of type datetime_functions for directus
         //?.filter((field: {name: string, type: any}) => allTypes.includes(field.name))
         ?.filter((field) => allTypes.includes(this.getOfTypeProp<string>('name', field.type, field.name)))
+        // Hide plumbing fields (e.g. Relay cursors) that survive the type blacklist
+        ?.filter((field) => !this.getHiddenFieldNames().includes(field.name))
         ?.map(field => this.graphQLToField(field))
         ?? [],
       queryable: queryable && (!queryableOverride || queryableOverride!.includes(type.name)),
