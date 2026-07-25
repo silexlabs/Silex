@@ -531,6 +531,12 @@ export default class GraphQL implements IDataSource {
 
         // Cursor type (internal pagination)
         'Cursor',
+
+        // Relay node(nodeId) refetch interface (not data, breaks static publish)
+        'Node',
+
+        // Filter enum (query argument, not data)
+        'FilterIs',
       ]
 
       // Patterns to blacklist
@@ -550,9 +556,6 @@ export default class GraphQL implements IDataSource {
         // Filter types (query params, not data)
         /Filter$/,
         /FilterInput$/,
-
-        // Edge types (keep Connection but not Edge for simpler queries)
-        /Edge$/,
       ]
 
       const isBlacklisted = (name: string): boolean => {
