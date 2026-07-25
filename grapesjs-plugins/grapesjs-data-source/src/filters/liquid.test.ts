@@ -25,3 +25,38 @@ test('is date', () => {
   expect(isDate(testFields.dateField2, false)).toBe(true)
   expect(isDate(testFields.dateField2)).toBe(false)
 })
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const grapesjs = require('grapesjs').default ?? require('grapesjs')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const getLiquidFilters = require('./liquid').default
+
+function getFilters() {
+  const editor = grapesjs.init({ container: document.createElement('div') })
+  return getLiquidFilters(editor)
+}
+const byId = (id: string) => getFilters().find((f: { id: string }) => f.id === id)
+type ApplyFilter = { apply: (input: unknown, options: Record<string, unknown>) => unknown }
+
+describe('array filters: per-item key resolver + null guard', () => {
+  test('where keeps items whose per-item key matches the value', () => {
+    const where = byId('where') as ApplyFilter
+    const arr = [{ code: 'FR' }, { code: 'US' }]
+    expect(where.apply(arr, { key: (i: { code: string }) => i.code, value: 'FR' })).toEqual([{ code: 'FR' }])
+  })
+  test('where returns the input unchanged when it is not an array (null guard)', () => {
+    const where = byId('where') as ApplyFilter
+    expect(where.apply(null, { key: () => 1, value: 1 })).toBeNull()
+    expect(where.apply(undefined, { key: () => 1, value: 1 })).toBeUndefined()
+  })
+  test('find returns the first item matching the per-item key', () => {
+    const find = byId('find') as ApplyFilter
+    expect(find.apply([{ code: 'FR' }, { code: 'US' }], { key: (i: { code: string }) => i.code, value: 'US' })).toEqual({ code: 'US' })
+    expect(find.apply(null, { key: () => 1, value: 1 })).toBeNull()
+  })
+  test('map extracts the per-item key from each item', () => {
+    const map = byId('map') as ApplyFilter
+    expect(map.apply([{ name: 'a' }, { name: 'b' }], { key: (i: { name: string }) => i.name })).toEqual(['a', 'b'])
+    expect(map.apply(null, { key: () => 1 })).toBeNull()
+  })
+})

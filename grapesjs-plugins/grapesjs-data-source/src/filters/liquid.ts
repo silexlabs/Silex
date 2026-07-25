@@ -95,7 +95,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >
@@ -119,7 +118,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >
@@ -133,8 +131,9 @@ export default function(editor: Editor): Filter[] {
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
       apply: (arr, options) => {
-        const { key, value } = options as { key: string, value: string }
-        return (arr as Record<string, unknown>[]).filter(item => item[key] === value)
+        if (!Array.isArray(arr)) return arr
+        const { key, value } = options as { key: (item: unknown) => unknown, value: unknown }
+        return (arr as unknown[]).filter(item => key(item) === value)
       },
       options: {
         key: '',
@@ -142,6 +141,7 @@ export default function(editor: Editor): Filter[] {
       },
       quotedOptions: ['key'],
       optionsKeys: ['key', 'value'],
+      itemKeys: ['key'],
       optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           .selected=${selected}
@@ -159,7 +159,6 @@ export default function(editor: Editor): Filter[] {
         <state-editor
           .selected=${selected}
           .editor=${editor}
-          no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
@@ -207,8 +206,9 @@ export default function(editor: Editor): Filter[] {
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => convertKind(field, 'list', 'object'),
       apply: (arr, options) => {
-        const { key, value } = options as { key: string, value: string }
-        return (arr as Record<string, unknown>[]).find(item => item[key] === value)
+        if (!Array.isArray(arr)) return arr
+        const { key, value } = options as { key: (item: unknown) => unknown, value: unknown }
+        return (arr as unknown[]).find(item => key(item) === value)
       },
       options: {
         key: '',
@@ -216,6 +216,7 @@ export default function(editor: Editor): Filter[] {
       },
       quotedOptions: ['key'],
       optionsKeys: ['key', 'value'],
+      itemKeys: ['key'],
       optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           .selected=${selected}
@@ -233,7 +234,6 @@ export default function(editor: Editor): Filter[] {
         <state-editor
           .selected=${selected}
           .editor=${editor}
-          no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
@@ -345,11 +345,16 @@ export default function(editor: Editor): Filter[] {
       label: 'map',
       validate: (field: Field | null) => !!field && (field.kind === 'list' || field.kind === 'object'),
       output: (field, options) => getFieldType(editor, field, options['key'] as string | undefined, null),
-      apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
+      apply: (arr, options) => {
+        if (!Array.isArray(arr)) return arr
+        const { key } = options as { key: (item: unknown) => unknown }
+        return (arr as unknown[]).map(item => key(item))
+      },
       options: {
         key: '',
       },
       quotedOptions: ['key'],
+      itemKeys: ['key'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <state-editor
           .selected=${selected}
@@ -650,7 +655,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >

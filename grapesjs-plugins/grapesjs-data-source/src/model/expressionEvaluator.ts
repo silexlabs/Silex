@@ -202,18 +202,26 @@ export function evaluateFilterToken(
   context: EvaluationContext,
   prevValues: unknown
 ): unknown {
-  const options = Object.entries(token.options).reduce((acc, [key, value]) => {
-    // If value is a primitive (number, string, boolean), use it directly
-    // Only evaluate as expression if it's an actual expression object/array
-    const expression = toExpression(value)
-    acc[key] = expression ? evaluateExpressionTokens(expression, context, null) : value
-    return acc
-  }, {} as Record<string, unknown>)
-
   const filter = context.filters.find(f => f.id === token.id)
   if (!filter) {
     throw new Error(`Filter not found: ${token.id}`)
   }
+
+  const options = Object.entries(token.options).reduce((acc, [key, value]) => {
+    // If value is a primitive (number, string, boolean), use it directly
+    // Only evaluate as expression if it's an actual expression object/array
+    const expression = toExpression(value)
+    if (filter.itemKeys?.includes(key)) {
+      // Per-item option (e.g. where/find/map "key"): always expose a resolver that
+      // evaluates the expression against each item at apply time. This makes it work
+      // for full expressions (e.g. continent.code), not just root field names — and
+      // lets the filters just call options.key(item) without re-checking the type.
+      acc[key] = (item: unknown) => expression ? evaluateExpressionTokens(expression, context, item) : undefined
+    } else {
+      acc[key] = expression ? evaluateExpressionTokens(expression, context, null) : value
+    }
+    return acc
+  }, {} as Record<string, unknown>)
 
   let value
   try {
