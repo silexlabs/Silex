@@ -26,9 +26,9 @@ test('is date', () => {
   expect(isDate(testFields.dateField2)).toBe(false)
 })
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const grapesjs = require('grapesjs').default ?? require('grapesjs')
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const getLiquidFilters = require('./liquid').default
 
 function getFilters() {
@@ -38,6 +38,9 @@ function getFilters() {
 const byId = (id: string) => getFilters().find((f: { id: string }) => f.id === id)
 type ApplyFilter = { apply: (input: unknown, options: Record<string, unknown>) => unknown }
 
+// `.apply(input, options)` below calls each filter's own `apply` method, not
+// Function.prototype.apply — prefer-spread misreads it when input is null/undefined
+/* eslint-disable prefer-spread */
 describe('array filters: per-item key resolver + null guard', () => {
   test('where keeps items whose per-item key matches the value', () => {
     const where = byId('where') as ApplyFilter
