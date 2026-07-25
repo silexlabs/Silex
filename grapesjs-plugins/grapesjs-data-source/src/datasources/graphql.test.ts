@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType } from './GraphQL'
+import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, WORDPRESS_SECONDARY_FIELDS } from './GraphQL'
 import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
 import { Field, Tree, Type } from '../types'
 import dedent from 'dedent-js'
@@ -660,6 +660,18 @@ test('supabase hides the Relay cursor field, generic hides nothing', () => {
   const base = { url: 'http://localhost', method: 'POST' as const, headers: {}, id: 'ds', label: 't', type: 'graphql' as const }
   const supabase = new GQLTest({ ...base, backendType: 'supabase' })
   const generic = new GQLTest({ ...base })
+  const wordpress = new GQLTest({ ...base, backendType: 'wordpress' })
   expect((supabase as unknown as { getHiddenFieldNames(): string[] }).getHiddenFieldNames()).toEqual(['cursor'])
+  expect((wordpress as unknown as { getHiddenFieldNames(): string[] }).getHiddenFieldNames()).toEqual(['viewer'])
+  // `node` is hidden only at the root (kept on nested edge types)
+  expect((wordpress as unknown as { getRootHiddenFieldNames(): string[] }).getRootHiddenFieldNames()).toEqual(['node'])
   expect((generic as unknown as { getHiddenFieldNames(): string[] }).getHiddenFieldNames()).toEqual([])
+})
+
+test('wordpress soft-hides plumbing fields, other backends soft-hide nothing', () => {
+  const base = { url: 'http://localhost', method: 'POST' as const, headers: {}, id: 'ds', label: 't', type: 'graphql' as const }
+  // WP returns the curated list (its contents are the source of truth); core fields stay
+  expect(new GQLTest({ ...base, backendType: 'wordpress' }).getSecondaryFieldNames()).toBe(WORDPRESS_SECONDARY_FIELDS)
+  expect(WORDPRESS_SECONDARY_FIELDS).not.toContain('title')
+  expect(new GQLTest({ ...base }).getSecondaryFieldNames()).toEqual([])
 })

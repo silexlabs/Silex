@@ -84,6 +84,10 @@ export interface IDataSource {
   getQueryables(): Field[]
   getQuery(trees: Tree[]): string
 
+  // Field names shown only when the user asks for "all fields" (backend plumbing
+  // that is rarely useful, e.g. WordPress databaseId/enqueuedScripts). Optional.
+  getSecondaryFieldNames?(): string[]
+
   // Access data
   fetchValues(query: string): Promise<unknown>
 

@@ -21,7 +21,7 @@ import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, Filter, FIXED_TOKEN_ID, Property, Token } from '../types'
-import { fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
+import { filterDisplayedCompletion, fromString, getFixedToken, getTokenDisplayName, groupByType, isSecondaryToken, toExpression, toId, toValue } from '../utils'
 import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
 import { Component, Editor } from 'grapesjs'
 
@@ -239,6 +239,8 @@ export class StateEditor extends LitElement {
   }
 
   private redrawing = false
+  // When true, backend "secondary" fields (plumbing) are shown in the dropdowns
+  private showAllFields = false
   private expressionInputRef = createRef<ExpressionInput>()
   private popinsRef: Ref<PopinForm>[] = []
 
@@ -268,7 +270,14 @@ export class StateEditor extends LitElement {
     })
       .filter(token => token.type !== 'filter' || !this.noFilters)
 
-    const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
+    // Hide backend "secondary" fields (plumbing) unless the user toggled "show all"
+    const dataSources = getAllDataSources()
+    const isSecondary = (token: Token) => isSecondaryToken(token, dataSources)
+    // Each dropdown that hides fields shows a "Show all fields" option at its top
+    const mainHasSecondary = completion.some(isSecondary)
+    const displayedCompletion = filterDisplayedCompletion(completion, isSecondary, this.showAllFields)
+
+    const groupedCompletion = groupByType(this.editor, selected, displayedCompletion, _currentValue)
 
     // Check if the expression has a fixed value and nothing else
     const fixed = (_currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID)
@@ -332,14 +341,21 @@ export class StateEditor extends LitElement {
       hideLoopData: this.hideLoopData,
       manager,
     })
-    const partialCompletion = this.noFilters ? _partialCompletion
-      .filter(token => token.type !== 'filter')
-      : _partialCompletion
-    const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
+    const partialHasSecondary = _partialCompletion.some(isSecondary)
     const id = toId(token)
+    // Same secondary-field hiding as the main dropdown, but always keep the currently
+    // selected token so its value stays visible in this step's select
+    const partialCompletion = filterDisplayedCompletion(
+      this.noFilters ? _partialCompletion.filter(token => token.type !== 'filter') : _partialCompletion,
+      isSecondary,
+      this.showAllFields,
+      [id],
+    )
+    const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
     return html`
-              <select>
+              <select @change=${(e: Event) => this.onSelectShowAll(e)}>
                 <option value="">-</option>
+                ${this.showAllFieldsOption(partialHasSecondary)}
                 ${ Object.entries(partialGroupedCompletion)
     .reverse()
     .map(([type, completion]) => {
@@ -385,9 +401,11 @@ export class StateEditor extends LitElement {
         ${Object.entries(groupedCompletion).length ? html`
           <select
             class="ds-expression-input__add"
+            @change=${(e: Event) => this.onSelectShowAll(e)}
             ${ref(el => el && ((el as HTMLSelectElement).value = ''))}
             >
             <option value="" selected>+</option>
+            ${this.showAllFieldsOption(mainHasSecondary)}
             ${ Object.entries(groupedCompletion)
     .reverse()
     .map(([type, completion]) => {
@@ -418,6 +436,30 @@ export class StateEditor extends LitElement {
         `
     this.redrawing = false
     return result
+  }
+
+  /**
+   * The "Show all fields" entry shown at the top of a dropdown that hides secondary
+   * fields. Its value is empty so expression-input ignores it as a token; selecting it
+   * is intercepted in onSelectShowAll. Nothing is rendered when no field is hidden.
+   */
+  private showAllFieldsOption(hasSecondary: boolean): TemplateResult | string {
+    if (!hasSecondary) return ''
+    return html`<option value="" data-show-all>${this.showAllFields ? '⋯ Show fewer fields' : '⋯ Show all fields'}</option>`
+  }
+
+  /**
+   * Intercept selection of the "Show all fields" option before expression-input turns it
+   * into a token: toggle the flag and re-render. Runs at the select's target phase, ahead
+   * of input-chain's shadow-root change listener, so stopImmediatePropagation blocks it.
+   */
+  private onSelectShowAll(event: Event) {
+    const option = (event.target as HTMLSelectElement).selectedOptions[0]
+    if (!option?.hasAttribute('data-show-all')) return
+    event.stopImmediatePropagation()
+    event.preventDefault()
+    this.showAllFields = !this.showAllFields
+    this.requestUpdate()
   }
 
   private onChangeValue(event: Event) {

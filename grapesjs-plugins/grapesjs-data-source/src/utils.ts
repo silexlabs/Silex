@@ -26,7 +26,12 @@ export function cleanStateName(name: string | null) {
  * @example "String", "String [ ]", "String { }"
  */
 function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
-  const typeIdsStr = typeIds.join(', ').toLowerCase()
+  // Cap union types (e.g. Relay `node` lists ~24 types) so the option stays short and
+  // the native <select> popup doesn't stretch to fit it
+  const MAX_TYPES = 3
+  const shown = typeIds.slice(0, MAX_TYPES)
+  const extra = typeIds.length - shown.length
+  const typeIdsStr = (shown.join(', ') + (extra > 0 ? `, +${extra}` : '')).toLowerCase()
   return kind === 'list' ? ` (${typeIdsStr}[])` : kind === 'object' ? ` (${typeIdsStr}{})` : ` (${typeIdsStr})`
 }
 
@@ -180,6 +185,32 @@ export function toId(token: Token): string {
     console.error('Unknown token type (reading type)', token)
     throw new Error('Unknown token type')
   }
+}
+
+/**
+ * Whether a completion token is a backend "secondary" field (plumbing) hidden from the
+ * dropdown until the user asks for all fields. Only property tokens whose data source
+ * declares the field via getSecondaryFieldNames qualify.
+ */
+export function isSecondaryToken(token: Token, dataSources: IDataSource[]): boolean {
+  if (token.type !== 'property') return false
+  const ds = dataSources.find(d => String(d.id) === String(token.dataSourceId))
+  return !!ds?.getSecondaryFieldNames?.().includes(token.fieldId)
+}
+
+/**
+ * Filter a completion list for display: hides secondary fields unless showAll is set or
+ * the token is currently selected (its id is in keepIds) — a selected field must always
+ * stay in its dropdown even when secondary, otherwise its value would vanish.
+ */
+export function filterDisplayedCompletion(
+  completion: Token[],
+  isSecondary: (token: Token) => boolean,
+  showAll: boolean,
+  keepIds: string[] = [],
+): Token[] {
+  if (showAll) return completion
+  return completion.filter(token => !isSecondary(token) || keepIds.includes(toId(token)))
 }
 
 /**
