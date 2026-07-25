@@ -655,3 +655,11 @@ test('build query with fragments', () => {
 ////   expect(dataPostsDetails[0].author).not.toBeUndefined()
 ////   expect(dataPostsDetails[0].author.avatar).not.toBeUndefined()
 //// })
+
+test('supabase hides the Relay cursor field, generic hides nothing', () => {
+  const base = { url: 'http://localhost', method: 'POST' as const, headers: {}, id: 'ds', label: 't', type: 'graphql' as const }
+  const supabase = new GQLTest({ ...base, backendType: 'supabase' })
+  const generic = new GQLTest({ ...base })
+  expect((supabase as unknown as { getHiddenFieldNames(): string[] }).getHiddenFieldNames()).toEqual(['cursor'])
+  expect((generic as unknown as { getHiddenFieldNames(): string[] }).getHiddenFieldNames()).toEqual([])
+})
