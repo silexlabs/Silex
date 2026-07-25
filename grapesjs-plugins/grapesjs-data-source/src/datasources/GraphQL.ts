@@ -537,6 +537,9 @@ export default class GraphQL implements IDataSource {
 
         // Filter enum (query argument, not data)
         'FilterIs',
+
+        // Connection pagination info (hasNextPage / cursors) — plumbing, not data
+        'PageInfo',
       ]
 
       // Patterns to blacklist
