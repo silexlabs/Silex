@@ -212,6 +212,9 @@ export interface StoredFilter {
   options: Options
   quotedOptions?: string[]
   optionsKeys?: string[] // Optional, used to set a specific order
+  // Options whose value is an expression evaluated against each item of the input
+  // list (e.g. where/find/map "key"), rather than once against the root data.
+  itemKeys?: string[]
   previewIndex?: number
   previewGroup?: number
 }
