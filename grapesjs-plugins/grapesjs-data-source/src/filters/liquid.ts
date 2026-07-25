@@ -161,7 +161,6 @@ export default function(editor: Editor): Filter[] {
         <state-editor
           .selected=${selected}
           .editor=${editor}
-          no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
@@ -237,7 +236,6 @@ export default function(editor: Editor): Filter[] {
         <state-editor
           .selected=${selected}
           .editor=${editor}
-          no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
