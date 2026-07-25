@@ -74,7 +74,11 @@ export function getTrees(
   const next = expression[0]
   switch(next.type) {
   case 'property': {
-    if(next.dataSourceId !== dataSourceId) return []
+    // Token of another data source (or a Fixed value with no data source): it is
+    // not a field of THIS source, but the rest of the expression — including filter
+    // options (a where key, an append suffix…) — may still reference this source,
+    // so keep walking instead of dropping everything.
+    if(next.dataSourceId !== dataSourceId) return getTrees(manager, {expression: expression.slice(1), component}, dataSourceId)
     const trees = getTrees(manager, {expression: expression.slice(1), component}, dataSourceId)
     if(trees.length === 0) return [{
       token: next,
@@ -117,7 +121,10 @@ export function getTrees(
       })
       throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
     }
-    return getTrees(manager, {expression: resolved, component}, dataSourceId)
+    // Prepend the resolved state expression to the REST of the expression: tokens
+    // that follow the state (e.g. `name` in `loopItem → name`) access fields of the
+    // state's result and must not be dropped (mirrors evaluateStateToken).
+    return getTrees(manager, {expression: [...resolved, ...expression.slice(1)], component}, dataSourceId)
   }
   default:
     manager.editor.runCommand('notifications:add', {

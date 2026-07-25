@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceId, Property, StoredToken, ComponentExpression } from '../types'
+import { DataSourceId, StoredToken, ComponentExpression } from '../types'
 import { getPageExpressions, toTrees } from './ExpressionTree'
 import { getManager } from './dataSourceManager'
 import { getAllDataSources } from './dataSourceRegistry'
@@ -70,17 +70,13 @@ export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, s
             }
           }),
         }))
-        // Keep only the expressions for the current data source
-        .filter((componentExpression: ComponentExpression) => {
-          const e = componentExpression.expression
-          if(e.length === 0) return false
-          // We resolved all states
-          // An expression can not start with a filter
-          // So this is a property
-          const first = e[0] as Property
-          // Keep only the expressions for the current data source
-          return first?.dataSourceId === ds.id
-        })
+        // Keep every non-empty expression. An expression can reference this data
+        // source *anywhere* (main chain OR inside a filter option, e.g. a where key
+        // or an append suffix), and getTrees is scoped by dataSourceId — it collects
+        // only this source's fields and skips the rest. Dropping by the first token
+        // (its dataSourceId) lost expressions starting with a Fixed value or a token
+        // of another source, even when they referenced this source deeper.
+        .filter((componentExpression: ComponentExpression) => componentExpression.expression.length > 0)
 
       const trees = toTrees(manager, dsExpressions, ds.id)
       if(trees.length === 0) {
