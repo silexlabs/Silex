@@ -95,7 +95,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >
@@ -119,7 +118,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >
@@ -657,7 +655,6 @@ export default function(editor: Editor): Filter[] {
           name="value"
           parent-name=${stateName}
           data-is-input
-          no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
         >
