@@ -151,8 +151,30 @@ export const WORDPRESS_SECONDARY_FIELDS = [
   'menuOrder', 'dateGmt', 'modifiedGmt', 'enclosure', 'nodeByUri', 'permalinkSettings',
 ]
 
+/**
+ * Per-backend knowledge, kept in one declarative table instead of scattered across
+ * several `switch (backendType)` blocks. Field visibility has three tiers:
+ * - hiddenFields: never shown, even via "show all" (e.g. Relay cursor, WP viewer)
+ * - rootHiddenFields: hidden only from the root query, kept on nested types (e.g. WP node)
+ * - secondaryFields: hidden by default, revealed by the "show all fields" toggle
+ */
+interface BackendProfile {
+  batchSize: number
+  hiddenFields: string[]
+  rootHiddenFields: string[]
+  secondaryFields: string[]
+}
+
+const BACKEND_PROFILES: Record<GraphQLBackendType, BackendProfile> = {
+  gitlab:    { batchSize: GITLAB_BATCH_SIZE,  hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+  wordpress: { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: ['viewer'], rootHiddenFields: ['node'], secondaryFields: WORDPRESS_SECONDARY_FIELDS },
+  strapi:    { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+  supabase:  { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: ['cursor'], rootHiddenFields: [],       secondaryFields: [] },
+  generic:   { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+}
+
 export function getBatchSize(backendType: GraphQLBackendType): number {
-  return backendType === 'gitlab' ? GITLAB_BATCH_SIZE : DEFAULT_BATCH_SIZE
+  return BACKEND_PROFILES[backendType].batchSize
 }
 
 /**
@@ -763,44 +785,19 @@ export default class GraphQL implements IDataSource {
     }
   }
 
-  /**
-   * Field names hidden from the expression UI for the current backend — plumbing
-   * that is never useful as data (e.g. the Relay pagination `cursor`). Applied on
-   * top of the type-level blacklist (getDefaultEnabledTypes), because these are
-   * scalar fields that survive type filtering (scalars are always kept).
-   */
+  /** Field names never shown in the expression UI, even via "show all" (see BackendProfile). */
   protected getHiddenFieldNames(): string[] {
-    switch (this.backendType) {
-    case 'supabase': return ['cursor']
-    // viewer is the current logged-in user — meaningless at static build time
-    case 'wordpress': return ['viewer']
-    default: return []
-    }
+    return BACKEND_PROFILES[this.backendType].hiddenFields
   }
 
-  /**
-   * Field names hidden only from the root query, not from nested types. Used when a name
-   * is plumbing at the root but essential deeper — e.g. WordPress `node`: useless as a
-   * root Relay refetch, but required to reach a single edge's object (author → node).
-   */
+  /** Field names hidden only from the root query, kept on nested types (see BackendProfile). */
   protected getRootHiddenFieldNames(): string[] {
-    switch (this.backendType) {
-    case 'wordpress': return ['node']
-    default: return []
-    }
+    return BACKEND_PROFILES[this.backendType].rootHiddenFields
   }
 
-  /**
-   * Field names de-emphasized in the expression UI: known backend plumbing that is
-   * rarely useful as content, hidden by default but revealed by the "show all" toggle.
-   * Unlike getHiddenFieldNames these stay available (soft hide), and unknown names
-   * (e.g. WordPress custom/ACF fields) are never hidden since this is a blacklist.
-   */
+  /** Field names hidden by default but revealed by the "show all fields" toggle (see BackendProfile). */
   getSecondaryFieldNames(): string[] {
-    switch (this.backendType) {
-    case 'wordpress': return WORDPRESS_SECONDARY_FIELDS
-    default: return []
-    }
+    return BACKEND_PROFILES[this.backendType].secondaryFields
   }
 
   protected graphQLToField(field: GQLField): Field {
