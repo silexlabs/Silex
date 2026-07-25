@@ -38,7 +38,9 @@ export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, s
   return dataSources
     .map(ds => {
       if (!ds.isConnected()) {
-        console.error('The data source is not yet connected, the value for this page can not be loaded')
+        // Expected transient state: the preview builds queries for every page while
+        // sources are still connecting. Queries rebuild on DATA_SOURCE_READY, and real
+        // connection failures are reported via DATA_SOURCE_ERROR — so stay silent here.
         return {
           dataSourceId: ds.id.toString(),
           query: '',

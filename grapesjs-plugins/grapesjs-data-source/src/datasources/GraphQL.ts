@@ -121,8 +121,60 @@ const selectiveIntrospectionFragment = `
 export const DEFAULT_BATCH_SIZE = 100
 export const GITLAB_BATCH_SIZE = 5
 
+/**
+ * WPGraphQL infrastructure fields, present across most WordPress types, that clutter
+ * the expression UI without being useful content. Soft-hidden by default (revealed by
+ * "show all"). Blacklist by design: custom/ACF fields have unknown names and stay visible.
+ */
+export const WORDPRESS_SECONDARY_FIELDS = [
+  // Relay / global identifiers (nodes stays as the loop path)
+  'id', 'databaseId', 'guid', 'edges', 'pageInfo',
+  'authorId', 'authorDatabaseId', 'featuredImageId', 'featuredImageDatabaseId',
+  // Gutenberg blocks (editorBlocks expands to one field per registered block) and editors
+  'editorBlocks', 'editingLockedBy', 'lastEditedBy',
+  // WordPress front-end assets, irrelevant to a headless build
+  'enqueuedScripts', 'enqueuedStylesheets', 'globalStylesheet',
+  // content-type / template / condition metadata
+  'contentType', 'contentTypeName', 'contentNode', 'contentNodes', 'contentTypes',
+  'conditionalTags', 'templates', 'template',
+  'isContentNode', 'isTermNode', 'isComment', 'isFrontPage', 'isPostsPage',
+  'isPreview', 'isRevision', 'isRestricted', 'isSticky',
+  // previews, revisions, drafts — editorial state, not published content
+  'preview', 'desiredSlug', 'previewRevisionDatabaseId', 'previewRevisionId', 'status',
+  // comments, pings and trackbacks — dynamic, useless on a static site
+  'comments', 'commentStatus', 'commentCount', 'pingStatus', 'pinged', 'toPing',
+  // password protection — no runtime auth on a static site
+  'password', 'hasPassword',
+  // taxonomy plumbing (categories / tags stay)
+  'taxonomy', 'taxonomies', 'termNode', 'terms',
+  // misc rarely-useful fields and root plumbing
+  'menuOrder', 'dateGmt', 'modifiedGmt', 'enclosure', 'nodeByUri', 'permalinkSettings',
+]
+
+/**
+ * Per-backend knowledge, kept in one declarative table instead of scattered across
+ * several `switch (backendType)` blocks. Field visibility has three tiers:
+ * - hiddenFields: never shown, even via "show all" (e.g. Relay cursor, WP viewer)
+ * - rootHiddenFields: hidden only from the root query, kept on nested types (e.g. WP node)
+ * - secondaryFields: hidden by default, revealed by the "show all fields" toggle
+ */
+interface BackendProfile {
+  batchSize: number
+  hiddenFields: string[]
+  rootHiddenFields: string[]
+  secondaryFields: string[]
+}
+
+const BACKEND_PROFILES: Record<GraphQLBackendType, BackendProfile> = {
+  gitlab:    { batchSize: GITLAB_BATCH_SIZE,  hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+  wordpress: { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: ['viewer'], rootHiddenFields: ['node'], secondaryFields: WORDPRESS_SECONDARY_FIELDS },
+  strapi:    { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+  supabase:  { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: ['cursor'], rootHiddenFields: [],       secondaryFields: [] },
+  generic:   { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
+}
+
 export function getBatchSize(backendType: GraphQLBackendType): number {
-  return backendType === 'gitlab' ? GITLAB_BATCH_SIZE : DEFAULT_BATCH_SIZE
+  return BACKEND_PROFILES[backendType].batchSize
 }
 
 /**
@@ -718,8 +770,11 @@ export default class GraphQL implements IDataSource {
           // Include if the type exists in schemaTypes or is a builtin type
           return schemaTypes.some(t => t.name === typeName) || builtinTypeIds.includes(typeName)
         })
-        // Hide plumbing fields (e.g. Relay cursors) that survive the type blacklist
-        .filter((field: GQLField) => !this.getHiddenFieldNames().includes(field.name))
+        // Hide plumbing fields (e.g. Relay cursors) that survive the type blacklist,
+        // plus root-only plumbing (e.g. WordPress Query.node) that must stay usable on
+        // nested edge types, so it is filtered here (root) and not in graphQLToType
+        .filter((field: GQLField) => !this.getHiddenFieldNames().includes(field.name)
+          && !this.getRootHiddenFieldNames().includes(field.name))
         // Map to Field
         .map((field: GQLField) => this.graphQLToField(field))
 
@@ -730,17 +785,19 @@ export default class GraphQL implements IDataSource {
     }
   }
 
-  /**
-   * Field names hidden from the expression UI for the current backend — plumbing
-   * that is never useful as data (e.g. the Relay pagination `cursor`). Applied on
-   * top of the type-level blacklist (getDefaultEnabledTypes), because these are
-   * scalar fields that survive type filtering (scalars are always kept).
-   */
+  /** Field names never shown in the expression UI, even via "show all" (see BackendProfile). */
   protected getHiddenFieldNames(): string[] {
-    switch (this.backendType) {
-    case 'supabase': return ['cursor']
-    default: return []
-    }
+    return BACKEND_PROFILES[this.backendType].hiddenFields
+  }
+
+  /** Field names hidden only from the root query, kept on nested types (see BackendProfile). */
+  protected getRootHiddenFieldNames(): string[] {
+    return BACKEND_PROFILES[this.backendType].rootHiddenFields
+  }
+
+  /** Field names hidden by default but revealed by the "show all fields" toggle (see BackendProfile). */
+  getSecondaryFieldNames(): string[] {
+    return BACKEND_PROFILES[this.backendType].secondaryFields
   }
 
   protected graphQLToField(field: GQLField): Field {

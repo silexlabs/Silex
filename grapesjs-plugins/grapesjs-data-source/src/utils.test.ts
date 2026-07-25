@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals'
-import { cleanStateName, concatWithLength } from './utils'
+import { cleanStateName, concatWithLength, isSecondaryToken, filterDisplayedCompletion, toId } from './utils'
+import { IDataSource, Token } from './types'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -32,6 +33,34 @@ test('test name fall new state', () => {
   expect(cleanStateName('test:name')).toBe('test:name')
   expect(cleanStateName('test-_.:')).toBe('test-_.:')
   expect(cleanStateName('a-b_c.d:e')).toBe('a-b_c.d:e')
+})
+
+const prop = (fieldId: string, dataSourceId = 'wp'): Token => ({
+  type: 'property', propType: 'field', dataSourceId, fieldId,
+  label: fieldId, kind: 'scalar', typeIds: ['String'],
+} as Token)
+const wpDs = { id: 'wp', getSecondaryFieldNames: () => ['databaseId', 'guid'] } as unknown as IDataSource
+const genericDs = { id: 'gen' } as unknown as IDataSource
+
+test('isSecondaryToken flags only declared plumbing property tokens', () => {
+  expect(isSecondaryToken(prop('databaseId'), [wpDs])).toBe(true)
+  expect(isSecondaryToken(prop('title'), [wpDs])).toBe(false)
+  // data source that does not declare secondary fields
+  expect(isSecondaryToken(prop('databaseId', 'gen'), [genericDs])).toBe(false)
+  // filter/state tokens are never secondary
+  expect(isSecondaryToken({ type: 'filter', id: 'x', label: 'x', options: {} } as Token, [wpDs])).toBe(false)
+})
+
+test('filterDisplayedCompletion hides secondary fields unless showAll or kept', () => {
+  const completion = [prop('title'), prop('databaseId'), prop('guid')]
+  const isSecondary = (t: Token) => isSecondaryToken(t, [wpDs])
+  expect(filterDisplayedCompletion(completion, isSecondary, false).map(t => (t as Extract<Token, { fieldId: string }>).fieldId))
+    .toEqual(['title'])
+  expect(filterDisplayedCompletion(completion, isSecondary, true)).toHaveLength(3)
+  // Edge case: a currently selected secondary token (in keepIds) stays visible
+  const keep = toId(prop('databaseId'))
+  expect(filterDisplayedCompletion(completion, isSecondary, false, [keep]).map(t => (t as Extract<Token, { fieldId: string }>).fieldId))
+    .toEqual(['title', 'databaseId'])
 })
 
 test('Test string length', () => {
