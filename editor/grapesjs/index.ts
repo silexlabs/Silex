@@ -48,6 +48,7 @@ import breadcrumbsPlugin from './breadcrumbs'
 import imgPlugin from './img'
 import liPlugin from './li'
 import flexPlugin from './flex'
+import centerPlugin from './center'
 import cssPropsPlugin from './css-props'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPlugin from 'grapesjs-style-border'
@@ -112,6 +113,7 @@ const plugins = [
   {name: './img', value: imgPlugin},
   {name: './li', value: liPlugin},
   {name: './flex', value: flexPlugin},
+  {name: './center', value: centerPlugin},
   {name: './css-props', value: cssPropsPlugin},
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
