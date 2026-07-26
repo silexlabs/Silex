@@ -30,25 +30,21 @@ export default (editor: Editor) => {
     })
   })
 
-  const defaultModel = editor.Components.getType('default').model as any
-  const originalDefaults = defaultModel.prototype.defaults
+  const defaultModel = editor.DomComponents.getType('default').model as any
+  const defaults = defaultModel.prototype.defaults
 
-  defaultModel.prototype.defaults = function () {
-    const defaults = originalDefaults.call(this)
-
-    return {
-      ...defaults,
-      toolbar: [
-        ...(defaults.toolbar || []),
-        {
-          attributes: {
-            class: 'fa-solid fa-align-center',
-            title: 'Center horizontally',
-            'aria-label': 'Center horizontally',
-          },
-          command: CENTER_COMMAND,
+  defaultModel.prototype.defaults = {
+    ...defaults,
+    toolbar: [
+      ...(defaults.toolbar || []),
+      {
+        attributes: {
+          class: 'fa-solid fa-align-center',
+          title: 'Center horizontally',
+          'aria-label': 'Center horizontally',
         },
-      ],
-    }
+        command: CENTER_COMMAND,
+      },
+    ],
   }
 }
