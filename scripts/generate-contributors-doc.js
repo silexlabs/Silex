@@ -11,8 +11,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // in silexlabs/Silex (submodule commit hashes were rewritten by git filter-repo).
 const REPO_URL = 'https://github.com/silexlabs/Silex';
 
-// Authors to exclude (bots, placeholders)
-const EXCLUDE = /ubuntu|john doe|^undefined$|grrhosting|gitter badger/i;
+// Authors to exclude (bots, placeholders, AI assistants credited as co-authors)
+const EXCLUDE = /ubuntu|john doe|^undefined$|grrhosting|gitter badger|claude|anthropic|copilot|\[bot\]/i;
 
 // Author identity normalization (e.g. lexoyo / lexa / Alexandre Hoyau → Alex Hoyau) is
 // handled by git via .mailmap: `git log %aN` applies it. No hardcoded alias map here —
@@ -53,17 +53,27 @@ function resolveViaGh(email) {
   }
 }
 
+// Co-authors are credited too: a squashed PR keeps its real author in a
+// `Co-authored-by` trailer, so `%aN` alone would drop them. Records are NUL separated
+// because a commit can carry several trailers, each one on its own line.
 function getContributors(dir) {
   try {
-    const output = execSync('git log --format="%aN|%aE|%aI" --all', {
-      cwd: dir,
-      encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-      maxBuffer: 256 * 1024 * 1024, // full monorepo history exceeds the 1MB default
-    });
-    return output.trim().split('\n').filter(Boolean).map((line) => {
-      const [name, email, date] = line.split('|');
-      return { name, email, date };
+    const output = execSync(
+      'git log --format="%aN|%aE|%aI|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)%x00" --all',
+      {
+        cwd: dir,
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        maxBuffer: 256 * 1024 * 1024, // full monorepo history exceeds the 1MB default
+      });
+    return output.split('\0').filter((record) => record.trim()).flatMap((record) => {
+      const [name, email, date, coauthors] = record.trim().split('|');
+      const contributions = [{ name, email, date }];
+      for (const trailer of (coauthors || '').split('\x1F').filter(Boolean)) {
+        const parsed = trailer.match(/^\s*(.+?)\s*<(.+?)>\s*$/);
+        if (parsed) contributions.push({ name: parsed[1], email: parsed[2], date });
+      }
+      return contributions;
     });
   } catch {
     return [];
@@ -74,18 +84,13 @@ function main() {
   // Single git log over the monorepo captures every package's contributors.
   const allContributions = getContributors(ROOT);
 
-  // Group by author+year, keep the latest commit per author per year (for display),
-  // and collect every email seen per author (to resolve a login).
-  const byAuthorYear = {};
+  // Collect every email seen per author name (to resolve a login).
+  const contributionsByName = {};
   const emailsByName = {};
   for (const c of allContributions) {
-    const name = c.name; // already normalized by git via .mailmap (%aN)
+    const name = c.name;
     if (EXCLUDE.test(name)) continue;
-    const year = c.date.substring(0, 4);
-    const key = `${name}|${year}`;
-    if (!byAuthorYear[key] || c.date > byAuthorYear[key].date) {
-      byAuthorYear[key] = { ...c, name, year };
-    }
+    (contributionsByName[name] ||= []).push(c);
     (emailsByName[name] ||= new Set()).add(c.email);
   }
 
@@ -102,9 +107,31 @@ function main() {
   }
   if (resolved) console.error(`[contributors] resolved ${resolved} login(s) via gh`);
 
+  // Identity is the GitHub login, not the name a contributor happened to configure:
+  // `lexoyo`, `lexa` and `Alex Hoyau` all resolve to the same profile, so they are one
+  // person. Names without a resolved login fall back to their own name as key.
+  // The display name is the one used in the most recent commit of the group.
+  const byIdentityYear = {};
+  const displayNameByIdentity = {};
+  const latestDateByIdentity = {};
+  for (const [name, contributions] of Object.entries(contributionsByName)) {
+    const identity = loginByName[name] ? `gh:${loginByName[name]}` : `name:${name}`;
+    for (const c of contributions) {
+      if (!latestDateByIdentity[identity] || c.date > latestDateByIdentity[identity]) {
+        latestDateByIdentity[identity] = c.date;
+        displayNameByIdentity[identity] = name;
+      }
+      const year = c.date.substring(0, 4);
+      const key = `${identity}|${year}`;
+      if (!byIdentityYear[key] || c.date > byIdentityYear[key].date) {
+        byIdentityYear[key] = { identity, year, date: c.date };
+      }
+    }
+  }
+
   // Group by year
   const byYear = {};
-  for (const entry of Object.values(byAuthorYear)) {
+  for (const entry of Object.values(byIdentityYear)) {
     (byYear[entry.year] ||= []).push(entry);
   }
   for (const year of Object.keys(byYear)) {
@@ -114,9 +141,10 @@ function main() {
   // Generate markdown — link to the GitHub profile when known, plain name otherwise.
   let md = '\n';
   for (const year of Object.keys(byYear).sort((a, b) => b - a)) {
-    const names = byYear[year].map((c) => {
-      const login = loginByName[c.name];
-      return login ? `[${c.name}](https://github.com/${login})` : c.name;
+    const names = byYear[year].map((entry) => {
+      const name = displayNameByIdentity[entry.identity];
+      const login = entry.identity.startsWith('gh:') ? entry.identity.slice(3) : null;
+      return login ? `[${name}](https://github.com/${login})` : name;
     });
     md += `**${year}** — ${names.join(', ')}\n\n`;
   }
