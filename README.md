@@ -97,9 +97,9 @@ Silex is the work of contributors from all over the world. This project is maint
 
 <!-- Auto generated contributors -->
 
-**2026** — [Alex Hoyau](https://github.com/lexoyo), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Safal2004](https://github.com/Safal2004), [Wassim Triki](https://github.com/wassim-triki)
+**2026** — [Alex Hoyau](https://github.com/lexoyo), [Aysajan Eziz](https://github.com/AysajanE), [JE4NVRG](https://github.com/JE4NVRG), [KozakLordOfMatrix](https://github.com/MatrixNeoKozak), [pupuking723](https://github.com/pupuking723), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Wassim Triki](https://github.com/wassim-triki)
 
-**2025** — [Alex Hoyau](https://github.com/lexoyo), [ceubri](https://github.com/ceubri), [Mazen Kamal](https://github.com/Mazen050), Piotr Golebiewski, [oliviermgx](https://github.com/oliviermgx)
+**2025** — [Alex Hoyau](https://github.com/lexoyo), [Mazen Kamal](https://github.com/Mazen050), Piotr Golebiewski, [ioleo](https://github.com/ioleo), [oliviermgx](https://github.com/oliviermgx)
 
 **2024** — [Alex Hoyau](https://github.com/lexoyo), [oliviermgx](https://github.com/oliviermgx), [JeremyZXi](https://github.com/JeremyZXi), [SuperDelphi](https://github.com/SuperDelphi)
 
@@ -119,15 +119,24 @@ Silex is the work of contributors from all over the world. This project is maint
 
 **2016** — [Alex Hoyau](https://github.com/lexoyo), [singchan](https://github.com/singchan), [Pierre Ozoux](https://github.com/pierreozoux)
 
-**2015** — [Alex Hoyau](https://github.com/lexoyo), [singchan](https://github.com/singchan), [Christophe](https://github.com/ondrejec), [Pierre Ozoux](https://github.com/pierreozoux), [René Föhring](https://github.com/rrrene), [christian-bromann](https://github.com/christian-bromann)
+**2015** — [Alex Hoyau](https://github.com/lexoyo), [singchan](https://github.com/singchan), Christophe, [Pierre Ozoux](https://github.com/pierreozoux), [René Föhring](https://github.com/rrrene), [christian-bromann](https://github.com/christian-bromann)
 
 **2014** — [Alex Hoyau](https://github.com/lexoyo), [Camille Gérard-Hirne](https://github.com/camcrock), [neocorp64](https://github.com/NeoCorp), Michele Martone, [peoslaap](https://github.com/peoslaap)
 
-**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, TheCause, yanhick, Thomas Fetiveau
+**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, [TheCause](https://github.com/TheCause), [yanhick](https://github.com/yanhick), Alexandre Hoyau, [Thomas Fetiveau](https://github.com/zabojad)
 
 
 
 <!-- Auto generated contributors -->
+
+The list above is generated from the git history of this repository, so it only covers code. Silex
+owes just as much to people whose work lives elsewhere:
+
+- **Brice Martin** ([ceubri](https://github.com/ceubri)) — templates, brand assets and design
+- **Jonas Moreau** ([MoreauJonas](https://github.com/MoreauJonas)) — detailed bug reports and feedback from real world use
+- [**BaguetteAgile**](https://github.com/BaguetteAgile) — years of bug reports and integration requests, from GitLab publishing to AI agents
+- [**sidmint**](https://github.com/sidmint) — precise usability feedback on the editor and the desktop app
+- **Likha Studios** ([GetLikha](https://github.com/GetLikha)) — reproducible bug reports on Silex v3
 
 ## Links
 
