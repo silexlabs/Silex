@@ -132,6 +132,10 @@ pub struct WebsiteData {
     /// Publication settings
     #[serde(default)]
     pub publication: serde_json::Value,
+
+    /// Top-level keys owned by plugins (`dataSources`…), preserved as-is
+    #[serde(flatten, default)]
+    pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
 fn default_pages_folder() -> String {
@@ -150,6 +154,7 @@ impl Default for WebsiteData {
             fonts: Vec::new(),
             symbols: Vec::new(),
             publication: serde_json::json!({}),
+            extra: serde_json::Map::new(),
         }
     }
 }

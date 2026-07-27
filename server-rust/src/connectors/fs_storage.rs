@@ -170,16 +170,16 @@ impl FsStorage {
         }
 
         // Create the main website.json with page references instead of full pages
-        let website_data_with_refs = serde_json::json!({
-            "pages": page_refs,
-            "pagesFolder": pages_folder,
-            "assets": data.assets,
-            "styles": data.styles,
-            "settings": data.settings,
-            "fonts": data.fonts,
-            "symbols": data.symbols,
-            "publication": data.publication,
-        });
+        let mut website_object = data.extra.clone();
+        website_object.insert("pages".to_string(), serde_json::json!(page_refs));
+        website_object.insert("pagesFolder".to_string(), serde_json::json!(pages_folder));
+        website_object.insert("assets".to_string(), serde_json::json!(data.assets));
+        website_object.insert("styles".to_string(), serde_json::json!(data.styles));
+        website_object.insert("settings".to_string(), data.settings.clone());
+        website_object.insert("fonts".to_string(), serde_json::json!(data.fonts));
+        website_object.insert("symbols".to_string(), serde_json::json!(data.symbols));
+        website_object.insert("publication".to_string(), data.publication.clone());
+        let website_data_with_refs = serde_json::Value::Object(website_object);
 
         let website_content = Self::serialize_json(&website_data_with_refs)?;
         files.push((constants::WEBSITE_DATA_FILE.to_string(), website_content));
