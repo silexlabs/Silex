@@ -93,6 +93,9 @@ export const storagePlugin = (editor: PublishableEditor) => {
         editor.runCommand(cmdPauseAutoSave)
         if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
         if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
+        // Keep the pages folder of the website, grapesjs does not store the keys it does not know about,
+        // and we send it back at every save (see doStore)
+        editor.getModel().set('pagesFolder', data.pagesFolder)
         if (options.mode == 'progressive') {
           if (!data.pages) {
             // This happens when the website was just created
@@ -104,7 +107,6 @@ export const storagePlugin = (editor: PublishableEditor) => {
             await nextFrame()
             // Add to the project, everything but pages
             editor.loadProjectData(rest)
-            editor.getModel().set('pagesFolder', pagesFolder)
             // Add the pages to the project
             await progressiveLoadPages(editor, pages)
             await nextFrame()
