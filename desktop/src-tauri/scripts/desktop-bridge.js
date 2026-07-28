@@ -39,146 +39,14 @@
     });
   };
 
-  const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th', 'label', 'blockquote'];
-
   // Expose debug logging for silex-lib client code
   window.__silexDebug = (msg) => invoke('log_debug', { message: msg });
   invoke('log_debug', { message: '[bridge] desktop-bridge loaded, page=' + window.location.href });
 
-  // MCP helpers (available globally for eval_js calls)
+  // MCP helpers, called by the Rust side through eval_js.
+  // Nothing else belongs here: a capability's own logic lives in its plugin.
   window.__silexMcp = {
-    findComponent(editor, id) {
-      const walk = (c) => {
-        if (c.ccid === id || c.getId() === id) return c;
-        for (const child of c.components().models) {
-          const r = walk(child);
-          if (r) return r;
-        }
-        return null;
-      };
-      return walk(editor.getWrapper());
-    },
-
-    getDataSourceApi() {
-      return window.silex?.dataSource ?? null;
-    },
-
-    resolveExpression(editor, dotPath) {
-      const dsApi = this.getDataSourceApi();
-      if (!dsApi?.getAllDataSources) {
-        return { error: 'Data source plugin not available. No CMS configured.' };
-      }
-
-      const parts = dotPath.split('.');
-      if (parts.length < 2) return { error: 'Expression must have at least 2 segments: "source.field"' };
-
-      const [dsId, ...fieldParts] = parts;
-      const ds = dsApi.getDataSource(dsId);
-      if (!ds) {
-        const available = dsApi.getAllDataSources().map(d => d.id);
-        return { error: `Data source not found: ${dsId}`, available };
-      }
-
-      const tokens = [];
-      let currentTypeIds = [];
-
-      // First field segment: look up in queryables (root entry points)
-      const fieldId = fieldParts[0];
-      const queryables = ds.getQueryables?.() ?? [];
-      const rootField = queryables.find(q => q.id === fieldId);
-      if (!rootField) {
-        return {
-          error: `Field not found: ${fieldId}`,
-          available: queryables.map(f => f.id)
-        };
-      }
-
-      tokens.push({
-        type: 'property',
-        propType: 'field',
-        dataSourceId: dsId,
-        fieldId: rootField.id,
-        label: rootField.label ?? rootField.id,
-        typeIds: rootField.typeIds ?? [],
-        kind: rootField.kind ?? 'object'
-      });
-      currentTypeIds = rootField.typeIds ?? [];
-
-      // Remaining segments: traverse nested fields through types
-      for (let seg = 1; seg < fieldParts.length; seg++) {
-        const nextFieldId = fieldParts[seg];
-        let found = false;
-        const availableFields = [];
-        const allTypes = ds.getTypes?.() ?? [];
-
-        for (const t of allTypes) {
-          if (!currentTypeIds.includes(t.id)) continue;
-
-          for (const field of (t.fields ?? [])) {
-            availableFields.push(field.id);
-            if (field.id === nextFieldId) {
-              tokens.push({
-                type: 'property',
-                propType: 'field',
-                fieldId: field.id,
-                label: field.label ?? field.id,
-                typeIds: field.typeIds ?? [],
-                kind: field.kind ?? 'scalar'
-              });
-              currentTypeIds = field.typeIds ?? [];
-              found = true;
-              break;
-            }
-          }
-          if (found) break;
-        }
-
-        if (!found) {
-          return {
-            error: `Field not found at segment ${seg + 1}: ${nextFieldId}`,
-            path_so_far: parts.slice(0, seg + 2).join('.'),
-            available: availableFields
-          };
-        }
-      }
-
-      return tokens;
-    },
-
-    setState(component, stateId, state, exported) {
-      const dsApi = this.getDataSourceApi();
-      if (dsApi?.setState) {
-        dsApi.setState(component, stateId, state, exported);
-        return;
-      }
-      // Fallback: direct component manipulation (no change callbacks)
-      const key = exported ? 'publicStates' : 'privateStates';
-      const states = component.get(key) ?? [];
-      const entry = { id: stateId, label: state.label, hidden: state.hidden, expression: state.expression };
-      const idx = states.findIndex(s => s.id === stateId);
-      component.set(key, idx >= 0
-        ? states.map(s => s.id === stateId ? entry : s)
-        : [...states, entry]
-      );
-    },
-
-    removeState(component, stateId, exported) {
-      const dsApi = this.getDataSourceApi();
-      if (dsApi?.removeState) {
-        dsApi.removeState(component, stateId, exported);
-        return;
-      }
-      const key = exported ? 'publicStates' : 'privateStates';
-      component.set(key, (component.get(key) ?? []).filter(s => s.id !== stateId));
-    },
-
-    getState(component, stateId, exported) {
-      const dsApi = this.getDataSourceApi();
-      if (dsApi?.getState) return dsApi.getState(component, stateId, exported);
-      const key = exported ? 'publicStates' : 'privateStates';
-      return (component.get(key) ?? []).find(s => s.id === stateId) ?? null;
-    },
-
+    // Context joined to every dynamic tool response, so the agent knows what is selected.
     getSelectionState(editor) {
       const dev = editor.Devices.getSelected();
       const page = editor.Pages.getSelected();
@@ -192,7 +60,7 @@
         selector: rule?.selectorsToString?.() ?? null
       };
 
-      // Add hierarchy warnings so SLMs know what's missing
+      // Add hierarchy warnings so SLMs know what is missing
       const warnings = [];
       if (!state.page) warnings.push("No page selected — use page(action:'select') first");
       if (!state.component) warnings.push("No element selected — use component(action:'select') before selector/style/symbol operations");
@@ -202,21 +70,7 @@
       return state;
     },
 
-    _log(tool, action, msg) {
-      console.log(`[MCP ${tool}:${action}] ${msg}`);
-    },
-
-    getOrCreatePersistantId(component) {
-      const dsApi = this.getDataSourceApi();
-      if (dsApi?.getOrCreatePersistantId) return dsApi.getOrCreatePersistantId(component);
-      const id = component.get('id-plugin-data-source');
-      if (id) return id;
-      const newId = `${component.ccid}-${Math.round(Math.random() * 10000)}`;
-      component.set('id-plugin-data-source', newId);
-      return newId;
-    },
-
-    // Query capabilities registry and return as JSON-serializable tool definitions
+    // Capabilities the current page exposes, turned into MCP tools by the Rust side.
     getCapabilities() {
       const caps = window.grapesjsAiCapabilities;
       if (!caps?.getAllCapabilities) return [];

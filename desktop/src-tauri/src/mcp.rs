@@ -1,4 +1,13 @@
 /*
+ * Silex website builder - desktop app.
+ * Copyright (c) 2023 lexoyo and Silex Labs foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or any later version.
+ */
+
+/*
  * MCP (Model Context Protocol) server for Silex Desktop.
  *
  * Static tools: website, take_screenshot.
@@ -819,15 +828,26 @@ RULES:
 // Server entry point
 // ==========================================================================
 
+/// State shared by every MCP session: the dynamic tools loaded from the page
+/// have to survive a session, otherwise they would be lost on website open.
+fn shared_state() -> (
+    Arc<AtomicU64>,
+    Arc<tokio::sync::RwLock<ToolRouter<SilexMcp>>>,
+    Arc<std::sync::atomic::AtomicBool>,
+) {
+    (
+        Arc::new(AtomicU64::new(0)),
+        Arc::new(tokio::sync::RwLock::new(ToolRouter::new())),
+        Arc::new(std::sync::atomic::AtomicBool::new(false)),
+    )
+}
+
 pub async fn start_mcp_server(
     app_handle: tauri::AppHandle,
     pending_evals: PendingEvals,
     port: u16,
 ) {
-    let eval_counter = Arc::new(AtomicU64::new(0));
-    // Shared across all sessions so dynamic tools persist after website open/create
-    let dynamic_tools = Arc::new(tokio::sync::RwLock::new(ToolRouter::new()));
-    let capabilities_loaded = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let (eval_counter, dynamic_tools, capabilities_loaded) = shared_state();
 
     let mcp_service = StreamableHttpService::new(
         move || {
@@ -865,9 +885,7 @@ pub async fn start_mcp_stdio(
     app_handle: tauri::AppHandle,
     pending_evals: PendingEvals,
 ) {
-    let eval_counter = Arc::new(AtomicU64::new(0));
-    let dynamic_tools = Arc::new(tokio::sync::RwLock::new(ToolRouter::new()));
-    let capabilities_loaded = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let (eval_counter, dynamic_tools, capabilities_loaded) = shared_state();
     let service = SilexMcp::new(app_handle, pending_evals, eval_counter, dynamic_tools, capabilities_loaded);
     tracing::info!("MCP stdio transport starting");
     match service.serve(rmcp::transport::io::stdio()).await {

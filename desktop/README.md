@@ -26,9 +26,6 @@ cd desktop
 pnpm run dev       # = tauri dev
 ```
 
-The editor and the dashboard are compiled into the binary, so build them before running the app
-(`pnpm run build:client` at the root of the repo).
-
 Set `SILEX_DATA_PATH` to keep the websites of your development runs away from the ones of the
 installed app.
 
