@@ -149,6 +149,30 @@ jobs:
           APPIMAGE_EXTRACT_AND_RUN: 1
         run: pnpm --dir desktop exec tauri bundle
 
+      # createUpdaterArtifacts only emits .sig for AppImage / NSIS / app.tar.gz. The updater
+      # asks for `linux-x86_64-<deb|rpm>` first when the running app was installed from a
+      # .deb/.rpm, so those bundles need their own signature or the update silently fails.
+      - name: Sign deb and rpm bundles (Linux)
+        if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mapfile -t BUNDLES < <(find target -type f -path '*/release/bundle/*' \
+            \( -name '*.deb' -o -name '*.rpm' \) ! -name '*.sig')
+          if [ ${#BUNDLES[@]} -eq 0 ]; then
+            echo "::error::No .deb/.rpm bundle found to sign"; exit 1
+          fi
+          for f in "${BUNDLES[@]}"; do
+            pnpm --dir desktop exec tauri signer sign "$f" > /dev/null
+            if [ ! -s "$f.sig" ]; then
+              echo "::error::Signing produced no signature for $f"; exit 1
+            fi
+            echo "signed $f"
+          done
+
       # Sign updater artifacts only on v* tags (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os != 'ubuntu-latest'
@@ -246,9 +270,10 @@ jobs:
 
           # Desktop installers + updater artifacts (flatten into release/).
           # Tauri v2 updater artifacts are the bundles themselves + .sig:
-          # Linux = .AppImage, macOS = .app.tar.gz, Windows = -setup.exe.
+          # Linux = .AppImage / .deb / .rpm, macOS = .app.tar.gz, Windows = -setup.exe.
           find artifacts/silex-desktop-* -type f \
-            \( -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*-setup.exe' \
+            \( -name '*.deb' -o -name '*.deb.sig' -o -name '*.rpm' -o -name '*.rpm.sig' \
+               -o -name '*.dmg' -o -name '*-setup.exe' \
                -o -name '*.AppImage' -o -name '*.AppImage.sig' -o -name '*-setup.exe.sig' \
                -o -name '*.AppImage.tar.gz' -o -name '*.AppImage.tar.gz.sig' \) \
             -exec cp {} release/ \;
@@ -272,14 +297,18 @@ jobs:
           BASE="https://github.com/${REPO}/releases/download/${VERSION}"
           LINUX_BUNDLE=$(find release -name '*_amd64.AppImage' ! -name '*.sig' | head -1)
           [ -z "$LINUX_BUNDLE" ] && LINUX_BUNDLE=$(find release -name '*_amd64.AppImage.tar.gz' ! -name '*.sig' | head -1)
+          # The updater looks up `linux-x86_64-<installer>` before `linux-x86_64`, so a user who
+          # installed the .deb/.rpm gets the matching package instead of an AppImage it cannot install.
+          LINUX_DEB=$(find release -name '*_amd64.deb' ! -name '*.sig' | head -1)
+          LINUX_RPM=$(find release -name '*.x86_64.rpm' ! -name '*.sig' | head -1)
           MACOS_ARM_BUNDLE=$(find release -name '*_aarch64.app.tar.gz' ! -name '*.sig' | head -1)
           MACOS_X64_BUNDLE=$(find release -name '*_x64.app.tar.gz' ! -name '*.sig' | head -1)
           WINDOWS_BUNDLE=$(find release -name '*_x64-setup.exe' ! -name '*.sig' | head -1)
 
           # Fail loudly if an updater bundle is missing — an empty URL silently breaks auto-update.
-          for f in "$LINUX_BUNDLE" "$MACOS_ARM_BUNDLE" "$MACOS_X64_BUNDLE" "$WINDOWS_BUNDLE"; do
+          for f in "$LINUX_BUNDLE" "$LINUX_DEB" "$LINUX_RPM" "$MACOS_ARM_BUNDLE" "$MACOS_X64_BUNDLE" "$WINDOWS_BUNDLE"; do
             if [ -z "$f" ] || [ -z "$(sig "$f")" ]; then
-              echo "::error::Missing updater bundle or signature (linux='$LINUX_BUNDLE' macos-arm='$MACOS_ARM_BUNDLE' macos-x64='$MACOS_X64_BUNDLE' windows='$WINDOWS_BUNDLE')"
+              echo "::error::Missing updater bundle or signature (linux='$LINUX_BUNDLE' deb='$LINUX_DEB' rpm='$LINUX_RPM' macos-arm='$MACOS_ARM_BUNDLE' macos-x64='$MACOS_X64_BUNDLE' windows='$WINDOWS_BUNDLE')"
               exit 1
             fi
           done
@@ -289,6 +318,10 @@ jobs:
             --arg date  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             --arg lu    "${BASE}/$(basename "$LINUX_BUNDLE")" \
             --arg ls    "$(sig "$LINUX_BUNDLE")" \
+            --arg ldu   "${BASE}/$(basename "$LINUX_DEB")" \
+            --arg lds   "$(sig "$LINUX_DEB")" \
+            --arg lru   "${BASE}/$(basename "$LINUX_RPM")" \
+            --arg lrs   "$(sig "$LINUX_RPM")" \
             --arg mau   "${BASE}/$(basename "$MACOS_ARM_BUNDLE")" \
             --arg mas   "$(sig "$MACOS_ARM_BUNDLE")" \
             --arg mxu   "${BASE}/$(basename "$MACOS_X64_BUNDLE")" \
@@ -298,6 +331,8 @@ jobs:
             '{
               version: $ver, pub_date: $date,
               platforms: {
+                "linux-x86_64-deb": { url: $ldu, signature: $lds },
+                "linux-x86_64-rpm": { url: $lru, signature: $lrs },
                 "linux-x86_64":    { url: $lu,  signature: $ls },
                 "darwin-aarch64":  { url: $mau, signature: $mas },
                 "darwin-x86_64":   { url: $mxu, signature: $mxs },
