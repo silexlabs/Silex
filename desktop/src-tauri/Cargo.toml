@@ -21,11 +21,11 @@ tokio = { version = "1", features = ["full"] }
 axum = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-url = "2"
 
 # MCP (Model Context Protocol) support
 reqwest = { version = "0.13", features = ["json"] }
 rmcp = { version = "0.15", features = ["server", "transport-streamable-http-server", "transport-io"] }
+# Required as a direct dependency: the JsonSchema derive expands to ::schemars paths
 schemars = "1"
 
 # Open files/folders in the OS default application
