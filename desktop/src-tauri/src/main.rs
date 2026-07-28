@@ -21,6 +21,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
+mod actions;
 mod integrations;
 mod mcp;
 
@@ -306,12 +307,21 @@ fn check_for_updates(app: tauri::AppHandle) {
 // Server
 // ==================
 
-async fn start_server(pending_evals: mcp::PendingEvals, data_path: std::path::PathBuf) -> u16 {
+async fn start_server(
+    pending_evals: mcp::PendingEvals,
+    data_path: std::path::PathBuf,
+    app_data_dir: PathBuf,
+) -> u16 {
     // SILEX_DATA_PATH lets the user store the websites somewhere else
     let data_path = std::env::var("SILEX_DATA_PATH")
         .map(std::path::PathBuf::from)
         .unwrap_or(data_path);
-    let config = Config::new(data_path);
+
+    // Which programs Silex works with was settled the first time the app ran
+    let integrations = integrations::load(&app_data_dir);
+    let actions = actions::SilexActions::new(data_path.clone(), integrations);
+
+    let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
 
     let (app, port) = silex_server::build_app(config).await;
 
@@ -487,7 +497,11 @@ fn main() {
             .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
-            let port = tauri::async_runtime::block_on(start_server(pending_evals.clone(), data_path));
+            let port = tauri::async_runtime::block_on(start_server(
+                pending_evals.clone(),
+                data_path,
+                app.path().app_data_dir().expect("failed to resolve app data dir"),
+            ));
 
             let url = format!("http://localhost:{}/", port);
             let app_handle_for_splash = app.handle().clone();
