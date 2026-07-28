@@ -37,6 +37,10 @@ dirs = "6"
 # Anonymous install id (persistent UUID for telemetry user count)
 uuid = { version = "1", features = ["v4"] }
 
+# Look for the programs of the integrations in PATH, with the extensions
+# Windows expects (.exe, .cmd, .bat)
+which = "8"
+
 # Error tracking / telemetry (GlitchTip / Sentry-compatible)
 sentry = { version = "0.35", features = ["tracing"] }
 
