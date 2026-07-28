@@ -369,11 +369,14 @@ fn split_website_data(
         let file_path = format!("{}/{}", pages_folder, page_file_name(page_name, page_id));
         files.push((file_path, serialize_json(&page)?));
 
-        page_refs.push(serde_json::json!({
-            "name": page_name.unwrap_or("page"),
-            "id": page_id,
-            "isFile": true,
-        }));
+        // A page with no name has no `name` key, same as the Node server
+        let mut page_ref = serde_json::Map::new();
+        if let Some(name) = page_name {
+            page_ref.insert("name".to_string(), serde_json::json!(name));
+        }
+        page_ref.insert("id".to_string(), serde_json::json!(page_id));
+        page_ref.insert("isFile".to_string(), serde_json::json!(true));
+        page_refs.push(serde_json::Value::Object(page_ref));
     }
 
     website_object.insert("pages".to_string(), serde_json::json!(page_refs));
@@ -455,15 +458,25 @@ fn page_file_name(page_name: Option<&str>, page_id: &str) -> String {
     format!("{}-{}.json", page_slug(page_name), page_id)
 }
 
+/// Slug of a page name, same output as `getPageSlug` in `common/page.ts`.
+/// That function is shared by the editor and the Node server, and the file name
+/// is recomputed from the page name rather than stored, so any difference here
+/// makes a website written by one server unreadable by the other.
 fn page_slug(page_name: Option<&str>) -> String {
-    let slug: String = page_name
-        .unwrap_or("page")
+    let name = page_name.filter(|name| !name.is_empty()).unwrap_or("index");
+
+    let mut slug: Vec<char> = name
         .to_lowercase()
         .chars()
-        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .filter_map(|c| match c {
+            'a'..='z' | '0'..='9' => Some(c),
+            ' ' | '-' => Some('-'),
+            _ => None,
+        })
         .collect();
+    slug.dedup_by(|a, b| *a == '-' && *b == '-');
 
-    slug.trim_matches('-').to_string()
+    slug.into_iter().collect()
 }
 
 /// Serialize with sorted keys, so that saving twice gives the same bytes and
