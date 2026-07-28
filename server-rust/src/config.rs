@@ -14,20 +14,34 @@
 //! the desktop app's business, not the server's.
 
 use std::path::PathBuf;
+use std::sync::Arc;
+
+use crate::actions::Actions;
 
 /// Port the server listens on.
 pub const PORT: u16 = 6805;
 
 /// Server configuration
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Config {
     /// Directory holding one sub directory per website.
     pub data_path: PathBuf,
+    /// Who performs the actions the server asks for, when somebody does.
+    pub actions: Option<Arc<dyn Actions>>,
 }
 
 impl Config {
     /// Create a config for the given website storage directory.
     pub fn new(data_path: PathBuf) -> Self {
-        Config { data_path }
+        Config {
+            data_path,
+            actions: None,
+        }
+    }
+
+    /// Give the server somebody to ask for what it cannot do itself.
+    pub fn with_actions(mut self, actions: Arc<dyn Actions>) -> Self {
+        self.actions = Some(actions);
+        self
     }
 }

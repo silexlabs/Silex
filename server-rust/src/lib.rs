@@ -13,6 +13,7 @@
 //! websites. It knows nothing about the machine it runs on: it starts no
 //! process and never leaves its data path.
 
+mod actions;
 mod config;
 mod error;
 mod frontend;
@@ -24,6 +25,7 @@ mod storage;
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
+pub use actions::Actions;
 pub use config::{Config, PORT};
 
 /// Build the application router, ready to be served
