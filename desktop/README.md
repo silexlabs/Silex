@@ -16,12 +16,11 @@ npm install
 npm run dev
 ```
 
-The server reads configuration from environment variables. Create a `.env` file in `src-tauri/` for local development:
+The editor and the dashboard are compiled into the binary, so build them before running the app
+(`pnpm run build:client` at the root of the repo).
 
-```
-SILEX_DASHBOARD_PATH=../../dashboards/silex-dashboard-2026/public
-SILEX_STATIC_ROUTES=/:../../dist/client
-```
+Set `SILEX_DATA_PATH` to keep the websites of your development runs away from the ones of the
+installed app.
 
 ## Build
 
