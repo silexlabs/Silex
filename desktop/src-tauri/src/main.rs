@@ -21,6 +21,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
+mod integrations;
 mod mcp;
 
 // ==================
