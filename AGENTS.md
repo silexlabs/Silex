@@ -25,6 +25,10 @@ pnpm run dev
 
 For an app-only install matching CI (faster): `pnpm install --filter @silexlabs/silex`; a bare `pnpm install` also pulls plugin dev-deps (Playwright, grapesjs-cli).
 
+### Building the desktop app
+
+The Tauri app needs **system libraries** (GTK/WebKitGTK) that `pnpm install` does not provide. Without them the Rust build fails early on `gdk-sys` with a `pkg-config` error — that is a missing OS package, not a code bug, so don't try to fix it in the source. Prerequisites, per-OS package lists and the real dev/build commands: [desktop/README.md](desktop/README.md).
+
 ## When writing code for Silex (editing source)
 
 - Prefer small, focused changes. If a change can be a plugin, make it a plugin.
