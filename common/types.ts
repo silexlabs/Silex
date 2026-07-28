@@ -46,7 +46,8 @@ export class ApiError extends Error {
 export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
-export type ApiPublicationPublishResponse = { url: string, job: PublicationJobData }
+// A server which publishes synchronously answers no job, and no url until something serves the files
+export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }

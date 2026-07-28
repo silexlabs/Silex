@@ -306,11 +306,11 @@ fn check_for_updates(app: tauri::AppHandle) {
 // ==================
 
 async fn start_server(pending_evals: mcp::PendingEvals, data_path: std::path::PathBuf) -> u16 {
-    // Set SILEX_DATA_PATH so Config::from_env() picks it up (unless already set by user)
-    if std::env::var("SILEX_DATA_PATH").is_err() {
-        std::env::set_var("SILEX_DATA_PATH", &data_path);
-    }
-    let config = Config::from_env();
+    // SILEX_DATA_PATH lets the user store the websites somewhere else
+    let data_path = std::env::var("SILEX_DATA_PATH")
+        .map(std::path::PathBuf::from)
+        .unwrap_or(data_path);
+    let config = Config::new(data_path);
 
     let (app, port) = silex_server::build_app(config).await;
 

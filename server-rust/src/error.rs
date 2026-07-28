@@ -18,15 +18,11 @@ use axum::Json;
 use serde_json::json;
 use thiserror::Error;
 
-/// Errors that can occur in connector operations
+/// Errors that can occur while serving the API
 ///
 /// Each variant maps to a specific HTTP status code for API responses.
 #[derive(Error, Debug)]
-pub enum ConnectorError {
-    /// User is not authenticated (HTTP 401)
-    #[error("Not authenticated")]
-    NotAuthenticated,
-
+pub enum Error {
     /// Requested resource does not exist (HTTP 404)
     #[error("Resource not found: {0}")]
     NotFound(String),
@@ -34,6 +30,10 @@ pub enum ConnectorError {
     /// Invalid input data (HTTP 400)
     #[error("Invalid input: {0}")]
     InvalidInput(String),
+
+    /// The stored website is not usable as is (HTTP 500)
+    #[error("Invalid website data: {0}")]
+    InvalidWebsite(String),
 
     /// Filesystem operation failed (HTTP 500)
     #[error("IO error: {0}")]
@@ -44,24 +44,24 @@ pub enum ConnectorError {
     Json(#[from] serde_json::Error),
 }
 
-impl ConnectorError {
+impl Error {
     /// Get the HTTP status code for this error
     pub fn status_code(&self) -> StatusCode {
         match self {
-            ConnectorError::NotAuthenticated => StatusCode::UNAUTHORIZED,
-            ConnectorError::NotFound(_) => StatusCode::NOT_FOUND,
-            ConnectorError::InvalidInput(_) => StatusCode::BAD_REQUEST,
-            ConnectorError::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            ConnectorError::Json(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::NotFound(_) => StatusCode::NOT_FOUND,
+            Error::InvalidInput(_) => StatusCode::BAD_REQUEST,
+            Error::InvalidWebsite(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Json(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
 
-/// Convert ConnectorError into an HTTP response
+/// Convert an Error into an HTTP response
 ///
-/// This allows returning ConnectorError directly from route handlers,
+/// This allows returning Error directly from route handlers,
 /// and Axum will automatically convert it to a JSON error response.
-impl IntoResponse for ConnectorError {
+impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let status = self.status_code();
         let message = self.to_string();
@@ -80,5 +80,5 @@ impl IntoResponse for ConnectorError {
     }
 }
 
-/// Result type alias for connector operations
-pub type ConnectorResult<T> = Result<T, ConnectorError>;
+/// Result type alias for server operations
+pub type Result<T> = std::result::Result<T, Error>;

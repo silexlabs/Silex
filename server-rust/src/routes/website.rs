@@ -9,18 +9,19 @@
 
 //! Website API routes
 //!
-//! Handles website CRUD operations and asset management.
-//!
 //! Routes:
-//! - GET /api/website/?websiteId=X - Read website (or list if no websiteId)
+//! - GET /api/website/?websiteId=X - Read website (or list them if no websiteId)
 //! - POST /api/website/?websiteId=X - Update website
-//! - PUT /api/website/ - Create new website
+//! - PUT /api/website/ - Create website
 //! - DELETE /api/website/?websiteId=X - Delete website
 //! - POST /api/website/duplicate?websiteId=X - Duplicate website
-//! - GET /api/website/meta?websiteId=X - Get metadata
-//! - POST /api/website/meta?websiteId=X - Update metadata
+//! - GET /api/website/meta?websiteId=X - Read metadata
+//! - POST /api/website/meta?websiteId=X - Write metadata
 //! - GET /api/website/assets/:path?websiteId=X - Read asset
 //! - POST /api/website/assets?websiteId=X - Upload assets
+//!
+//! The editor always sends a `connectorId` query param, from the days when a
+//! website could live on several backends. It is accepted and ignored.
 
 use axum::body::Bytes;
 use axum::extract::{Multipart, Path, Query, State};
@@ -29,12 +30,11 @@ use axum::response::IntoResponse;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
-use tower_sessions::Session;
 
-use crate::connectors::StorageConnector;
-use crate::error::{ConnectorError, ConnectorResult};
-use crate::models::{ConnectorFile, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
+use crate::error::{Error, Result};
+use crate::models::{File, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
 use crate::routes::AppState;
+use crate::storage;
 
 /// Build website routes
 pub fn routes() -> Router<AppState> {
@@ -58,43 +58,31 @@ pub fn routes() -> Router<AppState> {
 #[serde(rename_all = "camelCase")]
 pub struct WebsiteReadQuery {
     pub website_id: Option<WebsiteId>,
-    pub connector_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WebsiteWriteQuery {
+pub struct WebsiteQuery {
     pub website_id: WebsiteId,
-    pub connector_id: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateQuery {
-    pub connector_id: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AssetReadQuery {
-    pub website_id: WebsiteId,
-    pub connector_id: Option<String>,
 }
 
 // ==================
 // Response types
 // ==================
 
+/// The editor parses the body of every successful response, so a response
+/// without a body would be a parsing error on its side
 #[derive(Debug, Serialize)]
 pub struct MessageResponse {
-    pub message: String,
+    pub message: &'static str,
 }
 
+/// `websiteId` is read by the desktop app, to open the website it just created
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateResponse {
     pub website_id: String,
-    pub message: String,
+    pub message: &'static str,
 }
 
 #[derive(Debug, Serialize)]
@@ -106,198 +94,121 @@ pub struct AssetsResponse {
 // Route handlers
 // ==================
 
-/// Read website data or list websites
-///
-/// GET /api/website/?websiteId=X - Read specific website
-/// GET /api/website/ - List all websites (if no websiteId)
+/// Read a website, or list them all when there is no `websiteId`
 async fn read_or_list_website(
     State(state): State<AppState>,
-    session: Session,
     Query(query): Query<WebsiteReadQuery>,
-) -> ConnectorResult<impl IntoResponse> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
+) -> Result<axum::response::Response> {
     match query.website_id {
         Some(website_id) => {
-            // Read specific website
-            let data = connector.read_website(&session_data, &website_id).await?;
-            Ok(Json(serde_json::to_value(data)?).into_response())
+            let data = storage::read_website(&state.data_path, &website_id).await?;
+            Ok(Json(data).into_response())
         }
         None => {
-            // List all websites
-            let websites = connector.list_websites(&session_data).await?;
+            let websites = storage::list_websites(&state.data_path).await?;
             Ok(Json(websites).into_response())
         }
     }
 }
 
-/// Update an existing website
-///
-/// POST /api/website/?websiteId=X
+/// Update a website
 async fn update_website(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
-    Json(data): Json<WebsiteData>,
-) -> ConnectorResult<Json<MessageResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    connector
-        .update_website(&session_data, &query.website_id, &data)
-        .await?;
+    Query(query): Query<WebsiteQuery>,
+    Json(data): Json<serde_json::Value>,
+) -> Result<Json<MessageResponse>> {
+    storage::update_website(&state.data_path, &query.website_id, &data).await?;
 
     Ok(Json(MessageResponse {
-        message: "Website saved".to_string(),
+        message: "Website saved",
     }))
 }
 
-/// Create a new website
-///
-/// PUT /api/website/
+/// Create a website
 async fn create_website(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<CreateQuery>,
     Json(meta): Json<WebsiteMetaFileContent>,
-) -> ConnectorResult<Json<CreateResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    let website_id = connector.create_website(&session_data, &meta).await?;
+) -> Result<Json<CreateResponse>> {
+    let website_id = storage::create_website(&state.data_path, &meta).await?;
 
     Ok(Json(CreateResponse {
-        message: format!("Website created with ID: {}", website_id),
         website_id,
+        message: "Website created",
     }))
 }
 
 /// Delete a website
-///
-/// DELETE /api/website/?websiteId=X
 async fn delete_website(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
-) -> ConnectorResult<Json<MessageResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    connector
-        .delete_website(&session_data, &query.website_id)
-        .await?;
+    Query(query): Query<WebsiteQuery>,
+) -> Result<Json<MessageResponse>> {
+    storage::delete_website(&state.data_path, &query.website_id).await?;
 
     Ok(Json(MessageResponse {
-        message: "Website deleted".to_string(),
+        message: "Website deleted",
     }))
 }
 
 /// Duplicate a website
-///
-/// POST /api/website/duplicate?websiteId=X
 async fn duplicate_website(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
-) -> ConnectorResult<Json<MessageResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    let new_id = connector
-        .duplicate_website(&session_data, &query.website_id)
-        .await?;
+    Query(query): Query<WebsiteQuery>,
+) -> Result<Json<MessageResponse>> {
+    storage::duplicate_website(&state.data_path, &query.website_id).await?;
 
     Ok(Json(MessageResponse {
-        message: format!("Website duplicated with ID: {}", new_id),
+        message: "Website duplicated",
     }))
 }
 
-/// Get website metadata
-///
-/// GET /api/website/meta?websiteId=X
+/// Read the metadata of a website
 async fn get_meta(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
-) -> ConnectorResult<Json<WebsiteMeta>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    let meta = connector
-        .get_website_meta(&session_data, &query.website_id)
-        .await?;
+    Query(query): Query<WebsiteQuery>,
+) -> Result<Json<WebsiteMeta>> {
+    let meta = storage::get_website_meta(&state.data_path, &query.website_id).await?;
 
     Ok(Json(meta))
 }
 
-/// Update website metadata
-///
-/// POST /api/website/meta?websiteId=X
+/// Write the metadata of a website
 async fn set_meta(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
+    Query(query): Query<WebsiteQuery>,
     Json(meta): Json<WebsiteMetaFileContent>,
-) -> ConnectorResult<Json<MessageResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
-    connector
-        .set_website_meta(&session_data, &query.website_id, &meta)
-        .await?;
+) -> Result<Json<MessageResponse>> {
+    storage::set_website_meta(&state.data_path, &query.website_id, &meta).await?;
 
     Ok(Json(MessageResponse {
-        message: "Website meta saved".to_string(),
+        message: "Website meta saved",
     }))
 }
 
-/// Read an asset file
-///
-/// GET /api/website/assets/:path?websiteId=X
+/// Read one asset of a website
 async fn read_asset(
     State(state): State<AppState>,
-    session: Session,
     Path(path): Path<String>,
-    Query(query): Query<AssetReadQuery>,
-) -> ConnectorResult<impl IntoResponse> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
+    Query(query): Query<WebsiteQuery>,
+) -> Result<impl IntoResponse> {
+    let content = storage::read_asset(&state.data_path, &query.website_id, &path).await?;
 
-    let content = connector
-        .read_asset(&session_data, &query.website_id, &path)
-        .await?;
-
-    // Determine content type from file extension
     let content_type = mime_guess::from_path(&path)
         .first_or_octet_stream()
         .to_string();
 
-    Ok((
-        [(header::CONTENT_TYPE, content_type)],
-        Bytes::from(content),
-    ))
+    Ok(([(header::CONTENT_TYPE, content_type)], Bytes::from(content)))
 }
 
-/// Upload asset files
-///
-/// POST /api/website/assets?websiteId=X
-///
-/// Accepts multipart form data with files[] field.
+/// Upload assets, sent as multipart form data
 async fn write_assets(
     State(state): State<AppState>,
-    session: Session,
-    Query(query): Query<WebsiteWriteQuery>,
+    Query(query): Query<WebsiteQuery>,
     mut multipart: Multipart,
-) -> ConnectorResult<Json<AssetsResponse>> {
-    let session_data = get_session_data(&session).await;
-    let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
-
+) -> Result<Json<AssetsResponse>> {
     let mut files = Vec::new();
 
-    // Process multipart form data
     while let Some(field) = multipart.next_field().await.map_err(|e| {
-        ConnectorError::InvalidInput(format!("Failed to read multipart field: {}", e))
+        Error::InvalidInput(format!("Failed to read multipart field: {}", e))
     })? {
         let file_name = field
             .file_name()
@@ -307,72 +218,33 @@ async fn write_assets(
         let content = field
             .bytes()
             .await
-            .map_err(|e| ConnectorError::InvalidInput(format!("Failed to read file data: {}", e)))?;
+            .map_err(|e| Error::InvalidInput(format!("Failed to read file data: {}", e)))?;
 
-        // Clean up the path (remove /assets/ prefix if present)
         let path = file_name.replace("/assets/", "/");
-        let path = if !path.starts_with('/') {
-            format!("/{}", path)
-        } else {
+        let path = if path.starts_with('/') {
             path
+        } else {
+            format!("/{}", path)
         };
 
-        files.push(ConnectorFile {
+        files.push(File {
             path,
             content: content.to_vec(),
         });
     }
 
-    // Write the files
-    let paths = connector
-        .write_assets(&session_data, &query.website_id, files)
-        .await?;
+    let paths = storage::write_assets(&state.data_path, &query.website_id, files).await?;
 
-    // Build URLs for the uploaded assets
-    // Use relative URLs (no origin) so the client-side displayedToStored() can parse them
-    // Use the resolved connector's ID (not the query param, which may be empty)
-    let resolved_connector_id = connector.connector_id();
-    let data: Vec<String> = paths
+    // Relative URLs, so that the editor can parse them back into stored paths
+    let data = paths
         .iter()
         .map(|path| {
             format!(
-                "/api/website/assets{}?websiteId={}&connectorId={}",
-                path, query.website_id, resolved_connector_id
+                "/api/website/assets{}?websiteId={}&connectorId=fs-storage",
+                path, query.website_id
             )
         })
         .collect();
 
     Ok(Json(AssetsResponse { data }))
-}
-
-// ==================
-// Helper functions
-// ==================
-
-/// Get session data as JSON value
-async fn get_session_data(session: &Session) -> serde_json::Value {
-    session
-        .get::<serde_json::Value>("data")
-        .await
-        .ok()
-        .flatten()
-        .unwrap_or_else(|| serde_json::json!({}))
-}
-
-/// Get the storage connector, checking authentication
-async fn get_storage_connector(
-    state: &AppState,
-    session_data: &serde_json::Value,
-    connector_id: Option<&str>,
-) -> ConnectorResult<std::sync::Arc<dyn StorageConnector>> {
-    let connector = state
-        .registry
-        .get_storage_connector_or_default(connector_id)
-        .ok_or_else(|| ConnectorError::NotFound("No storage connector found".to_string()))?;
-
-    if !connector.is_logged_in(session_data).await? {
-        return Err(ConnectorError::NotAuthenticated);
-    }
-
-    Ok(connector)
 }

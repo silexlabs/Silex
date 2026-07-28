@@ -346,9 +346,17 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
-      this.job = job
-      this.status = jobStatusToPublicationStatus(this.job.status)
-      this.trackProgress()
+      if (job) {
+        this.job = job
+        this.status = jobStatusToPublicationStatus(this.job.status)
+        this.trackProgress()
+      } else {
+        // No job to poll: the publication was over before the server answered,
+        // which is how Silex Desktop publishes to a local folder
+        this.status = PublicationStatus.STATUS_SUCCESS
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: 'Publication success' })
+        this.dialog && this.dialog.displayPending(this.job, this.status)
+      }
     } catch (e) {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {

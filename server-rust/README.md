@@ -1,185 +1,109 @@
 # Silex Server (Rust)
 
-A Rust implementation of the Silex website builder server, providing storage and hosting connectors for website management.
+The server behind Silex Desktop: it serves the Silex frontend and the API it needs, on top of a
+directory of websites on the local filesystem.
 
-## Features
+It is a library, embedded in the desktop app (`desktop/src-tauri`), not a standalone program.
 
-- **Storage Connectors**: Persist website data and assets
-  - `FsStorage`: Local filesystem storage
-- **Hosting Connectors**: Publish websites
-  - `FsHosting`: Local filesystem hosting
-- **REST API**: Full API compatibility with the TypeScript implementation
-- **Session Management**: Cookie-based sessions (in-memory or Redis)
-- **Async Architecture**: Built on Tokio and Axum
+## What it does, and what it does not
 
-## Quick Start
+The editor is shared with the Silex SaaS, so this crate implements the API that editor expects:
+listing websites, reading and writing them, uploading assets, publishing. Where the SaaS talks to a
+forge on behalf of many users, this one reads and writes files belonging to the person sitting in
+front of the screen.
 
-```bash
-# Build
-cargo build --release
+It knows nothing about the machine it runs on: it starts no process, holds no credentials, and never
+leaves its data path. Anything that needs the machine (git, a forge CLI, opening a folder, the
+updater) lives in the desktop app, behind Tauri's IPC.
 
-# Run
-./target/release/silex-server
+## Website format
+
+One directory per website, shared with the Node server. The split between `website.json` and one
+file per page is what makes a website readable in a git diff.
+
+```
+data_path/
+  {website_id}/
+    website.json     # marks the directory as a Silex website
+    meta.json        # optional: a website cloned from a forge has none
+    assets/
+    pages/           # name given by website.json's pagesFolder
+      index-abc123.json
+    public/          # written by the publication
 ```
 
-The server starts on `http://localhost:6805` by default.
+Two rules drive the storage code:
+
+- **Never transform data silently.** What the server does not need to understand is written back
+  untouched, so a key added by a GrapesJS plugin survives a save. What it cannot make sense of is an
+  explicit error, never a guess.
+- **Only validate what the server needs**, which is `pages` and `pagesFolder`. A field that is not
+  typed cannot be lost.
+
+## API
+
+```
+GET  /api/connector?type=STORAGE|HOSTING       # List connectors (constants)
+GET  /api/connector/user?type=STORAGE|HOSTING  # Current user (constants)
+
+GET    /api/website                            # List websites
+GET    /api/website?websiteId=X                # Read website
+POST   /api/website?websiteId=X                # Update website
+PUT    /api/website                            # Create website
+DELETE /api/website?websiteId=X                # Delete website
+POST   /api/website/duplicate?websiteId=X      # Duplicate website
+GET    /api/website/meta?websiteId=X           # Read metadata
+POST   /api/website/meta?websiteId=X           # Write metadata
+
+GET  /api/website/assets/:path?websiteId=X     # Read asset
+POST /api/website/assets?websiteId=X           # Upload assets
+
+POST /api/publication?websiteId=X              # Publish to the public/ folder
+```
+
+The editor sends a `connectorId`, `storageId` or `hostingId` query param on most calls, from the days
+when a website could live on several backends. They are accepted and ignored.
+
+Publishing is over by the time the response is sent, so there is no job to poll: the HTTP status is
+the result. The editor falls back to a plain success when a server answers no job.
 
 ## Configuration
 
-Environment variables (or `.env` file):
+`Config::new(data_path)`, and that is all. The port is the `PORT` constant. The desktop app decides
+where the websites live, and lets `SILEX_DATA_PATH` override it.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SILEX_URL` | `http://localhost:6805` | Base URL |
-| `SILEX_PORT` | `6805` | Port number |
-| `SILEX_DATA_PATH` | `./data` | Website storage directory |
-| `SILEX_HOSTING_PATH` | `./public` | Publication output directory |
-| `SILEX_ASSETS_FOLDER` | `assets` | Assets folder name |
-| `SILEX_STATIC_PATH` | *(none)* | Single static directory at "/" |
-| `SILEX_STATIC_ROUTES` | *(none)* | Multiple static routes (see below) |
+## Serving the frontend
 
-### Serving the Frontend
+With the `embed-frontend` feature, the editor (`../dist/client/`) and the dashboard
+(`../silex-dashboard-2026/public/`) are compiled into the binary. The dashboard is served at `/`, the
+editor at `/?id=<website id>`. Without the feature, the crate serves the API only.
 
-Two options are available for serving static files. `SILEX_STATIC_ROUTES` takes priority if both are set.
-
-**Option 1: Simple (single directory)**
-
-Use `SILEX_STATIC_PATH` to serve a single directory at "/":
-
-```bash
-SILEX_STATIC_PATH=./dist ./target/release/silex-server
-```
-
-**Option 2: Advanced (multiple routes)**
-
-Use `SILEX_STATIC_ROUTES` with the format `route:path,route:path`:
-
-```bash
-# Serve the Silex editor frontend (full configuration with fonts)
-SILEX_STATIC_ROUTES="\
-/css/files:../../node_modules/@fontsource/ubuntu/files,\
-/webfonts:../../node_modules/@fortawesome/fontawesome-free/webfonts,\
-/css:../../node_modules/@fortawesome/fontawesome-free/css,\
-/:../public,\
-/:../dist/client" \
-  ./target/release/silex-server
-```
-
-**Output:**
-```
-INFO   /css/files -> node_modules/@fontsource/ubuntu/files
-INFO   /webfonts -> node_modules/@fortawesome/fontawesome-free/webfonts
-INFO   /css -> node_modules/@fortawesome/fontawesome-free/css
-INFO   / -> public
-INFO   / -> dist/client
-```
-
-The server will:
-- Serve fonts from node_modules at `/css/files/` and `/webfonts/`
-- Serve FontAwesome CSS from node_modules at `/css/`
-- Multiple `/` routes are searched in order (first match wins)
-- Fall back to `index.html` for SPA routing
-- API routes (`/api/*`) always take precedence
-
-## API Endpoints
-
-### Connectors
-
-```
-GET  /api/connector?type=STORAGE|HOSTING     # List connectors
-GET  /api/connector/user?type=...            # Get user info
-GET  /api/connector/login?type=...           # Start login flow
-POST /api/connector/logout?type=...          # Logout
-```
-
-### Websites
-
-```
-GET    /api/website?websiteId=X              # Read website
-GET    /api/website                          # List websites
-POST   /api/website?websiteId=X              # Update website
-PUT    /api/website                          # Create website
-DELETE /api/website?websiteId=X              # Delete website
-POST   /api/website/duplicate?websiteId=X    # Duplicate website
-```
-
-### Assets
-
-```
-GET  /api/website/assets/:path?websiteId=X   # Read asset
-POST /api/website/assets?websiteId=X         # Upload assets
-```
-
-### Metadata
-
-```
-GET  /api/website/meta?websiteId=X           # Get metadata
-POST /api/website/meta?websiteId=X           # Update metadata
-```
-
-### Publication
-
-```
-POST /api/publication?websiteId=X&hostingId=X   # Publish
-GET  /api/publication/status?jobId=X            # Check status
-```
-
-### Health
-
-```
-GET /api/health                              # Health check
-```
-
-## Project Structure
+## Project structure
 
 ```
 src/
-  main.rs           # Entry point
-  lib.rs            # Library exports
-  config.rs         # Configuration
-  error.rs          # Error types
-
-  connectors/
-    mod.rs          # Module exports
-    traits.rs       # StorageConnector, HostingConnector traits
-    fs_storage.rs   # Filesystem storage
-    fs_hosting.rs   # Filesystem hosting
-    registry.rs     # Connector registry
-
+  lib.rs           # build_app(), the whole public API with Config
+  config.rs        # data path and port
+  error.rs         # errors and their HTTP status
+  storage.rs       # reading and writing websites
+  publish.rs       # writing the published files
+  frontend.rs      # embedded editor and dashboard
+  models.rs        # website metadata and constants
+  routes.rs        # router and shared state
   routes/
-    mod.rs          # Router setup
-    connector.rs    # /api/connector routes
-    website.rs      # /api/website routes
-    publication.rs  # /api/publication routes
-
-  models/
-    mod.rs          # Module exports
-    connector.rs    # Connector types
-    website.rs      # Website types
-    job.rs          # Job tracking types
-
-  services/
-    mod.rs          # Module exports
-    jobs.rs         # Job manager
-    static_files.rs # Static file serving
+    website.rs
+    publication.rs
+    connector.rs
 ```
 
 ## Development
 
 ```bash
-# Check compilation
 cargo check
-
-# Run tests
-cargo test
-
-# Run with debug logging
-RUST_LOG=debug cargo run
-
-# Auto-reload on file changes
-cargo install cargo-watch
-cargo watch -x run
+RUST_LOG=silex_server=debug cargo check
 ```
+
+The crate has no tests.
 
 ## License
 
