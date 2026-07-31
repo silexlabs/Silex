@@ -7,7 +7,7 @@
 
 The web belongs to everyone. Silex is a free/libre visual website builder — no lock-in, no subscription, no tracking. Design visually, export clean HTML/CSS, host anywhere.
 
-**[Try Silex online](https://v3.silex.me/)** | **[Documentation](https://docs.silex.me)** | **[Desktop app — coming soon](https://roadmap.silex.me/posts/3/silex-desktop)** | **[Manifesto](https://www.silex.me/manifesto/)**
+**[Try Silex online](https://v3.silex.me/)** | **[Documentation](https://docs.silex.me)** | **[Download the desktop app](https://www.silex.me/download/)** | **[Manifesto](https://www.silex.me/manifesto/)**
 
 ![Silex UI](https://www.silex.me/img/HJKUdOfC5N-2400.webp)
 
@@ -35,7 +35,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 - **Static HTML output** — fast, secure, easy to host anywhere
 - **CMS integration** — bind components to WordPress, Strapi, Squidex, or any GraphQL API
 - **[11ty](https://www.11ty.dev/) compatible** — generate static sites from Silex templates, deploy with CI/CD
-- **Desktop app (coming soon)** — work offline, no account needed, AI-ready with built-in [MCP server](#ai--vibe-coding). Built with [Tauri](https://tauri.app/) for Windows, macOS, Linux. [Follow progress](https://roadmap.silex.me/posts/3/silex-desktop).
+- **Desktop app (alpha)** — work offline, no account needed, AI-ready with built-in [MCP server](#ai--vibe-coding). Built with [Tauri](https://tauri.app/) for Windows, macOS, Linux. [Download it](https://www.silex.me/download/) or [follow progress](https://roadmap.silex.me/posts/3/silex-desktop).
 - **Plugin system** — extend with server and client plugins in JS/TS
 - **SEO tools** — meta tags, Open Graph, per-page settings
 - **Self-hosting** — Docker, Node.js, or one-click deploy on [CapRover](https://caprover.com/)
@@ -44,7 +44,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 
 **Use it online** — **[v3.silex.me](https://v3.silex.me/)** (free, requires a GitLab account for storage)
 
-**Desktop app (alpha)** — [download for Windows, macOS or Linux](https://github.com/silexlabs/Silex/releases/latest). Work offline, no account needed.
+**Desktop app (alpha)** — [download for Windows, macOS or Linux](https://www.silex.me/download/). Work offline, no account needed.
 
 ## Contribute
 
@@ -147,6 +147,7 @@ owes just as much to people whose work lives elsewhere:
 - [Road map](https://roadmap.silex.me) — help define tasks and priorities
 - [Community forums](https://community.silex.me)
 - [Newsletter (EN)](https://short.silex.me/news_en) | [(FR)](https://short.silex.me/news_fr)
+- [Release announcements](https://fosstodon.org/@silex/tagged/SilexRelease) — every stable release, also available as an [RSS feed](https://fosstodon.org/@silex/tagged/SilexRelease.rss)
 - [OpenCollective](https://opencollective.com/silex) — financial contributions
 
 ## Built on
