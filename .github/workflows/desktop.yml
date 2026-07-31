@@ -208,6 +208,7 @@ jobs:
           name: silex-desktop-${{ matrix.platform }}
           path: |
             silex-desktop.sha256
+            target/release/silex-desktop
             target/**/release/bundle/**/*.dmg
             target/**/release/bundle/**/*.AppImage
             target/**/release/bundle/**/*.deb
@@ -278,6 +279,11 @@ jobs:
                -o -name '*.AppImage.tar.gz' -o -name '*.AppImage.tar.gz.sig' \) \
             -exec cp {} release/ \;
 
+          # For repackagers: unstamped by `tauri bundle`, so the updater finds no target for it,
+          # unlike a binary lifted out of our .deb which thinks it is Debian and would run dpkg.
+          BIN="$(find artifacts/silex-desktop-linux -type f -name silex-desktop | head -1)"
+          if [ -n "$BIN" ]; then cp "$BIN" release/silex-desktop; fi
+
           # macOS updater bundles are named Silex.app.tar.gz on both arches — rename per-arch.
           # Cross-builds leave an unsigned native bundle next to the signed one: pick only
           # the bundle that has its .sig sibling.
@@ -297,8 +303,9 @@ jobs:
           BASE="https://github.com/${REPO}/releases/download/${VERSION}"
           LINUX_BUNDLE=$(find release -name '*_amd64.AppImage' ! -name '*.sig' | head -1)
           [ -z "$LINUX_BUNDLE" ] && LINUX_BUNDLE=$(find release -name '*_amd64.AppImage.tar.gz' ! -name '*.sig' | head -1)
-          # The updater looks up `linux-x86_64-<installer>` before `linux-x86_64`, so a user who
-          # installed the .deb/.rpm gets the matching package instead of an AppImage it cannot install.
+          # The updater looks up `linux-x86_64-<installer>`, so each package updates with its own
+          # format. No generic `linux-x86_64` key: it also caught binaries Tauri cannot identify,
+          # and installing an AppImage overwrites the running executable.
           LINUX_DEB=$(find release -name '*_amd64.deb' ! -name '*.sig' | head -1)
           LINUX_RPM=$(find release -name '*.x86_64.rpm' ! -name '*.sig' | head -1)
           MACOS_ARM_BUNDLE=$(find release -name '*_aarch64.app.tar.gz' ! -name '*.sig' | head -1)
@@ -333,7 +340,7 @@ jobs:
               platforms: {
                 "linux-x86_64-deb": { url: $ldu, signature: $lds },
                 "linux-x86_64-rpm": { url: $lru, signature: $lrs },
-                "linux-x86_64":    { url: $lu,  signature: $ls },
+                "linux-x86_64-appimage": { url: $lu, signature: $ls },
                 "darwin-aarch64":  { url: $mau, signature: $mas },
                 "darwin-x86_64":   { url: $mxu, signature: $mxs },
                 "windows-x86_64":  { url: $wu,  signature: $ws }
