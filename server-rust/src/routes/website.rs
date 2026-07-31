@@ -119,6 +119,16 @@ async fn update_website(
 ) -> Result<Json<MessageResponse>> {
     storage::update_website(&state.data_path, &query.website_id, &data).await?;
 
+    if let Some(actions) = &state.actions {
+        // Same message as the SaaS server writes, so that a history reads the
+        // same wherever the website was edited.
+        // A failure is reported and forgotten: the website is on the disk, and
+        // answering an error would tell the editor that the work is lost.
+        if let Err(e) = actions.version(&query.website_id, "Update website data from Silex") {
+            tracing::warn!("Could not version website {}: {}", query.website_id, e);
+        }
+    }
+
     Ok(Json(MessageResponse {
         message: "Website saved",
     }))

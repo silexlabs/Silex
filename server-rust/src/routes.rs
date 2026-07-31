@@ -21,6 +21,7 @@ use std::sync::Arc;
 
 use axum::Router;
 
+use crate::actions::Actions;
 use crate::config::Config;
 
 /// State shared by all route handlers
@@ -28,12 +29,15 @@ use crate::config::Config;
 pub struct AppState {
     /// Directory holding one sub directory per website
     pub data_path: Arc<PathBuf>,
+    /// Who performs the actions the server asks for, when somebody does
+    pub actions: Option<Arc<dyn Actions>>,
 }
 
 impl AppState {
     pub fn new(config: &Config) -> Self {
         AppState {
             data_path: Arc::new(config.data_path.clone()),
+            actions: config.actions.clone(),
         }
     }
 }
