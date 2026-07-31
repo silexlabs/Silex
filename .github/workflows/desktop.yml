@@ -166,7 +166,9 @@ jobs:
             echo "::error::No .deb/.rpm bundle found to sign"; exit 1
           fi
           for f in "${BUNDLES[@]}"; do
-            pnpm --dir desktop exec tauri signer sign "$f" > /dev/null
+            # Absolute: `--dir desktop` runs the signer from desktop/, where a path
+            # relative to the repository root does not resolve.
+            pnpm --dir desktop exec tauri signer sign "$PWD/$f" > /dev/null
             if [ ! -s "$f.sig" ]; then
               echo "::error::Signing produced no signature for $f"; exit 1
             fi
