@@ -147,7 +147,7 @@ owes just as much to people whose work lives elsewhere:
 - [Road map](https://roadmap.silex.me) — help define tasks and priorities
 - [Community forums](https://community.silex.me)
 - [Newsletter (EN)](https://short.silex.me/news_en) | [(FR)](https://short.silex.me/news_fr)
-- [Release announcements](https://fosstodon.org/tags/SilexRelease) — every stable release, also available as an [RSS feed](https://fosstodon.org/tags/SilexRelease.rss)
+- [Release announcements](https://fosstodon.org/@silex/tagged/SilexRelease) — every stable release, also available as an [RSS feed](https://fosstodon.org/@silex/tagged/SilexRelease.rss)
 - [OpenCollective](https://opencollective.com/silex) — financial contributions
 
 ## Built on
