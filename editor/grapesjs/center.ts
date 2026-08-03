@@ -30,13 +30,13 @@ export default (editor: Editor) => {
     })
   })
 
-  const defaultModel = editor.DomComponents.getType('default').model as any
-  const defaults = defaultModel.prototype.defaults
+  editor.on('component:selected', component => {
+    if (component.toolbar.some(item => item.command === CENTER_COMMAND)) {
+      return
+    }
 
-  defaultModel.prototype.defaults = {
-    ...defaults,
-    toolbar: [
-      ...(defaults.toolbar || []),
+    component.set('toolbar', [
+      ...component.toolbar,
       {
         attributes: {
           class: 'fa-solid fa-align-center',
@@ -45,6 +45,6 @@ export default (editor: Editor) => {
         },
         command: CENTER_COMMAND,
       },
-    ],
-  }
+    ])
+  })
 }
