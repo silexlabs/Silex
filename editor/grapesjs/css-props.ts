@@ -298,6 +298,7 @@ export default (editor: Editor, opts) => {
       name: 'Margin',
       property: 'margin',
       type: 'composite',
+      detached: true,
       defaults: '',
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
@@ -336,6 +337,7 @@ export default (editor: Editor, opts) => {
       name: 'Padding',
       property: 'padding',
       type: 'composite',
+      detached: true,
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
