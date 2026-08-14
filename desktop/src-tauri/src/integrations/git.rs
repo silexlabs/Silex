@@ -120,7 +120,9 @@ impl Git {
     }
 
     fn init(&self, site: &Path) -> Result<(), String> {
-        self.run(site, &["init"])?;
+        // -b main: the default branch name depends on the user's git config,
+        // and publishing pushes to main
+        self.run(site, &["init", "-b", "main"])?;
 
         // Committing needs a name and a mail address, and the user may have
         // never set any. Theirs is used when they have one, and the one made

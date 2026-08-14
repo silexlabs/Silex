@@ -58,6 +58,11 @@ pub struct ClientSideFile {
     /// Path where the file is published
     pub path: String,
 
+    /// Pretty path taking precedence over `path`, when the editor's permalink
+    /// plugin rewrites URLs (e.g. `/about` instead of `/about.html`)
+    #[serde(default)]
+    pub permalink: Option<String>,
+
     /// File content, for the files the editor generates
     #[serde(default)]
     pub content: Option<String>,
@@ -100,7 +105,7 @@ async fn publish_website(
         };
 
         files.push(File {
-            path: file.path,
+            path: file.permalink.unwrap_or(file.path),
             content,
         });
     }
