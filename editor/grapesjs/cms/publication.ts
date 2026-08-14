@@ -64,6 +64,34 @@ export default function (editor: Editor, options: EleventyPluginOptions) {
       cache.clear()
     })
   }
+
+  // Published in both modes: publication never empties the folder, the file
+  // must overwrite itself when the site switches between static and dynamic
+  editor.on('silex:publish:data', ({ data }: { data: PublicationData }) => {
+    withNotification(() => addDirectoryDataFile(editor, options, data), editor, null)
+  })
+}
+
+/**
+ * Add the 11ty directory data file: byte-for-byte copy for static sites,
+ * neutral for dynamic ones (front matter takes precedence)
+ */
+export function addDirectoryDataFile(editor: Editor, options: EleventyPluginOptions, data: PublicationData): void {
+  // Named after the folder of the published pages, "public" on the server side
+  const htmlPath = transformPath(editor, '/index.html', ClientSideFileType.HTML, options)
+  const folder = htmlPath.slice(0, htmlPath.lastIndexOf('/'))
+  const folderName = folder ? folder.slice(folder.lastIndexOf('/') + 1) : 'public'
+  const content = enable11ty() ? 'export default {}\n' : dedent`
+    export default {
+      permalink: data => \`\${data.page.filePathStem}.html\`,
+      templateEngineOverride: false,
+    }
+  ` + '\n'
+  data.files?.push({
+    type: ClientSideFileType.OTHER,
+    path: `${folder}/${folderName}.11tydata.js`,
+    content,
+  } as ClientSideFileWithContent)
 }
 
 /**
