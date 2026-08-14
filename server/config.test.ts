@@ -16,6 +16,8 @@
  */
 
 import { readFile } from 'fs/promises'
+import { jest } from '@jest/globals'
+import { pathToFileURL } from 'node:url'
 import { ServerConfig } from './config.js'
 
 const envKeys = ['SILEX_URL', 'SILEX_PROTOCOL', 'SILEX_HOST', 'SILEX_PORT'] as const
@@ -50,5 +52,30 @@ describe('server URL configuration', () => {
     process.env.SILEX_PORT = '6805'
 
     expect(new ServerConfig().url).toBe('http://192.168.1.179:6805')
+  })
+})
+
+describe('server config file loading', () => {
+  test('loads the config file through a file URL', async () => {
+    const config = new ServerConfig()
+    const addPlugin = jest.spyOn(config, 'addPlugin').mockResolvedValue(config)
+
+    await config.loadSilexConfig()
+
+    expect(addPlugin).toHaveBeenCalledWith(pathToFileURL(config.configFilePath).href, {})
+  })
+
+  test('ignores an ESM module-not-found error for the config file itself', async () => {
+    const config = new ServerConfig()
+    const error = Object.assign(new Error('Cannot find module'), {
+      code: 'ERR_MODULE_NOT_FOUND',
+      url: pathToFileURL(config.configFilePath).href,
+    })
+    jest.spyOn(config, 'addPlugin').mockRejectedValue(error)
+    const info = jest.spyOn(console, 'info').mockImplementation()
+
+    await expect(config.loadSilexConfig()).resolves.toBeUndefined()
+
+    info.mockRestore()
   })
 })
