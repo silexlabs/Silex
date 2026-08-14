@@ -134,6 +134,11 @@ export interface WebsiteSettings {
   'og:image'?: string,
 }
 
+/**
+ * A step of the site's build.json, `build` = the Silex build commands of the moment
+ */
+export type BuildStep = { type: 'build' } | { type: 'sh', value: string }
+
 export interface Font {
   name: string,
   value: string,
