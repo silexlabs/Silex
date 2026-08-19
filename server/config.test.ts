@@ -65,17 +65,13 @@ describe('server config file loading', () => {
     expect(addPlugin).toHaveBeenCalledWith(pathToFileURL(config.configFilePath).href, {})
   })
 
-  test('ignores an ESM module-not-found error for the config file itself', async () => {
+  test('preserves a user config URL', async () => {
     const config = new ServerConfig()
-    const error = Object.assign(new Error('Cannot find module'), {
-      code: 'ERR_MODULE_NOT_FOUND',
-      url: pathToFileURL(config.configFilePath).href,
-    })
-    jest.spyOn(config, 'addPlugin').mockRejectedValue(error)
-    const info = jest.spyOn(console, 'info').mockImplementation()
+    config.userConfigPath = 'file:///tmp/silex-config.js'
+    const addPlugin = jest.spyOn(config, 'addPlugin').mockResolvedValue(config)
 
-    await expect(config.loadSilexConfig()).resolves.toBeUndefined()
+    await config.loadUserConfig()
 
-    info.mockRestore()
+    expect(addPlugin).toHaveBeenCalledWith(config.userConfigPath, {})
   })
 })

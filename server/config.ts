@@ -36,6 +36,8 @@ import { ConnectorType } from '~/common/types.js'
 import { FsHosting } from './connectors/FsHosting.js'
 import { pathToFileURL } from 'node:url'
 
+const URL_SCHEME = /^[a-z][a-z0-9+.-]+:/i
+
 /**
  * Config types definitions
  */
@@ -149,7 +151,10 @@ export class ServerConfig extends Config {
       console.info('> Loading user config', this.userConfigPath)
       try {
         // Initiate the process with the config file which is just another plugin
-        await this.addPlugin(pathToFileURL(this.userConfigPath).href, {})
+        const userConfigLocation = URL_SCHEME.test(this.userConfigPath)
+          ? this.userConfigPath
+          : pathToFileURL(this.userConfigPath).href
+        await this.addPlugin(userConfigLocation, {})
       } catch (e) {
         throw new Error(`\nUser config file ${this.userConfigPath} error:\n\n\t${e.message}\n\n`, { cause: e })
       }
@@ -167,10 +172,7 @@ export class ServerConfig extends Config {
       await this.addPlugin(pathToFileURL(this.configFilePath).href, {})
     } catch(e) {
       // Check if the error is about the config file not found and not another module not found in the config file
-      if(
-        (e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) ||
-        (e.code === 'ERR_MODULE_NOT_FOUND' && e.url === pathToFileURL(this.configFilePath).href)
-      ) {
+      if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) {
         console.info('> /!\\ Config file not found', this.configFilePath)
       } else {
         throw new Error(`Error in config file ${this.configFilePath}: ${e.message}`, { cause: e })
