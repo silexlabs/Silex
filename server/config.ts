@@ -24,7 +24,7 @@
  * @class default config for Silex server
  */
 
-import { Config, Plugin } from '~/common/silex-plugins/index.js'
+import { Config } from '~/common/silex-plugins/index.js'
 import { join, resolve } from 'path'
 import { CLIENT_CONFIG_FILE_NAME } from '~/common/constants.js'
 import { Application, Request, Response, Router } from 'express'
@@ -34,6 +34,9 @@ import { FsStorage } from './connectors/FsStorage.js'
 import { Connector } from './connectors/connectors.js'
 import { ConnectorType } from '~/common/types.js'
 import { FsHosting } from './connectors/FsHosting.js'
+import { pathToFileURL } from 'node:url'
+
+const URL_SCHEME = /^[a-z][a-z0-9+.-]+:/i
 
 /**
  * Config types definitions
@@ -50,8 +53,8 @@ export class ServerConfig extends Config {
   public port = process.env.SILEX_PORT
   public debug = process.env.SILEX_DEBUG === 'true'
   public url = process.env.SILEX_URL?.replace(/\/$/, '') ?? `${process.env.SILEX_PROTOCOL}://${process.env.SILEX_HOST}:${process.env.SILEX_PORT}`
-  public userConfigPath: Plugin | undefined = process.env.SILEX_SERVER_CONFIG
-  public configFilePath: Plugin = resolve(__dirname, '../../../server/deploy/.silex.js')
+  public userConfigPath: string | undefined = process.env.SILEX_SERVER_CONFIG
+  public configFilePath: string = resolve(__dirname, '../../../server/deploy/.silex.js')
 
   // All connectors or just the storage or hosting connectors
   getConnectors(type: ConnectorType | string | null = null): Connector[] {
@@ -148,7 +151,10 @@ export class ServerConfig extends Config {
       console.info('> Loading user config', this.userConfigPath)
       try {
         // Initiate the process with the config file which is just another plugin
-        await this.addPlugin(this.userConfigPath, {})
+        const userConfigLocation = URL_SCHEME.test(this.userConfigPath)
+          ? this.userConfigPath
+          : pathToFileURL(this.userConfigPath).href
+        await this.addPlugin(userConfigLocation, {})
       } catch (e) {
         throw new Error(`\nUser config file ${this.userConfigPath} error:\n\n\t${e.message}\n\n`, { cause: e })
       }
@@ -163,7 +169,7 @@ export class ServerConfig extends Config {
     console.info('> Loading config', this.configFilePath)
     try {
       // Initiate the process with the config file which is just another plugin
-      await this.addPlugin(this.configFilePath, {})
+      await this.addPlugin(pathToFileURL(this.configFilePath).href, {})
     } catch(e) {
       // Check if the error is about the config file not found and not another module not found in the config file
       if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) {

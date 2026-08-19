@@ -16,6 +16,8 @@
  */
 
 import { readFile } from 'fs/promises'
+import { jest } from '@jest/globals'
+import { pathToFileURL } from 'node:url'
 import { ServerConfig } from './config.js'
 
 const envKeys = ['SILEX_URL', 'SILEX_PROTOCOL', 'SILEX_HOST', 'SILEX_PORT'] as const
@@ -50,5 +52,26 @@ describe('server URL configuration', () => {
     process.env.SILEX_PORT = '6805'
 
     expect(new ServerConfig().url).toBe('http://192.168.1.179:6805')
+  })
+})
+
+describe('server config file loading', () => {
+  test('loads the config file through a file URL', async () => {
+    const config = new ServerConfig()
+    const addPlugin = jest.spyOn(config, 'addPlugin').mockResolvedValue(config)
+
+    await config.loadSilexConfig()
+
+    expect(addPlugin).toHaveBeenCalledWith(pathToFileURL(config.configFilePath).href, {})
+  })
+
+  test('preserves a user config URL', async () => {
+    const config = new ServerConfig()
+    config.userConfigPath = 'file:///tmp/silex-config.js'
+    const addPlugin = jest.spyOn(config, 'addPlugin').mockResolvedValue(config)
+
+    await config.loadUserConfig()
+
+    expect(addPlugin).toHaveBeenCalledWith(config.userConfigPath, {})
   })
 })
