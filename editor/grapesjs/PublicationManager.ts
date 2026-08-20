@@ -577,7 +577,12 @@ export class PublicationManager {
       })
 
       // Useful data for HTML result
-      const title = getSetting('title')
+      // Fall back to the page name when no title is set, at publish time only, so
+      // that the title keeps following the page name if the user renames the page
+      const title = getSetting('title').trim() || (page.get('name') || '').trim()
+      // An empty lang attribute is worse than no lang at all for screen readers,
+      // and we do not want to guess a default language, so omit it when not set
+      const lang = getSetting('lang').trim()
       const favicon = getSetting('favicon')
       const viewportMeta = this.ensureViewportMeta(clonedSiteSettings?.head || '', pageSettings?.head || '')
       const generatorMeta = this.ensureGeneratorMeta(clonedSiteSettings?.head || '', pageSettings?.head || '')
@@ -585,7 +590,7 @@ export class PublicationManager {
       // Return the HTML file
       yield {
         html: `<!DOCTYPE html>
-<html lang="${getSetting('lang')}">
+<html${lang ? ` lang="${lang}"` : ''}>
 <head>
 <meta charset="UTF-8">
 ${viewportMeta}
