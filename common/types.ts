@@ -46,32 +46,14 @@ export class ApiError extends Error {
 export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
-// A server which publishes synchronously answers no job, and no url until something serves the files
-export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData, deploy?: DeployedData }
-
 /**
- * What sending a website to its forge led to
+ * What publishing answers
  *
- * Answered by Silex Desktop, which versions the website and pushes it, then
- * lets the forge build and serve it. The hosted version answers a `job` to poll
- * instead.
+ * Always a job: writing the files is quick, and everything that turns them into
+ * a website somebody can visit takes long enough that the answer cannot wait
+ * for it. `url` is null until something serves those files.
  */
-export type DeployedData = {
-  /** Whether a forge took the website to build and serve it */
-  published: boolean,
-  /** Where the website is served, once its forge has an address to give */
-  url?: string,
-  /** Where the build can be watched */
-  ciUrl?: string,
-  /** Where the user sets a domain of their own */
-  settingsUrl?: string,
-  /** What to tell the user */
-  message?: string,
-  /** What the program said, for whoever wants to read it */
-  details?: string,
-  /** Whether what is being told is a failure */
-  error?: boolean,
-}
+export type ApiPublicationPublishResponse = { url: string | null, job: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
@@ -156,14 +138,6 @@ export interface WebsiteSettings {
   'og:title'?: string,
   'og:description'?: string,
   'og:image'?: string,
-  /**
-   * Where the website is served once published
-   *
-   * Named by the user rather than worked out by Silex: a forge that serves
-   * pages does not always say which of its addresses belongs to which
-   * repository, and a domain of their own is never something to guess.
-   */
-  publishDomain?: string,
 }
 
 export interface Font {
@@ -299,6 +273,45 @@ export interface ConnectorData {
   oauthUrl: string | null
   color: string
   background: string
+  /**
+   * What the host already knows about publishing this website, `websiteUrl`
+   * among it.
+   *
+   * Only Silex Desktop sends this: it is the one that knows which forge holds
+   * the website and what that forge answered about it. What the user filled in
+   * is kept in the publication settings and wins over this.
+   */
+  options?: ConnectorOptions
+  /**
+   * What to ask the user before publishing, when the host cannot say where the
+   * website is served. Only Silex Desktop sends this, as above.
+   */
+  optionsForm?: OptionsForm
+}
+
+/**
+ * A form the publication dialog shows before the publish button
+ *
+ * Sent by Silex Desktop only: the command line of a forge does not always know
+ * which address serves which repository, and what it cannot say is asked of the
+ * user rather than guessed.
+ */
+export interface OptionsForm {
+  title: string
+  fields: OptionsField[]
+}
+
+/**
+ * One thing the user is asked for, kept in the publication options under `name`
+ */
+export interface OptionsField {
+  name: string
+  type: 'text' | 'url' | 'checkbox' | 'select'
+  label: string
+  /** What to start from, until the user writes something of their own */
+  value?: string
+  help?: string
+  required: boolean
 }
 
 /**
