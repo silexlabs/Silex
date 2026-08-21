@@ -42,6 +42,14 @@ pub enum Error {
     /// JSON parsing/serialization failed (HTTP 500)
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    /// Something the person editing has to know, in their own words (HTTP 500)
+    ///
+    /// The editor shows the message of a failed request as it is written here,
+    /// so this one carries no prefix naming what went wrong technically: it is
+    /// written for the person reading it.
+    #[error("{0}")]
+    Told(String),
 }
 
 impl Error {
@@ -53,6 +61,7 @@ impl Error {
             Error::InvalidWebsite(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Json(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Told(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

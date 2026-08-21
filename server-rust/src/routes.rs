@@ -16,8 +16,9 @@ mod connector;
 mod publication;
 mod website;
 
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use axum::Router;
 
@@ -31,6 +32,13 @@ pub struct AppState {
     pub data_path: Arc<PathBuf>,
     /// Who performs the actions the server asks for, when somebody does
     pub actions: Option<Arc<dyn Actions>>,
+    /// Why a website could not be versioned, the last time it was said
+    ///
+    /// A website saves itself every few seconds. A repository that cannot take
+    /// a version fails at every one of those saves, and saying so each time
+    /// would bury the editor under one message. It is said once, and again only
+    /// when the reason changes.
+    pub not_versioned: Arc<Mutex<HashMap<String, String>>>,
 }
 
 impl AppState {
@@ -38,6 +46,7 @@ impl AppState {
         AppState {
             data_path: Arc::new(config.data_path.clone()),
             actions: config.actions.clone(),
+            not_versioned: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }

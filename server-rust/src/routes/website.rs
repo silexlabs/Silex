@@ -122,8 +122,6 @@ async fn update_website(
     if let Some(actions) = &state.actions {
         // Same message as the SaaS server writes, so that a history reads the
         // same wherever the website was edited.
-        // A failure is reported and forgotten: the website is on the disk, and
-        // answering an error would tell the editor that the work is lost.
         // On a thread of its own: a save landing during a publication waits for
         // it, and waiting there would hold a thread the server answers with.
         let actions = actions.clone();
@@ -132,22 +130,62 @@ async fn update_website(
             actions.version(&website_id, "Update website data from Silex")
         })
         .await;
-        match versioned {
-            Ok(Ok(())) => {}
-            Ok(Err(e)) => {
-                tracing::warn!("Could not version website {}: {}", query.website_id, e)
+        let why = match versioned {
+            Ok(Ok(())) => None,
+            Ok(Err(e)) => Some(e),
+            Err(e) => Some(e.to_string()),
+        };
+        match why {
+            None => forget(&state, &query.website_id),
+            Some(why) => {
+                tracing::warn!("Could not version website {}: {}", query.website_id, why);
+                // Reporting and forgetting was the first answer here, on the
+                // grounds that the website is on the disk and an error would
+                // tell the editor the work is lost. What it tells the user
+                // instead is nothing at all, while their history quietly stops
+                // being written, so it is said, in words that put the saving
+                // first.
+                if worth_saying(&state, &query.website_id, &why) {
+                    return Err(Error::Told(format!(
+                        "Your website is saved on this computer. What Silex could not do is add \
+                         this version to its history: {}",
+                        why
+                    )));
+                }
             }
-            Err(e) => tracing::warn!(
-                "Versioning website {} did not finish: {}",
-                query.website_id,
-                e
-            ),
         }
     }
 
     Ok(Json(MessageResponse {
         message: "Website saved",
     }))
+}
+
+/// Whether this is worth stopping the user for
+///
+/// True the first time a website cannot be versioned, and again whenever it
+/// starts failing for another reason. The rest of the time the editor would
+/// show the same message every few seconds, which is how a real problem becomes
+/// something people click through without reading.
+fn worth_saying(state: &AppState, website_id: &str, why: &str) -> bool {
+    let mut said = state.not_versioned.lock().unwrap_or_else(|held| {
+        // Another request panicked holding this. What it left says nothing
+        // about the website that was just saved, so it is taken back rather
+        // than turned into a failure of this save.
+        held.into_inner()
+    });
+    said.insert(website_id.to_string(), why.to_string()).as_deref() != Some(why)
+}
+
+/// Forget what was said about a website that versions again
+///
+/// Whatever fails next is news, including the same words as the failure before.
+fn forget(state: &AppState, website_id: &str) {
+    state
+        .not_versioned
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .remove(website_id);
 }
 
 /// Create a website
