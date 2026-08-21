@@ -256,6 +256,15 @@ pub enum Resolved {
     SignedIn(&'static dyn Deploy, PathBuf, deploy::Urls),
 }
 
+/// A website that left for its forge, and what to ask its forge about the build
+pub struct Publishing {
+    pub provider: &'static dyn Deploy,
+    pub cli: PathBuf,
+    pub prepared: deploy::Prepared,
+    /// What the forge knows of this website, when the user is signed in to it
+    pub urls: Option<deploy::Urls>,
+}
+
 impl Resolved {
     /// The integration to publish with, when there is one, and what it knows
     ///
@@ -280,7 +289,15 @@ impl Integrations {
     /// An integration that recognises the website but has nobody signed in is
     /// answered as such, so that publishing can still save and send it while
     /// saying what is missing.
-    pub fn resolve_deploy(&self, site: &Path) -> Result<Resolved, String> {
+    ///
+    /// `website_url` is the address the user named, which the editor sends with
+    /// the publication. None when nobody is publishing: the editor is then
+    /// asking who serves this website, and it knows what it saved itself.
+    pub fn resolve_deploy(
+        &self,
+        site: &Path,
+        website_url: Option<&str>,
+    ) -> Result<Resolved, String> {
         // Read once, by the git the user allowed, and handed to each of them:
         // a website whose remote cannot be read is still offered to the
         // programs that read it themselves
@@ -300,7 +317,7 @@ impl Integrations {
             let Some(cli) = self.program(provider.program()) else {
                 continue;
             };
-            match provider.urls(&cli, site, remote.as_ref())? {
+            match provider.urls(&cli, site, remote.as_ref(), website_url)? {
                 Answer::Yes(urls) => return Ok(Resolved::SignedIn(provider, cli, urls)),
                 // Kept, but a signed-in integration further down the list still
                 // wins: a website can be on a host two of them know
@@ -312,6 +329,68 @@ impl Integrations {
             Some((provider, cli)) => Resolved::NotSignedIn(provider, cli),
             None => Resolved::Nobody,
         })
+    }
+
+    /// Prepare a website for its forge and send it
+    ///
+    /// None when nobody recognises the website: it is versioned and sent as it
+    /// is, and building it is up to whoever hosts it.
+    ///
+    /// `say` is told each step as it starts, for whoever is waiting on it.
+    pub fn publish(
+        &self,
+        site: &Path,
+        website_url: Option<&str>,
+        say: &dyn Fn(String),
+    ) -> Result<Option<Publishing>, String> {
+        let git = git::Git::found().ok_or(
+            "Silex could not find git on this computer, and it is git that sends a website to \
+             its forge.",
+        )?;
+        // Said before rather than after: finding out which forge this is means
+        // asking every program on this computer that knows one, and that is
+        // the longest silence of a publication.
+        say("Looking for the forge of your website".to_string());
+        let Some((provider, cli, urls)) =
+            self.resolve_deploy(site, website_url)?.into_parts()
+        else {
+            say("Writing the files that build your website".to_string());
+            pipeline::ensure_build_files(site)?;
+            say("Saving a version of your website".to_string());
+            git::version(site, "Publish website")?;
+            say("Sending it to your forge".to_string());
+            git.push(site, None)?;
+            return Ok(None);
+        };
+
+        say(format!(
+            "Writing the files {} needs to build your website",
+            provider.display_name()
+        ));
+        let prepared = provider.deploy(&cli, site, website_url)?;
+        say(format!("Sending your website to {}", provider.display_name()));
+        provider.push(&cli, site, &git, prepared.tag.as_deref())?;
+        Ok(Some(Publishing {
+            provider,
+            cli,
+            prepared,
+            urls,
+        }))
+    }
+
+    /// Send a website to wherever it is kept
+    ///
+    /// Nothing happens when nobody recognises the repository, and nothing
+    /// happens without a git to send it with: neither is a failure, they are a
+    /// website that stays on this computer.
+    pub fn send(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
+        let Some((provider, cli, _)) = self.resolve_deploy(site, None)?.into_parts() else {
+            return Ok(());
+        };
+        let Some(git) = git::Git::found() else {
+            return Ok(());
+        };
+        provider.push(&cli, site, &git, tag)
     }
 
     /// Whether this file already says something about that integration

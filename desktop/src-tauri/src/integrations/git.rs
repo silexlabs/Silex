@@ -216,10 +216,8 @@ pub struct Git {
 impl Git {
     /// The git of this machine, looked for when there is something to send
     ///
-    /// Not an integration: nothing to turn on, nothing to remember. What tells
-    /// Silex it can publish at all is a forge command line, and somebody who
-    /// has one of those has git too. If they somehow do not, git says so
-    /// itself, at the one moment it is needed.
+    /// Not an integration: nothing to turn on, nothing to remember. A machine
+    /// with no git still saves and versions websites, only sending needs it.
     pub fn found() -> Option<Self> {
         super::candidates("git").into_iter().next().map(|program| Git { program })
     }

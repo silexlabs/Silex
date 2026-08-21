@@ -12,7 +12,7 @@
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
@@ -24,6 +24,7 @@ use tauri_plugin_updater::UpdaterExt;
 mod actions;
 mod integrations;
 mod mcp;
+mod message;
 
 // ==================
 // Telemetry consent
@@ -79,7 +80,9 @@ fn prompt_telemetry_consent(app: &tauri::AppHandle, data_dir: PathBuf) {
 // ==================
 
 struct AppState {
-    current_website_id: Mutex<Option<String>>,
+    /// Shared with the actions of the server, which answer about the website
+    /// the editor has open without being told which one that is
+    current_website_id: actions::CurrentWebsiteId,
     current_website_name: Mutex<Option<String>>,
     has_unsaved_changes: Mutex<bool>,
 }
@@ -87,7 +90,7 @@ struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            current_website_id: Mutex::new(None),
+            current_website_id: Arc::new(Mutex::new(None)),
             current_website_name: Mutex::new(None),
             has_unsaved_changes: Mutex::new(false),
         }
@@ -311,6 +314,7 @@ async fn start_server(
     pending_evals: mcp::PendingEvals,
     data_path: std::path::PathBuf,
     app_data_dir: PathBuf,
+    current_website_id: actions::CurrentWebsiteId,
 ) -> u16 {
     // SILEX_DATA_PATH lets the user store the websites somewhere else
     let data_path = std::env::var("SILEX_DATA_PATH")
@@ -319,7 +323,7 @@ async fn start_server(
 
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load(&app_data_dir);
-    let actions = actions::SilexActions::new(data_path.clone(), integrations);
+    let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
 
     let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
 
@@ -501,6 +505,7 @@ fn main() {
                 pending_evals.clone(),
                 data_path,
                 app.path().app_data_dir().expect("failed to resolve app data dir"),
+                app.state::<AppState>().current_website_id.clone(),
             ));
 
             let url = format!("http://localhost:{}/", port);
