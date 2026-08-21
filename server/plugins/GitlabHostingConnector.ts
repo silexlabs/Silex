@@ -152,6 +152,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
     /* Configuration file .gitlab-ci.yml contains template for plain html Gitlab pages*/
+    // Note on the file the condition below leaves out: the editor publishes a
+    // `public.11tydata.js` with every website, for the desktop app, which runs
+    // 11ty on all of them. Here 11ty still runs only on a website that reads a
+    // data source, as it always has.
     const pathYml = '.gitlab-ci.yml'
     const contentYml = dedent`
       ${SILEX_OVERWRITE_NOTICE}
@@ -162,7 +166,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       pages:
         stage: deploy
         environment: production
-        script:${files.find(file => file.path.includes('.11tydata.')) ? `
+        script:${files.find(file => file.path.includes('.11tydata.') && !file.path.endsWith('public.11tydata.js')) ? `
           - npx @11ty/eleventy@v3.0.0-alpha.20 --input=public --output=_site
           - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
           - rm -rf public && mv _site public`
