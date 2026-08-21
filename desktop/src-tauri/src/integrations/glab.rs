@@ -65,7 +65,7 @@ impl Deploy for Glab {
         Ok(Answer::Yes(Urls {
             site: site_url,
             ci: Some(format!("{}/-/pipelines", web_url)),
-            settings: Some(format!("{}/-/settings/pages", web_url)),
+            settings: Some(format!("{}/pages", web_url)),
         }))
     }
 
@@ -83,9 +83,54 @@ impl Deploy for Glab {
         super::git::tag(site, &tag)?;
         Ok(Prepared { tag: Some(tag) })
     }
+
+    /// GitLab lists the pipelines of one ref, so the user sees the publication
+    /// that just left instead of every one that ever ran
+    fn watch(&self, urls: &Urls, prepared: &Prepared) -> Option<String> {
+        match (urls.ci.as_deref(), prepared.tag.as_deref()) {
+            (Some(pipelines), Some(tag)) => Some(format!("{pipelines}?ref={tag}")),
+            _ => urls.ci.clone(),
+        }
+    }
 }
 
 fn json_string(output: &str, key: &str) -> Option<String> {
     let value: serde_json::Value = serde_json::from_str(output).ok()?;
     value.get(key)?.as_str().map(String::from)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn pipelines_of(project: &str) -> Urls {
+        Urls {
+            ci: Some(format!("{project}/-/pipelines")),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn watches_the_publication_that_just_left_and_not_every_other_one() {
+        let watched = Glab
+            .watch(
+                &pipelines_of("https://gitlab.com/lexoyo/site"),
+                &Prepared {
+                    tag: Some("_silex_1755773700000".into()),
+                },
+            )
+            .unwrap();
+        assert_eq!(
+            watched,
+            "https://gitlab.com/lexoyo/site/-/pipelines?ref=_silex_1755773700000"
+        );
+    }
+
+    #[test]
+    fn watches_every_build_when_no_tag_named_one_of_them() {
+        let watched = Glab
+            .watch(&pipelines_of("https://gitlab.com/lexoyo/site"), &Prepared { tag: None })
+            .unwrap();
+        assert_eq!(watched, "https://gitlab.com/lexoyo/site/-/pipelines");
+    }
 }

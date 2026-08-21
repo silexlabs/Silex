@@ -129,10 +129,11 @@ impl silex_server::Actions for SilexActions {
                 Some(_) => format!("Sent to {remote} with {program}, the build is running"),
             };
             let urls = urls.unwrap_or_default();
+            let ci_url = provider.watch(&urls, &prepared);
             Ok(silex_server::Deployed {
                 published: true,
                 url: urls.site,
-                ci_url: urls.ci,
+                ci_url,
                 settings_url: urls.settings,
                 message: Some(message),
                 ..Default::default()

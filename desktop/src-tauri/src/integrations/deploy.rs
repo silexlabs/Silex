@@ -70,6 +70,15 @@ pub trait Deploy: Send + Sync {
     fn sync(&self, _cli: &Path, site: &Path, git: &Git, prepared: &Prepared) -> Result<(), String> {
         git.push(site, prepared.tag.as_deref())
     }
+
+    /// Where the user watches the build of the publication that just left
+    ///
+    /// A forge that can be pointed at one build rather than at all of them
+    /// says so here, from what `deploy` prepared. By default the user lands on
+    /// the list of builds and finds theirs at the top.
+    fn watch(&self, urls: &Urls, _prepared: &Prepared) -> Option<String> {
+        urls.ci.clone()
+    }
 }
 
 /// What `deploy` left for `sync` to send
