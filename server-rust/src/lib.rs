@@ -25,7 +25,7 @@ mod storage;
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
-pub use actions::Actions;
+pub use actions::{Actions, Deployed};
 pub use config::{Config, PORT};
 
 /// Build the application router, ready to be served
