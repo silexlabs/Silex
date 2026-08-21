@@ -124,10 +124,10 @@ async fn update_website(
         // same wherever the website was edited.
         // On a thread of its own: a save landing during a publication waits for
         // it, and waiting there would hold a thread the server answers with.
-        let actions = actions.clone();
+        let versioning = actions.clone();
         let website_id = query.website_id.clone();
         let versioned = tokio::task::spawn_blocking(move || {
-            actions.version(&website_id, "Update website data from Silex")
+            versioning.version(&website_id, "Update website data from Silex")
         })
         .await;
         let why = match versioned {
@@ -136,7 +136,10 @@ async fn update_website(
             Err(e) => Some(e.to_string()),
         };
         match why {
-            None => forget(&state, &query.website_id),
+            None => {
+                forget(&state, &query.website_id);
+                actions.sync(&query.website_id);
+            }
             Some(why) => {
                 tracing::warn!("Could not version website {}: {}", query.website_id, why);
                 // Reporting and forgetting was the first answer here, on the
