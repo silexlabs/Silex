@@ -101,6 +101,12 @@ async fn read_or_list_website(
 ) -> Result<axum::response::Response> {
     match query.website_id {
         Some(website_id) => {
+            if let Some(actions) = &state.actions {
+                let catching_up = actions.clone();
+                let asked_about = website_id.clone();
+                let _ = tokio::task::spawn_blocking(move || catching_up.catch_up(&asked_about))
+                    .await;
+            }
             let data = storage::read_website(&state.data_path, &website_id).await?;
             Ok(Json(data).into_response())
         }
@@ -150,8 +156,7 @@ async fn update_website(
                 // first.
                 if worth_saying(&state, &query.website_id, &why) {
                     return Err(Error::Told(format!(
-                        "Your website is saved on this computer. What Silex could not do is add \
-                         this version to its history: {}",
+                        "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
                         why
                     )));
                 }

@@ -158,8 +158,7 @@ impl SilexMcp {
             let path = url.path();
             if path == "/" && url.query().is_none() {
                 return Err(
-                    "Editor not available — still on dashboard. \
-                     Open or create a project first."
+                    "Editor not available — still on dashboard. Open or create a project first."
                         .to_string(),
                 );
             }

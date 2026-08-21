@@ -32,7 +32,7 @@ impl Deploy for Hut {
     /// hut lists the sites of a user and nothing ties one of them to a
     /// repository, so the address is asked rather than guessed: publishing to
     /// the wrong site of one's own would overwrite another website
-    fn options_form(&self, _remote: Option<&Remote>) -> Option<OptionsForm> {
+    fn options_form(&self, _site: &Path) -> Option<OptionsForm> {
         Some(OptionsForm {
             title: "SourceHut Pages".to_string(),
             fields: vec![OptionsField {
@@ -41,8 +41,7 @@ impl Deploy for Hut {
                 label: "Website address".to_string(),
                 value: None,
                 help: Some(
-                    "This is the address pages.sr.ht serves your website at. It is your site on \
-                     sr.ht, or a domain of your own."
+                    "This is the address pages.sr.ht serves your website at. It is your site on sr.ht, or a domain of your own."
                         .to_string(),
                 ),
                 required: false,
@@ -55,14 +54,8 @@ impl Deploy for Hut {
         &["version"]
     }
 
-    fn urls(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        website_url: Option<&str>,
-    ) -> Result<Answer, String> {
-        let Some(remote) = remote else {
+    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String> {
+        let Some(remote) = Remote::of(site) else {
             return Ok(Answer::No);
         };
         if !is_sourcehut(&remote.host) {
@@ -182,8 +175,7 @@ mod tests {
 
     #[test]
     fn asks_for_the_address_without_offering_one() {
-        let remote = Remote::parse("git@git.sr.ht:~alex/mysite").unwrap();
-        let form = Hut.options_form(Some(&remote)).unwrap();
+        let form = Hut.options_form(Path::new("/nowhere")).unwrap();
         assert_eq!(form.title, "SourceHut Pages");
         let [field] = &form.fields[..] else {
             panic!("one field, the address: {:?}", form.fields)

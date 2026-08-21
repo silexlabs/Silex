@@ -22,7 +22,7 @@ use silex_server::{Hosting, Job};
 
 use crate::integrations::deploy::{Build, Deploy, Prepared};
 use crate::integrations::git;
-use crate::integrations::remote::{without_secret, Remote};
+use crate::integrations::remote::without_secret;
 use crate::integrations::Integrations;
 use crate::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
@@ -74,7 +74,7 @@ const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 /// How long a website waits, after a save, before it is sent
 ///
 /// Every save pushes the moment further: what is waited for is the author
-/// stopping, not a delay.
+/// stopping.
 const SENT_AFTER: Duration = Duration::from_secs(5);
 
 /// The website the editor has open, shared with the Tauri state
@@ -84,26 +84,11 @@ const SENT_AFTER: Duration = Duration::from_secs(5);
 /// right one is to know which one is open.
 pub type CurrentWebsiteId = Arc<Mutex<Option<String>>>;
 
-/// One lock per website, so that its folder has one git at a time
-///
-/// Saving, publishing and sending all write in it, and two of them landing
-/// together would find the index locked. Waiting is what a user expects.
-#[derive(Default)]
-struct Busy(Mutex<HashMap<PathBuf, Arc<Mutex<()>>>>);
-
-impl Busy {
-    fn with(&self, site: &Path) -> Arc<Mutex<()>> {
-        let mut busy = self.0.lock().unwrap_or_else(|held| held.into_inner());
-        busy.entry(site.to_path_buf()).or_default().clone()
-    }
-}
-
 pub struct SilexActions {
     /// Directory holding one sub directory per website
     data_path: PathBuf,
     integrations: Arc<Integrations>,
     current_website_id: CurrentWebsiteId,
-    busy: Arc<Busy>,
     syncer: Arc<Syncer>,
     /// What was last answered about who serves a website, and when
     ///
@@ -120,20 +105,15 @@ impl SilexActions {
         current_website_id: CurrentWebsiteId,
     ) -> Self {
         let integrations = Arc::new(integrations);
-        let busy = Arc::new(Busy::default());
         SilexActions {
             syncer: Arc::new(Syncer {
-                sends: {
+                syncs: {
                     let data_path = data_path.clone();
                     let integrations = integrations.clone();
-                    let busy = busy.clone();
                     Box::new(move |website_id| {
                         let site = site_path(&data_path, website_id)
                             .ok_or_else(|| format!("Unknown website '{}'", website_id))?;
-                        let busy = busy.with(&site);
-                        let _working_on_it =
-                            busy.lock().unwrap_or_else(|held| held.into_inner());
-                        integrations.send(&site, None)
+                        integrations.sync(&site, None)
                     })
                 },
                 sent_after: SENT_AFTER,
@@ -142,13 +122,8 @@ impl SilexActions {
             data_path,
             integrations,
             current_website_id,
-            busy,
             what_hosts_it: Mutex::new(None),
         }
-    }
-
-    fn busy(&self, site: &Path) -> Arc<Mutex<()>> {
-        self.busy.with(site)
     }
 
     fn site_path(&self, website_id: &str) -> Option<PathBuf> {
@@ -169,22 +144,17 @@ fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
 }
 
 /// Sends websites to their forge, once their author has stopped saving them
-///
-/// Nobody waits on it and nothing it does is shown.
 struct Syncer {
-    /// What sending one website does, so that a test can watch when rather
-    /// than reach a forge
-    sends: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
+    syncs: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
     sent_after: Duration,
     /// The websites a save asked to send, and the moment their wait is over
     ///
-    /// An entry lives for as long as the thread looking after it, which is what
-    /// keeps that to one thread per website.
+    /// An entry lives for as long as the thread looking after it, which keeps
+    /// that to one thread per website.
     waiting: Mutex<HashMap<String, Instant>>,
 }
 
 impl Syncer {
-    /// A website was saved: send it once its author stops
     fn asked(self: &Arc<Self>, website_id: &str) {
         let leaves_at = Instant::now() + self.sent_after;
         let looked_after = {
@@ -202,7 +172,7 @@ impl Syncer {
         });
     }
 
-    /// Wait out the saves, send, and start over if more came in meanwhile
+    /// Wait out the saves, sync, and start over if more came in meanwhile
     fn wait_and_send(&self, website_id: &str) {
         loop {
             let Some(leaves_at) = self.leaves_at(website_id) else {
@@ -213,7 +183,7 @@ impl Syncer {
                 continue;
             }
 
-            if let Err(e) = (self.sends)(website_id) {
+            if let Err(e) = (self.syncs)(website_id) {
                 tracing::warn!("Could not send website {} to its forge: {}", website_id, e);
             }
 
@@ -259,14 +229,21 @@ impl silex_server::Actions for SilexActions {
         let Some(site) = self.site_path(website_id) else {
             return Err(format!("Unknown website '{}'", website_id));
         };
-        let busy = self.busy(&site);
-        let _working_on_it = busy.lock().unwrap_or_else(|held| held.into_inner());
         git::version(&site, message)
     }
 
-    /// Send the website to its forge, once the saves stop coming
-    ///
-    /// Nothing of it goes online: putting a website online is `deploy`.
+    /// A website that could not be caught up with is opened as it is: the user
+    /// is waiting to work, and what is on this computer is a website
+    fn catch_up(&self, website_id: &str) {
+        let Some(site) = self.site_path(website_id) else {
+            return;
+        };
+        if let Err(e) = self.integrations.catch_up(&site) {
+            tracing::warn!("Could not catch up with website {}: {}", website_id, e);
+        }
+    }
+
+    /// Nothing of it goes online: putting a website online is `deploy`
     fn sync(&self, website_id: &str) {
         self.syncer.asked(website_id);
     }
@@ -316,15 +293,27 @@ impl silex_server::Actions for SilexActions {
             .map(str::trim)
             .filter(|url| !url.is_empty());
 
-        // The lock is held for the git of it and let go before the waiting:
-        // watching a build asks the forge questions and never touches the
-        // folder, and a save must not queue behind a build that takes minutes
         let remote = without_secret(&remote_url).to_string();
-        let sent = {
-            let busy = self.busy(&site);
-            let _working_on_it = busy.lock().unwrap_or_else(|held| held.into_inner());
-            self.send(&site, website_url, job)
-        };
+        // None when no integration recognises the website: it is versioned and
+        // sent all the same, and building it is up to whoever hosts it
+        let sent = self
+            .integrations
+            .publish(&site, website_url, &|step| job.step(step))
+            .map(|published| {
+                published.map(|published| {
+                    let signed_in = published.urls.is_some();
+                    let urls = published.urls.unwrap_or_default();
+                    Sent {
+                        build_url: published.provider.watch(&urls, &published.prepared),
+                        site_url: urls.site,
+                        settings_url: urls.settings,
+                        provider: published.provider,
+                        cli: published.cli,
+                        prepared: published.prepared,
+                        signed_in,
+                    }
+                })
+            });
 
         match sent {
             Err(failure) => {
@@ -362,14 +351,7 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ))
             }
-            Ok(Some(sent)) => watch(
-                job,
-                &site,
-                Remote::parse(&remote_url).as_ref(),
-                &sent,
-                &files,
-                Patience::default(),
-            ),
+            Ok(Some(sent)) => watch(job, &site, &sent, &files, Patience::default()),
         }
     }
 
@@ -403,29 +385,6 @@ impl silex_server::Actions for SilexActions {
 }
 
 impl SilexActions {
-    /// Send the website, answering what to ask about the build that follows
-    ///
-    /// None when no integration recognises the website: it is versioned and
-    /// sent all the same, and building it is up to whoever hosts it.
-    fn send(&self, site: &Path, website_url: Option<&str>, job: &Job) -> Result<Option<Sent>, String> {
-        let published = self
-            .integrations
-            .publish(site, website_url, &|step| job.step(step))?;
-        Ok(published.map(|published| {
-            let signed_in = published.urls.is_some();
-            let urls = published.urls.unwrap_or_default();
-            Sent {
-                build_url: published.provider.watch(&urls, &published.prepared),
-                site_url: urls.site,
-                settings_url: urls.settings,
-                provider: published.provider,
-                cli: published.cli,
-                prepared: published.prepared,
-                signed_in,
-            }
-        }))
-    }
-
     /// Who serves this website, asked of the programs of this machine
     fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
         let site = self.site_path(website_id)?;
@@ -442,9 +401,7 @@ impl SilexActions {
                 return None;
             }
         };
-        let remote = git::remote_url(&site).and_then(|url| Remote::parse(&url));
-
-        let options_form = provider.options_form(remote.as_ref());
+        let options_form = provider.options_form(&site);
         Some(Hosting {
             connector_id: "fs-hosting",
             display_name: provider.display_name().to_string(),
@@ -463,16 +420,9 @@ impl SilexActions {
 ///
 /// Nothing here ever calls a publication a success on its own: the website is
 /// live when the forge says its build worked, and not when a push returned.
-fn watch(
-    job: &Job,
-    site: &Path,
-    remote: Option<&Remote>,
-    sent: &Sent,
-    files: &str,
-    patience: Patience,
-) {
+fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     let forge = sent.provider.display_name();
-    let ask = || sent.provider.build(&sent.cli, site, remote, &sent.prepared);
+    let ask = || sent.provider.build(&sent.cli, site, &sent.prepared);
     let building = |build_url: &str| {
         message::told(
             &format!("Building your website on {}", forge),
@@ -592,8 +542,7 @@ fn watch(
             return job.failed(message::explained(
                 "The build is taking longer than expected.",
                 &format!(
-                    "Silex stopped following it after {} minutes. Your website may still come \
-                     online.",
+                    "Silex stopped following it after {} minutes. Your website may still come online.",
                     patience.a_build_ends_within.as_secs() / 60
                 ),
                 &[
@@ -642,8 +591,7 @@ job: &Job,
 
     job.failed(message::explained(
         &format!("{} did not start a build.", forge),
-        "Your website was sent, but nothing built it, so it is not online. Check that builds \
-         are turned on for this repository, and that your account on the forge is verified.",
+        "Your website was sent, but nothing built it, so it is not online. Check that builds are turned on for this repository, and that your account on the forge is verified.",
         &[
             Button::primary("Repository settings", settings_url),
             Button::secondary("See the builds", build_url),
@@ -662,7 +610,7 @@ mod sending {
         let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let noted = sent.clone();
         let syncer = Arc::new(Syncer {
-            sends: Box::new(move |website_id| {
+            syncs: Box::new(move |website_id| {
                 noted.lock().unwrap().push(website_id.to_string());
                 Ok(())
             }),
@@ -705,42 +653,6 @@ mod sending {
         assert_eq!(pushed(&sent), ["site"], "one pause, one push");
     }
 
-    #[test]
-    fn a_save_landing_while_it_is_being_sent_is_sent_after_it() {
-        let waited: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let noted = waited.clone();
-        let syncer = Arc::new(Syncer {
-            sends: Box::new(move |website_id| {
-                noted.lock().unwrap().push(website_id.to_string());
-                // A push takes the network: the save below lands in the middle
-                std::thread::sleep(Duration::from_millis(60));
-                Ok(())
-            }),
-            sent_after: Duration::from_millis(20),
-            waiting: Mutex::new(HashMap::new()),
-        });
-
-        syncer.asked("site");
-        assert!(until(|| !pushed(&waited).is_empty()), "never left at all");
-        syncer.asked("site");
-
-        assert!(
-            until(|| pushed(&waited).len() == 2),
-            "the version saved during the push was left behind: {:?}",
-            pushed(&waited)
-        );
-    }
-
-    #[test]
-    fn two_websites_are_two_waits() {
-        let (syncer, sent) = watching(Duration::from_millis(20));
-        syncer.asked("one");
-        syncer.asked("two");
-        assert!(until(|| pushed(&sent).len() == 2), "{:?}", pushed(&sent));
-        let mut both = pushed(&sent);
-        both.sort();
-        assert_eq!(both, ["one", "two"]);
-    }
 }
 
 #[cfg(test)]
@@ -782,13 +694,7 @@ mod publications {
             "Codeberg"
         }
 
-        fn urls(
-            &self,
-            _cli: &Path,
-            _site: &Path,
-            _remote: Option<&Remote>,
-            _website_url: Option<&str>,
-        ) -> Result<Answer, String> {
+        fn urls(&self, _cli: &Path, _site: &Path, _website_url: Option<&str>) -> Result<Answer, String> {
             Ok(Answer::Yes(Urls::default()))
         }
 
@@ -801,13 +707,7 @@ mod publications {
             Ok(Prepared::default())
         }
 
-        fn build(
-            &self,
-            _cli: &Path,
-            _site: &Path,
-            _remote: Option<&Remote>,
-            _prepared: &Prepared,
-        ) -> Result<Build, String> {
+        fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
             let asked = self.asked.fetch_add(1, Ordering::SeqCst);
             Ok(match self.says[asked.min(self.says.len() - 1)] {
                 Says::Nothing => Build::NotStarted,
@@ -858,7 +758,7 @@ mod publications {
     fn followed(forge: &'static Forge) -> JobData {
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), None, &sent(forge), FILES, quickly());
+        watch(&job, Path::new("/nowhere"), &sent(forge), FILES, quickly());
         jobs.read(job.id()).expect("the publication was just followed")
     }
 
@@ -959,7 +859,7 @@ mod publications {
         };
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), None, &sent(&UNREACHABLE), FILES, quickly());
+        watch(&job, Path::new("/nowhere"), &sent(&UNREACHABLE), FILES, quickly());
         let told = jobs.read(job.id()).unwrap();
 
         assert_eq!(told.status, JobStatus::Error);
@@ -987,7 +887,7 @@ mod publications {
         let job_id = job.id().to_string();
 
         let following = std::thread::spawn(move || {
-            watch(&job, Path::new("/nowhere"), None, &sent(&BUILDING), FILES, quickly());
+            watch(&job, Path::new("/nowhere"), &sent(&BUILDING), FILES, quickly());
         });
         std::thread::sleep(Duration::from_millis(10));
 
