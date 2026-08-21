@@ -17,6 +17,7 @@ mod actions;
 mod config;
 mod error;
 mod frontend;
+mod jobs;
 mod models;
 mod publish;
 mod routes;
@@ -25,8 +26,10 @@ mod storage;
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
-pub use actions::{Actions, Deployed};
+pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOptions};
 pub use config::{Config, PORT};
+pub use jobs::{Job, JobData, JobStatus, Jobs};
+pub use storage::published_files_url;
 
 /// Build the application router, ready to be served
 pub async fn build_app(config: Config) -> (Router, u16) {

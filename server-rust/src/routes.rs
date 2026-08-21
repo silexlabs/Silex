@@ -24,6 +24,7 @@ use axum::Router;
 
 use crate::actions::Actions;
 use crate::config::Config;
+use crate::jobs::Jobs;
 
 /// State shared by all route handlers
 #[derive(Clone)]
@@ -39,6 +40,8 @@ pub struct AppState {
     /// would bury the editor under one message. It is said once, and again only
     /// when the reason changes.
     pub not_versioned: Arc<Mutex<HashMap<String, String>>>,
+    /// The publications the editor is following
+    pub jobs: Jobs,
 }
 
 impl AppState {
@@ -47,6 +50,7 @@ impl AppState {
             data_path: Arc::new(config.data_path.clone()),
             actions: config.actions.clone(),
             not_versioned: Arc::new(Mutex::new(HashMap::new())),
+            jobs: Jobs::default(),
         }
     }
 }

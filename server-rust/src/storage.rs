@@ -48,6 +48,19 @@ pub fn website_path(data_path: &Path, website_id: &str) -> PathBuf {
     data_path.join(website_id)
 }
 
+/// Where the published files of a website are, as an address a browser opens
+///
+/// These are the files the editor generated, not the website a forge builds
+/// out of them: nothing here ran the page generator. Said in one place because
+/// the metadata of a website and the message of a publication both point at
+/// this same folder.
+pub fn published_files_url(data_path: &Path, website_id: &str) -> String {
+    format!(
+        "file://{}",
+        website_path(data_path, website_id).join(PUBLIC_FOLDER).display()
+    )
+}
+
 fn website_data_path(data_path: &Path, website_id: &str) -> PathBuf {
     website_path(data_path, website_id).join(WEBSITE_DATA_FILE)
 }
@@ -291,11 +304,10 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         Err(e) => return Err(Error::Io(e)),
     };
 
-    let public_path = website_path.join(PUBLIC_FOLDER);
-    let pages_url = fs::metadata(&public_path)
+    let pages_url = fs::metadata(website_path.join(PUBLIC_FOLDER))
         .await
         .is_ok()
-        .then(|| format!("file://{}", public_path.display()));
+        .then(|| published_files_url(data_path, website_id));
 
     Ok(WebsiteMeta {
         website_id: website_id.clone(),

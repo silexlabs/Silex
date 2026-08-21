@@ -24,58 +24,114 @@ pub trait Actions: Send + Sync {
 
     /// Deploy a website, right after its published files were written.
     ///
-    /// None when there is nowhere to deploy to, which is how a local-only
-    /// website runs.
-    fn deploy(&self, website_id: &str) -> Option<Deployed> {
+    /// `options` is what the editor sent with the publication, the address the
+    /// user named among it. It comes from the request rather than from the
+    /// website on the disk: publishing is not saving, and reading it back from
+    /// a file would answer what the last save happened to hold.
+    ///
+    /// `job` is what the editor follows. Sending a website to a forge and
+    /// waiting for it to build takes minutes, so the answer to the request left
+    /// long ago: saying where the publication is, and above all how it ended,
+    /// happens here. A job left open when this returns is ended by the server,
+    /// which can only promise that the files were written.
+    ///
+    /// Nothing is deployed by default, which is how a local-only website runs.
+    fn deploy(&self, website_id: &str, options: &PublicationOptions, job: &crate::jobs::Job) {
+        let _ = (website_id, options, job);
+    }
+
+    /// Send a website to wherever it is kept, right after it was versioned.
+    ///
+    /// Returns at once and answers nothing: sending reaches somebody else's
+    /// network, and a save must not wait on that. Nothing is sent by default.
+    fn sync(&self, website_id: &str) {
         let _ = website_id;
+    }
+
+    /// What serves the website currently open, told to the editor as its
+    /// hosting connector.
+    ///
+    /// No website id is passed: the editor asks for its connector without
+    /// naming the website it has open, so the answer is about whichever
+    /// website the host application knows is being edited. None when there is
+    /// none, or when nothing is known of where it goes, and the editor is then
+    /// told of a plain file system hosting.
+    fn hosting(&self) -> Option<Hosting> {
         None
     }
 }
 
-/// What deploying a website led to, as the editor is told it
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+/// What the editor sent along with a publication
+///
+/// Only what the server hands over is named; the rest is kept as it came, for
+/// whoever knows what to do with it.
+#[derive(Debug, Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Deployed {
-    /// Whether a forge took the website to build and serve it
-    pub published: bool,
-
-    /// Where the website is served, once its forge has an address to give
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-
-    /// Where the build can be watched
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ci_url: Option<String>,
-
-    /// Where the user sets a domain of their own
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub settings_url: Option<String>,
-
-    /// What to tell the user
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub message: Option<String>,
-
-    /// What the program said, for whoever wants to read it
+pub struct PublicationOptions {
+    /// Where the user says their website is served
     ///
-    /// Kept apart from the message: a user reads one sentence they can act on,
-    /// and the words of git or of a forge program are there underneath for the
-    /// times when that sentence is not enough.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<String>,
+    /// A forge that serves pages does not always say which of its addresses
+    /// belongs to which repository, and a domain of one's own is never
+    /// something to work out: it is asked of the user before publishing.
+    pub website_url: Option<String>,
 
-    /// Whether what is being told is a failure
-    #[serde(default, skip_serializing_if = "is_false")]
-    pub error: bool,
-
-    /// Anything else the app has to say, relayed as it came
-    ///
-    /// Naming the fields above is what keeps the editor and the server from
-    /// disagreeing on a key. This one is so that saying something new does not
-    /// mean it is dropped on the way.
+    /// Anything else the editor sent, relayed as it came
     #[serde(flatten)]
     pub more: serde_json::Map<String, serde_json::Value>,
 }
 
-fn is_false(value: &bool) -> bool {
-    !*value
+/// Where a website is served, as far as its host application knows
+#[derive(Debug, Clone)]
+pub struct Hosting {
+    /// Which connector publishes it, the only one this server answers for
+    pub connector_id: &'static str,
+
+    /// The name of the host, as the user knows it
+    pub display_name: String,
+
+    /// What publishing already knows, `websiteUrl` among it
+    ///
+    /// Kept untyped: these are the options of a connector, and the editor
+    /// hands them back to the publication as they came.
+    pub options: Option<serde_json::Value>,
+
+    /// What the user is asked, when the host cannot say it itself
+    pub options_form: Option<OptionsForm>,
+}
+
+/// A form the editor shows before publishing
+///
+/// The programs of the forges do not all know where a website is served: some
+/// answer its address, others have no way to tie a repository to a site. What
+/// they cannot say is asked of the user, and kept with the website.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionsForm {
+    pub title: String,
+    pub fields: Vec<OptionsField>,
+}
+
+/// One thing the user is asked for
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OptionsField {
+    /// The key it is kept under in the options of the publication
+    pub name: String,
+
+    /// What the browser makes of it: `text`, `url`, `checkbox` or `select`
+    pub r#type: String,
+
+    pub label: String,
+
+    /// What to start from, until the user writes something of their own
+    ///
+    /// Never what they wrote: an address somebody typed is theirs, and a
+    /// default worked out here must not take its place.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub help: Option<String>,
+
+    pub required: bool,
 }
