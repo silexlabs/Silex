@@ -34,16 +34,11 @@ impl Deploy for Glab {
         "GitLab"
     }
 
-    fn urls(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        website_url: Option<&str>,
-    ) -> Result<Answer, String> {
+    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String> {
+        let remote = Remote::of(site);
         // Being signed in to that host is what makes a website one of glab's,
         // and glab answers that without reaching the network
-        if let Some(remote) = remote {
+        if let Some(remote) = &remote {
             if run(cli, site, &["auth", "status", "--hostname", &remote.host]).is_err() {
                 return Ok(if remote.host == GITLAB {
                     Answer::NotSignedIn
@@ -104,13 +99,7 @@ impl Deploy for Glab {
 
     /// GitLab says which ref each of its jobs ran on, so the one this
     /// publication started is the one on the tag it was given
-    fn build(
-        &self,
-        cli: &Path,
-        site: &Path,
-        _remote: Option<&Remote>,
-        prepared: &Prepared,
-    ) -> Result<Build, String> {
+    fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
         // Nothing was tagged, so there is nothing to recognise a job by
         let Some(tag) = prepared.tag.as_deref() else {
             return Ok(Build::Unknown);

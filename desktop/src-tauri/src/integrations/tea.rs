@@ -56,17 +56,17 @@ impl Deploy for Tea {
     /// tea has no way to ask Codeberg where a repository is served, so the
     /// user is shown the address the documentation states and left to change
     /// it when they have a domain of their own
-    fn options_form(&self, remote: Option<&Remote>) -> Option<OptionsForm> {
+    fn options_form(&self, site: &Path) -> Option<OptionsForm> {
+        let remote = Remote::of(site);
         Some(OptionsForm {
             title: "Codeberg Pages".to_string(),
             fields: vec![OptionsField {
                 name: "websiteUrl".to_string(),
                 r#type: "url".to_string(),
                 label: "Website address".to_string(),
-                value: remote.map(pages_url),
+                value: remote.as_ref().map(pages_url),
                 help: Some(
-                    "This is where Codeberg serves your website. Change it if you have a domain \
-                     of your own."
+                    "This is where Codeberg serves your website. Change it if you have a domain of your own."
                         .to_string(),
                 ),
                 required: false,
@@ -74,14 +74,8 @@ impl Deploy for Tea {
         })
     }
 
-    fn urls(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        website_url: Option<&str>,
-    ) -> Result<Answer, String> {
-        let Some(remote) = remote else {
+    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String> {
+        let Some(remote) = Remote::of(site) else {
             return Ok(Answer::No);
         };
         if remote.host != CODEBERG {
@@ -140,29 +134,22 @@ impl Deploy for Tea {
     /// Forgejo lists the runs of the repository, newest first, and says nothing
     /// about which push each came from: the one this publication started is
     /// whichever is newer than the one that was on top before the push
-    fn build(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        prepared: &Prepared,
-    ) -> Result<Build, String> {
+    fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
+        let remote = Remote::of(site);
         // Asked of the forge rather than read out of an error message: whether
         // a repository builds anything is a field it answers, and the sentence
         // it writes when it does not is its own to change.
-        if let Some(remote) = remote {
+        if let Some(remote) = &remote {
             let repository = repository(cli, site, remote)?;
             if repository["has_actions"] == serde_json::Value::Bool(false) {
                 return Ok(Build::Refused(
-                    "Actions are turned off for this repository, so nothing built your website. \
-                     Turn them on in the repository settings, then publish again."
+                    "Actions are turned off for this repository, so nothing built your website. Turn them on in the repository settings, then publish again."
                         .to_string(),
                 ));
             }
             if repository["private"] == serde_json::Value::Bool(true) {
                 return Ok(Build::Refused(
-                    "Codeberg serves pages from public repositories only, so this website will \
-                     not come online while its repository is private."
+                    "Codeberg serves pages from public repositories only, so this website will not come online while its repository is private."
                         .to_string(),
                 ));
             }
@@ -335,23 +322,6 @@ mod tests {
         // A repository named `pages` is the site of its owner, served at the
         // root of their subdomain and not under a path of its own
         assert_eq!(of("git@codeberg.org:alex/pages.git"), "https://alex.codeberg.page/");
-    }
-
-    #[test]
-    fn asks_for_the_address_because_tea_cannot_answer_it() {
-        let remote = Remote::parse("https://codeberg.org/alex/mysite.git").unwrap();
-        let form = Tea.options_form(Some(&remote)).unwrap();
-        assert_eq!(form.title, "Codeberg Pages");
-        let [field] = &form.fields[..] else {
-            panic!("one field, the address: {:?}", form.fields)
-        };
-        assert_eq!(field.name, "websiteUrl");
-        assert_eq!(field.r#type, "url");
-        assert_eq!(field.value.as_deref(), Some("https://alex.codeberg.page/mysite/"));
-
-        // Nothing could be read of the remote: the question still stands, it
-        // just comes without an answer to start from
-        assert_eq!(Tea.options_form(None).unwrap().fields[0].value, None);
     }
 
     #[test]

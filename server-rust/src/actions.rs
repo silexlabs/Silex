@@ -40,6 +40,14 @@ pub trait Actions: Send + Sync {
         let _ = (website_id, options, job);
     }
 
+    /// Take in the versions of a website made somewhere else, before it is read.
+    ///
+    /// The read waits for it: catching up after the editor loaded the website
+    /// would be too late. Nothing is taken in by default.
+    fn catch_up(&self, website_id: &str) {
+        let _ = website_id;
+    }
+
     /// Send a website to wherever it is kept, right after it was versioned.
     ///
     /// Returns at once and answers nothing: sending reaches somebody else's

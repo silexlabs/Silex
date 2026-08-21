@@ -24,7 +24,7 @@ use std::time::Duration;
 
 use git2::{IndexAddOption, Repository, RepositoryInitOptions, RepositoryOpenFlags};
 
-use super::run::{failure, run, run_transfer, run_transfer_verbatim, Ran};
+use super::run::{failure, run_transfer, run_transfer_verbatim, Ran};
 
 /// The branch a website is versioned on
 ///
@@ -241,13 +241,12 @@ impl Git {
         Ok(())
     }
 
-    /// Send the branch, catching up with the remote when it moved on
+    /// Send the branch, saying so plainly when the remote moved on
     ///
-    /// The folder is Silex's, the repository is the user's: they can have
-    /// pushed from another machine, the forge can have added a README when the
-    /// repository was created, a build can have committed something. Git
-    /// refuses then, and a user with no terminal has nowhere to go. Catching up
-    /// first is what a person would do.
+    /// Nothing is merged and nothing is rebased here. Silex does not resolve
+    /// conflicts, and a merge it started would leave the folder half done in a
+    /// state its user has no terminal to get out of. Catching up is a pull of
+    /// its own, on opening the website.
     fn push_branch(&self, site: &Path, remote: &str) -> Result<(), String> {
         let ran = run_transfer_verbatim(&self.program, site, &["push", "--porcelain", remote, "HEAD"])?;
         if !ran.failed {
@@ -256,24 +255,23 @@ impl Git {
         if !behind_remote(&ran) {
             return Err(failure(&self.program, &ran));
         }
-
-        let branch = branch_name(site);
-        self.send(site, &["pull", "--rebase", remote, &branch])
-            .map_err(|e| {
-                // A rebase left half done would keep the folder unusable, and
-                // the user has no terminal to finish it in
-                let _ = self.run(site, &["rebase", "--abort"]);
-                format!(
-                    "Your website could not be published: the repository it is sent to has \
-                     changes Silex does not have, and they contradict yours. {}",
-                    e
-                )
-            })?;
-        self.send(site, &["push", remote, "HEAD"]).map(|_| ())
+        Err(format!(
+            "The repository this website is sent to has versions Silex does not have. Close the website and open it again to catch up with them, then publish. {}",
+            failure(&self.program, &ran)
+        ))
     }
 
-    fn run(&self, dir: &Path, args: &[&str]) -> Result<String, String> {
-        run(&self.program, dir, args)
+    /// Take in what was pushed from somewhere else, and only that
+    ///
+    /// Fast-forward only: a website whose versions here and there have both
+    /// moved on is one Silex leaves alone, for its user to sort out in the git
+    /// client they already have.
+    pub fn pull(&self, site: &Path) -> Result<(), String> {
+        let Some(remote) = remote_name(site) else {
+            return Ok(());
+        };
+        let branch = branch_name(site);
+        self.send(site, &["pull", "--ff-only", &remote, &branch]).map(|_| ())
     }
 
     /// A push carries the whole website the first time, and gets the time

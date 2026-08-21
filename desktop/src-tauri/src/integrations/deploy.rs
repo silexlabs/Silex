@@ -12,7 +12,6 @@ use std::path::Path;
 use silex_server::OptionsForm;
 
 use super::git::Git;
-use super::remote::Remote;
 
 /// The addresses of a published website, as far as its forge told them
 #[derive(Default)]
@@ -89,8 +88,8 @@ pub trait Deploy: Send + Sync {
     /// None when it can, which is one question the user is spared. `remote` is
     /// what git said about the website, handed over as it is to `urls`: none of
     /// them goes looking for git itself.
-    fn options_form(&self, remote: Option<&Remote>) -> Option<OptionsForm> {
-        let _ = remote;
+    fn options_form(&self, site: &Path) -> Option<OptionsForm> {
+        let _ = site;
         None
     }
 
@@ -109,20 +108,10 @@ pub trait Deploy: Send + Sync {
     /// could not tell, which is not the same as a no and must not be taken for
     /// one.
     ///
-    /// `remote` is what git said about this website, read once and handed
-    /// over: none of them goes looking for git itself, so a git the user turned
-    /// off is a git nothing starts.
-    ///
     /// `website_url` is the address the user named, when they named one and
     /// when there is a publication to name it: the editor sends it with the
     /// website it publishes, and nothing here reads it off the disk.
-    fn urls(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        website_url: Option<&str>,
-    ) -> Result<Answer, String>;
+    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String>;
 
     /// Write what the build needs and version it, answering what the
     /// publication has to send along
@@ -137,10 +126,12 @@ pub trait Deploy: Send + Sync {
 
     /// Send what was versioned to the forge
     ///
-    /// Git for every forge so far, which is why the default is all any of them
-    /// needs. A host that takes a website another way — a bucket, an API — says
-    /// so here, and it is the one place that has to change.
-    fn push(&self, _cli: &Path, site: &Path, git: &Git, tag: Option<&str>) -> Result<(), String> {
+    /// A host that takes a website another way — a bucket, an API — says so
+    /// here, and it is the one place that has to change.
+    fn push(&self, _cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), String> {
+        let git = Git::found().ok_or(
+            "Silex could not find git on this computer, and it is git that sends a website to its forge.",
+        )?;
         git.push(site, tag)
     }
 
@@ -152,14 +143,8 @@ pub trait Deploy: Send + Sync {
     ///
     /// The default knows nothing, and a forge Silex cannot follow says so
     /// rather than failing a publication that worked.
-    fn build(
-        &self,
-        cli: &Path,
-        site: &Path,
-        remote: Option<&Remote>,
-        prepared: &Prepared,
-    ) -> Result<Build, String> {
-        let _ = (cli, site, remote, prepared);
+    fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
+        let _ = (cli, site, prepared);
         Ok(Build::Unknown)
     }
 

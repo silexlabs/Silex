@@ -21,6 +21,16 @@ pub struct Remote {
 }
 
 impl Remote {
+    /// The remote of a website, asked by the integrations that work from one
+    pub fn of(site: &std::path::Path) -> Option<Remote> {
+        let url = super::git::remote_url(site)?;
+        let read = Remote::parse(&url);
+        if read.is_none() {
+            tracing::warn!(remote = %redact(&url), "This remote is written in a way Silex cannot read");
+        }
+        read
+    }
+
     /// The host part of a URL, `https://codeberg.org/x/y` and `git@sr.ht:~x/y`
     /// alike
     pub fn host_of(url: &str) -> Option<String> {
@@ -165,3 +175,4 @@ mod tests {
         assert_eq!(redact("no such remote: origin"), "no such remote: origin");
     }
 }
+

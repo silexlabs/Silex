@@ -10,14 +10,11 @@
 //! The programs Silex works with, on this machine
 //!
 //! Being installed is not the same as being used: an integration only acts
-//! once the user is fine with it. Git is the exception the user can undo, it
-//! starts enabled when it is already installed, because versioning websites is
-//! what Silex would do with it anyway.
+//! once the user is fine with it.
 //!
 //! What was found is remembered in `integrations.json`, next to the install id,
 //! and looked for only once, the first time the app runs. Afterwards Silex
-//! goes by what it knows: a user installing git later says so on the
-//! integrations screen, rather than having Silex guess behind their back.
+//! goes by what it knows, rather than guessing behind the back of the user.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -298,26 +295,12 @@ impl Integrations {
         site: &Path,
         website_url: Option<&str>,
     ) -> Result<Resolved, String> {
-        // Read once, by the git the user allowed, and handed to each of them:
-        // a website whose remote cannot be read is still offered to the
-        // programs that read it themselves
-        let remote = git::remote_url(site).and_then(|url| {
-            let read = remote::Remote::parse(&url);
-            if read.is_none() {
-                tracing::warn!(
-                    remote = %remote::redact(&url),
-                    "This remote is written in a way Silex cannot read"
-                );
-            }
-            read
-        });
-
         let mut recognized = None;
         for provider in deploy_providers() {
             let Some(cli) = self.program(provider.program()) else {
                 continue;
             };
-            match provider.urls(&cli, site, remote.as_ref(), website_url)? {
+            match provider.urls(&cli, site, website_url)? {
                 Answer::Yes(urls) => return Ok(Resolved::SignedIn(provider, cli, urls)),
                 // Kept, but a signed-in integration further down the list still
                 // wins: a website can be on a host two of them know
@@ -343,10 +326,6 @@ impl Integrations {
         website_url: Option<&str>,
         say: &dyn Fn(String),
     ) -> Result<Option<Publishing>, String> {
-        let git = git::Git::found().ok_or(
-            "Silex could not find git on this computer, and it is git that sends a website to \
-             its forge.",
-        )?;
         // Said before rather than after: finding out which forge this is means
         // asking every program on this computer that knows one, and that is
         // the longest silence of a publication.
@@ -359,6 +338,11 @@ impl Integrations {
             say("Saving a version of your website".to_string());
             git::version(site, "Publish website")?;
             say("Sending it to your forge".to_string());
+            // Still here rather than in an integration: no integration answers
+            // for a website whose forge Silex does not know
+            let git = git::Git::found().ok_or(
+                "Silex could not find git on this computer, and it is git that sends a website to its forge.",
+            )?;
             git.push(site, None)?;
             return Ok(None);
         };
@@ -369,7 +353,7 @@ impl Integrations {
         ));
         let prepared = provider.deploy(&cli, site, website_url)?;
         say(format!("Sending your website to {}", provider.display_name()));
-        provider.push(&cli, site, &git, prepared.tag.as_deref())?;
+        provider.push(&cli, site, prepared.tag.as_deref())?;
         Ok(Some(Publishing {
             provider,
             cli,
@@ -378,19 +362,23 @@ impl Integrations {
         }))
     }
 
-    /// Send a website to wherever it is kept
-    ///
-    /// Nothing happens when nobody recognises the repository, and nothing
-    /// happens without a git to send it with: neither is a failure, they are a
-    /// website that stays on this computer.
-    pub fn send(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
-        let Some((provider, cli, _)) = self.resolve_deploy(site, None)?.into_parts() else {
-            return Ok(());
-        };
+    /// No forge has to answer for it: nothing leaves the machine
+    pub fn catch_up(&self, site: &Path) -> Result<(), String> {
         let Some(git) = git::Git::found() else {
             return Ok(());
         };
-        provider.push(&cli, site, &git, tag)
+        git.pull(site)
+    }
+
+    /// Send a website to wherever it is kept
+    ///
+    /// Nothing happens when nobody recognises it, which is not a failure but a
+    /// website that stays on this computer
+    pub fn sync(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
+        let Some((provider, cli, _)) = self.resolve_deploy(site, None)?.into_parts() else {
+            return Ok(());
+        };
+        provider.push(&cli, site, tag)
     }
 
     /// Whether this file already says something about that integration
@@ -642,8 +630,7 @@ fn read(data_dir: &Path) -> Integrations {
             let kept = file.with_extension("json.unreadable");
             let _ = std::fs::rename(&file, &kept);
             tracing::warn!(
-                "Could not read {}: {}. Kept it as {}, and looking for the programs again: \
-                 anything that was turned off there is turned back on",
+                "Could not read {}: {}. Kept it as {}, and looking for the programs again: anything that was turned off there is turned back on",
                 file.display(),
                 e,
                 kept.display()
