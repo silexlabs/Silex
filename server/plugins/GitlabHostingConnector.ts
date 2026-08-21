@@ -34,6 +34,8 @@ const waitTimeOut = 5000 /* for wait loop waiting for job to appear */
 const jobPollInterval = 10000 /* poll job status every 10 seconds */
 const jobCompletionTimeOut = 45 * 60 * 1000 /* 45 minutes max for job completion */
 const SILEX_OVERWRITE_NOTICE = '# silexOverwrite: true'
+// Kept in step with ELEVENTY_VERSION in desktop/src-tauri/src/integrations/pipeline.rs
+const ELEVENTY_VERSION = '3.1.6'
 
 // GitLab job statuses that indicate the job is still running
 const GITLAB_RUNNING_STATUSES = ['created', 'waiting_for_resource', 'preparing', 'pending', 'running']
@@ -152,32 +154,41 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
     /* Configuration file .gitlab-ci.yml contains template for plain html Gitlab pages*/
-    // Note on the file the condition below leaves out: the editor publishes a
-    // `public.11tydata.js` with every website, for the desktop app, which runs
-    // 11ty on all of them. Here 11ty still runs only on a website that reads a
-    // data source, as it always has.
     const pathYml = '.gitlab-ci.yml'
     const contentYml = dedent`
       ${SILEX_OVERWRITE_NOTICE}
       # You will want to remove these lines if you customize your build process
       # Silex will overwrite this file unless you remove these lines
       # This is the default build process for plain eleventy sites
-      image: node:20
+      image: node:22-slim
       pages:
         stage: deploy
         environment: production
-        script:${files.find(file => file.path.includes('.11tydata.') && !file.path.endsWith('public.11tydata.js')) ? `
-          - npx @11ty/eleventy@v3.0.0-alpha.20 --input=public --output=_site
-          - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
-          - rm -rf public && mv _site public`
-    : ''}
+        timeout: 15 minutes
+        resource_group: pages
+        cache:
+          key: silex-npm
+          paths:
+            - .npm
+        variables:
+          npm_config_cache: .npm
+        script:
+          - npx @11ty/eleventy@${ELEVENTY_VERSION} --input=public --output=_site
+          - cp -R public/*/ _site/
           - echo "The site will be deployed to $CI_PAGES_URL"
+        pages:
+          publish: _site
+        # Before GitLab 17.10 the folder above is not added here on its own
         artifacts:
           paths:
-            - public
+            - _site
         rules:
-          - if: '$CI_COMMIT_TAG'
+          # What Silex tags when publishing. Another tag is the user's own business
+          - if: '$CI_COMMIT_TAG =~ /^_silex_/'
           - if: '$CI_PIPELINE_SOURCE == "trigger"'
+          - if: '$CI_PIPELINE_SOURCE == "api"'
+          - if: '$CI_PIPELINE_SOURCE == "web"'
+          - if: '$CI_PIPELINE_SOURCE == "schedule"'
     `
     try {
       job.message = `Checking if ${pathYml} needs to be created or updated...`
