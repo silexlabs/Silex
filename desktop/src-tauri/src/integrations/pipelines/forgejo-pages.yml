@@ -1,0 +1,35 @@
+# silexOverwrite: true
+# Written by Silex at every publication. Change what is built in build.json.
+# To change anything else here, the size of the runner or when it runs, remove
+# the line above: Silex then leaves this file to you.
+on:
+  push:
+    tags:
+      # What Silex tags when publishing. Another tag is the user's own business
+      - '_silex_*'
+  # Publish again without going through Silex: the button on the Actions page,
+  # or a POST to its dispatches endpoint on the Forgejo API. Add a
+  # `schedule:` here to rebuild on a timer when the site reads a data source.
+  workflow_dispatch:
+# Two publications in a row: the older one gets out of the way, so that the
+# last one asked for is the last one deployed
+concurrency:
+  group: silex-pages
+  cancel-in-progress: true
+jobs:
+  pages:
+    runs-on: {runner}
+    # A build that is still going after that is stuck, not slow. Five, which
+    # is what the runner this asks for is lent for.
+    timeout-minutes: 2
+    container:
+      image: node:22-slim
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh build.sh
+      - uses: https://codeberg.org/git-pages/action@v2
+        with:
+          site: {site_url}
+          server: {pages_domain}
+          token: ${{ forge.token }}
+          source: _site/

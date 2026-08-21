@@ -44,5 +44,15 @@ which = "8"
 # Error tracking / telemetry (GlitchTip / Sentry-compatible)
 sentry = { version = "0.35", features = ["tracing"] }
 
+# What a program writes to be read in a terminal, made readable anywhere else:
+# a real parser rather than a guess at where an escape sequence ends
+strip-ansi-escapes = "0.2"
+
 # Silex server as a library
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
+git2 = { version = "0.21.0", default-features = false }
+
+# Stop a whole process tree when an integration hangs: killing git alone leaves
+# the ssh it started behind
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
