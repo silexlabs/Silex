@@ -72,11 +72,16 @@ pub struct ClientSideFile {
     pub src: Option<String>,
 }
 
-/// The editor logs the URL and drops it. A published folder has no URL until
-/// something serves it, which is the desktop app's business.
+/// A published folder has no URL until something serves it; deploying it is
+/// the desktop app's business.
 #[derive(Debug, Serialize)]
 pub struct PublishResponse {
+    /// Also inside `deploy`, and kept here on purpose: `{ url, job }` is what
+    /// the editor's own type says (`common/types.ts`) and what the Node server
+    /// answers, so both servers reply in the same shape.
     pub url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deploy: Option<crate::actions::Deployed>,
 }
 
 /// Publish a website
@@ -112,7 +117,32 @@ async fn publish_website(
 
     publish::publish(&state.data_path, &query.website_id, &files).await?;
 
-    Ok(Json(PublishResponse { url: None }))
+    // Deploying runs git over the network, on a thread of its own so a slow
+    // push does not freeze the server
+    let deploy = match &state.actions {
+        Some(actions) => {
+            let actions = actions.clone();
+            let website_id = query.website_id.clone();
+            match tokio::task::spawn_blocking(move || actions.deploy(&website_id)).await {
+                Ok(deployed) => deployed,
+                // The website is published either way; what failed is what
+                // sends it somewhere, and saying nothing about it would leave
+                // a user with a publication that looks like it worked
+                Err(e) => {
+                    tracing::warn!(
+                        "Deploying website {} did not finish: {}",
+                        query.website_id,
+                        e
+                    );
+                    None
+                }
+            }
+        }
+        None => None,
+    };
+
+    let url = deploy.as_ref().and_then(|deployed| deployed.url.clone());
+    Ok(Json(PublishResponse { url, deploy }))
 }
 
 /// Asset name out of the `src` sent by the editor

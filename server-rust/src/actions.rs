@@ -21,4 +21,61 @@ pub trait Actions: Send + Sync {
     /// exists. An error here does not fail the save, the website is on the
     /// disk either way.
     fn version(&self, website_id: &str, message: &str) -> Result<(), String>;
+
+    /// Deploy a website, right after its published files were written.
+    ///
+    /// None when there is nowhere to deploy to, which is how a local-only
+    /// website runs.
+    fn deploy(&self, website_id: &str) -> Option<Deployed> {
+        let _ = website_id;
+        None
+    }
+}
+
+/// What deploying a website led to, as the editor is told it
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Deployed {
+    /// Whether a forge took the website to build and serve it
+    pub published: bool,
+
+    /// Where the website is served, once its forge has an address to give
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+
+    /// Where the build can be watched
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ci_url: Option<String>,
+
+    /// Where the user sets a domain of their own
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub settings_url: Option<String>,
+
+    /// What to tell the user
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub message: Option<String>,
+
+    /// What the program said, for whoever wants to read it
+    ///
+    /// Kept apart from the message: a user reads one sentence they can act on,
+    /// and the words of git or of a forge program are there underneath for the
+    /// times when that sentence is not enough.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub details: Option<String>,
+
+    /// Whether what is being told is a failure
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub error: bool,
+
+    /// Anything else the app has to say, relayed as it came
+    ///
+    /// Naming the fields above is what keeps the editor and the server from
+    /// disagreeing on a key. This one is so that saying something new does not
+    /// mean it is dropped on the way.
+    #[serde(flatten)]
+    pub more: serde_json::Map<String, serde_json::Value>,
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
 }

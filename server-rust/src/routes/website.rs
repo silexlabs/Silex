@@ -124,8 +124,24 @@ async fn update_website(
         // same wherever the website was edited.
         // A failure is reported and forgotten: the website is on the disk, and
         // answering an error would tell the editor that the work is lost.
-        if let Err(e) = actions.version(&query.website_id, "Update website data from Silex") {
-            tracing::warn!("Could not version website {}: {}", query.website_id, e);
+        // On a thread of its own: a save landing during a publication waits for
+        // it, and waiting there would hold a thread the server answers with.
+        let actions = actions.clone();
+        let website_id = query.website_id.clone();
+        let versioned = tokio::task::spawn_blocking(move || {
+            actions.version(&website_id, "Update website data from Silex")
+        })
+        .await;
+        match versioned {
+            Ok(Ok(())) => {}
+            Ok(Err(e)) => {
+                tracing::warn!("Could not version website {}: {}", query.website_id, e)
+            }
+            Err(e) => tracing::warn!(
+                "Versioning website {} did not finish: {}",
+                query.website_id,
+                e
+            ),
         }
     }
 
