@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '~/common/page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, DeployedData, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -334,7 +334,7 @@ export class PublicationManager {
       const websiteId = this.options.websiteId
       const storageId = storageUser.storage.connectorId
       // Use the publication API
-      const [url, job] = await publish({
+      const [url, job, deploy] = await publish({
         websiteId,
         hostingId: this.settings.connector.connectorId,
         storageId,
@@ -346,16 +346,24 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
+      this.deployed = deploy ?? null
       if (job) {
         this.job = job
         this.status = jobStatusToPublicationStatus(this.job.status)
         this.trackProgress()
       } else {
         // No job to poll: the publication was over before the server answered,
-        // which is how Silex Desktop publishes to a local folder
-        this.status = PublicationStatus.STATUS_SUCCESS
-        this.editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: 'Publication success' })
-        this.dialog && this.dialog.displayPending(this.job, this.status)
+        // which is how Silex Desktop publishes. What it did with the website
+        // afterwards — sent it to a forge, or not — is in `deploy`.
+        const failed = deploy?.error === true
+        this.status = failed ? PublicationStatus.STATUS_ERROR : PublicationStatus.STATUS_SUCCESS
+        const message = deploy?.message ?? 'Publication success'
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: !failed, message })
+        if (failed) {
+          this.dialog && this.dialog.displayError(message, this.job, this.status)
+        } else {
+          this.dialog && this.dialog.displayPending(this.job, this.status)
+        }
       }
     } catch (e) {
       console.error('publish error', e)

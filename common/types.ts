@@ -47,7 +47,31 @@ export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
 // A server which publishes synchronously answers no job, and no url until something serves the files
-export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData }
+export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData, deploy?: DeployedData }
+
+/**
+ * What sending a website to its forge led to
+ *
+ * Answered by Silex Desktop, which versions the website and pushes it, then
+ * lets the forge build and serve it. The hosted version answers a `job` to poll
+ * instead.
+ */
+export type DeployedData = {
+  /** Whether a forge took the website to build and serve it */
+  published: boolean,
+  /** Where the website is served, once its forge has an address to give */
+  url?: string,
+  /** Where the build can be watched */
+  ciUrl?: string,
+  /** Where the user sets a domain of their own */
+  settingsUrl?: string,
+  /** What to tell the user */
+  message?: string,
+  /** What the program said, for whoever wants to read it */
+  details?: string,
+  /** Whether what is being told is a failure */
+  error?: boolean,
+}
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
@@ -132,6 +156,14 @@ export interface WebsiteSettings {
   'og:title'?: string,
   'og:description'?: string,
   'og:image'?: string,
+  /**
+   * Where the website is served once published
+   *
+   * Named by the user rather than worked out by Silex: a forge that serves
+   * pages does not always say which of its addresses belongs to which
+   * repository, and a domain of their own is never something to guess.
+   */
+  publishDomain?: string,
 }
 
 export interface Font {

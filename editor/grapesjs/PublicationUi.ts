@@ -208,6 +208,7 @@ export class PublicationUi {
         ${this.isPending(status) ? html`
           <progress></progress>
         ` : nothing}
+        ${this.renderDeployed()}
         ${job?.logs?.length > 0 && job.logs[0].length > 0 ? html`
           <details>
             <summary>Logs</summary>
@@ -312,6 +313,41 @@ export class PublicationUi {
     `
     }
   }
+  /**
+   * What the server did with the website once it was published
+   *
+   * Silex Desktop sends the website to its forge and answers what came of it:
+   * where the site is served, where the build can be watched, where the user
+   * sets an address of their own. Nothing is shown when there is nothing to
+   * show, which is how the hosted version publishes.
+   */
+  renderDeployed(): TemplateResult | typeof nothing {
+    const deployed = this.editor.PublicationManager?.deployed
+    if (!deployed) return nothing
+    const links: Array<[string, string | undefined]> = [
+      ['View your website', deployed.url],
+      ['Watch the build', deployed.ciUrl],
+      ['Address and domain', deployed.settingsUrl],
+    ]
+    const shown = links.filter(([, url]) => !!url)
+    return html`
+      ${deployed.message ? html`<p class="silex-help">${deployed.message}</p>` : nothing}
+      ${shown.length ? html`
+        <div class="buttons">
+          ${shown.map(([label, url]) => html`
+            <a class="silex-button silex-button--secondary" href=${url!} target="_blank">${label}</a>
+          `)}
+        </div>
+      ` : nothing}
+      ${deployed.details ? html`
+        <details>
+          <summary>Details</summary>
+          <pre style="max-width: 100%; font-size: x-small; white-space: pre-wrap;">${deployed.details}</pre>
+        </details>
+      ` : nothing}
+    `
+  }
+
   displayPending(job: PublicationJobData, status: PublicationStatus) {
     this.errorMessage = null
     this.renderDialog(job, status)
