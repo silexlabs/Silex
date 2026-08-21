@@ -166,12 +166,9 @@ export const storagePlugin = (editor: PublishableEditor) => {
     },
 
     async addToQueue(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
-      // Handle concurrent saving
-      if (lastPendingSaving && lastPendingSaving !== data) {
-        // Cancel previous saving
-      }
+      // Replacing it is what cancels the previous one: doStore only saves the
+      // data that is still the last one asked for
       lastPendingSaving = data
-      // Go ahaed and save
       return this.doStore(lastPendingSaving, options)
     },
 
