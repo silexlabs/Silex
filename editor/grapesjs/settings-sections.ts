@@ -216,6 +216,11 @@ export const defaultSections: SettingsSection[] = [{
           <p class="silex-help">Small image displayed in the browser's address bar and in tabs. The recommended size is 16×16 or 32×32 pixels. This can be a URL or a relative path.</p>
           <input type="text" name="favicon" .value=${live(settings.favicon || '')}/>
         </label>
+        <label class="silex-form__element">
+          <h3>Published address</h3>
+          <p class="silex-help">The address where this site is served once published, without <code>https://</code>. Leave it empty to use the address your forge gives you. Fill it in when you have a domain of your own: this is what Silex will publish to.</p>
+          <input type="text" name="publishDomain" placeholder="my-site.example.com" .value=${live(settings.publishDomain || '')}/>
+        </label>
       </div>
     </div>
   `,
