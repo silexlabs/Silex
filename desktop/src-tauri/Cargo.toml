@@ -51,8 +51,12 @@ sentry = { version = "0.35", features = ["tracing"] }
 # a real parser rather than a guess at where an escape sequence ends
 strip-ansi-escapes = "0.2"
 
-# Silex server as a library
+# Silex server as a library, with the editor compiled into it
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
+
+# The dashboard, compiled into the binary. The one the hosted Silex serves is
+# not this one, so the server crate has no reason to carry it
+rust-embed = "8"
 
 # Stop a whole process tree when an integration hangs: killing git alone leaves
 # the ssh it started behind
