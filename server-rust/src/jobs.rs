@@ -9,7 +9,7 @@
 
 //! Publications the editor follows, kept in memory
 //!
-//! Sending a website to a forge and waiting for it to build takes minutes, and
+//! Sending a website to its host and waiting for it to build takes minutes, and
 //! an HTTP request held open for that long is one a proxy or a laptop lid
 //! closes. So publishing answers straight away with a job, the editor asks
 //! about that job every couple of seconds, and whoever does the work says where
@@ -63,8 +63,8 @@ pub struct JobData {
     /// The words of the programs that failed, shown under "Errors"
     ///
     /// Kept apart from the message: a user reads one sentence they can act on,
-    /// and what git or a forge program really said is there underneath for the
-    /// times when that sentence is not enough.
+    /// and what the programs really said is there underneath for the times
+    /// when that sentence is not enough.
     pub errors: Vec<Vec<String>>,
 
     pub start_time: u64,
@@ -131,7 +131,7 @@ impl Jobs {
 /// One publication, as whoever does the work reports on it
 ///
 /// A job is ended once. Saying something after that is refused rather than
-/// applied: a forge answering late must not turn a publication the user was
+/// applied: an answer arriving late must not turn a publication the user was
 /// told had failed into a success.
 pub struct Job {
     job_id: String,
@@ -155,9 +155,9 @@ impl Job {
 
     /// Note a step of the publication, for whoever opens the logs
     ///
-    /// Written as it happens rather than at the end: a publication waits on a
-    /// forge for minutes, and a bar that moves without saying anything leaves
-    /// the user wondering whether it is doing something at all.
+    /// Written as it happens rather than at the end: a publication waits for
+    /// minutes, and a bar that moves without saying anything leaves the user
+    /// wondering whether it is doing something at all.
     pub fn step(&self, step: impl Into<String>) {
         let step = step.into();
         self.jobs.change(&self.job_id, |job| {
@@ -235,7 +235,7 @@ mod tests {
     }
 
     #[test]
-    fn what_a_forge_answers_late_does_not_undo_what_the_user_was_told() {
+    fn what_is_answered_late_does_not_undo_what_the_user_was_told() {
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
         job.failed("Codeberg did not start a build");

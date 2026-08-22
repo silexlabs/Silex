@@ -11,9 +11,9 @@
 
 use std::path::Path;
 
-use silex_server::{OptionsField, OptionsForm};
+use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
-use super::deploy::{silex_tag, Answer, Deploy, Prepared, Urls};
+use super::deploy::{silex_tag, Deploy, Prepared, Urls};
 use super::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::remote::Remote;
 use super::run::run;
@@ -25,10 +25,6 @@ impl Deploy for Hut {
         "hut"
     }
 
-    fn display_name(&self) -> &'static str {
-        "SourceHut"
-    }
-
     /// hut lists the sites of a user and nothing ties one of them to a
     /// repository, so the address is asked rather than guessed: publishing to
     /// the wrong site of one's own would overwrite another website
@@ -36,7 +32,7 @@ impl Deploy for Hut {
         Some(OptionsForm {
             title: "SourceHut Pages".to_string(),
             fields: vec![OptionsField {
-                name: "websiteUrl".to_string(),
+                name: WEBSITE_URL.to_string(),
                 r#type: "url".to_string(),
                 label: "Website address".to_string(),
                 value: None,
@@ -54,43 +50,46 @@ impl Deploy for Hut {
         &["version"]
     }
 
-    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String> {
-        let Some(remote) = Remote::of(site) else {
-            return Ok(Answer::No);
-        };
-        if !is_sourcehut(&remote.host) {
-            return Ok(Answer::No);
-        }
+    fn keeps(&self, site: &Path) -> bool {
+        Remote::of(site).is_some_and(|remote| is_sourcehut(&remote.host))
+    }
 
+    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Result<Option<Urls>, String> {
         // Listing the sites is what proves the user set hut up. Without a
-        // config hut says so and stops, which is a no rather than a failure.
+        // config hut says so and stops, which is nobody signed in rather than
+        // a failure.
         if let Err(e) = run(cli, site, &["pages", "list"]) {
             if never_set_up(&e) {
-                return Ok(Answer::NotSignedIn);
+                return Ok(None);
             }
             return Err(e);
         }
 
-        Ok(Answer::Yes(Urls {
+        let remote = Remote::of(site).ok_or("Silex could not read the remote of this website")?;
+
+        Ok(Some(Urls {
             // Only what the user named. pages.sr.ht ties no site to a
             // repository, so a site hut lists is a site of theirs, not this
             // one's.
-            site: website_url.map(String::from),
+            site: options.named(WEBSITE_URL).map(String::from),
             ci: Some(format!("https://builds.sr.ht/~{}", remote.owner)),
             settings: Some("https://pages.sr.ht".to_string()),
         }))
     }
 
-    fn deploy(&self, _cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Prepared, String> {
-        // git is the one that reads it, and it is the git the user allowed
-        let remote = super::git::remote_url(site)
-            .and_then(|url| Remote::parse(&url))
-            .ok_or("No remote to publish to")?;
+    fn deploy(
+        &self,
+        _cli: &Path,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Prepared, String> {
+        let remote = Remote::of(site).ok_or("No remote to publish to")?;
         // `hut pages publish` is given a domain, where the user named an
         // address: what stands before the first slash is the site it belongs
         // to. Naming none leaves the manifest with where pages.sr.ht puts a
         // user who never published.
-        let site_host = website_url
+        let site_host = options
+            .named(WEBSITE_URL)
             .and_then(Remote::host_of)
             .unwrap_or_else(|| default_site(&remote));
 
@@ -103,12 +102,12 @@ impl Deploy for Hut {
                 .replace("{site_host}", &site_host)
                 .replace("{repo}", &remote.repo),
         )?;
-        super::git::version(site, "Publish website")?;
+        silex_server::version(site, "Publish website")?;
 
         // builds.sr.ht would start on any push, so the manifest only lets a
         // Silex tag through: saving a website is not publishing it
         let tag = silex_tag();
-        super::git::tag(site, &tag)?;
+        silex_server::tag(site, &tag)?;
         // No `build`: hut lists the builds of an account without saying which
         // repository or which push each came from, so the one this publication
         // started cannot be told from anybody else's. The user is sent to
@@ -141,7 +140,6 @@ fn clone_url(remote: &Remote) -> String {
     format!("https://{}/~{}/{}", remote.host, remote.owner, remote.repo)
 }
 
-
 /// Where pages.sr.ht publishes a user by default, which the build manifest has
 /// to name before there is anything to list
 fn default_site(remote: &Remote) -> String {
@@ -153,12 +151,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn names_the_site_pages_serves_a_user_at() {
-        let remote = Remote::parse("git@git.sr.ht:~alex/mysite").unwrap();
-        assert_eq!(default_site(&remote), "alex.srht.site");
-    }
-
-    #[test]
     fn the_manifest_clones_over_https_without_a_token() {
         let remote = Remote::parse("https://oauth2:secret@git.sr.ht/~alex/mysite.git").unwrap();
         let manifest = include_str!("pipelines/sourcehut.build.yml")
@@ -166,6 +158,7 @@ mod tests {
             .replace("{site_host}", &default_site(&remote))
             .replace("{repo}", &remote.repo);
         assert!(manifest.contains("- https://git.sr.ht/~alex/mysite"), "{}", manifest);
+        assert!(manifest.contains("site: alex.srht.site"), "where pages.sr.ht serves this user: {}", manifest);
         assert!(!manifest.contains("secret"), "the manifest is committed: {}", manifest);
         assert!(manifest.contains("image: alpine/latest"), "the stable Alpine: {}", manifest);
         assert!(manifest.contains("refs/tags/_silex_*"), "only a Silex tag builds: {}", manifest);
@@ -180,7 +173,7 @@ mod tests {
         let [field] = &form.fields[..] else {
             panic!("one field, the address: {:?}", form.fields)
         };
-        assert_eq!(field.name, "websiteUrl");
+        assert_eq!(field.name, WEBSITE_URL);
         assert_eq!(field.r#type, "url");
         // Nothing ties a site of pages.sr.ht to a repository, and a wrong
         // guess would publish over another website of the same user
@@ -188,17 +181,7 @@ mod tests {
     }
 
     #[test]
-    fn the_manifest_publishes_to_the_site_the_address_belongs_to() {
-        // What `hut pages publish -d` takes is a domain, and the user named a
-        // URL
-        assert_eq!(
-            Remote::host_of("https://alex.example.com/").as_deref(),
-            Some("alex.example.com")
-        );
-    }
-
-    #[test]
-    fn a_hut_that_was_never_set_up_is_a_no_not_a_failure() {
+    fn a_hut_that_was_never_set_up_is_not_a_failure() {
         // What hut writes itself, before anything else, then exits
         assert!(never_set_up(
             "hut failed: Looks like hut's config file hasn't been set up yet.\nRun `hut init` to configure it."

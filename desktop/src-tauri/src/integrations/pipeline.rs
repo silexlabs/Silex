@@ -8,10 +8,6 @@
  */
 
 //! The build of a published website
-//!
-//! Mirrors what the SaaS writes (server/utils/buildPipeline.ts): build.json
-//! belongs to the user, build.sh is generated from it, and the pipeline file of
-//! the forge only ever runs `sh build.sh`.
 
 use std::path::Path;
 
@@ -34,18 +30,15 @@ pub enum BuildStep {
     Sh { value: String },
 }
 
+// The guard is for a public/ with no folder at all: the glob then stays literal
+// and cp would stop the build. Nothing is silenced, so that a copy failing for a
+// real reason stops the build instead of publishing a website without its
+// stylesheet.
+const COPY_PUBLIC_FOLDERS: &str = "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
+
 pub fn generate_build_sh(steps: &[BuildStep]) -> String {
-    // The folders are copied one by one, and only when they are there: a site
-    // without images has no assets folder, since git does not keep empty ones.
-    // Nothing else is silenced, so that a copy failing for a real reason stops
-    // the build instead of publishing a website without its stylesheet.
     let build_commands = format!(
-        "npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site\n\
-         for folder in css assets; do\n\
-         \t[ -d \"public/$folder\" ] || continue\n\
-         \tmkdir -p \"_site/$folder\"\n\
-         \tcp -R \"public/$folder/.\" \"_site/$folder/\"\n\
-         done"
+        "npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site\n{COPY_PUBLIC_FOLDERS}"
     );
     let lines: Vec<String> = steps
         .iter()
@@ -100,7 +93,7 @@ fn ignore_build_output(site: &Path) -> Result<(), String> {
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
-/// Write the pipeline file of the forge, unless the user took it over
+/// Write the pipeline file, unless the user took it over
 ///
 /// The marker means Silex owns the file; without it the file was customized
 /// and it keeps working untouched.
@@ -141,8 +134,7 @@ mod tests {
         // build rather than publishing a website without its stylesheet
         assert!(!built.contains("2>/dev/null"), "{}", built);
         assert!(!built.contains("|| true"), "{}", built);
-        // And a folder is copied into itself, never beside itself
-        assert!(built.contains(r#"cp -R "public/$folder/." "_site/$folder/""#), "{}", built);
+        assert!(built.contains(COPY_PUBLIC_FOLDERS), "{}", built);
 
         // What the user wrote in build.json is theirs and stays
         std::fs::write(site.join(BUILD_JSON), r#"[{"type":"sh","value":"npx -y pagefind"}]"#).unwrap();
@@ -153,6 +145,46 @@ mod tests {
         let build_sh = std::fs::read_to_string(site.join(BUILD_SH)).unwrap();
         assert!(build_sh.contains("npx -y pagefind"), "{}", build_sh);
         assert!(!build_sh.contains("eleventy"), "the step it no longer asks for: {}", build_sh);
+
+        let _ = std::fs::remove_dir_all(&site);
+    }
+
+    fn run_copy_step(site: &Path) {
+        let status = std::process::Command::new("sh")
+            .arg("-e")
+            .arg("-c")
+            .arg(COPY_PUBLIC_FOLDERS)
+            .current_dir(site)
+            .status()
+            .unwrap();
+        assert!(status.success(), "the copy step stopped the build: {:?}", status);
+    }
+
+    #[test]
+    fn every_folder_of_the_website_ends_up_in_the_built_site() {
+        let site = a_website("copy");
+        std::fs::create_dir_all(site.join("public/fonts")).unwrap();
+        std::fs::create_dir_all(site.join("public/img/icons")).unwrap();
+        std::fs::create_dir_all(site.join("_site")).unwrap();
+        std::fs::write(site.join("public/fonts/a.woff"), "font").unwrap();
+        std::fs::write(site.join("public/img/icons/b.svg"), "icon").unwrap();
+
+        run_copy_step(&site);
+
+        assert!(site.join("_site/fonts/a.woff").exists());
+        assert!(site.join("_site/img/icons/b.svg").exists());
+
+        let _ = std::fs::remove_dir_all(&site);
+    }
+
+    #[test]
+    fn a_website_with_no_folder_to_copy_still_gets_published() {
+        let site = a_website("copy-flat");
+        std::fs::create_dir_all(site.join("public")).unwrap();
+        std::fs::create_dir_all(site.join("_site")).unwrap();
+        std::fs::write(site.join("public/index.html"), "page").unwrap();
+
+        run_copy_step(&site);
 
         let _ = std::fs::remove_dir_all(&site);
     }

@@ -9,19 +9,12 @@
 
 //! What the server asks for, once it has written to the disk
 //!
-//! The server only ever touches files. Anything happening outside of its data
-//! path - running a program, versioning a website - is named here and left to
-//! whoever embeds the crate. Served alone, nobody listens and nothing happens.
+//! The server writes the files of a website and its history. Anything reaching
+//! further out - running a program, going on a network - is named here and left
+//! to whoever embeds the crate. Served alone, nobody listens and nothing happens.
 
 /// Actions the server asks its host application to perform
 pub trait Actions: Send + Sync {
-    /// Create a version of a website, right after it was saved.
-    ///
-    /// The save waits for it: a website is only answered for once its version
-    /// exists. An error here does not fail the save, the website is on the
-    /// disk either way.
-    fn version(&self, website_id: &str, message: &str) -> Result<(), String>;
-
     /// Deploy a website, right after its published files were written.
     ///
     /// `options` is what the editor sent with the publication, the address the
@@ -29,7 +22,7 @@ pub trait Actions: Send + Sync {
     /// website on the disk: publishing is not saving, and reading it back from
     /// a file would answer what the last save happened to hold.
     ///
-    /// `job` is what the editor follows. Sending a website to a forge and
+    /// `job` is what the editor follows. Sending a website to its host and
     /// waiting for it to build takes minutes, so the answer to the request left
     /// long ago: saying where the publication is, and above all how it ended,
     /// happens here. A job left open when this returns is ended by the server,
@@ -52,6 +45,9 @@ pub trait Actions: Send + Sync {
     ///
     /// Returns at once and answers nothing: sending reaches somebody else's
     /// network, and a save must not wait on that. Nothing is sent by default.
+    ///
+    /// Only upwards: what was pushed from elsewhere comes back through
+    /// `catch_up`, which a read waits for.
     fn sync(&self, website_id: &str) {
         let _ = website_id;
     }
@@ -69,6 +65,12 @@ pub trait Actions: Send + Sync {
     }
 }
 
+/// The key the address of a website is asked and kept under
+///
+/// Named here because it travels: the form asks for it, the editor keeps it,
+/// and the publication sends it back.
+pub const WEBSITE_URL: &str = "websiteUrl";
+
 /// What the editor sent along with a publication
 ///
 /// Only what the server hands over is named; the rest is kept as it came, for
@@ -78,7 +80,7 @@ pub trait Actions: Send + Sync {
 pub struct PublicationOptions {
     /// Where the user says their website is served
     ///
-    /// A forge that serves pages does not always say which of its addresses
+    /// A host that serves pages does not always say which of its addresses
     /// belongs to which repository, and a domain of one's own is never
     /// something to work out: it is asked of the user before publishing.
     pub website_url: Option<String>,
@@ -86,6 +88,23 @@ pub struct PublicationOptions {
     /// Anything else the editor sent, relayed as it came
     #[serde(flatten)]
     pub more: serde_json::Map<String, serde_json::Value>,
+}
+
+impl PublicationOptions {
+    /// What the user answered to the field of that name
+    ///
+    /// One way in for every field of an `OptionsForm`, wherever it landed:
+    /// the address has a place of its own here, the rest arrives in `more`.
+    ///
+    /// A field the user cleared comes back as an empty string, which is read
+    /// as nobody having answered rather than as an answer made of nothing.
+    pub fn named(&self, name: &str) -> Option<&str> {
+        let answered = match name {
+            WEBSITE_URL => self.website_url.as_deref(),
+            _ => self.more.get(name).and_then(serde_json::Value::as_str),
+        };
+        answered.map(str::trim).filter(|answer| !answer.is_empty())
+    }
 }
 
 /// Where a website is served, as far as its host application knows
@@ -109,9 +128,9 @@ pub struct Hosting {
 
 /// A form the editor shows before publishing
 ///
-/// The programs of the forges do not all know where a website is served: some
-/// answer its address, others have no way to tie a repository to a site. What
-/// they cannot say is asked of the user, and kept with the website.
+/// Not every host says where a website is served: some answer its address,
+/// others have no way to tie a repository to a site. What they cannot say is
+/// asked of the user, and kept with the website.
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OptionsForm {

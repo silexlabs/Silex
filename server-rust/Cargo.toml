@@ -26,6 +26,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Time/dates
 chrono = { version = "0.4", features = ["serde"] }
 
+# Versioning websites, without a git program on the machine
+git2 = { version = "0.21.0", default-features = false }
+
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 mime_guess = "2"
@@ -36,3 +39,7 @@ rust-embed = { version = "8", optional = true }
 [features]
 default = []
 embed-frontend = ["rust-embed"]
+
+[dev-dependencies]
+# Calling the router in tests without opening a socket
+tower = { version = "0.5", features = ["util"] }

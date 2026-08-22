@@ -18,13 +18,17 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
+use silex_server::PublicationOptions;
 
-use deploy::{Answer, Deploy};
+use deploy::Deploy;
+use programs::candidates;
 
 pub mod deploy;
 pub mod git;
+pub mod programs;
 mod glab;
 mod hut;
 pub mod pipeline;
@@ -32,147 +36,6 @@ pub mod remote;
 mod run;
 mod tea;
 
-/// Every place this program could be, the likeliest first
-///
-/// An app started from a desktop launcher does not get the PATH of a shell, so
-/// finding nothing in it proves nothing: a `glab` installed by Homebrew lives
-/// in a folder such an app never hears about. Several are answered rather than
-/// one, because a file being there does not mean it runs: a broken install
-/// first in the PATH would otherwise hide a working one further down.
-pub(crate) fn candidates(name: &str) -> Vec<PathBuf> {
-    let mut found: Vec<PathBuf> = Vec::new();
-    let mut keep = |path: PathBuf| {
-        if path.is_file() && !found.contains(&path) {
-            found.push(path);
-        }
-    };
-
-    if let Ok(path) = which::which(name) {
-        keep(path);
-    }
-    for folder in login_shell_path() {
-        keep(folder.join(name));
-    }
-    for path in known_paths(name) {
-        keep(path);
-    }
-    found
-}
-
-/// The folders the shell of the user puts in its PATH
-///
-/// A program installed by nvm, volta, fnm, asdf or mise lives in a folder only
-/// their shell knows about, and an app started from a desktop launcher never
-/// hears of it. Asking the shell is one question, where guessing is a list of
-/// folders that is never finished.
-#[cfg(not(target_os = "windows"))]
-fn login_shell_path() -> Vec<PathBuf> {
-    // What the shell writes back is surrounded by whatever a talkative startup
-    // file prints, so the line to read is marked
-    const MARKER: &str = "__silex_path__";
-
-    let Some(shell) = std::env::var_os("SHELL").map(PathBuf::from) else {
-        return Vec::new();
-    };
-    if !shell.is_file() {
-        return Vec::new();
-    }
-
-    // -l so that it reads the files a version manager is set up in, -i because
-    // most of them are set up in the interactive ones. Reading nothing back is
-    // an answer like any other: the folders below are still looked at.
-    let asked = format!("echo {}$PATH", MARKER);
-    let Ok(said) = run::run(&shell, &std::env::temp_dir(), &["-lic", &asked]) else {
-        return Vec::new();
-    };
-    said.lines()
-        .rev()
-        .find_map(|line| line.trim().strip_prefix(MARKER))
-        .map(|path| {
-            path.split(':')
-                .filter(|folder| !folder.is_empty())
-                .map(PathBuf::from)
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-#[cfg(target_os = "windows")]
-fn login_shell_path() -> Vec<PathBuf> {
-    Vec::new()
-}
-
-/// Where programs are usually installed
-#[cfg(target_os = "windows")]
-fn known_paths(name: &str) -> Vec<PathBuf> {
-    let mut installs = Vec::new();
-
-    // Read the folder rather than hard coding C:\Program Files: it is
-    // translated on some installs, and can live on another drive
-    for variable in ["ProgramFiles", "ProgramFiles(x86)"] {
-        if let Some(folder) = std::env::var_os(variable) {
-            installs.push(PathBuf::from(folder));
-        }
-    }
-    // What an installer does when installing "for me only", which is what
-    // happens without administrator rights
-    if let Some(folder) = std::env::var_os("LOCALAPPDATA") {
-        installs.push(PathBuf::from(folder).join("Programs"));
-    }
-
-    // An installer writes an .exe, npm and scoop write a .cmd shim, and some
-    // write a .bat. Looking for the .exe alone misses most of what a user
-    // installs themselves.
-    installs
-        .iter()
-        // Git puts in cmd the programs meant to be called from the outside and
-        // in bin the bare ones; both exist, and which one is there varies
-        .flat_map(|install| {
-            [
-                install.join(name).join("cmd"),
-                install.join(name).join("bin"),
-                install.clone(),
-            ]
-        })
-        .flat_map(|folder| {
-            ["exe", "cmd", "bat"]
-                .iter()
-                .map(|extension| folder.join(format!("{}.{}", name, extension)))
-                .collect::<Vec<_>>()
-        })
-        .collect()
-}
-
-#[cfg(not(target_os = "windows"))]
-fn known_paths(name: &str) -> Vec<PathBuf> {
-    [
-        "/usr/bin",
-        "/usr/local/bin",
-        "/usr/local/sbin",
-        // Homebrew, on apple silicon and on intel
-        "/opt/homebrew/bin",
-        "/opt/homebrew/sbin",
-        "/opt/local/bin",
-        // Where Ubuntu puts what it installs as a snap, which is how glab
-        // itself is distributed there
-        "/snap/bin",
-        // Flatpak, installed for everybody
-        "/var/lib/flatpak/exports/bin",
-    ]
-    .iter()
-    .map(|folder| PathBuf::from(folder).join(name))
-    .chain(std::env::var_os("HOME").into_iter().flat_map(|home| {
-        let home = PathBuf::from(home);
-        [
-            // What a user installs for themselves
-            home.join(".local/bin").join(name),
-            home.join(".local/share/flatpak/exports/bin").join(name),
-            home.join(".bun/bin").join(name),
-            home.join(".cargo/bin").join(name),
-        ]
-    }))
-    .collect()
-}
 
 /// What is known of one integration
 ///
@@ -237,133 +100,94 @@ impl Serialize for Integrations {
     }
 }
 
-/// The integrations that provide `deploy`, asked in this order
-fn deploy_providers() -> [&'static dyn Deploy; 3] {
+/// The integrations Silex knows
+fn integrations() -> [&'static dyn Deploy; 3] {
     [&glab::Glab, &tea::Tea, &hut::Hut]
 }
 
-/// Who answers for a website, and how far they can go
-pub enum Resolved {
-    /// Nobody Silex knows recognises this website: it is versioned and sent all
-    /// the same, and building it is up to whoever hosts it
-    Nobody,
-    /// One of them recognises it, but the user is not signed in to that forge
-    NotSignedIn(&'static dyn Deploy, PathBuf),
-    /// One of them speaks for it, and said what it knows
-    SignedIn(&'static dyn Deploy, PathBuf, deploy::Urls),
-}
+/// What Silex says when no integration answers for a website
+///
+/// Silex only puts a website online where it knows how: it writes the files a
+/// build needs, names the version, and follows what happens. Somewhere it does
+/// not know, it would push and then have nothing true to say.
+pub const NOBODY_TO_PUBLISH_WITH: &str = "Silex does not know how to publish this website. It publishes to Codeberg, GitLab and SourceHut, and needs the command line of one of them installed and signed in.";
 
-/// A website that left for its forge, and what to ask its forge about the build
+/// A website that left, and what to ask about the build
 pub struct Publishing {
     pub provider: &'static dyn Deploy,
     pub cli: PathBuf,
     pub prepared: deploy::Prepared,
-    /// What the forge knows of this website, when the user is signed in to it
+    /// What the host knows of this website, when the user is signed in to it
     pub urls: Option<deploy::Urls>,
 }
 
-impl Resolved {
-    /// The integration to publish with, when there is one, and what it knows
-    ///
-    /// No urls when the user is not signed in: the forge builds what it is
-    /// pushed either way, Silex just has no way to say where that lands.
-    pub fn into_parts(self) -> Option<(&'static dyn Deploy, PathBuf, Option<deploy::Urls>)> {
-        match self {
-            Resolved::Nobody => None,
-            Resolved::NotSignedIn(provider, cli) => Some((provider, cli, None)),
-            Resolved::SignedIn(provider, cli, urls) => Some((provider, cli, Some(urls))),
-        }
-    }
-}
-
 impl Integrations {
-    /// Resolve `deploy` for a website: the first integration that provides it
-    /// and answers for this one
-    ///
-    /// An integration that cannot tell is an error rather than a no: taking it
-    /// for one would publish the website as if it had no forge at all.
-    ///
-    /// An integration that recognises the website but has nobody signed in is
-    /// answered as such, so that publishing can still save and send it while
-    /// saying what is missing.
-    ///
-    /// `website_url` is the address the user named, which the editor sends with
-    /// the publication. None when nobody is publishing: the editor is then
-    /// asking who serves this website, and it knows what it saved itself.
-    pub fn resolve_deploy(
-        &self,
-        site: &Path,
-        website_url: Option<&str>,
-    ) -> Result<Resolved, String> {
-        let mut recognized = None;
-        for provider in deploy_providers() {
-            let Some(cli) = self.program(provider.program()) else {
-                continue;
-            };
-            match provider.urls(&cli, site, website_url)? {
-                Answer::Yes(urls) => return Ok(Resolved::SignedIn(provider, cli, urls)),
-                // Kept, but a signed-in integration further down the list still
-                // wins: a website can be on a host two of them know
-                Answer::NotSignedIn => recognized = recognized.or(Some((provider, cli))),
-                Answer::No => {}
-            }
-        }
-        Ok(match recognized {
-            Some((provider, cli)) => Resolved::NotSignedIn(provider, cli),
-            None => Resolved::Nobody,
+    /// The first integration installed here that answers for this website, and
+    /// the program it runs
+    pub fn answering_for(&self, site: &Path) -> Option<(&'static dyn Deploy, PathBuf)> {
+        integrations().into_iter().find_map(|integration| {
+            let cli = self.program(integration.program())?;
+            integration.keeps(site).then_some((integration, cli))
         })
     }
 
-    /// Prepare a website for its forge and send it
+    /// Who answers for this website, and what they know of it
+    pub fn resolve_deploy(
+        &self,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Option<(&'static dyn Deploy, PathBuf, Option<deploy::Urls>)>, String> {
+        let Some((integration, cli)) = self.answering_for(site) else {
+            return Ok(None);
+        };
+        let urls = integration.urls(&cli, site, options)?;
+        Ok(Some((integration, cli, urls)))
+    }
+
+    /// Prepare a website for its host and send it
     ///
-    /// None when nobody recognises the website: it is versioned and sent as it
-    /// is, and building it is up to whoever hosts it.
-    ///
-    /// `say` is told each step as it starts, for whoever is waiting on it.
+    /// `host` is where the website is kept, as the user knows it, and `say` is
+    /// told each step as it starts, for whoever is waiting on it.
     pub fn publish(
         &self,
         site: &Path,
-        website_url: Option<&str>,
+        host: &str,
+        options: &PublicationOptions,
         say: &dyn Fn(String),
-    ) -> Result<Option<Publishing>, String> {
-        // Said before rather than after: finding out which forge this is means
-        // asking every program on this computer that knows one, and that is
-        // the longest silence of a publication.
-        say("Looking for the forge of your website".to_string());
-        let Some((provider, cli, urls)) =
-            self.resolve_deploy(site, website_url)?.into_parts()
-        else {
-            say("Writing the files that build your website".to_string());
-            pipeline::ensure_build_files(site)?;
-            say("Saving a version of your website".to_string());
-            git::version(site, "Publish website")?;
-            say("Sending it to your forge".to_string());
-            // Still here rather than in an integration: no integration answers
-            // for a website whose forge Silex does not know
-            let git = git::Git::found().ok_or(
-                "Silex could not find git on this computer, and it is git that sends a website to its forge.",
-            )?;
-            git.push(site, None)?;
-            return Ok(None);
+    ) -> Result<Publishing, String> {
+        // Said before rather than after: finding out who answers means asking
+        // every program on this computer that could, and that is the longest
+        // silence of a publication.
+        say("Looking for where your website is kept".to_string());
+        let Some((provider, cli, urls)) = self.resolve_deploy(site, options)? else {
+            return Err(NOBODY_TO_PUBLISH_WITH.to_string());
         };
 
-        say(format!(
-            "Writing the files {} needs to build your website",
-            provider.display_name()
-        ));
-        let prepared = provider.deploy(&cli, site, website_url)?;
-        say(format!("Sending your website to {}", provider.display_name()));
-        provider.push(&cli, site, prepared.tag.as_deref())?;
-        Ok(Some(Publishing {
+        say(format!("Writing the files {} needs to build your website", host));
+        let prepared = provider.deploy(&cli, site, options)?;
+        say(format!("Sending your website to {}", host));
+        {
+            let sending = one_at_a_time(site);
+            let _sending = sending.lock().unwrap_or_else(|held| held.into_inner());
+            provider.push(&cli, site, prepared.tag.as_deref())?;
+        }
+        Ok(Publishing {
             provider,
             cli,
             prepared,
             urls,
-        }))
+        })
     }
 
-    /// No forge has to answer for it: nothing leaves the machine
+    /// Take in what was pushed to this website from somewhere else
+    ///
+    /// Only for a website an integration answers for, which is the rule
+    /// sending already follows: a website Silex would never push to is one it
+    /// has no business pulling from either.
     pub fn catch_up(&self, site: &Path) -> Result<(), String> {
+        if self.answering_for(site).is_none() {
+            return Ok(());
+        }
         let Some(git) = git::Git::found() else {
             return Ok(());
         };
@@ -375,9 +199,13 @@ impl Integrations {
     /// Nothing happens when nobody recognises it, which is not a failure but a
     /// website that stays on this computer
     pub fn sync(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
-        let Some((provider, cli, _)) = self.resolve_deploy(site, None)?.into_parts() else {
+        // Who answers is all this needs. Asking what they know of the website
+        // means a question over the network, which sending does not wait for.
+        let Some((provider, cli)) = self.answering_for(site) else {
             return Ok(());
         };
+        let sending = one_at_a_time(site);
+        let _sending = sending.lock().unwrap_or_else(|held| held.into_inner());
         provider.push(&cli, site, tag)
     }
 
@@ -402,6 +230,22 @@ impl Integrations {
     }
 }
 
+/// The lock that lets one push of this website happen at a time
+///
+/// A save and a publication both send the same website, and git refuses the
+/// second of two pushes racing for the same ref rather than queueing it. Which
+/// one goes first does not matter, only that they do not go together.
+fn one_at_a_time(site: &Path) -> Arc<Mutex<()>> {
+    static PUSHING: OnceLock<Mutex<BTreeMap<PathBuf, Arc<Mutex<()>>>>> = OnceLock::new();
+    PUSHING
+        .get_or_init(Default::default)
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .entry(site.to_path_buf())
+        .or_default()
+        .clone()
+}
+
 fn path(data_dir: &Path) -> PathBuf {
     data_dir.join("integrations.json")
 }
@@ -409,6 +253,41 @@ fn path(data_dir: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn two_pushes_of_one_website_wait_for_each_other() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        // A save and a publication both sending the same website: git refuses
+        // the second of two pushes racing for the same ref
+        let sending = Arc::new(AtomicUsize::new(0));
+        let together = Arc::new(AtomicUsize::new(0));
+        let pushing = |site: &Path| {
+            let lock = one_at_a_time(site);
+            let sending = sending.clone();
+            let together = together.clone();
+            let site = site.to_path_buf();
+            std::thread::spawn(move || {
+                let _held = lock.lock().unwrap_or_else(|held| held.into_inner());
+                if sending.fetch_add(1, Ordering::SeqCst) > 0 {
+                    together.fetch_add(1, Ordering::SeqCst);
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+                sending.fetch_sub(1, Ordering::SeqCst);
+                let _ = &site;
+            })
+        };
+
+        let one = Path::new("/tmp/silex-one-website");
+        let both: Vec<_> = (0..2).map(|_| pushing(one)).collect();
+        for thread in both {
+            thread.join().unwrap();
+        }
+        assert_eq!(together.load(Ordering::SeqCst), 0, "two pushes of one website went together");
+
+        // Two websites have nothing to wait for from each other
+        assert!(!Arc::ptr_eq(&one_at_a_time(one), &one_at_a_time(Path::new("/tmp/silex-another-website"))));
+    }
 
     #[test]
     fn keeps_what_a_version_that_knows_more_wrote() {
@@ -503,13 +382,13 @@ mod tests {
 ///
 /// Looking again costs a program started, and on macOS asking for a git that
 /// is not there pops the dialog offering to install the developer tools: an
-/// integration already looked for is left as it is, and the user says on the
-/// integrations screen when they install one.
+/// integration already looked for is left as it is.
 pub fn load(data_dir: &Path) -> Integrations {
+    let known_integrations = integrations();
     let mut integrations = read(data_dir);
     let mut changed = false;
 
-    for provider in deploy_providers() {
+    for provider in known_integrations {
         let id = provider.program();
         if integrations.has(id) {
             continue;
@@ -556,15 +435,15 @@ pub fn load(data_dir: &Path) -> Integrations {
 /// Only what was already found is asked. Looking again for what was *not* there
 /// is what must not happen at every start: on macOS, asking for a git that is
 /// not installed pops the dialog offering to install the developer tools.
-fn look_again(integrations: &mut Integrations) -> bool {
+fn look_again(known: &mut Integrations) -> bool {
     let mut changed = false;
-    let asked: Vec<(String, &'static [&'static str])> = deploy_providers()
+    let asked: Vec<(String, &'static [&'static str])> = integrations()
         .into_iter()
         .map(|provider| (provider.program().to_string(), provider.version_args()))
         .collect();
 
     for (id, version_args) in asked {
-        let Some(state) = integrations.known.get(&id) else {
+        let Some(state) = known.known.get(&id) else {
             continue;
         };
         // One the user turned off is left alone: starting a program somebody
@@ -581,7 +460,7 @@ fn look_again(integrations: &mut Integrations) -> bool {
         // every publication fail on a file that leads nowhere
         if !path.is_file() {
             tracing::info!("{} is no longer at {}", id, path.display());
-            let state = integrations.known.get_mut(&id).expect("just read");
+            let state = known.known.get_mut(&id).expect("just read");
             state.path = None;
             state.version = None;
             state.broken = false;
@@ -590,7 +469,7 @@ fn look_again(integrations: &mut Integrations) -> bool {
         }
 
         let answered = run::run(&path, &std::env::temp_dir(), version_args);
-        let state = integrations.known.get_mut(&id).expect("just read");
+        let state = known.known.get_mut(&id).expect("just read");
         match answered {
             Ok(said) => {
                 let version = run::readable(said.lines().next().unwrap_or_default()).trim().to_string();

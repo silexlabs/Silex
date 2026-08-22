@@ -9,11 +9,9 @@
 
 //! Running an external program
 //!
-//! Integrations are command line programs, and this is the only place in the
-//! app that starts one. Everything that makes running a program dangerous is
-//! handled here, once: no shell, an absolute program path, an explicit working
-//! directory, no way for the program to ask the user anything, a time limit,
-//! a bounded amount of output kept, and no secret in what comes back.
+//! What makes running a program dangerous is handled here, once: an explicit
+//! working directory, no way for the program to ask the user anything, a time
+//! limit, a bounded amount of output kept, and no secret in what comes back.
 
 use std::io::Read;
 use std::path::Path;
@@ -31,9 +29,18 @@ const LOCAL: Duration = Duration::from_secs(30);
 ///
 /// The first push carries every image and font the website has, over whatever
 /// connection the user is on. Thirty seconds is a failure waiting to happen;
-/// ten minutes means something is really stuck. Asking a forge a question stays
-/// on the short timer: a question that takes half a minute is not coming back.
+/// ten minutes means something is really stuck. Asking a question over the
+/// network stays on the short timer: one that takes half a minute is not
+/// coming back.
 const TRANSFER: Duration = Duration::from_secs(600);
+
+/// How long catching up with what was pushed elsewhere has
+///
+/// A website is read after this, and somebody is waiting in front of an editor
+/// that has not opened yet. A host that takes the connection and then says
+/// nothing would hold them there for the whole transfer timer, so this one is
+/// short: what it does not bring back arrives at the next opening.
+const CATCH_UP: Duration = Duration::from_secs(15);
 
 /// How long the output of a program is waited for once it exited
 ///
@@ -47,10 +54,8 @@ const MAX_OUTPUT: usize = 64 * 1024;
 
 /// Run a program and wait for what it has to say
 ///
-/// `program` is an absolute path: nothing is ever resolved through `PATH` at
-/// call time, that happens once when an integration is detected. `dir` is
-/// always explicit, so that a program never runs in the working directory of
-/// the app, which could be inside somebody else's repository.
+/// `dir` is always explicit, so that a program never runs in the working
+/// directory of the app, which could be inside somebody else's repository.
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
     said(program, args, run_within(program, dir, args, LOCAL)?)
 }
@@ -58,6 +63,11 @@ pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> 
 /// Run a program that sends the whole website somewhere
 pub fn run_transfer(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
     said(program, args, run_within(program, dir, args, TRANSFER)?)
+}
+
+/// Run a program that takes in what was pushed somewhere else
+pub fn run_catch_up(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+    said(program, args, run_within(program, dir, args, CATCH_UP)?)
 }
 
 /// The same, keeping what the program said even when it failed

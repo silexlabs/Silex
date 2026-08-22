@@ -14,6 +14,9 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+# One Silex at a time: the websites and their git repositories are one shared
+# directory, which two running apps cannot both write
+tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 base64 = "0.22"
@@ -50,7 +53,6 @@ strip-ansi-escapes = "0.2"
 
 # Silex server as a library
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
-git2 = { version = "0.21.0", default-features = false }
 
 # Stop a whole process tree when an integration hangs: killing git alone leaves
 # the ssh it started behind

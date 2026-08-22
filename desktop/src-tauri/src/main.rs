@@ -13,6 +13,7 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
@@ -24,7 +25,6 @@ use tauri_plugin_updater::UpdaterExt;
 mod actions;
 mod integrations;
 mod mcp;
-mod message;
 
 // ==================
 // Telemetry consent
@@ -224,6 +224,15 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     })
 }
 
+/// How long "Save & Quit" keeps the app running after the save is asked for
+///
+/// A save is not over when the editor sends it: the server writes the files,
+/// then hands the website to its integrations a few seconds later (`SENT_AFTER`
+/// in actions.rs). Quitting before that leaves the work on this computer only.
+/// Nothing here can see the end of that chain, so this is a wait long enough to
+/// cover it in the usual case.
+const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -239,10 +248,12 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
         .show(move |result| {
             if result {
                 let _ = app_handle.emit("menu-save", ());
-                // Give a moment for save, then close
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.set_title("Saving your work \u{2014} Silex");
+                }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_secs(2));
+                    std::thread::sleep(SAVE_AND_QUIT_WAIT);
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.destroy();
                     }
@@ -341,7 +352,7 @@ async fn start_server(
     let listener = match TcpListener::bind(addr).await {
         Ok(l) => l,
         Err(_) => {
-            // Port taken (another instance running) — bind to OS-assigned port
+            // The port belongs to another program on this machine
             let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
             TcpListener::bind(fallback).await.unwrap()
         }
@@ -443,6 +454,16 @@ fn main() {
         .init();
 
     tauri::Builder::default()
+        // Before every other plugin, as this one asks for: a second Silex would
+        // open a second server on the one directory of websites, and two git
+        // repositories in the one working copy of each.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())

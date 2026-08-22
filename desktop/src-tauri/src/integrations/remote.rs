@@ -13,16 +13,64 @@
 //! about a website rather than having Silex read it off a URL. Only the
 //! programs that cannot be asked read this.
 
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+use std::time::SystemTime;
+
 /// Host, owner and repository name of a git remote
+#[derive(Clone)]
 pub struct Remote {
     pub host: String,
     pub owner: String,
     pub repo: String,
 }
 
+/// What was read of a website, and what `.git/config` looked like then
+type Remembered = HashMap<PathBuf, (Option<(SystemTime, u64)>, Option<Remote>)>;
+
+fn remembered() -> &'static Mutex<Remembered> {
+    static REMEMBERED: OnceLock<Mutex<Remembered>> = OnceLock::new();
+    REMEMBERED.get_or_init(Mutex::default)
+}
+
 impl Remote {
     /// The remote of a website, asked by the integrations that work from one
-    pub fn of(site: &std::path::Path) -> Option<Remote> {
+    ///
+    /// Reading it starts a git, and one publication asks several times, so the
+    /// answer is kept against the file a remote is written in. The owner of a
+    /// website who runs `git remote add` in a terminal changes that file, and
+    /// the next question is read again rather than answered with a remembered
+    /// "this website has none". Its date alone would not do: a file system
+    /// that keeps dates to the second cannot tell that second apart.
+    pub fn of(site: &Path) -> Option<Remote> {
+        // A website with no repository has no such file, which is an answer
+        // like any other rather than a failure
+        let written = std::fs::metadata(site.join(".git/config"))
+            .ok()
+            .and_then(|file| Some((file.modified().ok()?, file.len())));
+
+        let known = remembered()
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .get(site)
+            .filter(|(when, _)| *when == written)
+            .map(|(_, read)| read.clone());
+        if let Some(known) = known {
+            return known;
+        }
+
+        // Read outside the lock: this starts a program, and a website nobody
+        // asked about should not wait for it
+        let read = Remote::read(site);
+        remembered()
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .insert(site.to_path_buf(), (written, read.clone()));
+        read
+    }
+
+    fn read(site: &Path) -> Option<Remote> {
         let url = super::git::remote_url(site)?;
         let read = Remote::parse(&url);
         if read.is_none() {
@@ -48,6 +96,14 @@ impl Remote {
             })
     }
 
+    /// A host without the ssh port it was given
+    pub(super) fn without_port(authority: &str) -> &str {
+        match authority.rsplit_once(':') {
+            Some((host, port)) if !host.is_empty() && !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => host,
+            _ => authority,
+        }
+    }
+
     /// Parse `https://host/owner/repo.git`, `git@host:owner/repo.git` and
     /// sourcehut's `~owner`
     pub fn parse(remote_url: &str) -> Option<Remote> {
@@ -65,7 +121,10 @@ impl Remote {
         } else if let Some(rest) = url.strip_prefix("ssh://") {
             let (authority, path) = rest.split_once('/')?;
             let host = authority.rsplit_once('@').map(|(_, h)| h).unwrap_or(authority);
-            format!("{} {}", host, path)
+            // An instance answering ssh somewhere other than 22 is the same
+            // host as the one an integration was signed in to, and the same one
+            // its pages are served from
+            format!("{} {}", Remote::without_port(host), path)
         } else if url.split_once(':').is_some_and(|(before, _)| !before.contains('/')) {
             // `git@host:owner/repo`, and the same without a user, which git
             // takes just as well
@@ -138,10 +197,15 @@ mod tests {
             ("https://user:token@gitlab.com/lexoyo/site.git", "gitlab.com", "lexoyo", "site"),
             ("git@codeberg.org:alex/site.git", "codeberg.org", "alex", "site"),
             ("git@git.sr.ht:~alex/site", "git.sr.ht", "alex", "site"),
-            ("ssh://alice@forge.example.com/team/site.git", "forge.example.com", "team", "site"),
+            ("ssh://alice@git.example.com/team/site.git", "git.example.com", "team", "site"),
             // git takes the scp form without a user just as well
             ("codeberg.org:alex/site.git", "codeberg.org", "alex", "site"),
             ("https://gitlab.com/group/subgroup/site.git", "gitlab.com", "group/subgroup", "site"),
+            // A Forgejo of one's own often answers ssh somewhere other than 22,
+            // and it is the same host the integration was signed in to
+            ("ssh://git@v15.next.forgejo.org:2150/lexoyo/site.git", "v15.next.forgejo.org", "lexoyo", "site"),
+            // A web port belongs to the address and stays
+            ("https://gitlab.example.com:8443/team/site.git", "gitlab.example.com:8443", "team", "site"),
         ] {
             let remote = Remote::parse(url).unwrap_or_else(|| panic!("could not parse {}", url));
             assert_eq!((remote.host.as_str(), remote.owner.as_str(), remote.repo.as_str()), (host, owner, repo), "{}", url);
@@ -149,9 +213,34 @@ mod tests {
     }
 
     #[test]
+    fn a_remote_added_from_a_terminal_is_seen() {
+        if crate::integrations::git::Git::found().is_none() {
+            return;
+        }
+
+        let site = std::env::temp_dir().join(format!("silex-remote-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&site);
+        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
+        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
+        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
+        let alone = "[core]\n\trepositoryformatversion = 0\n";
+        std::fs::write(site.join(".git/config"), alone).unwrap();
+
+        assert!(Remote::of(&site).is_none());
+
+        let added = format!("{}[remote \"origin\"]\n\turl = https://codeberg.org/alex/site.git\n", alone);
+        std::fs::write(site.join(".git/config"), added).unwrap();
+
+        let remote = Remote::of(&site).expect("a remote added after a first reading was not seen");
+        assert_eq!((remote.host.as_str(), remote.repo.as_str()), ("codeberg.org", "site"));
+
+        let _ = std::fs::remove_dir_all(&site);
+    }
+
+    #[test]
     fn reads_the_host_of_a_url() {
         assert_eq!(Remote::host_of("https://codeberg.org/x/y").as_deref(), Some("codeberg.org"));
-        assert_eq!(Remote::host_of("https://forge.example.com").as_deref(), Some("forge.example.com"));
+        assert_eq!(Remote::host_of("https://git.example.com").as_deref(), Some("git.example.com"));
         assert_eq!(Remote::host_of("git@git.sr.ht:~x/y").as_deref(), Some("git.sr.ht"));
     }
 
