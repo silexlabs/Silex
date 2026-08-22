@@ -13,10 +13,13 @@
 //! integration answers, and whether any does, is decided here: the server has
 //! no idea git exists, and git has no idea whether the user enabled it.
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
+
+use serde::Serialize;
+use tokio::sync::watch;
 
 use silex_server::{Hosting, Job, PublicationOptions};
 
@@ -71,11 +74,23 @@ impl Default for Patience {
 /// short enough that a user who just signed in sees it.
 const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 
-/// How long a website waits, after a save, before it is sent
+/// How long a website that is already on its way waits before it goes again
 ///
-/// Every save pushes the moment further: what is waited for is the author
-/// stopping.
+/// The first save of a burst leaves at once; this waits out the rest of the
+/// burst, so that one keystroke after another is not one push after another.
 const SENT_AFTER: Duration = Duration::from_secs(5);
+
+/// How long Silex leaves a send that broke down before trying it again
+///
+/// Only for what could work later. The last one is kept repeating, so a
+/// machine that stays off the network is tried once an hour rather than never
+/// again.
+const TRIED_AGAIN_AFTER: [Duration; 4] = [
+    Duration::from_secs(60),
+    Duration::from_secs(5 * 60),
+    Duration::from_secs(15 * 60),
+    Duration::from_secs(60 * 60),
+];
 
 /// The website the editor has open, shared with the Tauri state
 ///
@@ -83,6 +98,81 @@ const SENT_AFTER: Duration = Duration::from_secs(5);
 /// connector without naming a website, so the only way to answer about the
 /// right one is to know which one is open.
 pub type CurrentWebsiteId = Arc<Mutex<Option<String>>>;
+
+/// Where a website is on its way to the repository it is kept in
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sending {
+    pub state: State,
+    /// What the last attempt that failed said, until one works
+    ///
+    /// Apart from `state` on purpose: a save waiting its turn says nothing
+    /// about how the attempt before it went. Held in the state alone, the
+    /// error would leave the screen as soon as the user typed something, which
+    /// is when they are there to read it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_failure: Option<Failure>,
+}
+
+/// What is happening to a website right now
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum State {
+    /// A save is waiting its turn
+    Waiting,
+    Sending,
+    Sent,
+    Failed,
+}
+
+/// Why an attempt did not work
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Failure {
+    pub why: String,
+    /// Tells a break Silex will try again from one it will not
+    pub retrying: bool,
+}
+
+/// What becomes of the error a website carried, when it moves to a new state
+///
+/// Three answers and not two: an attempt that starts says nothing yet about
+/// the one before it, and must neither drop its error nor claim it as its own.
+enum LastFailure {
+    /// Leave what is there
+    Kept,
+    /// Something worked, so there is nothing left to explain
+    Cleared,
+    Told(Failure),
+}
+use LastFailure::{Cleared, Kept, Told};
+
+impl Sending {
+    fn at(state: State) -> Sending {
+        Sending {
+            state,
+            last_failure: None,
+        }
+    }
+
+    pub fn on_its_way(&self) -> bool {
+        matches!(self.state, State::Waiting | State::Sending)
+    }
+}
+
+/// Where every website is, as it changes
+///
+/// A watch and not a stream of events: what matters is where things stand, and
+/// whoever asks later has to be told without having had to listen all along.
+pub type Sendings = watch::Receiver<BTreeMap<String, Sending>>;
+
+/// Told by the editor once it has finished saving, whether or not it had
+/// anything to save
+///
+/// A count and not a flag: what waits on this needs to know that one more save
+/// has happened since it started waiting, never that any ever did.
+pub type Saves = watch::Sender<u64>;
+pub type Saved = watch::Receiver<u64>;
 
 pub struct SilexActions {
     /// Directory holding one sub directory per website
@@ -117,13 +207,21 @@ impl SilexActions {
                     })
                 },
                 sent_after: SENT_AFTER,
-                waiting: Mutex::new(HashMap::new()),
+                tried_again_after: TRIED_AGAIN_AFTER.to_vec(),
+                queue: Mutex::new(HashMap::new()),
+                wake: Condvar::new(),
+                state: watch::Sender::new(BTreeMap::new()),
             }),
             data_path,
             integrations,
             current_website_id,
             what_hosts_it: Mutex::new(None),
         }
+    }
+
+    /// Follow where the websites are on their way to their repository
+    pub fn sending(&self) -> Sendings {
+        self.syncer.state.subscribe()
     }
 
     fn site_path(&self, website_id: &str) -> Option<PathBuf> {
@@ -143,67 +241,214 @@ fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     canonical.starts_with(&data_path).then_some(canonical)
 }
 
-/// Sends websites to their host, once their author has stopped saving them
+/// Sends websites to their host, and remembers how that went
 struct Syncer {
     syncs: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
     sent_after: Duration,
-    /// The websites a save asked to send, and the moment their wait is over
+    tried_again_after: Vec<Duration>,
+    /// The websites a thread is looking after, and what is left to do
     ///
-    /// An entry lives for as long as the thread looking after it, which keeps
-    /// that to one thread per website.
-    waiting: Mutex<HashMap<String, Instant>>,
+    /// An entry lives for as long as that thread, which keeps it to one thread
+    /// per website.
+    queue: Mutex<HashMap<String, Queued>>,
+    /// Wakes the thread of a website whose turn a save moved closer
+    wake: Condvar,
+    state: watch::Sender<BTreeMap<String, Sending>>,
+}
+
+/// What is left to do about a website
+struct Queued {
+    /// When the next attempt is due
+    due: Instant,
+    /// A save landed since the attempt in flight started, so it does not carry
+    /// it and another one is needed
+    again: bool,
 }
 
 impl Syncer {
     fn sync(self: &Arc<Self>, website_id: &str) {
-        let leaves_at = Instant::now() + self.sent_after;
         let looked_after = {
-            let mut waiting = self.waiting.lock().unwrap_or_else(|held| held.into_inner());
-            waiting.insert(website_id.to_string(), leaves_at).is_some()
+            let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+            match queue.get_mut(website_id) {
+                Some(queued) => {
+                    queued.again = true;
+                    queued.due = Instant::now() + self.sent_after;
+                    true
+                }
+                None => {
+                    queue.insert(
+                        website_id.to_string(),
+                        Queued {
+                            due: Instant::now(),
+                            again: true,
+                        },
+                    );
+                    false
+                }
+            }
         };
+        self.queues(website_id);
+
         if looked_after {
+            self.wake.notify_all();
             return;
         }
 
         let syncer = self.clone();
         let website_id = website_id.to_string();
         std::thread::spawn(move || {
-            syncer.wait_and_send(&website_id);
+            syncer.sends(&website_id);
         });
     }
 
-    /// Wait out the saves, send, and start over if more came in meanwhile
-    fn wait_and_send(&self, website_id: &str) {
+    /// Send this website, and again for as long as there is a reason to
+    ///
+    /// The first save leaves at once, and the ones that land in the time it
+    /// takes leave together at the end of it: waiting out every save left the
+    /// most common one, a single change, sitting on this computer for five
+    /// seconds.
+    fn sends(&self, website_id: &str) {
+        let mut broke_down = 0;
         loop {
-            let Some(leaves_at) = self.leaves_at(website_id) else {
+            if !self.waits_for_its_turn(website_id) || !self.takes(website_id) {
                 return;
+            }
+            self.publishes(website_id, State::Sending, Kept);
+
+            let (state, failure, tried_again) = match (self.syncs)(website_id) {
+                Ok(()) => {
+                    broke_down = 0;
+                    (State::Sent, Cleared, None)
+                }
+                Err(why) => {
+                    tracing::warn!("Could not send website {}: {}", website_id, why);
+                    let retrying = worth_another_try(&why);
+                    let after = retrying.then(|| {
+                        let after = self.tried_again_after
+                            [broke_down.min(self.tried_again_after.len() - 1)];
+                        broke_down += 1;
+                        after
+                    });
+                    (State::Failed, Told(Failure { why, retrying }), after)
+                }
             };
-            if let Some(left) = leaves_at.checked_duration_since(Instant::now()) {
-                std::thread::sleep(left);
-                continue;
-            }
 
-            if let Err(e) = (self.syncs)(website_id) {
-                tracing::warn!("Could not send website {}: {}", website_id, e);
+            {
+                let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+                let Some(queued) = queue.get_mut(website_id) else {
+                    self.publishes(website_id, state, failure);
+                    return;
+                };
+                match tried_again {
+                    Some(after) => {
+                        queued.due = Instant::now() + after;
+                        queued.again = true;
+                    }
+                    None => queued.due = Instant::now() + self.sent_after,
+                }
             }
-
-            // A save that landed while it was being sent is one this push did
-            // not carry, so the wait starts over
-            let mut waiting = self.waiting.lock().unwrap_or_else(|held| held.into_inner());
-            if waiting.get(website_id) == Some(&leaves_at) {
-                waiting.remove(website_id);
-                return;
-            }
+            self.publishes(website_id, state, failure);
         }
     }
 
-    fn leaves_at(&self, website_id: &str) -> Option<Instant> {
-        self.waiting
-            .lock()
-            .unwrap_or_else(|held| held.into_inner())
-            .get(website_id)
-            .copied()
+    /// Sleep until this website is due, waking if a save moves its turn closer
+    ///
+    /// False when nothing is left to do for it.
+    fn waits_for_its_turn(&self, website_id: &str) -> bool {
+        let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+        loop {
+            let Some(queued) = queue.get(website_id) else {
+                return false;
+            };
+            let Some(left) = queued.due.checked_duration_since(Instant::now()) else {
+                return true;
+            };
+            queue = self
+                .wake
+                .wait_timeout(queue, left)
+                .unwrap_or_else(|held| held.into_inner())
+                .0;
+        }
     }
+
+    /// Whether the attempt about to start has anything to carry
+    ///
+    /// It carries every save that landed before it. Once a whole wait goes by
+    /// with none, the website stops being looked after and the save after that
+    /// leaves at once again.
+    fn takes(&self, website_id: &str) -> bool {
+        let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+        if let Some(queued) = queue.get_mut(website_id) {
+            if queued.again {
+                queued.again = false;
+                return true;
+            }
+        }
+        queue.remove(website_id);
+        false
+    }
+
+    /// Say a save is waiting, unless one is being sent right now
+    fn queues(&self, website_id: &str) {
+        self.state
+            .send_if_modified(|websites| match websites.get_mut(website_id) {
+                Some(website) if website.on_its_way() => false,
+                Some(website) => {
+                    website.state = State::Waiting;
+                    true
+                }
+                None => {
+                    websites.insert(website_id.to_string(), Sending::at(State::Waiting));
+                    true
+                }
+            });
+    }
+
+    /// Move a website to a state, and say what became of the error it carried
+    fn publishes(&self, website_id: &str, state: State, failure: LastFailure) {
+        self.state.send_modify(|websites| {
+            let website = websites
+                .entry(website_id.to_string())
+                .or_insert(Sending::at(state));
+            website.state = state;
+            match failure {
+                Kept => {}
+                Cleared => website.last_failure = None,
+                Told(failure) => website.last_failure = Some(failure),
+            }
+        });
+    }
+}
+
+/// Whether a send that broke down could work later, read from what git said
+///
+/// Anything unrecognised counts as permanent. A wrong password, a repository
+/// that is gone, a remote that moved on: trying those again would fail just the
+/// same, quietly, and the user would never learn what is in the way. Waiting
+/// for a network to come back is the one case where trying again is the answer.
+fn worth_another_try(why: &str) -> bool {
+    const BREAKS: [&str; 18] = [
+        "could not resolve host",
+        "temporary failure in name resolution",
+        "name or service not known",
+        "connection timed out",
+        "operation timed out",
+        "timed out after",
+        "connection refused",
+        "connection reset",
+        "network is unreachable",
+        "no route to host",
+        "failed to connect to",
+        "couldn't connect to server",
+        "the remote end hung up",
+        "early eof",
+        "broken pipe",
+        "http 5",
+        "returned error: 5",
+        "gateway time-out",
+    ];
+    let why = why.to_lowercase();
+    BREAKS.iter().any(|break_down| why.contains(break_down))
 }
 
 /// A website that left for its host, and what to ask about its build
@@ -222,6 +467,8 @@ struct Sent {
     /// Whether the user is signed in to that host, which is what lets Silex
     /// ask it anything at all
     signed_in: bool,
+    /// What the host had to warn about a website it serves
+    warning: Option<String>,
 }
 
 impl silex_server::Actions for SilexActions {
@@ -290,6 +537,7 @@ impl silex_server::Actions for SilexActions {
                     build_url: published.provider.watch(&urls, &published.prepared),
                     site_url: urls.site,
                     settings_url: urls.settings,
+                    warning: urls.warning,
                     provider: published.provider,
                     cli: published.cli,
                     host: host.clone(),
@@ -329,6 +577,17 @@ impl silex_server::Actions for SilexActions {
             }
             Ok(sent) => watch(job, &site, &sent, &files, Patience::default()),
         }
+    }
+
+    /// Where this website is kept, asked of the integration that answers for
+    /// it
+    ///
+    /// A listing asks this of every website, so the integration answers from
+    /// the folder alone and no program is run.
+    fn repo_url(&self, website_id: &str) -> Option<String> {
+        let site = self.site_path(website_id)?;
+        let (integration, _) = self.integrations.answering_for(&site)?;
+        integration.repo(&site)
     }
 
     /// Where the website being edited is kept, named to the editor, with what
@@ -477,17 +736,23 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
         match build {
             Build::Built => {
                 job.step("The build finished");
+                let seen_by_everyone = |website: &str| {
+                    let buttons = [
+                        Button::primary("View your website", website),
+                        Button::secondary(
+                            "Address and domain",
+                            sent.settings_url.as_deref().unwrap_or_default(),
+                        ),
+                    ];
+                    match sent.warning.as_deref() {
+                        Some(warning) => {
+                            message::explained("Your website is now live!", warning, &buttons)
+                        }
+                        None => message::told("Your website is now live!", &buttons),
+                    }
+                };
                 return job.succeeded(match sent.site_url.as_deref() {
-                    Some(website) => message::told(
-                        "Your website is now live!",
-                        &[
-                            Button::primary("View your website", website),
-                            Button::secondary(
-                                "Address and domain",
-                                sent.settings_url.as_deref().unwrap_or_default(),
-                            ),
-                        ],
-                    ),
+                    Some(website) => seen_by_everyone(website),
                     None => message::explained(
                         "Your website is built.",
                         &format!("Silex does not know the address {} serves it at.", host),
@@ -583,20 +848,32 @@ fn nothing_built_it(
 #[cfg(test)]
 mod sending {
     use super::*;
+    use std::sync::atomic::{AtomicUsize, Ordering};
 
     /// A syncer that notes what it was asked to send instead of sending it
     fn watching(sent_after: Duration) -> (Arc<Syncer>, Arc<Mutex<Vec<String>>>) {
         let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let noted = sent.clone();
-        let syncer = Arc::new(Syncer {
-            syncs: Box::new(move |website_id| {
-                noted.lock().unwrap().push(website_id.to_string());
-                Ok(())
-            }),
-            sent_after,
-            waiting: Mutex::new(HashMap::new()),
+        let syncer = answering(sent_after, move |website_id| {
+            noted.lock().unwrap().push(website_id.to_string());
+            Ok(())
         });
         (syncer, sent)
+    }
+
+    /// A syncer that answers what the test wants, and gives up quickly
+    fn answering(
+        sent_after: Duration,
+        syncs: impl Fn(&str) -> Result<(), String> + Send + Sync + 'static,
+    ) -> Arc<Syncer> {
+        Arc::new(Syncer {
+            syncs: Box::new(syncs),
+            sent_after,
+            tried_again_after: vec![Duration::from_millis(40)],
+            queue: Mutex::new(HashMap::new()),
+            wake: Condvar::new(),
+            state: watch::Sender::new(BTreeMap::new()),
+        })
     }
 
     fn pushed(noted: &Arc<Mutex<Vec<String>>>) -> Vec<String> {
@@ -616,26 +893,173 @@ mod sending {
     }
 
     #[test]
-    fn a_website_leaves_once_the_saves_stop_rather_than_at_every_save() {
+    fn a_lone_save_leaves_at_once_rather_than_waiting_for_more() {
         let (syncer, sent) = watching(Duration::from_millis(80));
 
-        // Typing in the editor: one save after another, none of them far enough
-        // apart to be the last
+        syncer.sync("site");
+        std::thread::sleep(Duration::from_millis(20));
+        assert_eq!(
+            pushed(&sent),
+            ["site"],
+            "waited for saves that were never coming"
+        );
+
+        std::thread::sleep(Duration::from_millis(200));
+        assert_eq!(pushed(&sent), ["site"], "went twice for one save");
+
+        // The wait went by with nothing in it, so the next save is a first one
+        syncer.sync("site");
+        std::thread::sleep(Duration::from_millis(20));
+        assert_eq!(pushed(&sent), ["site", "site"], "the pause did not count");
+    }
+
+    #[test]
+    fn saves_that_land_while_a_website_is_leaving_go_together_after_it() {
+        let (syncer, sent) = watching(Duration::from_millis(80));
+
+        // Typing in the editor: one save after another, close enough together
+        // that only the first is on its own
         for _ in 0..5 {
             syncer.sync("site");
             std::thread::sleep(Duration::from_millis(20));
         }
-        assert!(
-            pushed(&sent).is_empty(),
-            "sent while its author was still working"
-        );
+        assert_eq!(pushed(&sent), ["site"], "the first save waited its turn");
 
         assert!(
-            until(|| !pushed(&sent).is_empty()),
-            "never left once the saves stopped"
+            until(|| pushed(&sent).len() == 2),
+            "what was typed after the first push never left"
         );
-        std::thread::sleep(Duration::from_millis(120));
-        assert_eq!(pushed(&sent), ["site"], "one pause, one push");
+        std::thread::sleep(Duration::from_millis(200));
+        assert_eq!(
+            pushed(&sent),
+            ["site", "site"],
+            "one burst, one push at each end of it"
+        );
+    }
+
+    #[test]
+    fn a_break_in_the_network_is_tried_again_and_a_closed_door_is_not() {
+        let tries = Arc::new(AtomicUsize::new(0));
+        let counted = tries.clone();
+        let syncer = answering(Duration::from_millis(20), move |_| {
+            counted.fetch_add(1, Ordering::SeqCst);
+            Err("fatal: unable to access 'https://gitlab.com/a/b.git/': Could not resolve host: gitlab.com".to_string())
+        });
+        syncer.sync("site");
+        assert!(
+            until(|| tries.load(Ordering::SeqCst) >= 3),
+            "a network that came back would have found nobody trying"
+        );
+
+        let tries = Arc::new(AtomicUsize::new(0));
+        let counted = tries.clone();
+        let syncer = answering(Duration::from_millis(20), move |_| {
+            counted.fetch_add(1, Ordering::SeqCst);
+            Err("fatal: Authentication failed for 'https://gitlab.com/a/b.git/'".to_string())
+        });
+        syncer.sync("site");
+        assert!(until(|| tries.load(Ordering::SeqCst) == 1));
+        std::thread::sleep(Duration::from_millis(200));
+        assert_eq!(
+            tries.load(Ordering::SeqCst),
+            1,
+            "kept knocking on a door that stays shut"
+        );
+        assert!(
+            matches!(
+                sending(&syncer, "site"),
+                Some(Sending {
+                    state: State::Failed,
+                    last_failure: Some(Failure {
+                        retrying: false,
+                        ..
+                    }),
+                })
+            ),
+            "left nothing for the user to read"
+        );
+    }
+
+    #[test]
+    fn a_website_that_left_is_told_apart_from_one_still_on_its_way() {
+        let (syncer, _) = watching(Duration::from_millis(20));
+        assert_eq!(sending(&syncer, "site"), None);
+
+        syncer.sync("site");
+        assert!(until(|| state(&syncer, "site") == Some(State::Sent)));
+    }
+
+    /// A website that failed, then had a save land while it waited to try
+    /// again, says both: what it is doing now, and why the last try did not
+    /// work
+    #[test]
+    fn a_save_waiting_its_turn_does_not_hide_the_failure_before_it() {
+        let (syncer, _) = watching(Duration::from_millis(20));
+        syncer.state.send_modify(|websites| {
+            websites.insert(
+                "site".to_string(),
+                Sending {
+                    state: State::Failed,
+                    last_failure: Some(Failure {
+                        why: "no network".to_string(),
+                        retrying: true,
+                    }),
+                },
+            );
+        });
+
+        syncer.queues("site");
+
+        let website = sending(&syncer, "site").expect("website went missing");
+        assert_eq!(website.state, State::Waiting);
+        assert_eq!(
+            website.last_failure.map(|failure| failure.why),
+            Some("no network".to_string())
+        );
+    }
+
+    fn sending(syncer: &Arc<Syncer>, website_id: &str) -> Option<Sending> {
+        syncer.state.borrow().get(website_id).cloned()
+    }
+
+    fn state(syncer: &Arc<Syncer>, website_id: &str) -> Option<State> {
+        sending(syncer, website_id).map(|website| website.state)
+    }
+
+    #[test]
+    fn tells_what_can_work_later_from_what_never_will() {
+        for later in [
+            "fatal: unable to access 'https://gitlab.com/a/b.git/': Could not resolve host: gitlab.com",
+            "ssh: connect to host codeberg.org port 22: Connection timed out",
+            "ssh: connect to host git.sr.ht port 22: Network is unreachable",
+            "fatal: unable to access 'https://x/y.git/': Failed to connect to x port 443 after 130276 ms: Couldn't connect to server",
+            "fatal: unable to access 'https://x/y.git/': Operation timed out after 300000 milliseconds with 0 out of 0 bytes received",
+            "error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502",
+            "fatal: unable to access 'https://x/y.git/': The requested URL returned error: 503",
+            "fatal: the remote end hung up unexpectedly",
+            "error: RPC failed; curl 56 Recv failure: Connection reset by peer",
+            "fatal: early EOF",
+            "send-pack: unexpected disconnect while reading sideband packet: Broken pipe",
+            "ssh: connect to host codeberg.org port 22: Connection refused",
+            "fatal: unable to access 'https://x/y.git/': Could not resolve host: x, Temporary failure in name resolution",
+        ] {
+            assert!(worth_another_try(later), "given up on: {}", later);
+        }
+
+        for never in [
+            "fatal: Authentication failed for 'https://gitlab.com/a/b.git/'",
+            "remote: HTTP Basic: Access denied. The provided password or token is incorrect",
+            "git@github.com: Permission denied (publickey).",
+            "remote: Repository not found.",
+            "fatal: repository 'https://github.com/a/b.git/' not found",
+            "ERROR: The project you were looking for could not be found or you don't have permission to view it.",
+            "The repository this website is sent to has versions Silex does not have. git failed: ! refs/heads/main:refs/heads/main [rejected] (fetch first)",
+            "! HEAD:refs/heads/main [remote rejected] (pre-receive hook declined)",
+            "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+            "This website has no remote to publish to",
+        ] {
+            assert!(!worth_another_try(never), "kept trying: {}", never);
+        }
     }
 }
 
@@ -726,6 +1150,7 @@ mod publications {
             provider: host,
             cli: PathBuf::from("/nowhere"),
             host: "codeberg.org".to_string(),
+            warning: None,
             prepared: Prepared::default(),
             site_url: Some("https://alex.codeberg.page/site/".to_string()),
             settings_url: Some("https://codeberg.org/alex/site/settings".to_string()),
