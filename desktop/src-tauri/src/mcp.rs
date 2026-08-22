@@ -134,7 +134,12 @@ impl SilexMcp {
     /// Check that a project is open.
     fn require_project(&self) -> Result<(), String> {
         let state = self.app_handle.state::<AppState>();
-        if state.current_website_id.lock().unwrap().is_none() {
+        if state
+            .current_website_id
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .is_none()
+        {
             return Err(
                 "No project open. Use website(action: 'open') or website(action: 'create') first."
                     .into(),
@@ -166,7 +171,10 @@ impl SilexMcp {
 
         let id = self.eval_counter.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = oneshot::channel::<String>();
-        self.pending_evals.lock().unwrap().insert(id, tx);
+        self.pending_evals
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .insert(id, tx);
 
         let js_escaped =
             serde_json::to_string(js_code).map_err(|e| format!("Failed to escape JS: {}", e))?;
@@ -176,14 +184,20 @@ impl SilexMcp {
             .replace("__ID__", &id.to_string());
 
         window.eval(&wrapped).map_err(|e| {
-            self.pending_evals.lock().unwrap().remove(&id);
+            self.pending_evals
+                .lock()
+                .unwrap_or_else(|held| held.into_inner())
+                .remove(&id);
             format!("Failed to inject JS: {}", e)
         })?;
 
         let raw = tokio::time::timeout(std::time::Duration::from_secs(timeout_secs), rx)
             .await
             .map_err(|_| {
-                self.pending_evals.lock().unwrap().remove(&id);
+                self.pending_evals
+                    .lock()
+                    .unwrap_or_else(|held| held.into_inner())
+                    .remove(&id);
                 format!("Timeout waiting for JS result ({}s)", timeout_secs)
             })?
             .map_err(|_| {
@@ -704,7 +718,11 @@ pub async fn eval_callback(
     axum::extract::Path(id): axum::extract::Path<u64>,
     body: String,
 ) -> &'static str {
-    if let Some(tx) = pending.lock().unwrap().remove(&id) {
+    if let Some(tx) = pending
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .remove(&id)
+    {
         let _ = tx.send(body);
     }
     "ok"
