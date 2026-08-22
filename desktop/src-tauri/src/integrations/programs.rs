@@ -22,24 +22,31 @@ use super::run;
 /// in a folder such an app never hears about. Several are answered rather than
 /// one, because a file being there does not mean it runs: a broken install
 /// first in the PATH would otherwise hide a working one further down.
-pub(crate) fn candidates(name: &str) -> Vec<PathBuf> {
-    let mut found: Vec<PathBuf> = Vec::new();
-    let mut keep = |path: PathBuf| {
-        if path.is_file() && !found.contains(&path) {
-            found.push(path);
-        }
-    };
+/// Answered one at a time, and in the order they are worth trying: whoever
+/// asks stops at the first that runs, and asking the shell of the user costs
+/// half a second of somebody else's startup files. A program found in the PATH
+/// is the common case, and it is answered before that half second is spent.
+pub(crate) fn candidates(name: &str) -> impl Iterator<Item = PathBuf> + '_ {
+    let in_the_path = which::which(name).into_iter();
+    let told_by_the_shell = std::iter::once_with(move || {
+        login_shell_path()
+            .into_iter()
+            .map(move |folder| folder.join(name))
+    })
+    .flatten();
+    let guessed = std::iter::once_with(move || known_paths(name)).flatten();
 
-    if let Ok(path) = which::which(name) {
-        keep(path);
-    }
-    for folder in login_shell_path() {
-        keep(folder.join(name));
-    }
-    for path in known_paths(name) {
-        keep(path);
-    }
-    found
+    let mut already = Vec::new();
+    in_the_path
+        .chain(told_by_the_shell)
+        .chain(guessed)
+        .filter(move |path| {
+            if already.contains(path) || !path.is_file() {
+                return false;
+            }
+            already.push(path.clone());
+            true
+        })
 }
 
 /// The folders the shell of the user puts in its PATH

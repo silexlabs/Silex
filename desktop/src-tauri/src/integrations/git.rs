@@ -223,7 +223,7 @@ fn behind_remote(ran: &Ran) -> bool {
 /// same, quietly, and the user would never learn what is in the way. Waiting
 /// for a network to come back is the one case where trying again is the answer.
 pub fn worth_another_try(why: &str) -> bool {
-    const BREAKS: [&str; 18] = [
+    const BREAKS: [&str; 19] = [
         "could not resolve host",
         "temporary failure in name resolution",
         "name or service not known",
@@ -242,6 +242,10 @@ pub fn worth_another_try(why: &str) -> bool {
         "http 5",
         "returned error: 5",
         "gateway time-out",
+        // Silex's own words, when it stopped waiting for git: the network was
+        // slow rather than closed, which is the very case this ladder exists
+        // for
+        "took more than",
     ];
     let why = why.to_lowercase();
     BREAKS.iter().any(|break_down| why.contains(break_down))
@@ -299,7 +303,6 @@ mod tests {
         site
     }
 
-    #[test]
     /// Read line by line, a URL written across two lines came back cut at the
     /// first of them, and Silex went looking for a host that was not the one
     /// in the config
