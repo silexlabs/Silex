@@ -33,6 +33,9 @@ const CODEBERG_PAGES: &str = "codeberg.page";
 /// The key the pages domain is asked and kept under
 const PAGES_DOMAIN: &str = "pagesDomain";
 
+/// The key the label of the runner is asked and kept under
+const RUNNER_LABEL: &str = "runnerLabel";
+
 /// Codeberg names its runners itself, and a job asking for a label no runner
 /// has waits forever. Another instance names its own.
 ///
@@ -71,6 +74,17 @@ impl Deploy for Tea {
                     value: Some(CODEBERG_PAGES.to_string()),
                     help: Some(
                         "This is the domain that serves your pages. Codeberg serves them at codeberg.page. Another Forgejo serves them at a domain of its own."
+                            .to_string(),
+                    ),
+                    required: true,
+                },
+                OptionsField {
+                    name: RUNNER_LABEL.to_string(),
+                    r#type: "text".to_string(),
+                    label: "Runner label".to_string(),
+                    value: Some(CODEBERG_RUNNER.to_string()),
+                    help: Some(
+                        "This is the label the runners of your forge answer to. Codeberg names them codeberg-tiny. A Forgejo of your own may name them something else, and a build nothing answers for waits forever."
                             .to_string(),
                     ),
                     required: true,
@@ -146,7 +160,7 @@ impl Deploy for Tea {
             &include_str!("pipelines/forgejo-pages.yml")
                 .replace("{site_url}", &site_url(options))
                 .replace("{pages_domain}", pages_domain(options))
-                .replace("{runner}", CODEBERG_RUNNER),
+                .replace("{runner}", runner_label(options)),
         )?;
         silex_server::version(site, "Publish website")?;
 
@@ -229,12 +243,15 @@ fn build_of(
     // repository and the API answers a number of its own, so the user is
     // taken to the list of runs, where theirs is the first
     Ok(match listed[0]["status"].as_str().unwrap_or_default() {
+        // Nobody has taken this build yet, which on a forge whose runners
+        // answer to another label is where it stays
+        "waiting" => Build::Queued,
         "success" => Build::Built,
         "failure" | "cancelled" | "canceled" | "skipped" | "blocked" => Build::Failed {
             url: None,
             reason: None,
         },
-        // waiting, running, and whatever Forgejo adds next
+        // running, and whatever Forgejo adds next
         _ => Build::Running(None),
     })
 }
@@ -274,6 +291,11 @@ fn newest_run(listed: &[serde_json::Value]) -> Option<String> {
 /// The domain the pages of this instance are served at
 fn pages_domain(options: &PublicationOptions) -> &str {
     options.named(PAGES_DOMAIN).unwrap_or(CODEBERG_PAGES)
+}
+
+/// The label the runners of this forge answer to, as the user named it
+fn runner_label(options: &PublicationOptions) -> &str {
+    options.named(RUNNER_LABEL).unwrap_or(CODEBERG_RUNNER)
 }
 
 /// Where the workflow publishes to
@@ -430,7 +452,45 @@ mod tests {
         include_str!("pipelines/forgejo-pages.yml")
             .replace("{site_url}", &site_url(options))
             .replace("{pages_domain}", pages_domain(options))
-            .replace("{runner}", CODEBERG_RUNNER)
+            .replace("{runner}", runner_label(options))
+    }
+
+    /// A forge whose runners answer to a label of their own still gets a
+    /// workflow that runs: the label is asked of the user, like the domain
+    #[test]
+    fn the_workflow_names_the_runner_the_user_said_they_have() {
+        let mine = workflow(&answered(r#"{"runnerLabel": "ubuntu-latest"}"#));
+        assert!(mine.contains("runs-on: ubuntu-latest"), "{}", mine);
+
+        // Codeberg is what most users publish to, so its label is what the
+        // form offers before anybody answers
+        let untouched = workflow(&answered("{}"));
+        assert!(
+            untouched.contains("runs-on: codeberg-tiny"),
+            "{}",
+            untouched
+        );
+
+        // A field the user emptied is nobody having answered, not a workflow
+        // that runs on nothing
+        let cleared = workflow(&answered(r#"{"runnerLabel": "  "}"#));
+        assert!(cleared.contains("runs-on: codeberg-tiny"), "{}", cleared);
+    }
+
+    /// A build nobody has taken says so, instead of passing for one that runs
+    #[test]
+    fn a_build_waiting_for_a_runner_is_not_a_build_that_started() {
+        let queued = build_of(&EarlierBuild::Nothing, || {
+            Ok(vec![serde_json::json!({"id": 1, "status": "waiting"})])
+        })
+        .unwrap();
+        assert!(matches!(queued, Build::Queued));
+
+        let running = build_of(&EarlierBuild::Nothing, || {
+            Ok(vec![serde_json::json!({"id": 1, "status": "running"})])
+        })
+        .unwrap();
+        assert!(matches!(running, Build::Running(_)));
     }
 
     #[test]

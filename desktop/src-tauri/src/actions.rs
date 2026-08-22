@@ -681,6 +681,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     // nothing to show after a minute is one that will never build it.
     let started = Instant::now();
     let mut answered = false;
+    let mut queued = false;
     let mut could_not_ask: Option<String> = None;
     let running = loop {
         match ask() {
@@ -711,6 +712,16 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                 ))
             }
             Ok(Build::NotStarted) => answered = true,
+            // A build nobody has taken is not a build that started: leaving
+            // the loop here would follow it until the fifteen minutes a real
+            // build is given, for a job that is not moving at all
+            Ok(Build::Queued) => {
+                if !queued {
+                    queued = true;
+                    job.step("The build is waiting for a runner");
+                }
+                answered = true;
+            }
             Ok(build) => break build,
             // A host that could not be asked this time is asked again:
             // one refused request is not an answer about a build
@@ -720,6 +731,16 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             }
         }
         if started.elapsed() >= patience.a_build_starts_within {
+            if queued {
+                return job.failed(message::explained(
+                    &format!("No runner on {} took the build of your website.", host),
+                    "A build is taken by a runner answering to the label the workflow names. Check what the runners of this forge answer to, write it in the publication options, and publish again.",
+                    &[
+                        Button::secondary("See the build", &build_url),
+                        Button::secondary(FILES_ON_THIS_COMPUTER, files),
+                    ],
+                ));
+            }
             // Never once got an answer: what is known is that the host
             // could not be asked, not that it built nothing
             let never_answered = if answered { None } else { could_not_ask };
@@ -779,6 +800,9 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                 ))
             }
             Build::Running(ref url) => job.progress(building(url.as_deref().unwrap_or(&build_url))),
+            // A build that went back to waiting was taken and given up, which
+            // a runner coming back picks up again
+            Build::Queued => job.progress(building(&build_url)),
             // A host that stops answering about a build it was answering
             // about is one to ask again, not one to draw a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}

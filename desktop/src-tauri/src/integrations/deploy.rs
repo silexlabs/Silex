@@ -53,6 +53,13 @@ pub enum Build {
     /// The host has nothing about this publication yet
     NotStarted,
 
+    /// A build exists but no runner has taken it
+    ///
+    /// A queue a forge works through in seconds, or a build waiting for a
+    /// runner that is never coming: the workflow names a label, and nothing on
+    /// that forge answers to it. Only time tells them apart.
+    Queued,
+
     /// A build is running, and where it can be watched
     Running(Option<String>),
 
