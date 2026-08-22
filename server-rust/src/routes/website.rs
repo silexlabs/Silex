@@ -114,10 +114,8 @@ async fn read_or_list_website(
             Ok(Json(data).into_response())
         }
         None => {
-            let mut websites = storage::list_websites(&state.data_path).await?;
-            for website in &mut websites {
-                where_it_is_kept(&state, &mut website.repo_url, &website.website_id);
-            }
+            let websites = storage::list_websites(&state.data_path).await?;
+            let websites = where_they_are_kept(&state, websites).await?;
             Ok(Json(websites).into_response())
         }
     }
@@ -246,25 +244,40 @@ async fn get_meta(
     State(state): State<AppState>,
     Query(query): Query<WebsiteQuery>,
 ) -> Result<Json<WebsiteMeta>> {
-    let mut meta = storage::get_website_meta(&state.data_path, &query.website_id).await?;
-    where_it_is_kept(&state, &mut meta.repo_url, &query.website_id);
+    let meta = storage::get_website_meta(&state.data_path, &query.website_id).await?;
+    let mut named = where_they_are_kept(&state, vec![meta]).await?;
 
-    Ok(Json(meta))
+    Ok(Json(named.remove(0)))
 }
 
-/// Let the host application name the repository a website lives in
+/// Let the host application name the repository these websites live in
 ///
 /// The server only knows the folder it writes, and says so; the application
-/// around it may know that the website also lives on a forge. Left as it was
+/// around it may know that a website also lives on a forge. Left as it was
 /// when nobody knows better, so a website kept on this computer alone still
 /// answers where its files are.
-fn where_it_is_kept(state: &AppState, repo_url: &mut Option<String>, website_id: &WebsiteId) {
-    let Some(actions) = &state.actions else {
-        return;
+///
+/// On a thread of its own: answering starts a program for every website of the
+/// list, and a listing of a dozen would hold the thread the server answers
+/// with for as long as they all take.
+async fn where_they_are_kept(
+    state: &AppState,
+    mut websites: Vec<WebsiteMeta>,
+) -> Result<Vec<WebsiteMeta>> {
+    let Some(actions) = state.actions.clone() else {
+        return Ok(websites);
     };
-    if let Some(kept) = actions.repo_url(website_id.as_str()) {
-        *repo_url = Some(kept);
-    }
+    websites = tokio::task::spawn_blocking(move || {
+        for website in &mut websites {
+            if let Some(kept) = actions.repo_url(website.website_id.as_str()) {
+                website.repo_url = Some(kept);
+            }
+        }
+        websites
+    })
+    .await
+    .map_err(|held| Error::Io(std::io::Error::other(held)))?;
+    Ok(websites)
 }
 
 /// Write the metadata of a website
