@@ -211,7 +211,9 @@ impl Deploy for Tea {
 
         // Asked after the repository, which answers what is wrong when nothing
         // builds at all
-        build_of(&prepared.before, || runs(cli, site))
+        build_of(&prepared.before, prepared.tag.as_deref(), || {
+            runs(cli, site)
+        })
     }
 }
 
@@ -222,6 +224,7 @@ impl Deploy for Tea {
 /// and the user is sent to look rather than promised a website.
 fn build_of(
     before: &EarlierBuild,
+    tag: Option<&str>,
     runs: impl FnOnce() -> Result<Vec<serde_json::Value>, String>,
 ) -> Result<Build, String> {
     let mark = match before {
@@ -231,6 +234,20 @@ fn build_of(
     };
 
     let listed = runs()?;
+
+    // The run of this publication is the one built from the tag it pushed.
+    // Taking the newest instead would call somebody else's push ours: a
+    // colleague publishing at the same minute, or a run the repository starts
+    // on a timer.
+    let ours = match tag {
+        Some(tag) => listed
+            .iter()
+            .find(|run| run["prettyref"].as_str() == Some(tag)),
+        None => listed.first(),
+    };
+    let Some(ours) = ours else {
+        return Ok(Build::NotStarted);
+    };
 
     let Some(newest) = newest_run(&listed) else {
         return Ok(Build::NotStarted);
@@ -242,7 +259,7 @@ fn build_of(
     // No address for the run itself: Forgejo numbers a run inside its
     // repository and the API answers a number of its own, so the user is
     // taken to the list of runs, where theirs is the first
-    Ok(match listed[0]["status"].as_str().unwrap_or_default() {
+    Ok(match ours["status"].as_str().unwrap_or_default() {
         // Nobody has taken this build yet, which on a forge whose runners
         // answer to another label is where it stays
         "waiting" => Build::Queued,
@@ -477,16 +494,34 @@ mod tests {
         assert!(cleared.contains("runs-on: codeberg-tiny"), "{}", cleared);
     }
 
+    /// Somebody else pushing at the same minute must not be announced as this
+    /// publication going live
+    #[test]
+    fn the_build_of_this_publication_is_the_one_built_from_its_tag() {
+        let both = || {
+            Ok(vec![
+                serde_json::json!({"id": 9, "prettyref": "main", "status": "success"}),
+                serde_json::json!({"id": 8, "prettyref": "_silex_1", "status": "waiting"}),
+            ])
+        };
+
+        let ours = build_of(&EarlierBuild::Nothing, Some("_silex_1"), both).unwrap();
+        assert!(
+            matches!(ours, Build::Queued),
+            "took the newest run for ours"
+        );
+    }
+
     /// A build nobody has taken says so, instead of passing for one that runs
     #[test]
     fn a_build_waiting_for_a_runner_is_not_a_build_that_started() {
-        let queued = build_of(&EarlierBuild::Nothing, || {
+        let queued = build_of(&EarlierBuild::Nothing, None, || {
             Ok(vec![serde_json::json!({"id": 1, "status": "waiting"})])
         })
         .unwrap();
         assert!(matches!(queued, Build::Queued));
 
-        let running = build_of(&EarlierBuild::Nothing, || {
+        let running = build_of(&EarlierBuild::Nothing, None, || {
             Ok(vec![serde_json::json!({"id": 1, "status": "running"})])
         })
         .unwrap();
@@ -683,22 +718,22 @@ mod tests {
         // That run finished, but nothing says it is not the last
         // publication's: calling it built would tell the user their website is
         // online when nothing of theirs was ever built
-        let unread = build_of(&EarlierBuild::CouldNotAsk, || {
+        let unread = build_of(&EarlierBuild::CouldNotAsk, None, || {
             panic!("the runs tell nothing apart here, so they are not asked")
         });
         assert!(matches!(unread.unwrap(), Build::Unknown));
 
         // The same run, known to be newer than what was there, and then known
         // to be what was there
-        let ours = build_of(&EarlierBuild::Run("841".to_string()), successful);
+        let ours = build_of(&EarlierBuild::Run("841".to_string()), None, successful);
         assert!(matches!(ours.unwrap(), Build::Built));
-        let theirs = build_of(&EarlierBuild::Run("842".to_string()), successful);
+        let theirs = build_of(&EarlierBuild::Run("842".to_string()), None, successful);
         assert!(matches!(theirs.unwrap(), Build::NotStarted));
 
-        let first = build_of(&EarlierBuild::Nothing, successful);
+        let first = build_of(&EarlierBuild::Nothing, None, successful);
         assert!(matches!(first.unwrap(), Build::Built));
         assert!(matches!(
-            build_of(&EarlierBuild::Nothing, || Ok(Vec::new())).unwrap(),
+            build_of(&EarlierBuild::Nothing, None, || Ok(Vec::new())).unwrap(),
             Build::NotStarted
         ));
     }
