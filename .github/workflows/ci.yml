@@ -44,6 +44,15 @@ jobs:
             [ -f "$f" ] || { echo "::error::missing build output $f"; exit 1; }
           done
 
+      # silex-desktop embeds dist/client at compile time, and this is the only
+      # job that builds it. Handed over rather than built twice.
+      - name: Keep the editor for the rust job
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor
+          path: dist/client
+          retention-days: 1
+
       - name: Lint
         run: pnpm lint
 
@@ -55,8 +64,20 @@ jobs:
     name: rust (server-rust + desktop)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # silex-desktop compiles the editor and the dashboard into the binary, so
+    # this job needs both: the dashboard is a submodule, the editor is built by
+    # the job above.
+    needs: js
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Take the editor built above
+        uses: actions/download-artifact@v4
+        with:
+          name: editor
+          path: dist/client
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
