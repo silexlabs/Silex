@@ -18,9 +18,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   pages:
-    # The label Codeberg gives its runners, assumed of every Forgejo. On
-    # another one, remove the silexOverwrite line above and name the label
-    # yours answers to.
+    # What the publication options asked for. Codeberg names its runners
+    # codeberg-tiny, and another Forgejo names its own however it likes.
     runs-on: {runner}
     # What the runner asked for above is lent for, and a build still going
     # after that is stuck rather than slow.

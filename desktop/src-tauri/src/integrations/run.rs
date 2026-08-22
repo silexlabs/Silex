@@ -63,11 +63,6 @@ pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> 
     said(program, args, run_within(program, dir, args, LOCAL)?)
 }
 
-/// Run a program that sends the whole website somewhere
-pub fn run_transfer(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, args, run_within(program, dir, args, TRANSFER)?)
-}
-
 /// Run a program that takes in what was pushed somewhere else
 pub fn run_sync_pull(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
     said(program, args, run_within(program, dir, args, SYNC_PULL)?)
