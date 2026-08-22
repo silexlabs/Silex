@@ -50,7 +50,9 @@ pub fn version(site: &Path, message: &str) -> Result<Versioned, String> {
         // What `git add -A` does, in the two halves libgit2 keeps apart: what is
         // already followed and may have been changed or deleted, then what is new
         index.update_all(["*"], None).map_err(said)?;
-        index.add_all(["*"], IndexAddOption::DEFAULT, None).map_err(said)?;
+        index
+            .add_all(["*"], IndexAddOption::DEFAULT, None)
+            .map_err(said)?;
         index.write().map_err(said)?;
 
         let tree_id = index.write_tree().map_err(said)?;
@@ -254,9 +256,18 @@ mod tests {
 
         version(&site, "one").unwrap();
         let repo = open(&site).unwrap();
-        let tree = repo.head().unwrap().peel_to_commit().unwrap().tree().unwrap();
+        let tree = repo
+            .head()
+            .unwrap()
+            .peel_to_commit()
+            .unwrap()
+            .tree()
+            .unwrap();
         assert!(tree.get_name("index.html").is_some());
-        assert!(tree.get_name("_site").is_none(), "the built site is not part of the website");
+        assert!(
+            tree.get_name("_site").is_none(),
+            "the built site is not part of the website"
+        );
 
         let _ = std::fs::remove_dir_all(&site);
     }
@@ -267,7 +278,9 @@ mod tests {
         let answer = patiently(|| {
             tries.set(tries.get() + 1);
             if tries.get() < 3 {
-                Err(Refused::Locked("held, and this says nothing of it".to_string()))
+                Err(Refused::Locked(
+                    "held, and this says nothing of it".to_string(),
+                ))
             } else {
                 Ok(tries.get())
             }
@@ -282,7 +295,11 @@ mod tests {
             ))
         });
         assert!(refused.is_err());
-        assert_eq!(tries.get(), 1, "a failure that only sounds like a lock is not waited out");
+        assert_eq!(
+            tries.get(),
+            1,
+            "a failure that only sounds like a lock is not waited out"
+        );
     }
 
     #[test]

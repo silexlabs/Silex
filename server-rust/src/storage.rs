@@ -216,10 +216,7 @@ pub async fn read_website(data_path: &Path, website_id: &WebsiteId) -> Result<se
 }
 
 /// Create a website and return its id
-pub async fn create_website(
-    data_path: &Path,
-    meta: &WebsiteMetaFileContent,
-) -> Result<WebsiteId> {
+pub async fn create_website(data_path: &Path, meta: &WebsiteMetaFileContent) -> Result<WebsiteId> {
     let website_id = WebsiteId::fresh();
 
     fs::create_dir_all(assets_path(data_path, &website_id)?).await?;
@@ -240,7 +237,9 @@ pub async fn update_website(
     data: &serde_json::Value,
 ) -> Result<()> {
     let pages_folder = pages_folder_of(data)?.ok_or_else(|| {
-        Error::InvalidInput("Website data has no pagesFolder, cannot tell where to write its pages".to_string())
+        Error::InvalidInput(
+            "Website data has no pagesFolder, cannot tell where to write its pages".to_string(),
+        )
     })?;
 
     let website_path = website_path(data_path, website_id)?;
@@ -518,10 +517,7 @@ fn split_website_data(
     }
 
     website_object.insert("pages".to_string(), serde_json::json!(page_refs));
-    website_object.insert(
-        "pagesFolder".to_string(),
-        serde_json::json!(pages_folder),
-    );
+    website_object.insert("pagesFolder".to_string(), serde_json::json!(pages_folder));
 
     let website_content = serialize_json(&serde_json::Value::Object(website_object))?;
     files.push((WEBSITE_DATA_FILE.to_string(), website_content));
@@ -534,7 +530,8 @@ async fn merge_website_data(
     website_path: &Path,
     website_content: &str,
 ) -> Result<serde_json::Value> {
-    let mut parsed: serde_json::Value = parse_file(&website_path.join(WEBSITE_DATA_FILE), website_content)?;
+    let mut parsed: serde_json::Value =
+        parse_file(&website_path.join(WEBSITE_DATA_FILE), website_content)?;
 
     let pages = match parsed.get("pages") {
         Some(serde_json::Value::Array(pages)) if !pages.is_empty() => pages.clone(),
@@ -598,7 +595,11 @@ async fn merge_website_data(
 /// the user with nothing to look at.
 fn parse_file<T: serde::de::DeserializeOwned>(path: &Path, content: &str) -> Result<T> {
     serde_json::from_str(content).map_err(|e| {
-        Error::InvalidWebsite(format!("Could not read '{}'. This file of your website is damaged. {}", path.display(), e))
+        Error::InvalidWebsite(format!(
+            "Could not read '{}'. This file of your website is damaged. {}",
+            path.display(),
+            e
+        ))
     })
 }
 
@@ -687,12 +688,24 @@ mod tests {
             .await
             .unwrap_err();
 
-        assert!(refused.to_string().contains("not a folder of this website"), "{}", refused);
-        assert!(outside.join("important.json").is_file(), "a file outside the website is left alone");
+        assert!(
+            refused.to_string().contains("not a folder of this website"),
+            "{}",
+            refused
+        );
+        assert!(
+            outside.join("important.json").is_file(),
+            "a file outside the website is left alone"
+        );
 
         let normal = serde_json::json!({ "pages": [], "pagesFolder": "pages" });
-        update_website(&data_path, &website_id, &normal).await.unwrap();
-        assert!(data_path.join("a-website").join(WEBSITE_DATA_FILE).is_file());
+        update_website(&data_path, &website_id, &normal)
+            .await
+            .unwrap();
+        assert!(data_path
+            .join("a-website")
+            .join(WEBSITE_DATA_FILE)
+            .is_file());
 
         let _ = std::fs::remove_dir_all(&data_path);
     }
@@ -731,13 +744,24 @@ mod tests {
         let mut written = std::fs::read_to_string(&config).unwrap();
         written.push_str("[remote.origin]\n\turl = https://example.invalid/site.git\n");
         std::fs::write(&config, written).unwrap();
-        assert_eq!(remotes_of(&site), vec!["origin".to_string()], "the website has a remote to lose");
+        assert_eq!(
+            remotes_of(&site),
+            vec!["origin".to_string()],
+            "the website has a remote to lose"
+        );
 
         let copy_id = duplicate_website(&data_path, &website_id).await.unwrap();
         let copy = website_path(&data_path, &copy_id).unwrap();
 
-        assert!(remotes_of(&copy).is_empty(), "the copy is published nowhere yet");
-        assert_eq!(remotes_of(&site), vec!["origin".to_string()], "the website it was copied from keeps its own");
+        assert!(
+            remotes_of(&copy).is_empty(),
+            "the copy is published nowhere yet"
+        );
+        assert_eq!(
+            remotes_of(&site),
+            vec!["origin".to_string()],
+            "the website it was copied from keeps its own"
+        );
         assert!(copy.join(".git").is_dir(), "the copy keeps the history");
 
         let _ = std::fs::remove_dir_all(&data_path);
@@ -755,10 +779,7 @@ mod tests {
     #[test]
     fn two_writes_of_the_same_file_do_not_share_a_name() {
         let path = Path::new("/somewhere/website.json");
-        assert_ne!(
-            written_beside(path).unwrap(),
-            written_beside(path).unwrap()
-        );
+        assert_ne!(written_beside(path).unwrap(), written_beside(path).unwrap());
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -821,6 +842,9 @@ mod tests {
         };
         let written = serialize_json(&serde_json::to_value(&meta).unwrap()).unwrap();
 
-        assert_eq!(written, "{\n  \"imageUrl\": \"cover.png\",\n  \"name\": \"A website\"\n}");
+        assert_eq!(
+            written,
+            "{\n  \"imageUrl\": \"cover.png\",\n  \"name\": \"A website\"\n}"
+        );
     }
 }

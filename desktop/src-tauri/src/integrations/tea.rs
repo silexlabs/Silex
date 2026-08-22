@@ -243,7 +243,11 @@ fn build_of(
 /// A repository nothing ever built gets a sentence rather than an empty list,
 /// which is what a website being published for the first time answers.
 fn runs(cli: &Path, site: &Path) -> Result<Vec<serde_json::Value>, String> {
-    read_runs(&run(cli, site, &["actions", "runs", "list", "--limit", "5", "-o", "json"])?)
+    read_runs(&run(
+        cli,
+        site,
+        &["actions", "runs", "list", "--limit", "5", "-o", "json"],
+    )?)
 }
 
 fn read_runs(listed: &str) -> Result<Vec<serde_json::Value>, String> {
@@ -313,13 +317,17 @@ fn login_for(cli: &Path, site: &Path, host: &str) -> Result<Option<String>, Stri
     // answer that is a file on this machine. Only a login that was found is
     // kept: somebody signing in while Silex is open has to be seen.
     static KNOWN: Mutex<BTreeMap<String, String>> = Mutex::new(BTreeMap::new());
-    if let Some(login) = KNOWN.lock().unwrap_or_else(|held| held.into_inner()).get(host) {
+    if let Some(login) = KNOWN
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .get(host)
+    {
         return Ok(Some(login.clone()));
     }
 
     let logins = run(cli, site, &["logins", "list", "-o", "json"])?;
-    let logins: Vec<serde_json::Value> =
-        serde_json::from_str(&logins).map_err(|e| format!("Could not read the logins of tea: {}", e))?;
+    let logins: Vec<serde_json::Value> = serde_json::from_str(&logins)
+        .map_err(|e| format!("Could not read the logins of tea: {}", e))?;
     let login = login_named(&logins, host);
     if let Some(login) = &login {
         KNOWN
@@ -435,7 +443,10 @@ mod tests {
         assert!(!names_the_host(config, "git.sr.ht"));
         // A host named inside a value that is not one of the two keys says
         // nothing about a login
-        assert!(!names_the_host("logins:\n- name: github.com\n  url: https://codeberg.org\n", "github.com"));
+        assert!(!names_the_host(
+            "logins:\n- name: github.com\n  url: https://codeberg.org\n",
+            "github.com"
+        ));
         assert!(!names_the_host("", "codeberg.org"));
     }
 
@@ -446,7 +457,12 @@ mod tests {
         assert_eq!(read_runs("No workflow runs found").unwrap().len(), 0);
         assert_eq!(read_runs("").unwrap().len(), 0);
         assert_eq!(read_runs("[]").unwrap().len(), 0);
-        assert_eq!(read_runs(r#"[{"id": "6560402", "status": "waiting"}]"#).unwrap().len(), 1);
+        assert_eq!(
+            read_runs(r#"[{"id": "6560402", "status": "waiting"}]"#)
+                .unwrap()
+                .len(),
+            1
+        );
         assert!(read_runs("[{oops").is_err());
     }
 
@@ -462,12 +478,28 @@ mod tests {
             "{}",
             workflow
         );
-        assert!(workflow.contains("server: codeberg.page"), "the pages server should be named: {}", workflow);
-        assert!(workflow.contains("runs-on: codeberg-tiny"), "a runner Codeberg has, sized for the job: {}", workflow);
+        assert!(
+            workflow.contains("server: codeberg.page"),
+            "the pages server should be named: {}",
+            workflow
+        );
+        assert!(
+            workflow.contains("runs-on: codeberg-tiny"),
+            "a runner Codeberg has, sized for the job: {}",
+            workflow
+        );
         // Publishing again without Silex, and one build at a time
         assert!(workflow.contains("workflow_dispatch:"), "{}", workflow);
-        assert!(workflow.contains("cancel-in-progress: true"), "{}", workflow);
-        assert!(workflow.contains("- '_silex_*'"), "only a Silex tag publishes: {}", workflow);
+        assert!(
+            workflow.contains("cancel-in-progress: true"),
+            "{}",
+            workflow
+        );
+        assert!(
+            workflow.contains("- '_silex_*'"),
+            "only a Silex tag publishes: {}",
+            workflow
+        );
         // Every placeholder of ours is filled: once what the forge reads
         // itself is taken out, no brace is left
         let ours = workflow.replace("${{", "").replace("}}", "");
@@ -477,7 +509,11 @@ mod tests {
     #[test]
     fn the_domain_the_user_named_is_the_pages_server_of_the_workflow() {
         let elsewhere = workflow(&answered(r#"{"pagesDomain":"pages.example.org"}"#));
-        assert!(elsewhere.contains("server: pages.example.org"), "{}", elsewhere);
+        assert!(
+            elsewhere.contains("server: pages.example.org"),
+            "{}",
+            elsewhere
+        );
         // Worked out by the forge from the domain it was given, so that a
         // repository being renamed keeps publishing
         assert!(
@@ -501,11 +537,21 @@ mod tests {
 
         // The website is served under that address, so it ends on a slash
         // whether or not the user typed one
-        assert_eq!(site_url(r#"{"websiteUrl":"https://blog.example.com"}"#), "https://blog.example.com/");
-        assert_eq!(site_url(r#"{"websiteUrl":"https://blog.example.com/"}"#), "https://blog.example.com/");
+        assert_eq!(
+            site_url(r#"{"websiteUrl":"https://blog.example.com"}"#),
+            "https://blog.example.com/"
+        );
+        assert_eq!(
+            site_url(r#"{"websiteUrl":"https://blog.example.com/"}"#),
+            "https://blog.example.com/"
+        );
 
         let named = workflow(&answered(r#"{"websiteUrl":"https://blog.example.com"}"#));
-        assert!(named.contains("site: https://blog.example.com/"), "{}", named);
+        assert!(
+            named.contains("site: https://blog.example.com/"),
+            "{}",
+            named
+        );
         // The pages server still has to be named, or the certificate is never
         // asked for
         assert!(named.contains("server: codeberg.page"), "{}", named);
@@ -523,10 +569,16 @@ mod tests {
         );
         // A repository named `pages` is the site of its owner, served at the
         // root of their subdomain and not under a path of its own
-        assert_eq!(served("git@codeberg.org:alex/pages.git", "{}"), "https://alex.codeberg.page/");
+        assert_eq!(
+            served("git@codeberg.org:alex/pages.git", "{}"),
+            "https://alex.codeberg.page/"
+        );
         // Any Forgejo that serves pages, not Codeberg alone
         assert_eq!(
-            served("git@v15.next.forgejo.org:alex/mysite.git", r#"{"pagesDomain":"pages.example.org"}"#),
+            served(
+                "git@v15.next.forgejo.org:alex/mysite.git",
+                r#"{"pagesDomain":"pages.example.org"}"#
+            ),
             "https://alex.pages.example.org/mysite/"
         );
     }
@@ -534,7 +586,8 @@ mod tests {
     #[test]
     fn a_domain_of_ones_own_wins_over_the_one_worked_out() {
         let remote = Remote::parse("git@codeberg.org:alex/mysite.git").unwrap();
-        let named = answered(r#"{"pagesDomain":"codeberg.page","websiteUrl":"https://blog.example.com/"}"#);
+        let named =
+            answered(r#"{"pagesDomain":"codeberg.page","websiteUrl":"https://blog.example.com/"}"#);
         assert_eq!(website_url(&remote, &named), "https://blog.example.com/");
     }
 
@@ -547,10 +600,16 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(login_named(&logins, "codeberg.org").as_deref(), Some("codeberg"));
+        assert_eq!(
+            login_named(&logins, "codeberg.org").as_deref(),
+            Some("codeberg")
+        );
         // Any Forgejo the user signed in to, and not Codeberg alone: it is this
         // login that says a repository elsewhere is one of ours
-        assert_eq!(login_named(&logins, "v15.next.forgejo.org").as_deref(), Some("forgejo-next"));
+        assert_eq!(
+            login_named(&logins, "v15.next.forgejo.org").as_deref(),
+            Some("forgejo-next")
+        );
         // And nothing for a host another integration answers for
         assert_eq!(login_named(&logins, "gitlab.com"), None);
         assert_eq!(login_named(&logins, "git.sr.ht"), None);
@@ -558,8 +617,7 @@ mod tests {
 
     #[test]
     fn a_publication_whose_earlier_runs_could_not_be_read_is_never_called_built() {
-        let successful =
-            || Ok(serde_json::from_str(r#"[{"id":842,"status":"success"}]"#).unwrap());
+        let successful = || Ok(serde_json::from_str(r#"[{"id":842,"status":"success"}]"#).unwrap());
 
         // That run finished, but nothing says it is not the last
         // publication's: calling it built would tell the user their website is
@@ -589,10 +647,19 @@ mod tests {
         let listed = |json: &str| -> Vec<serde_json::Value> { serde_json::from_str(json).unwrap() };
         // Reading the string alone would have build() answer "not started" for
         // a build that ran, right up to the timeout
-        assert_eq!(newest_run(&listed(r#"[{"id":842,"status":"success"}]"#)).as_deref(), Some("842"));
-        assert_eq!(newest_run(&listed(r#"[{"id":"842"}]"#)).as_deref(), Some("842"));
+        assert_eq!(
+            newest_run(&listed(r#"[{"id":842,"status":"success"}]"#)).as_deref(),
+            Some("842")
+        );
+        assert_eq!(
+            newest_run(&listed(r#"[{"id":"842"}]"#)).as_deref(),
+            Some("842")
+        );
         // The newest is the one at the top, as tea lists them
-        assert_eq!(newest_run(&listed(r#"[{"id":842},{"id":841}]"#)).as_deref(), Some("842"));
+        assert_eq!(
+            newest_run(&listed(r#"[{"id":842},{"id":841}]"#)).as_deref(),
+            Some("842")
+        );
         assert_eq!(newest_run(&listed(r#"[{"status":"success"}]"#)), None);
         assert_eq!(newest_run(&[]), None);
     }

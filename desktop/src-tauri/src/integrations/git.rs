@@ -41,7 +41,10 @@ fn asked(site: &Path, args: &[&str]) -> Option<String> {
 /// insteadOf rewrites: the host of a website is told from what the user wrote,
 /// and pushing resolves them anyway.
 fn remotes(site: &Path) -> Vec<(String, String)> {
-    let Some(configured) = asked(site, &["config", "--local", "--get-regexp", r"^remote\..*\.url$"]) else {
+    let Some(configured) = asked(
+        site,
+        &["config", "--local", "--get-regexp", r"^remote\..*\.url$"],
+    ) else {
         return Vec::new();
     };
 
@@ -50,7 +53,9 @@ fn remotes(site: &Path) -> Vec<(String, String)> {
         let Some((setting, url)) = line.split_once(' ') else {
             continue;
         };
-        let name = setting.strip_prefix("remote.").and_then(|rest| rest.strip_suffix(".url"));
+        let name = setting
+            .strip_prefix("remote.")
+            .and_then(|rest| rest.strip_suffix(".url"));
         let Some(name) = name else {
             continue;
         };
@@ -149,7 +154,11 @@ impl Git {
     /// state its user has no terminal to get out of. Catching up is a pull of
     /// its own, on opening the website.
     fn push_branch(&self, site: &Path, remote: &str) -> Result<(), String> {
-        let ran = run_transfer_verbatim(&self.program, site, &["push", "--porcelain", remote, "HEAD"])?;
+        let ran = run_transfer_verbatim(
+            &self.program,
+            site,
+            &["push", "--porcelain", remote, "HEAD"],
+        )?;
         if !ran.failed {
             return Ok(());
         }
@@ -172,7 +181,12 @@ impl Git {
             return Ok(());
         };
         let branch = branch_name(site);
-        run_catch_up(&self.program, site, &["pull", "--ff-only", &remote, &branch]).map(|_| ())
+        run_catch_up(
+            &self.program,
+            site,
+            &["pull", "--ff-only", &remote, &branch],
+        )
+        .map(|_| ())
     }
 
     /// A push carries the whole website the first time, and gets the time
@@ -189,9 +203,9 @@ impl Git {
 /// refused, and only the reason tells a remote that moved on from a hook that
 /// said no — pulling helps with the first, never with the second.
 fn behind_remote(ran: &Ran) -> bool {
-    ran.stdout
-        .lines()
-        .any(|line| line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first")))
+    ran.stdout.lines().any(|line| {
+        line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first"))
+    })
 }
 
 #[cfg(test)]
@@ -221,15 +235,24 @@ mod tests {
             "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n[remote \"origin\"]\n\turl = https://gitlab.com/lexoyo/site.git\n",
         );
         assert_eq!(remote_name(&site).as_deref(), Some("origin"));
-        assert_eq!(remote_url(&site).as_deref(), Some("https://gitlab.com/lexoyo/site.git"));
+        assert_eq!(
+            remote_url(&site).as_deref(),
+            Some("https://gitlab.com/lexoyo/site.git")
+        );
         assert_eq!(branch_name(&site), "main");
         let _ = std::fs::remove_dir_all(&site);
 
         // A repository set up by hand does not always call it origin, and
         // those websites used to publish nothing at all
-        let site = a_website("named", "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n");
+        let site = a_website(
+            "named",
+            "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
+        );
         assert_eq!(remote_name(&site).as_deref(), Some("backup"));
-        assert_eq!(remote_url(&site).as_deref(), Some("git@codeberg.org:alex/site.git"));
+        assert_eq!(
+            remote_url(&site).as_deref(),
+            Some("git@codeberg.org:alex/site.git")
+        );
         let _ = std::fs::remove_dir_all(&site);
 
         let site = a_website("none", "");
@@ -247,7 +270,11 @@ mod tests {
     #[test]
     fn reads_the_refusal_git_writes_in_porcelain() {
         let refused = |stdout: &str| {
-            behind_remote(&Ran { stdout: stdout.to_string(), stderr: String::new(), failed: true })
+            behind_remote(&Ran {
+                stdout: stdout.to_string(),
+                stderr: String::new(),
+                failed: true,
+            })
         };
         assert!(refused(
             "To gitlab.com/x/y.git\n!\trefs/heads/main:refs/heads/main\t[rejected] (non-fast-forward)\nDone"
@@ -255,7 +282,9 @@ mod tests {
         assert!(refused("!\tHEAD:refs/heads/main\t[rejected] (fetch first)"));
         // A hook that said no is not a remote that moved on: pulling would not
         // help, and retrying would hide what the remote is refusing
-        assert!(!refused("!\tHEAD:refs/heads/main\t[remote rejected] (pre-receive hook declined)"));
+        assert!(!refused(
+            "!\tHEAD:refs/heads/main\t[remote rejected] (pre-receive hook declined)"
+        ));
         assert!(!refused("*\tHEAD:refs/heads/main\t[new branch]"));
         assert!(!refused(""));
     }

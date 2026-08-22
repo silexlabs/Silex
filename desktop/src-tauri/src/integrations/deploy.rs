@@ -102,8 +102,12 @@ pub trait Deploy: Send + Sync {
     /// editor with the website it publishes and never read off the disk.
     /// Empty when nobody is publishing: the editor is then asking who serves
     /// this website, and it keeps the answers of the user itself.
-    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions)
-        -> Result<Option<Urls>, String>;
+    fn urls(
+        &self,
+        cli: &Path,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Option<Urls>, String>;
 
     /// Write what the build needs and version it, answering what the
     /// publication has to send along
@@ -114,8 +118,12 @@ pub trait Deploy: Send + Sync {
     /// network, to note what the builds looked like before the push.
     ///
     /// `options` is what the user answered, as it was handed to `urls`.
-    fn deploy(&self, cli: &Path, site: &Path, options: &PublicationOptions)
-        -> Result<Prepared, String>;
+    fn deploy(
+        &self,
+        cli: &Path,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Prepared, String>;
 
     /// Send what was versioned to where the website is kept
     ///

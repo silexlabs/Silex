@@ -36,7 +36,12 @@ impl Deploy for Glab {
         Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
     }
 
-    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Result<Option<Urls>, String> {
+    fn urls(
+        &self,
+        cli: &Path,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Option<Urls>, String> {
         if !Remote::of(site).is_some_and(|remote| signed_in_to(&remote.host)) {
             return Ok(None);
         }
@@ -96,8 +101,13 @@ impl Deploy for Glab {
         };
 
         let jobs = run(cli, site, &["api", "projects/:fullpath/jobs"])?;
-        let jobs: serde_json::Value = serde_json::from_str(&jobs)
-            .map_err(|e| format!("Could not read what {} said about the builds: {}", self.program(), e))?;
+        let jobs: serde_json::Value = serde_json::from_str(&jobs).map_err(|e| {
+            format!(
+                "Could not read what {} said about the builds: {}",
+                self.program(),
+                e
+            )
+        })?;
         let Some(jobs) = jobs.as_array() else {
             return Err(format!("{} did not list the builds", self.program()));
         };
@@ -170,7 +180,9 @@ fn config_file() -> Option<PathBuf> {
 /// by hand rather than as YAML: this is one section of one file of another
 /// program, and reading it wrong is a website Silex says nothing about.
 fn host_block(config: &str, host: &str) -> Option<String> {
-    let mut lines = config.lines().skip_while(|line| line.trim_end() != "hosts:");
+    let mut lines = config
+        .lines()
+        .skip_while(|line| line.trim_end() != "hosts:");
     lines.next()?;
 
     let mut names_at = None;
@@ -281,7 +293,10 @@ hosts:
 
         // Nothing tagged: the user lands on the list and finds theirs at the top
         let every_one = Glab
-            .watch(&pipelines("https://gitlab.com/lexoyo/site"), &Prepared::default())
+            .watch(
+                &pipelines("https://gitlab.com/lexoyo/site"),
+                &Prepared::default(),
+            )
             .unwrap();
         assert_eq!(every_one, "https://gitlab.com/lexoyo/site/-/pipelines");
     }

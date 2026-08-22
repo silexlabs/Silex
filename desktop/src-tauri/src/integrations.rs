@@ -28,14 +28,13 @@ use programs::candidates;
 
 pub mod deploy;
 pub mod git;
-pub mod programs;
 mod glab;
 mod hut;
 pub mod pipeline;
+pub mod programs;
 pub mod remote;
 mod run;
 mod tea;
-
 
 /// What is known of one integration
 ///
@@ -163,7 +162,10 @@ impl Integrations {
             return Err(NOBODY_TO_PUBLISH_WITH.to_string());
         };
 
-        say(format!("Writing the files {} needs to build your website", host));
+        say(format!(
+            "Writing the files {} needs to build your website",
+            host
+        ));
         let prepared = provider.deploy(&cli, site, options)?;
         say(format!("Sending your website to {}", host));
         {
@@ -283,10 +285,17 @@ mod tests {
         for thread in both {
             thread.join().unwrap();
         }
-        assert_eq!(together.load(Ordering::SeqCst), 0, "two pushes of one website went together");
+        assert_eq!(
+            together.load(Ordering::SeqCst),
+            0,
+            "two pushes of one website went together"
+        );
 
         // Two websites have nothing to wait for from each other
-        assert!(!Arc::ptr_eq(&one_at_a_time(one), &one_at_a_time(Path::new("/tmp/silex-another-website"))));
+        assert!(!Arc::ptr_eq(
+            &one_at_a_time(one),
+            &one_at_a_time(Path::new("/tmp/silex-another-website"))
+        ));
     }
 
     #[test]
@@ -318,8 +327,14 @@ mod tests {
         }"#;
         let integrations: Integrations = serde_json::from_str(written).unwrap();
 
-        assert!(!integrations.known.contains_key("git"), "the extra field makes it unknown");
-        assert!(integrations.has("git"), "but Silex must not look for it again");
+        assert!(
+            !integrations.known.contains_key("git"),
+            "the extra field makes it unknown"
+        );
+        assert!(
+            integrations.has("git"),
+            "but Silex must not look for it again"
+        );
 
         let read_back: serde_json::Value =
             serde_json::from_str(&serde_json::to_string(&integrations).unwrap()).unwrap();
@@ -359,7 +374,10 @@ mod tests {
         let tea = &integrations.known["tea"];
         assert!(tea.broken);
         assert!(tea.path.is_some(), "and we can still say which file it is");
-        assert!(integrations.program("tea").is_none(), "a broken one is not used");
+        assert!(
+            integrations.program("tea").is_none(),
+            "a broken one is not used"
+        );
 
         // One the user turned off is not started at all, so what was written
         // about it stands untouched — even though it would fail to run
@@ -399,9 +417,19 @@ pub fn load(data_dir: &Path) -> Integrations {
         // otherwise hide a working one further down.
         let version = candidates(id).into_iter().find_map(|path| {
             match run::run(&path, &std::env::temp_dir(), provider.version_args()) {
-                Ok(version) => Some((path, run::readable(version.lines().next().unwrap_or_default()).trim().to_string())),
+                Ok(version) => Some((
+                    path,
+                    run::readable(version.lines().next().unwrap_or_default())
+                        .trim()
+                        .to_string(),
+                )),
                 Err(e) => {
-                    tracing::warn!("Found {} at {} but could not run it: {}", id, path.display(), e);
+                    tracing::warn!(
+                        "Found {} at {} but could not run it: {}",
+                        id,
+                        path.display(),
+                        e
+                    );
                     None
                 }
             }
@@ -472,7 +500,9 @@ fn look_again(known: &mut Integrations) -> bool {
         let state = known.known.get_mut(&id).expect("just read");
         match answered {
             Ok(said) => {
-                let version = run::readable(said.lines().next().unwrap_or_default()).trim().to_string();
+                let version = run::readable(said.lines().next().unwrap_or_default())
+                    .trim()
+                    .to_string();
                 if state.broken {
                     tracing::info!("{} runs again", id);
                 }
@@ -527,8 +557,8 @@ fn write(data_dir: &Path, integrations: &Integrations) {
     // leaves the file it had, never half of a new one
     let file = path(data_dir);
     let being_written = file.with_extension("json.writing");
-    let written =
-        std::fs::write(&being_written, content).and_then(|_| std::fs::rename(&being_written, &file));
+    let written = std::fs::write(&being_written, content)
+        .and_then(|_| std::fs::rename(&being_written, &file));
     if let Err(e) = written {
         tracing::warn!("Could not store the integrations: {}", e);
         let _ = std::fs::remove_file(&being_written);

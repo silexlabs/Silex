@@ -220,7 +220,9 @@ mod tests {
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
 
-        let answered = jobs.read(job.id()).expect("the editor asks about it right away");
+        let answered = jobs
+            .read(job.id())
+            .expect("the editor asks about it right away");
         assert_eq!(answered.status, JobStatus::InProgress);
         assert_eq!(answered.message, "Publishing");
         assert_eq!(answered.end_time, None);
@@ -231,7 +233,10 @@ mod tests {
         job.succeeded("Your website is now live!");
         let over = jobs.read(job.id()).unwrap();
         assert_eq!(over.status, JobStatus::Success);
-        assert!(over.end_time.is_some(), "the editor stops asking on an end time");
+        assert!(
+            over.end_time.is_some(),
+            "the editor stops asking on an end time"
+        );
     }
 
     #[test]
@@ -257,8 +262,14 @@ mod tests {
 
         let over = jobs.read(job.id()).unwrap();
         assert_eq!(over.message, "codeberg.org refused the connection.");
-        assert_eq!(over.errors[0], ["git failed: Could not read from remote repository."]);
-        assert!(!over.message.contains("git failed"), "one sentence to act on, no more");
+        assert_eq!(
+            over.errors[0],
+            ["git failed: Could not read from remote repository."]
+        );
+        assert!(
+            !over.message.contains("git failed"),
+            "one sentence to act on, no more"
+        );
     }
 
     #[test]
@@ -292,7 +303,10 @@ mod tests {
         assert!(written["logs"].is_array());
         assert!(written["errors"].is_array());
         assert!(written["startTime"].is_number());
-        assert!(written.get("endTime").is_none(), "no end until there is one");
+        assert!(
+            written.get("endTime").is_none(),
+            "no end until there is one"
+        );
 
         job.failed("Nothing built it");
         let over = serde_json::to_value(jobs.read(job.id()).unwrap()).unwrap();
