@@ -702,8 +702,8 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
         if started.elapsed() >= patience.a_build_starts_within {
             if queued {
                 return job.failed(message::explained(
-                    &format!("No runner on {} took the build of your website.", host),
-                    "A build is taken by a runner answering to the label the workflow names. Check what the runners of this forge answer to, write it in the publication options, and publish again.",
+                    &format!("Nothing on {} built your website.", host),
+                    "Silex asks this host for a build machine by name, and no machine there answers to the name it asked for. Change \"Runner label\" in the publication options, then publish again.",
                     &[
                         Button::secondary("See the build", &build_url),
                         Button::secondary(FILES_ON_THIS_COMPUTER, files),
