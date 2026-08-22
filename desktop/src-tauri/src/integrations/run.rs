@@ -49,6 +49,9 @@ const CATCH_UP: Duration = Duration::from_secs(15);
 /// never started.
 const OUTPUT: Duration = Duration::from_secs(2);
 
+/// The longest Silex goes without looking at a program that is still running
+const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
+
 /// How much of the output of a program is kept, the rest is read and dropped
 const MAX_OUTPUT: usize = 64 * 1024;
 
@@ -175,6 +178,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
     let stderr = drain(child.stderr.take());
 
     let start = Instant::now();
+    let mut asked_again_after = Duration::from_millis(1);
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -194,7 +198,11 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
                 timeout.as_secs()
             ));
         }
-        std::thread::sleep(Duration::from_millis(20));
+        // Growing rather than fixed: a program of this machine answers in a
+        // millisecond or two, and waiting twenty for it cost seventeen times
+        // what it takes. What runs long is asked about rarely.
+        std::thread::sleep(asked_again_after);
+        asked_again_after = (asked_again_after * 2).min(LOOKED_AT_AT_LEAST_EVERY);
     };
 
     Ok(Ran {

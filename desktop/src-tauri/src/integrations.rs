@@ -415,7 +415,7 @@ pub fn load(data_dir: &Path) -> Integrations {
         // is told apart from one Silex can use, git included. Every place it
         // could be is tried: a broken install first in the PATH would
         // otherwise hide a working one further down.
-        let version = candidates(id).into_iter().find_map(|path| {
+        let version = candidates(id).find_map(|path| {
             match run::run(&path, &std::env::temp_dir(), provider.version_args()) {
                 Ok(version) => Some((
                     path,
