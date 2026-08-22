@@ -238,12 +238,14 @@ fn build_of(
     // The run of this publication is the one built from the tag it pushed.
     // Taking the newest instead would call somebody else's push ours: a
     // colleague publishing at the same minute, or a run the repository starts
-    // on a timer.
+    // on a timer. Where nothing names what it was built from, the newest is
+    // all there is to go on, and the mark taken before the push is what keeps
+    // it from being an older one.
     let ours = match tag {
-        Some(tag) => listed
-            .iter()
-            .find(|run| run["prettyref"].as_str() == Some(tag)),
-        None => listed.first(),
+        Some(tag) if listed.iter().any(|run| started_from(run).is_some()) => {
+            listed.iter().find(|run| started_from(run) == Some(tag))
+        }
+        _ => listed.first(),
     };
     let Some(ours) = ours else {
         return Ok(Build::NotStarted);
@@ -271,6 +273,18 @@ fn build_of(
         // running, and whatever Forgejo adds next
         _ => Build::Running(None),
     })
+}
+
+/// The tag or branch a run was built from, under whichever name tea gives it
+///
+/// tea 0.15 lists seven fields of a run and leaves the ref, the branch and the
+/// commit of it empty, so a publication cannot be told apart by what it pushed.
+/// The names a later tea may answer are read here, and none of them being there
+/// is what sends the caller back to the newest run.
+fn started_from(run: &serde_json::Value) -> Option<&str> {
+    ["prettyref", "branch", "head_branch"]
+        .into_iter()
+        .find_map(|named| run[named].as_str().filter(|it| !it.is_empty()))
 }
 
 /// The runs of this repository, newest first, as tea answers them
@@ -509,6 +523,19 @@ mod tests {
         assert!(
             matches!(ours, Build::Queued),
             "took the newest run for ours"
+        );
+    }
+
+    /// tea answers a run without saying what it was built from, and a
+    /// publication followed by its tag alone would never find its own build
+    #[test]
+    fn a_run_that_says_nothing_of_its_tag_is_still_this_publication() {
+        let silent = || Ok(vec![serde_json::json!({"id": 8, "status": "waiting"})]);
+
+        let ours = build_of(&EarlierBuild::Nothing, Some("_silex_1"), silent).unwrap();
+        assert!(
+            matches!(ours, Build::Queued),
+            "a build was waiting and Silex said none had started"
         );
     }
 
