@@ -322,7 +322,7 @@ impl Syncer {
                 }
                 Err(why) => {
                     tracing::warn!("Could not send website {}: {}", website_id, why);
-                    let retrying = worth_another_try(&why);
+                    let retrying = git::worth_another_try(&why);
                     let after = retrying.then(|| {
                         let after = self.tried_again_after
                             [broke_down.min(self.tried_again_after.len() - 1)];
@@ -418,37 +418,6 @@ impl Syncer {
             }
         });
     }
-}
-
-/// Whether a send that broke down could work later, read from what git said
-///
-/// Anything unrecognised counts as permanent. A wrong password, a repository
-/// that is gone, a remote that moved on: trying those again would fail just the
-/// same, quietly, and the user would never learn what is in the way. Waiting
-/// for a network to come back is the one case where trying again is the answer.
-fn worth_another_try(why: &str) -> bool {
-    const BREAKS: [&str; 18] = [
-        "could not resolve host",
-        "temporary failure in name resolution",
-        "name or service not known",
-        "connection timed out",
-        "operation timed out",
-        "timed out after",
-        "connection refused",
-        "connection reset",
-        "network is unreachable",
-        "no route to host",
-        "failed to connect to",
-        "couldn't connect to server",
-        "the remote end hung up",
-        "early eof",
-        "broken pipe",
-        "http 5",
-        "returned error: 5",
-        "gateway time-out",
-    ];
-    let why = why.to_lowercase();
-    BREAKS.iter().any(|break_down| why.contains(break_down))
 }
 
 /// A website that left for its host, and what to ask about its build
@@ -1048,42 +1017,6 @@ mod sending {
 
     fn state(syncer: &Arc<Syncer>, website_id: &str) -> Option<State> {
         sending(syncer, website_id).map(|website| website.state)
-    }
-
-    #[test]
-    fn tells_what_can_work_later_from_what_never_will() {
-        for later in [
-            "fatal: unable to access 'https://gitlab.com/a/b.git/': Could not resolve host: gitlab.com",
-            "ssh: connect to host codeberg.org port 22: Connection timed out",
-            "ssh: connect to host git.sr.ht port 22: Network is unreachable",
-            "fatal: unable to access 'https://x/y.git/': Failed to connect to x port 443 after 130276 ms: Couldn't connect to server",
-            "fatal: unable to access 'https://x/y.git/': Operation timed out after 300000 milliseconds with 0 out of 0 bytes received",
-            "error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502",
-            "fatal: unable to access 'https://x/y.git/': The requested URL returned error: 503",
-            "fatal: the remote end hung up unexpectedly",
-            "error: RPC failed; curl 56 Recv failure: Connection reset by peer",
-            "fatal: early EOF",
-            "send-pack: unexpected disconnect while reading sideband packet: Broken pipe",
-            "ssh: connect to host codeberg.org port 22: Connection refused",
-            "fatal: unable to access 'https://x/y.git/': Could not resolve host: x, Temporary failure in name resolution",
-        ] {
-            assert!(worth_another_try(later), "given up on: {}", later);
-        }
-
-        for never in [
-            "fatal: Authentication failed for 'https://gitlab.com/a/b.git/'",
-            "remote: HTTP Basic: Access denied. The provided password or token is incorrect",
-            "git@github.com: Permission denied (publickey).",
-            "remote: Repository not found.",
-            "fatal: repository 'https://github.com/a/b.git/' not found",
-            "ERROR: The project you were looking for could not be found or you don't have permission to view it.",
-            "The repository this website is sent to has versions Silex does not have. git failed: ! refs/heads/main:refs/heads/main [rejected] (fetch first)",
-            "! HEAD:refs/heads/main [remote rejected] (pre-receive hook declined)",
-            "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
-            "This website has no remote to publish to",
-        ] {
-            assert!(!worth_another_try(never), "kept trying: {}", never);
-        }
     }
 }
 
