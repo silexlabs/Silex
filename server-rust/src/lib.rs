@@ -9,14 +9,14 @@
 
 //! Silex server
 //!
-//! Serves the Silex frontend and the API it needs, on top of a directory of
+//! Serves the Silex editor and the API it needs, on top of a directory of
 //! websites. It knows nothing about the machine it runs on: it starts no
 //! process and never leaves its data path.
 
 mod actions;
 mod config;
 mod error;
-mod frontend;
+pub mod frontend;
 mod history;
 mod jobs;
 pub mod message;

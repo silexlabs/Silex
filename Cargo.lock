@@ -4398,6 +4398,7 @@ dependencies = [
  "open",
  "reqwest 0.13.2",
  "rmcp",
+ "rust-embed",
  "schemars 1.2.1",
  "sentry",
  "serde",
