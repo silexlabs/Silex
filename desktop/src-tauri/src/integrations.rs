@@ -193,6 +193,10 @@ impl Integrations {
         let Some(git) = git::Git::found() else {
             return Ok(());
         };
+        // Under the same lock as sending: a merge writes the index of the
+        // website, and git refuses rather than waits when a save is holding it
+        let alone = one_at_a_time(site);
+        let _alone = alone.lock().unwrap_or_else(|held| held.into_inner());
         git.pull(site)
     }
 
@@ -232,14 +236,15 @@ impl Integrations {
     }
 }
 
-/// The lock that lets one push of this website happen at a time
+/// The lock that lets one git of this website run at a time
 ///
-/// A save and a publication both send the same website, and git refuses the
-/// second of two pushes racing for the same ref rather than queueing it. Which
-/// one goes first does not matter, only that they do not go together.
+/// A save and a publication both send the same website, and a read pulls it:
+/// git refuses rather than queues when two of them race for the same ref or
+/// for the index. Which one goes first does not matter, only that they do not
+/// go together.
 fn one_at_a_time(site: &Path) -> Arc<Mutex<()>> {
-    static PUSHING: OnceLock<Mutex<BTreeMap<PathBuf, Arc<Mutex<()>>>>> = OnceLock::new();
-    PUSHING
+    static ON_THIS_WEBSITE: OnceLock<Mutex<BTreeMap<PathBuf, Arc<Mutex<()>>>>> = OnceLock::new();
+    ON_THIS_WEBSITE
         .get_or_init(Default::default)
         .lock()
         .unwrap_or_else(|held| held.into_inner())
