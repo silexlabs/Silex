@@ -9,11 +9,11 @@
 
 use std::path::Path;
 
-use silex_server::OptionsForm;
+use silex_server::{OptionsForm, PublicationOptions};
 
 use super::git::Git;
 
-/// The addresses of a published website, as far as its forge told them
+/// The addresses of a published website, as far as its host told them
 #[derive(Default)]
 pub struct Urls {
     /// Where the website is served
@@ -26,24 +26,24 @@ pub struct Urls {
 
 /// What became of the build a publication started
 ///
-/// A forge builds the website out of the files that were pushed, and that is
-/// the step a user waits on: the push working says nothing about whether their
-/// site is online. Silex asks the forge until it answers.
+/// The website is built out of the files that were pushed, and that is the
+/// step a user waits on: the push working says nothing about whether their
+/// site is online. Silex keeps asking until it gets an answer.
 pub enum Build {
-    /// Silex has no way to ask this forge about its builds
+    /// Silex has no way to ask this host about its builds
     ///
     /// Not a failure: the website was sent, and the user is told to look for
     /// themselves rather than promised a site nobody checked.
     Unknown,
 
-    /// The forge said it will not build this website, and why
+    /// The host said it will not build this website, and why
     ///
     /// A repository with its build feature turned off is the case this exists
     /// for: waiting on a build that can never start would only end in a
-    /// timeout, when the forge answered right away.
+    /// timeout, when the answer came right away.
     Refused(String),
 
-    /// The forge has nothing about this publication yet
+    /// The host has nothing about this publication yet
     NotStarted,
 
     /// A build is running, and where it can be watched
@@ -52,42 +52,20 @@ pub enum Build {
     /// The build finished and the website is served
     Built,
 
-    /// The build failed, where to read it and what the forge blamed
+    /// The build failed, where to read it and what was blamed
     Failed {
         url: Option<String>,
         reason: Option<String>,
     },
 }
 
-/// What an integration answers when asked about a website
-pub enum Answer {
-    /// Not one of its own
-    No,
-    /// One of its own, but the user is not signed in to that forge
-    ///
-    /// Publishing still saves and sends the website: signing in to a forge and
-    /// being able to push are two different things, and a user with an ssh key
-    /// and no forge account pushes perfectly well.
-    NotSignedIn,
-    /// One of its own, and what it knows about it
-    Yes(Urls),
-}
-
 pub trait Deploy: Send + Sync {
     fn program(&self) -> &'static str;
-
-    /// The name of the forge, as the user knows it
-    ///
-    /// Told apart from the program on purpose: somebody publishing to Codeberg
-    /// has no reason to be shown the name of the command line Silex uses.
-    fn display_name(&self) -> &'static str;
 
     /// What to ask the user before publishing, when this program cannot say
     /// where the website is served
     ///
-    /// None when it can, which is one question the user is spared. `remote` is
-    /// what git said about the website, handed over as it is to `urls`: none of
-    /// them goes looking for git itself.
+    /// None when it can, which is one question the user is spared.
     fn options_form(&self, site: &Path) -> Option<OptionsForm> {
         let _ = site;
         None
@@ -102,47 +80,61 @@ pub trait Deploy: Send + Sync {
         &["--version"]
     }
 
-    /// Whether this website is one of its own, and what it knows about it
+    /// Whether this website is kept here
     ///
-    /// The program is asked in the website folder. An error means the program
-    /// could not tell, which is not the same as a no and must not be taken for
-    /// one.
+    /// Answered from the folder of the website and from what is configured on
+    /// this machine, never from the network: this is asked before anything
+    /// else and a user waits behind it. Two integrations answering yes for the
+    /// same website is a mistake in their conditions, not a tie to break.
+    fn keeps(&self, site: &Path) -> bool;
+
+    /// What is known of the website, once its program can be asked
     ///
-    /// `website_url` is the address the user named, when they named one and
-    /// when there is a publication to name it: the editor sends it with the
-    /// website it publishes, and nothing here reads it off the disk.
-    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String>;
+    /// None when nobody is signed in: being signed in and being able to send
+    /// are two different things, and a user with an ssh key and no account
+    /// publishes perfectly well — Silex just has nothing to say about where it
+    /// lands.
+    ///
+    /// An error means the program could not tell, which is not the same as
+    /// knowing nothing.
+    ///
+    /// `options` is what the user answered to `options_form`, sent by the
+    /// editor with the website it publishes and never read off the disk.
+    /// Empty when nobody is publishing: the editor is then asking who serves
+    /// this website, and it keeps the answers of the user itself.
+    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions)
+        -> Result<Option<Urls>, String>;
 
     /// Write what the build needs and version it, answering what the
     /// publication has to send along
     ///
-    /// All of it happens in the website's own folder, so none of it reaches a
-    /// forge: sending is the caller's, done with the git of the user, and no
-    /// integration pushes anything of its own.
+    /// The files and the version stay in the website's own folder: sending is
+    /// the caller's, done with the git of the user, and no integration pushes
+    /// anything of its own. An integration may still ask a question over the
+    /// network, to note what the builds looked like before the push.
     ///
-    /// `website_url` is the address the user named, as it was handed to `urls`.
-    fn deploy(&self, cli: &Path, site: &Path, website_url: Option<&str>)
+    /// `options` is what the user answered, as it was handed to `urls`.
+    fn deploy(&self, cli: &Path, site: &Path, options: &PublicationOptions)
         -> Result<Prepared, String>;
 
-    /// Send what was versioned to the forge
+    /// Send what was versioned to where the website is kept
     ///
     /// A host that takes a website another way — a bucket, an API — says so
     /// here, and it is the one place that has to change.
     fn push(&self, _cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), String> {
         let git = Git::found().ok_or(
-            "Silex could not find git on this computer, and it is git that sends a website to its forge.",
+            "Silex could not find git on this computer, and it is git that sends a website to its host.",
         )?;
         git.push(site, tag)
     }
 
-    /// Ask the forge what became of the build this publication started
+    /// Ask what became of the build this publication started
     ///
-    /// Asked over and over while the user waits, so it stays one question to
-    /// the forge and nothing more. An error means the forge could not be asked
-    /// this time, which is not an answer: the caller tries again.
+    /// Asked over and over while the user waits. An error means nothing could
+    /// be asked this time, which is not an answer: the caller tries again.
     ///
-    /// The default knows nothing, and a forge Silex cannot follow says so
-    /// rather than failing a publication that worked.
+    /// The default knows nothing, and an integration Silex cannot follow says
+    /// so rather than failing a publication that worked.
     fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
         let _ = (cli, site, prepared);
         Ok(Build::Unknown)
@@ -150,7 +142,7 @@ pub trait Deploy: Send + Sync {
 
     /// Where the user watches the build of the publication that just left
     ///
-    /// A forge that can be pointed at one build rather than at all of them
+    /// An integration that can point at one build rather than at all of them
     /// says so here, from what `deploy` prepared. By default the user lands on
     /// the list of builds and finds theirs at the top.
     fn watch(&self, urls: &Urls, _prepared: &Prepared) -> Option<String> {
@@ -158,19 +150,38 @@ pub trait Deploy: Send + Sync {
     }
 }
 
+/// What this website had already built when a publication was pushed
+///
+/// For the integrations whose builds do not say which push they came from: a
+/// build newer than the one named here is this publication's, and the one named
+/// here is the last publication's. Without it, a build from last week would be
+/// read as this publication succeeding.
+#[derive(Default)]
+pub enum EarlierBuild {
+    /// The host says which push each of its builds came from, so what it had
+    /// built before tells nothing apart
+    #[default]
+    NoNeedToKnow,
+
+    /// The host had never built this website
+    Nothing,
+
+    /// This build was the newest one
+    Run(String),
+
+    /// The host could not be asked, so no build of this website can be called
+    /// this publication's
+    CouldNotAsk,
+}
+
 /// What `deploy` left for the publication to send and for `build` to recognise
 #[derive(Default)]
 pub struct Prepared {
-    /// The forges that start their build on a tag put theirs here
+    /// The integrations that start their build on a tag put theirs here
     pub tag: Option<String>,
 
-    /// What the builds of this website looked like before the push
-    ///
-    /// For the forges whose builds do not say which push they came from: the
-    /// newest build named here is one that was already there, so it is not the
-    /// one this publication started. Without it, a build from last week would
-    /// be read as this publication succeeding.
-    pub before: Option<String>,
+    /// What this website had already built when the push left
+    pub before: EarlierBuild,
 }
 
 /// The tag name the SaaS uses, so that a history reads the same everywhere

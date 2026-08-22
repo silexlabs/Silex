@@ -18,9 +18,12 @@ concurrency:
   cancel-in-progress: true
 jobs:
   pages:
+    # The label Codeberg gives its runners, assumed of every Forgejo. On
+    # another one, remove the silexOverwrite line above and name the label
+    # yours answers to.
     runs-on: {runner}
-    # A build that is still going after that is stuck, not slow. Five, which
-    # is what the runner this asks for is lent for.
+    # What the runner asked for above is lent for, and a build still going
+    # after that is stuck rather than slow.
     timeout-minutes: 2
     container:
       image: node:22-slim

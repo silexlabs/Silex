@@ -24,14 +24,16 @@
 //! website could live on several backends. It is accepted and ignored.
 
 use axum::body::Bytes;
+use axum::extract::multipart::MultipartError;
 use axum::extract::{Multipart, Path, Query, State};
-use axum::http::header;
+use axum::http::{header, StatusCode};
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
+use crate::history::{self, Versioned};
 use crate::models::{File, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
 use crate::routes::AppState;
 use crate::storage;
@@ -104,7 +106,7 @@ async fn read_or_list_website(
             if let Some(actions) = &state.actions {
                 let catching_up = actions.clone();
                 let asked_about = website_id.clone();
-                let _ = tokio::task::spawn_blocking(move || catching_up.catch_up(&asked_about))
+                let _ = tokio::task::spawn_blocking(move || catching_up.catch_up(asked_about.as_str()))
                     .await;
             }
             let data = storage::read_website(&state.data_path, &website_id).await?;
@@ -125,42 +127,42 @@ async fn update_website(
 ) -> Result<Json<MessageResponse>> {
     storage::update_website(&state.data_path, &query.website_id, &data).await?;
 
-    if let Some(actions) = &state.actions {
+    let site = storage::website_path(&state.data_path, &query.website_id)?;
+    // On a thread of its own: a save landing during a publication waits for the
+    // repository, and waiting there would hold a thread the server answers with.
+    let versioned = tokio::task::spawn_blocking(move || {
         // Same message as the SaaS server writes, so that a history reads the
         // same wherever the website was edited.
-        // On a thread of its own: a save landing during a publication waits for
-        // it, and waiting there would hold a thread the server answers with.
-        let versioning = actions.clone();
-        let website_id = query.website_id.clone();
-        let versioned = tokio::task::spawn_blocking(move || {
-            versioning.version(&website_id, "Update website data from Silex")
-        })
-        .await;
-        let why = match versioned {
-            Ok(Ok(())) => None,
-            Ok(Err(e)) => Some(e),
-            Err(e) => Some(e.to_string()),
-        };
-        match why {
-            None => {
-                forget(&state, &query.website_id);
-                actions.sync(&query.website_id);
+        history::version(&site, "Update website data from Silex")
+    })
+    .await;
+
+    let why = match versioned {
+        Ok(Ok(versioned)) => {
+            forget(&state, query.website_id.as_str());
+            if let (Versioned::Created, Some(actions)) = (versioned, &state.actions) {
+                // A website nobody changed is sent nowhere: syncing it costs
+                // seconds and several processes to send what is already there
+                actions.sync(query.website_id.as_str());
             }
-            Some(why) => {
-                tracing::warn!("Could not version website {}: {}", query.website_id, why);
-                // Reporting and forgetting was the first answer here, on the
-                // grounds that the website is on the disk and an error would
-                // tell the editor the work is lost. What it tells the user
-                // instead is nothing at all, while their history quietly stops
-                // being written, so it is said, in words that put the saving
-                // first.
-                if worth_saying(&state, &query.website_id, &why) {
-                    return Err(Error::Told(format!(
-                        "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
-                        why
-                    )));
-                }
-            }
+            None
+        }
+        Ok(Err(e)) => Some(e),
+        Err(e) => Some(e.to_string()),
+    };
+
+    if let Some(why) = why {
+        tracing::warn!("Could not version website {}: {}", query.website_id, why);
+        // Reporting and forgetting was the first answer here, on the grounds
+        // that the website is on the disk and an error would tell the editor the
+        // work is lost. What it tells the user instead is nothing at all, while
+        // their history quietly stops being written, so it is said, in words
+        // that put the saving first.
+        if worth_saying(&state, query.website_id.as_str(), &why) {
+            return Err(Error::Told(format!(
+                "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
+                why
+            )));
         }
     }
 
@@ -204,7 +206,7 @@ async fn create_website(
     let website_id = storage::create_website(&state.data_path, &meta).await?;
 
     Ok(Json(CreateResponse {
-        website_id,
+        website_id: website_id.to_string(),
         message: "Website created",
     }))
 }
@@ -278,10 +280,13 @@ async fn write_assets(
     mut multipart: Multipart,
 ) -> Result<Json<AssetsResponse>> {
     let mut files = Vec::new();
+    let body_limit = state.body_limit;
 
-    while let Some(field) = multipart.next_field().await.map_err(|e| {
-        Error::InvalidInput(format!("Failed to read multipart field: {}", e))
-    })? {
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| unreadable_upload(e, body_limit))?
+    {
         let file_name = field
             .file_name()
             .map(String::from)
@@ -290,17 +295,10 @@ async fn write_assets(
         let content = field
             .bytes()
             .await
-            .map_err(|e| Error::InvalidInput(format!("Failed to read file data: {}", e)))?;
-
-        let path = file_name.replace("/assets/", "/");
-        let path = if path.starts_with('/') {
-            path
-        } else {
-            format!("/{}", path)
-        };
+            .map_err(|e| unreadable_upload(e, body_limit))?;
 
         files.push(File {
-            path,
+            path: stored_as(&file_name),
             content: content.to_vec(),
         });
     }
@@ -319,4 +317,206 @@ async fn write_assets(
         .collect();
 
     Ok(Json(AssetsResponse { data }))
+}
+
+/// Where an uploaded file goes in the assets folder of the website
+///
+/// GrapesJS sends back the `/assets/` an asset is already under, so a sub folder
+/// is meant. A name that is a path of its own is not: it comes from the machine
+/// the file was picked on, and would make those folders here. A relative `..` is
+/// left as it is, for the storage to refuse it.
+fn stored_as(file_name: &str) -> String {
+    let asked = std::path::Path::new(file_name.strip_prefix("/assets/").unwrap_or(file_name));
+
+    let path = if asked.is_absolute() {
+        asked
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_else(|| "unknown".to_string())
+    } else {
+        asked.to_string_lossy().into_owned()
+    };
+
+    format!("/{}", path.trim_start_matches('/'))
+}
+
+/// What to tell the person adding a file Silex could not read
+fn unreadable_upload(e: MultipartError, body_limit: usize) -> Error {
+    if e.status() == StatusCode::PAYLOAD_TOO_LARGE {
+        return Error::TooLarge(body_limit);
+    }
+
+    Error::InvalidInput(format!("Silex could not read the file you added: {}", e))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::body::Body;
+    use axum::http::Request as HttpRequest;
+    use std::path::PathBuf;
+    use tower::ServiceExt;
+
+    async fn a_server(name: &str, body_limit: usize) -> (PathBuf, axum::Router, WebsiteId) {
+        let name = format!("silex-website-{}-{}", name, std::process::id());
+        let data_path = std::env::temp_dir().join(name);
+        let _ = std::fs::remove_dir_all(&data_path);
+        std::fs::create_dir_all(&data_path).unwrap();
+
+        let meta = WebsiteMetaFileContent {
+            name: "A website".to_string(),
+            image_url: None,
+        };
+        let website_id = storage::create_website(&data_path, &meta).await.unwrap();
+
+        let config = crate::Config::new(data_path.clone()).with_body_limit(body_limit);
+        let (app, _) = crate::build_app(config).await;
+
+        (data_path, app, website_id)
+    }
+
+    fn a_website_of(size: usize) -> Vec<u8> {
+        let data = serde_json::json!({
+            "pages": [],
+            "pagesFolder": "pages",
+            "filler": "x".repeat(size),
+        });
+        serde_json::to_vec(&data).unwrap()
+    }
+
+    fn an_upload_of(files: &[(&str, usize)]) -> (String, Vec<u8>) {
+        let boundary = "silexuploadboundary";
+        let mut body = Vec::new();
+
+        for (file_name, size) in files {
+            let header = format!("--{}\r\nContent-Disposition: form-data; name=\"files[]\"; filename=\"{}\"\r\nContent-Type: application/octet-stream\r\n\r\n", boundary, file_name);
+            body.extend_from_slice(header.as_bytes());
+            body.extend(std::iter::repeat_n(b'p', *size));
+            body.extend_from_slice(b"\r\n");
+        }
+        body.extend_from_slice(format!("--{}--\r\n", boundary).as_bytes());
+
+        (format!("multipart/form-data; boundary={}", boundary), body)
+    }
+
+    async fn answered(app: &axum::Router, request: HttpRequest<Body>) -> (StatusCode, String) {
+        let response = app.clone().oneshot(request).await.unwrap();
+        let status = response.status();
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+
+        (status, String::from_utf8_lossy(&body).into_owned())
+    }
+
+    fn saving(website_id: &WebsiteId, body: Vec<u8>) -> HttpRequest<Body> {
+        HttpRequest::builder()
+            .method("POST")
+            .uri(format!("/api/website?websiteId={}", website_id))
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(body))
+            .unwrap()
+    }
+
+    fn uploading(website_id: &WebsiteId, files: &[(&str, usize)]) -> HttpRequest<Body> {
+        let (content_type, body) = an_upload_of(files);
+        HttpRequest::builder()
+            .method("POST")
+            .uri(format!("/api/website/assets?websiteId={}", website_id))
+            .header(header::CONTENT_TYPE, content_type)
+            .body(Body::from(body))
+            .unwrap()
+    }
+
+    /// The dashboard asks for `/api/connector/`, and the Express server this
+    /// one stands in for answers a route with or without its last slash
+    #[tokio::test]
+    async fn a_route_asked_for_with_a_last_slash_is_still_answered() {
+        let (data_path, app, _) = a_server("trailing-slash", crate::config::MAX_BODY_SIZE).await;
+
+        let asked = HttpRequest::builder()
+            .uri("/api/connector/?type=STORAGE")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(asked).await.unwrap();
+        assert_eq!(response.status(), StatusCode::PERMANENT_REDIRECT);
+        assert_eq!(
+            response.headers().get("location").unwrap(),
+            "/api/connector?type=STORAGE",
+            "sent to the route that exists, query kept"
+        );
+
+        // What is not a route is still not a route
+        let (status, _) = answered(
+            &app,
+            HttpRequest::builder().uri("/api/nowhere").body(Body::empty()).unwrap(),
+        )
+        .await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[tokio::test]
+    async fn a_website_of_several_megabytes_is_saved() {
+        let (data_path, app, website_id) = a_server("big", crate::config::MAX_BODY_SIZE).await;
+
+        let (status, said) = answered(&app, saving(&website_id, a_website_of(3_900_000))).await;
+        assert_eq!(status, StatusCode::OK, "{}", said);
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[tokio::test]
+    async fn a_photo_of_several_megabytes_is_uploaded() {
+        let (data_path, app, website_id) = a_server("photo", crate::config::MAX_BODY_SIZE).await;
+
+        let files = [("photo.png", 5 * 1024 * 1024)];
+        let (status, said) = answered(&app, uploading(&website_id, &files)).await;
+        assert_eq!(status, StatusCode::OK, "{}", said);
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[tokio::test]
+    async fn what_is_over_the_limit_is_said_in_words_not_in_http() {
+        let (data_path, app, website_id) = a_server("over", 1024 * 1024).await;
+
+        let (status, said) = answered(&app, saving(&website_id, a_website_of(2 * 1024 * 1024))).await;
+        assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
+        assert!(said.contains("too large"), "{}", said);
+        assert!(said.contains("1 MB"), "{}", said);
+        assert!(!said.contains("buffer"), "{}", said);
+
+        let files = [("photo.png", 2 * 1024 * 1024)];
+        let (status, upload_said) = answered(&app, uploading(&website_id, &files)).await;
+        assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
+        assert!(upload_said.contains("too large"), "{}", upload_said);
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[tokio::test]
+    async fn the_name_of_an_uploaded_file_makes_no_folders_of_its_own() {
+        let (data_path, app, website_id) = a_server("folders", crate::config::MAX_BODY_SIZE).await;
+
+        let files = [
+            ("/assets/img/photo.png", 8),
+            ("/tmp/somewhere/else/evil.txt", 8),
+        ];
+        let (status, said) = answered(&app, uploading(&website_id, &files)).await;
+        assert_eq!(status, StatusCode::OK, "{}", said);
+
+        let assets = data_path.join(website_id.as_str()).join("assets");
+        assert!(assets.join("img").join("photo.png").is_file(), "a sub folder the editor asks for is kept");
+        assert!(assets.join("evil.txt").is_file(), "a file name that is a path is kept as its last part");
+        assert!(!assets.join("tmp").exists(), "the folders of that path are not made");
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[test]
+    fn a_file_name_that_leads_out_is_left_for_the_storage_to_refuse() {
+        assert_eq!(stored_as("/assets/../../evil.txt"), "/../../evil.txt");
+    }
 }

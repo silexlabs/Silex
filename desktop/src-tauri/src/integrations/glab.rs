@@ -9,18 +9,20 @@
 
 //! The GitLab command line
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-use super::deploy::{silex_tag, Answer, Build, Deploy, Prepared, Urls};
+use silex_server::{PublicationOptions, WEBSITE_URL};
+
+use super::deploy::{silex_tag, Build, Deploy, Prepared, Urls};
 use super::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::remote::Remote;
 use super::run::run;
 
 /// The instance GitLab runs itself
 ///
-/// A repository there is on GitLab whether or not the user signed in, so not
-/// being signed in can be told apart from not being GitLab at all. Anywhere
-/// else, a host glab does not know could be any forge, and it says so.
+/// A repository there is on GitLab whether or not the user signed in. Anywhere
+/// else the host says nothing on its own, and what glab was signed in to is
+/// what tells a GitLab of one's own from any other forge.
 const GITLAB: &str = "gitlab.com";
 
 pub struct Glab;
@@ -30,33 +32,16 @@ impl Deploy for Glab {
         "glab"
     }
 
-    fn display_name(&self) -> &'static str {
-        "GitLab"
+    fn keeps(&self, site: &Path) -> bool {
+        Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
     }
 
-    fn urls(&self, cli: &Path, site: &Path, website_url: Option<&str>) -> Result<Answer, String> {
-        let remote = Remote::of(site);
-        // Being signed in to that host is what makes a website one of glab's,
-        // and glab answers that without reaching the network
-        if let Some(remote) = &remote {
-            if run(cli, site, &["auth", "status", "--hostname", &remote.host]).is_err() {
-                return Ok(if remote.host == GITLAB {
-                    Answer::NotSignedIn
-                } else {
-                    Answer::No
-                });
-            }
+    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Result<Option<Urls>, String> {
+        if !Remote::of(site).is_some_and(|remote| signed_in_to(&remote.host)) {
+            return Ok(None);
         }
 
-        // From here on glab speaks for this website, and what it cannot do is
-        // a failure rather than a no. Unless nothing could be read of the
-        // remote: glab reads it itself, so it is asked rather than given up on,
-        // and it saying no is a no.
-        let repo = match run(cli, site, &["repo", "view", "-F", "json"]) {
-            Ok(repo) => repo,
-            Err(_) if remote.is_none() => return Ok(Answer::No),
-            Err(e) => return Err(e),
-        };
+        let repo = run(cli, site, &["repo", "view", "-F", "json"])?;
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
@@ -65,32 +50,37 @@ impl Deploy for Glab {
         // cost a request whose answer is only used when nobody named one. A
         // Pages address exists once the site has been published, so before that
         // there is nothing to ask for anyway.
-        let site_url = match website_url {
+        let site_url = match options.named(WEBSITE_URL) {
             Some(url) => Some(url.to_string()),
             None => run(cli, site, &["api", "projects/:fullpath/pages"])
                 .ok()
                 .and_then(|pages| json_string(&pages, "url")),
         };
 
-        Ok(Answer::Yes(Urls {
+        Ok(Some(Urls {
             site: site_url,
             ci: Some(format!("{}/-/pipelines", web_url)),
             settings: Some(format!("{}/pages", web_url)),
         }))
     }
 
-    fn deploy(&self, _cli: &Path, site: &Path, _website_url: Option<&str>) -> Result<Prepared, String> {
+    fn deploy(
+        &self,
+        _cli: &Path,
+        site: &Path,
+        _options: &PublicationOptions,
+    ) -> Result<Prepared, String> {
         ensure_build_files(site)?;
         ensure_pipeline_file(
             site,
             Path::new(".gitlab-ci.yml"),
             include_str!("pipelines/gitlab-ci.yml"),
         )?;
-        super::git::version(site, "Publish website")?;
+        silex_server::version(site, "Publish website")?;
 
         // GitLab Pages starts on a tag
         let tag = silex_tag();
-        super::git::tag(site, &tag)?;
+        silex_server::tag(site, &tag)?;
         Ok(Prepared {
             tag: Some(tag),
             ..Default::default()
@@ -146,22 +136,138 @@ fn json_string(output: &str, key: &str) -> Option<String> {
     value.get(key)?.as_str().map(String::from)
 }
 
+/// Whether the user signed in to that host, read from what glab keeps here
+///
+/// Asking glab itself means `glab auth status`, which calls the instance:
+/// close to a third of a second, spent before a user is told anything, and
+/// spent again for every website they open.
+fn signed_in_to(host: &str) -> bool {
+    config_file()
+        .and_then(|file| std::fs::read_to_string(file).ok())
+        .and_then(|config| host_block(&config, host))
+        .is_some_and(|block| holds_a_login(&block))
+}
+
+/// Where glab keeps what it knows
+///
+/// In the home of the user rather than where the system puts configuration,
+/// on every platform, and that one wins over the XDG folder when both exist.
+fn config_file() -> Option<PathBuf> {
+    if let Some(named) = std::env::var_os("GLAB_CONFIG_DIR") {
+        return Some(PathBuf::from(named).join("config.yml"));
+    }
+    dirs::home_dir()
+        .map(|home| home.join(".config"))
+        .into_iter()
+        .chain(std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from))
+        .map(|folder| folder.join("glab-cli").join("config.yml"))
+        .find(|file| file.is_file())
+}
+
+/// What the configuration of glab holds for one host
+///
+/// Its `hosts:` section has one block per host, named by the host itself. Read
+/// by hand rather than as YAML: this is one section of one file of another
+/// program, and reading it wrong is a website Silex says nothing about.
+fn host_block(config: &str, host: &str) -> Option<String> {
+    let mut lines = config.lines().skip_while(|line| line.trim_end() != "hosts:");
+    lines.next()?;
+
+    let mut names_at = None;
+    let mut block = Vec::new();
+    let mut theirs = false;
+    for line in lines {
+        let content = line.trim();
+        if content.is_empty() || content.starts_with('#') {
+            continue;
+        }
+        let depth = line.len() - line.trim_start().len();
+        let names = *names_at.get_or_insert(depth);
+        if depth < names {
+            break;
+        }
+        if depth == names {
+            if theirs {
+                break;
+            }
+            theirs = content
+                .strip_suffix(':')
+                .map(|name| name.trim_matches(['"', '\'']))
+                == Some(host);
+            continue;
+        }
+        if theirs {
+            block.push(content);
+        }
+    }
+    theirs.then(|| block.join("\n"))
+}
+
+/// Whether the block of a host holds a way to sign in
+///
+/// glab writes the block of gitlab.com from its defaults, signed in or not, so
+/// it is what the block holds that answers rather than the block being there.
+fn holds_a_login(block: &str) -> bool {
+    ["token", "oauth2_refresh_token"]
+        .iter()
+        .any(|key| value_of(block, key).is_some())
+        // The token is in the keyring of the system, out of reach here and
+        // none of Silex's business: glab reads it when it needs it.
+        || value_of(block, "use_keyring").is_some_and(|kept| kept == "true" || kept == "1")
+}
+
+fn value_of(block: &str, key: &str) -> Option<String> {
+    block
+        .lines()
+        .find_map(|line| line.trim().strip_prefix(&format!("{}:", key)))
+        .map(|value| value.trim().trim_matches(['"', '\'']).to_string())
+        .filter(|value| !value.is_empty())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn pipelines_of(project: &str) -> Urls {
-        Urls {
-            ci: Some(format!("{project}/-/pipelines")),
-            ..Default::default()
-        }
+    /// What glab writes, shortened: a host of one's own, and gitlab.com as it
+    /// stands before anybody signs in
+    const CONFIG: &str = r#"
+git_protocol: ssh
+host: gitlab.com
+hosts:
+    gitlab.com:
+        api_host: gitlab.com
+        # Your GitLab access token.
+        token:
+        use_keyring:
+    gitlab.example.com:
+        token: glpat-abc123
+        user: alex
+    keyring.example.com:
+        token:
+        use_keyring: "true"
+"#;
+
+    #[test]
+    fn reads_which_hosts_glab_was_signed_in_to() {
+        let signed_in = |host| host_block(CONFIG, host).is_some_and(|block| holds_a_login(&block));
+        assert!(signed_in("gitlab.example.com"));
+        // The token is in the keyring, and the block says so
+        assert!(signed_in("keyring.example.com"));
+        // glab writes this block whether or not anybody signed in
+        assert!(!signed_in("gitlab.com"));
+        // A host nobody ever named to glab
+        assert!(!signed_in("codeberg.org"));
     }
 
     #[test]
     fn watches_the_publication_that_just_left_and_not_every_other_one() {
+        let pipelines = |project: &str| Urls {
+            ci: Some(format!("{project}/-/pipelines")),
+            ..Default::default()
+        };
         let watched = Glab
             .watch(
-                &pipelines_of("https://gitlab.com/lexoyo/site"),
+                &pipelines("https://gitlab.com/lexoyo/site"),
                 &Prepared {
                     tag: Some("_silex_1755773700000".into()),
                     ..Default::default()
@@ -172,13 +278,11 @@ mod tests {
             watched,
             "https://gitlab.com/lexoyo/site/-/pipelines?ref=_silex_1755773700000"
         );
-    }
 
-    #[test]
-    fn watches_every_build_when_no_tag_named_one_of_them() {
-        let watched = Glab
-            .watch(&pipelines_of("https://gitlab.com/lexoyo/site"), &Prepared::default())
+        // Nothing tagged: the user lands on the list and finds theirs at the top
+        let every_one = Glab
+            .watch(&pipelines("https://gitlab.com/lexoyo/site"), &Prepared::default())
             .unwrap();
-        assert_eq!(watched, "https://gitlab.com/lexoyo/site/-/pipelines");
+        assert_eq!(every_one, "https://gitlab.com/lexoyo/site/-/pipelines");
     }
 }

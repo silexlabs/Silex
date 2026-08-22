@@ -18,31 +18,31 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use silex_server::{Hosting, Job};
+use silex_server::{Hosting, Job, PublicationOptions};
 
 use crate::integrations::deploy::{Build, Deploy, Prepared};
 use crate::integrations::git;
-use crate::integrations::remote::without_secret;
+use crate::integrations::remote::{without_secret, Remote};
 use crate::integrations::Integrations;
-use crate::message::{self, Button, FILES_ON_THIS_COMPUTER};
+use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
-/// How long Silex waits on a forge, and how often it asks
+/// How long Silex waits on a host, and how often it asks
 ///
 /// A value rather than four constants in the loop, so that a test can follow a
 /// whole publication without waiting the minute a real one takes.
 #[derive(Clone, Copy)]
 struct Patience {
-    /// How often a forge is asked about a build that has not appeared yet
+    /// How often the host is asked about a build that has not appeared yet
     looking_for_the_build: Duration,
 
-    /// How long a forge has to start a build before Silex says it never did
+    /// How long the host has to start a build before Silex says it never did
     ///
-    /// A forge that takes the push queues its build within seconds. Waiting
+    /// A host that takes the push queues its build within seconds. Waiting
     /// longer only leaves the user in front of a progress bar for a website
     /// that was never going to come online.
     a_build_starts_within: Duration,
 
-    /// How often a forge is asked about a build that is running
+    /// How often the host is asked about a build that is running
     while_it_builds: Duration,
 
     /// How long Silex follows a build before it stops watching
@@ -65,10 +65,10 @@ impl Default for Patience {
 
 /// How long the answer about what serves a website is reused
 ///
-/// Answering starts the command line of a forge and reaches the network, and
+/// Answering starts the command line of an integration and reaches the network, and
 /// the editor asks when it loads a website and again every time the publication
 /// dialog opens. Long enough that one burst of questions costs one answer,
-/// short enough that a user who just signed in to their forge sees it.
+/// short enough that a user who just signed in sees it.
 const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 
 /// How long a website waits, after a save, before it is sent
@@ -143,7 +143,7 @@ fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     canonical.starts_with(&data_path).then_some(canonical)
 }
 
-/// Sends websites to their forge, once their author has stopped saving them
+/// Sends websites to their host, once their author has stopped saving them
 struct Syncer {
     syncs: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
     sent_after: Duration,
@@ -155,7 +155,7 @@ struct Syncer {
 }
 
 impl Syncer {
-    fn asked(self: &Arc<Self>, website_id: &str) {
+    fn sync(self: &Arc<Self>, website_id: &str) {
         let leaves_at = Instant::now() + self.sent_after;
         let looked_after = {
             let mut waiting = self.waiting.lock().unwrap_or_else(|held| held.into_inner());
@@ -172,7 +172,7 @@ impl Syncer {
         });
     }
 
-    /// Wait out the saves, sync, and start over if more came in meanwhile
+    /// Wait out the saves, send, and start over if more came in meanwhile
     fn wait_and_send(&self, website_id: &str) {
         loop {
             let Some(leaves_at) = self.leaves_at(website_id) else {
@@ -184,7 +184,7 @@ impl Syncer {
             }
 
             if let Err(e) = (self.syncs)(website_id) {
-                tracing::warn!("Could not send website {} to its forge: {}", website_id, e);
+                tracing::warn!("Could not send website {}: {}", website_id, e);
             }
 
             // A save that landed while it was being sent is one this push did
@@ -208,30 +208,25 @@ impl Syncer {
 }
 
 
-/// A website that left for its forge, and what to ask about its build
+/// A website that left for its host, and what to ask about its build
 struct Sent {
     provider: &'static dyn Deploy,
     cli: PathBuf,
+    /// Where the website is kept, as the user knows it: the host of its remote
+    host: String,
     prepared: Prepared,
-    /// Where the website is served, when the forge or the user named it
+    /// Where the website is served, when the host or the user named it
     site_url: Option<String>,
     /// Where the user sets an address of their own
     settings_url: Option<String>,
     /// Where the build of this publication can be watched
     build_url: Option<String>,
-    /// Whether the user is signed in to that forge, which is what lets Silex
+    /// Whether the user is signed in to that host, which is what lets Silex
     /// ask it anything at all
     signed_in: bool,
 }
 
 impl silex_server::Actions for SilexActions {
-    fn version(&self, website_id: &str, message: &str) -> Result<(), String> {
-        let Some(site) = self.site_path(website_id) else {
-            return Err(format!("Unknown website '{}'", website_id));
-        };
-        git::version(&site, message)
-    }
-
     /// A website that could not be caught up with is opened as it is: the user
     /// is waiting to work, and what is on this computer is a website
     fn catch_up(&self, website_id: &str) {
@@ -245,16 +240,16 @@ impl silex_server::Actions for SilexActions {
 
     /// Nothing of it goes online: putting a website online is `deploy`
     fn sync(&self, website_id: &str) {
-        self.syncer.asked(website_id);
+        self.syncer.sync(website_id);
     }
 
     /// Publish the website: whichever integration answers for it prepares the
-    /// build and sends it, or git alone sends it as it is
+    /// build and sends it
     ///
-    /// Sending is not publishing. A forge takes what was pushed and builds it,
+    /// Sending is not publishing. The host takes what was pushed and builds it,
     /// and until it says that build worked nobody knows whether the website is
     /// online: a repository with its builds turned off takes every push and
-    /// serves nothing. So the job stays open until the forge has answered.
+    /// serves nothing. So the job stays open until the host has answered.
     fn deploy(
         &self,
         website_id: &str,
@@ -279,40 +274,32 @@ impl silex_server::Actions for SilexActions {
 
         // A website with nowhere to send it is a local one, which is a way of
         // working rather than something missing. The server says so itself,
-        // once, for whoever publishes without a forge.
+        // once, for whoever publishes without one.
         let Some(remote_url) = git::remote_url(&site) else {
             return;
         };
 
-        // Where the user says their website is served, as the editor sent it
-        // with this publication. Trimmed of the spaces a field collects, and an
-        // empty one is nobody having named an address.
-        let website_url = options
-            .website_url
-            .as_deref()
-            .map(str::trim)
-            .filter(|url| !url.is_empty());
-
         let remote = without_secret(&remote_url).to_string();
-        // None when no integration recognises the website: it is versioned and
-        // sent all the same, and building it is up to whoever hosts it
+        // One instance is not another, and a GitLab of one's own is not
+        // gitlab.com: the user is told the host they push to, never the name of
+        // the software it runs
+        let host = Remote::host_of(&remote_url).unwrap_or_else(|| remote.clone());
         let sent = self
             .integrations
-            .publish(&site, website_url, &|step| job.step(step))
+            .publish(&site, &host, options, &|step| job.step(step))
             .map(|published| {
-                published.map(|published| {
-                    let signed_in = published.urls.is_some();
-                    let urls = published.urls.unwrap_or_default();
-                    Sent {
-                        build_url: published.provider.watch(&urls, &published.prepared),
-                        site_url: urls.site,
-                        settings_url: urls.settings,
-                        provider: published.provider,
-                        cli: published.cli,
-                        prepared: published.prepared,
-                        signed_in,
-                    }
-                })
+                let signed_in = published.urls.is_some();
+                let urls = published.urls.unwrap_or_default();
+                Sent {
+                    build_url: published.provider.watch(&urls, &published.prepared),
+                    site_url: urls.site,
+                    settings_url: urls.settings,
+                    provider: published.provider,
+                    cli: published.cli,
+                    host: host.clone(),
+                    prepared: published.prepared,
+                    signed_in,
+                }
             });
 
         match sent {
@@ -321,7 +308,7 @@ impl silex_server::Actions for SilexActions {
                 // What the program answered, and nothing read into it. Silex
                 // knows the publication failed; why it failed is written in
                 // words it did not choose, in a form that changes with the
-                // version of git, the forge and the language of the machine.
+                // version of git, the host and the language of the machine.
                 // Reading a cause out of them means being wrong one day, and
                 // being wrong here sends somebody looking in the wrong place.
                 job.detail(failure.clone());
@@ -331,16 +318,9 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ));
             }
-            // Nobody Silex knows publishes there, and the website was pushed as
-            // it is: what happens to it next is not something to guess at
-            Ok(None) => job.succeeded(message::explained(
-                &format!("Your website is saved and sent to {}.", remote),
-                "Silex does not know how to publish it there, so putting it online is up to you.",
-                &[on_this_computer()],
-            )),
-            // The forge takes the website but nobody is signed in to it, so
-            // there is no way to ask what its build did
-            Ok(Some(sent)) if !sent.signed_in => {
+            // The website is taken but nobody is signed in, so there is no way
+            // to ask what its build did
+            Ok(sent) if !sent.signed_in => {
                 let program = sent.provider.program();
                 job.succeeded(message::explained(
                     &format!("Your website is sent to {}.", remote),
@@ -351,11 +331,11 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ))
             }
-            Ok(Some(sent)) => watch(job, &site, &sent, &files, Patience::default()),
+            Ok(sent) => watch(job, &site, &sent, &files, Patience::default()),
         }
     }
 
-    /// The forge the website being edited is on, named to the editor, with what
+    /// Where the website being edited is kept, named to the editor, with what
     /// its program answered about it and what it could not answer
     ///
     /// None as long as no website is open, and none for a website no
@@ -391,11 +371,14 @@ impl SilexActions {
 
         // An integration that could not tell is not one that said no, but here
         // there is nothing to fail: the editor is told what it was told before.
-        // No address handed over: nobody is publishing, and what the user
-        // named is with the editor, which keeps it saved and prefers it to
+        // No options handed over: nobody is publishing, and what the user
+        // answered is with the editor, which keeps it saved and prefers it to
         // anything answered here
-        let (provider, _cli, urls) = match self.integrations.resolve_deploy(&site, None) {
-            Ok(resolved) => resolved.into_parts()?,
+        let asked = self
+            .integrations
+            .resolve_deploy(&site, &PublicationOptions::default());
+        let (provider, _cli, urls) = match asked {
+            Ok(answered) => answered?,
             Err(e) => {
                 tracing::warn!("Could not tell what serves website {}: {}", website_id, e);
                 return None;
@@ -404,28 +387,31 @@ impl SilexActions {
         let options_form = provider.options_form(&site);
         Some(Hosting {
             connector_id: "fs-hosting",
-            display_name: provider.display_name().to_string(),
-            // No form, no options. A forge whose program knows where it
-            // serves a website says so again when it publishes it.
-            options: options_form.as_ref().and(
-                urls.and_then(|urls| urls.site)
-                    .map(|url| serde_json::json!({ "websiteUrl": url })),
-            ),
+            display_name: Remote::of(&site)?.host,
+            // Only what the program of the host answered by itself. A host that
+            // asks instead is left to its form: an address worked out from a
+            // field nobody has filled in yet would land in that very field and
+            // stay there, whatever the user answers afterwards.
+            options: options_form
+                .is_none()
+                .then(|| urls.and_then(|urls| urls.site))
+                .flatten()
+                .map(|url| serde_json::json!({ "websiteUrl": url })),
             options_form,
         })
     }
 }
 
-/// Ask the forge what its build did, until it says, and tell the user
+/// Ask what the build did, until it says, and tell the user
 ///
 /// Nothing here ever calls a publication a success on its own: the website is
-/// live when the forge says its build worked, and not when a push returned.
+/// live when the host says its build worked, and not when a push returned.
 fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
-    let forge = sent.provider.display_name();
+    let host = sent.host.as_str();
     let ask = || sent.provider.build(&sent.cli, site, &sent.prepared);
     let building = |build_url: &str| {
         message::told(
-            &format!("Building your website on {}", forge),
+            &format!("Building your website on {}", host),
             &[
                 Button::secondary("See the build", build_url),
                 Button::secondary(FILES_ON_THIS_COMPUTER, files),
@@ -434,9 +420,9 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     };
     let build_url = sent.build_url.clone().unwrap_or_default();
     job.progress(building(&build_url));
-    job.step(format!("Waiting for {} to start the build", forge));
+    job.step(format!("Waiting for {} to start the build", host));
 
-    // Looking for the build this publication started. A forge that has
+    // Looking for the build this publication started. A host that has
     // nothing to show after a minute is one that will never build it.
     let started = Instant::now();
     let mut answered = false;
@@ -445,10 +431,10 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
         match ask() {
             Ok(Build::Unknown) => {
                 return job.succeeded(message::explained(
-                    &format!("Your website is sent to {}.", forge),
+                    &format!("Your website is sent to {}.", host),
                     &format!(
                         "Silex cannot follow builds on {}, so check there that it worked.",
-                        forge
+                        host
                     ),
                     &[
                         Button::secondary("See the builds", &build_url),
@@ -458,7 +444,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             }
             Ok(Build::Refused(why)) => {
                 return job.failed(message::explained(
-                    &format!("{} did not build your website.", forge),
+                    &format!("{} did not build your website.", host),
                     &why,
                     &[
                         Button::secondary(
@@ -471,24 +457,24 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             }
             Ok(Build::NotStarted) => answered = true,
             Ok(build) => break build,
-            // A forge that could not be asked this time is asked again:
+            // A host that could not be asked this time is asked again:
             // one refused request is not an answer about a build
             Err(e) => {
-                tracing::warn!("Could not ask {} about the build: {}", forge, e);
+                tracing::warn!("Could not ask {} about the build: {}", host, e);
                 could_not_ask = Some(e);
             }
         }
         if started.elapsed() >= patience.a_build_starts_within {
-            // Never once got an answer: what is known is that the forge
+            // Never once got an answer: what is known is that the host
             // could not be asked, not that it built nothing
             let never_answered = if answered { None } else { could_not_ask };
-            return nothing_built_it(job, forge, sent, files, never_answered);
+            return nothing_built_it(job, host, sent, files, never_answered);
         }
         std::thread::sleep(patience.looking_for_the_build);
     };
 
-    // The build exists: followed until the forge says how it ended
-    job.step(format!("{} started building your website", forge));
+    // The build exists: followed until the host says how it ended
+    job.step(format!("{} started building your website", host));
     let mut build = running;
     let started = Instant::now();
     loop {
@@ -508,7 +494,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                     ),
                     None => message::explained(
                         "Your website is built.",
-                        &format!("Silex does not know the address {} serves it at.", forge),
+                        &format!("Silex does not know the address {} serves it at.", host),
                         &[Button::secondary(
                             "Address and domain",
                             sent.settings_url.as_deref().unwrap_or_default(),
@@ -518,7 +504,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             }
             Build::Failed { ref url, ref reason } => {
                 return job.failed(message::explained(
-                    &format!("The build of your website failed on {}.", forge),
+                    &format!("The build of your website failed on {}.", host),
                     reason.as_deref().unwrap_or(
                         "Read the build to see what went wrong, then publish again.",
                     ),
@@ -534,7 +520,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             Build::Running(ref url) => {
                 job.progress(building(url.as_deref().unwrap_or(&build_url)))
             }
-            // A forge that stops answering about a build it was answering
+            // A host that stops answering about a build it was answering
             // about is one to ask again, not one to draw a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
         }
@@ -558,18 +544,18 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
         build = match ask() {
             Ok(build) => build,
             Err(e) => {
-                tracing::warn!("Could not ask {} about the build: {}", forge, e);
+                tracing::warn!("Could not ask {} about the build: {}", host, e);
                 Build::Unknown
             }
         };
     }
 }
 
-/// Say that the forge never started a build, which is what a website that looks
+/// Say that no build ever started, which is what a website that looks
 /// published and is nowhere really comes down to
 fn nothing_built_it(
 job: &Job,
-    forge: &str,
+    host: &str,
     sent: &Sent,
     files: &str,
     could_not_ask: Option<String>,
@@ -580,7 +566,7 @@ job: &Job,
     if let Some(why) = could_not_ask {
         job.detail(why);
         return job.failed(message::explained(
-            &format!("Silex could not ask {} what became of the build.", forge),
+            &format!("Silex could not ask {} what became of the build.", host),
             "Your website was sent. Check the build yourself to see whether it worked.",
             &[
                 Button::primary("See the builds", build_url),
@@ -590,8 +576,8 @@ job: &Job,
     }
 
     job.failed(message::explained(
-        &format!("{} did not start a build.", forge),
-        "Your website was sent, but nothing built it, so it is not online. Check that builds are turned on for this repository, and that your account on the forge is verified.",
+        &format!("{} did not start a build.", host),
+        "Your website was sent, but nothing built it, so it is not online. Check that builds are turned on for this repository, and that your account there is verified.",
         &[
             Button::primary("Repository settings", settings_url),
             Button::secondary("See the builds", build_url),
@@ -605,7 +591,7 @@ job: &Job,
 mod sending {
     use super::*;
 
-    /// A syncer that notes what it was asked to send instead of reaching a forge
+    /// A syncer that notes what it was asked to send instead of sending it
     fn watching(sent_after: Duration) -> (Arc<Syncer>, Arc<Mutex<Vec<String>>>) {
         let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let noted = sent.clone();
@@ -643,7 +629,7 @@ mod sending {
         // Typing in the editor: one save after another, none of them far enough
         // apart to be the last
         for _ in 0..5 {
-            syncer.asked("site");
+            syncer.sync("site");
             std::thread::sleep(Duration::from_millis(20));
         }
         assert!(pushed(&sent).is_empty(), "sent while its author was still working");
@@ -658,11 +644,11 @@ mod sending {
 #[cfg(test)]
 mod publications {
     use super::*;
-    use crate::integrations::deploy::{Answer, Urls};
+    use crate::integrations::deploy::Urls;
     use silex_server::{JobData, JobStatus, Jobs};
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    /// What a forge answers when it is asked about a build
+    /// What a host answers when it is asked about a build
     #[derive(Clone, Copy)]
     enum Says {
         /// It has nothing about this publication
@@ -678,31 +664,36 @@ mod publications {
         Unreachable,
     }
 
-    /// A forge that answers what the test lined up, in order, and keeps
+    /// A host that answers what the test lined up, in order, and keeps
     /// repeating the last answer
-    struct Forge {
+    struct Host {
         says: &'static [Says],
         asked: AtomicUsize,
     }
 
-    impl Deploy for Forge {
+    impl Deploy for Host {
         fn program(&self) -> &'static str {
-            "forge"
+            "host"
         }
 
-        fn display_name(&self) -> &'static str {
-            "Codeberg"
+        fn keeps(&self, _site: &Path) -> bool {
+            true
         }
 
-        fn urls(&self, _cli: &Path, _site: &Path, _website_url: Option<&str>) -> Result<Answer, String> {
-            Ok(Answer::Yes(Urls::default()))
+        fn urls(
+            &self,
+            _cli: &Path,
+            _site: &Path,
+            _options: &PublicationOptions,
+        ) -> Result<Option<Urls>, String> {
+            Ok(Some(Urls::default()))
         }
 
         fn deploy(
             &self,
             _cli: &Path,
             _site: &Path,
-            _website_url: Option<&str>,
+            _options: &PublicationOptions,
         ) -> Result<Prepared, String> {
             Ok(Prepared::default())
         }
@@ -723,7 +714,7 @@ mod publications {
                 },
                 Says::CannotBeFollowed => Build::Unknown,
                 Says::Unreachable => {
-                    return Err("forge failed: Could not resolve host: codeberg.org".to_string())
+                    return Err("host failed: Could not resolve host: codeberg.org".to_string())
                 }
             })
         }
@@ -731,11 +722,12 @@ mod publications {
 
     const FILES: &str = "file:///data/site/public";
 
-    /// A publication that has been sent to a forge which answers this
-    fn sent(forge: &'static Forge) -> Sent {
+    /// A publication sent to a host that answers this
+    fn sent(host: &'static Host) -> Sent {
         Sent {
-            provider: forge,
+            provider: host,
             cli: PathBuf::from("/nowhere"),
+            host: "codeberg.org".to_string(),
             prepared: Prepared::default(),
             site_url: Some("https://alex.codeberg.page/site/".to_string()),
             settings_url: Some("https://codeberg.org/alex/site/settings".to_string()),
@@ -755,19 +747,19 @@ mod publications {
     }
 
     /// Follow one publication to its end and read what the user was told
-    fn followed(forge: &'static Forge) -> JobData {
+    fn followed(host: &'static Host) -> JobData {
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), &sent(forge), FILES, quickly());
+        watch(&job, Path::new("/nowhere"), &sent(host), FILES, quickly());
         jobs.read(job.id()).expect("the publication was just followed")
     }
 
     #[test]
-    fn a_forge_that_never_starts_a_build_is_not_a_publication_that_worked() {
+    fn a_host_that_never_starts_a_build_is_not_a_publication_that_worked() {
         // Codeberg with its Actions off, and gitlab.com with an account it has
         // not verified: the push works, and the website is never built. This is
         // the failure Silex used to show as a green success.
-        static NOTHING: Forge = Forge {
+        static NOTHING: Host = Host {
             says: &[Says::Nothing],
             asked: AtomicUsize::new(0),
         };
@@ -783,8 +775,8 @@ mod publications {
     }
 
     #[test]
-    fn a_build_the_forge_says_worked_is_the_website_being_live() {
-        static BUILDS: Forge = Forge {
+    fn a_build_the_host_says_worked_is_the_website_being_live() {
+        static BUILDS: Host = Host {
             says: &[Says::Nothing, Says::Running, Says::Running, Says::Built],
             asked: AtomicUsize::new(0),
         };
@@ -800,8 +792,8 @@ mod publications {
     }
 
     #[test]
-    fn a_forge_that_says_it_will_not_build_says_so_without_the_wait() {
-        static REFUSES: Forge = Forge {
+    fn a_host_that_says_it_will_not_build_says_so_without_the_wait() {
+        static REFUSES: Host = Host {
             says: &[Says::Refuses],
             asked: AtomicUsize::new(0),
         };
@@ -812,13 +804,13 @@ mod publications {
         assert!(told.message.contains("Actions are turned off"), "{}", told.message);
         assert!(
             started.elapsed() < quickly().a_build_starts_within,
-            "a forge that answered has nothing to be waited for"
+            "a host that answered has nothing to be waited for"
         );
     }
 
     #[test]
     fn a_build_that_failed_is_told_with_where_to_read_it() {
-        static FAILS: Forge = Forge {
+        static FAILS: Host = Host {
             says: &[Says::Running, Says::Failed],
             asked: AtomicUsize::new(0),
         };
@@ -834,8 +826,8 @@ mod publications {
     }
 
     #[test]
-    fn a_forge_silex_cannot_follow_is_said_rather_than_called_a_success() {
-        static UNFOLLOWED: Forge = Forge {
+    fn a_host_silex_cannot_follow_is_said_rather_than_called_a_success() {
+        static UNFOLLOWED: Host = Host {
             says: &[Says::CannotBeFollowed],
             asked: AtomicUsize::new(0),
         };
@@ -852,8 +844,8 @@ mod publications {
     }
 
     #[test]
-    fn a_forge_that_could_not_be_asked_at_all_is_not_a_forge_that_built_nothing() {
-        static UNREACHABLE: Forge = Forge {
+    fn a_host_that_could_not_be_asked_at_all_is_not_a_host_that_built_nothing() {
+        static UNREACHABLE: Host = Host {
             says: &[Says::Unreachable],
             asked: AtomicUsize::new(0),
         };
@@ -866,7 +858,7 @@ mod publications {
         assert!(told.message.contains("could not ask"), "{}", told.message);
         assert!(
             !told.message.contains("did not start a build"),
-            "not knowing is not the forge having built nothing: {}",
+            "not knowing is not the host having built nothing: {}",
             told.message
         );
         // And what the program said is there for whoever wants to read it
@@ -875,10 +867,10 @@ mod publications {
     }
 
     #[test]
-    fn what_silex_wrote_is_offered_while_the_forge_is_still_building() {
+    fn what_silex_wrote_is_offered_while_the_host_is_still_building() {
         // The user waits on a build that is not theirs to speed up, and the
         // files the editor generated are on their disk already
-        static BUILDING: Forge = Forge {
+        static BUILDING: Host = Host {
             says: &[Says::Running],
             asked: AtomicUsize::new(0),
         };
@@ -896,12 +888,12 @@ mod publications {
         assert!(while_it_builds.message.contains("Building"), "{}", while_it_builds.message);
         assert!(
             while_it_builds.message.contains(FILES),
-            "the files are there to open while the forge works: {}",
+            "the files are there to open while the host works: {}",
             while_it_builds.message
         );
         assert!(
             !while_it_builds.message.contains("now live"),
-            "nothing is live until the forge says so: {}",
+            "nothing is live until the host says so: {}",
             while_it_builds.message
         );
 

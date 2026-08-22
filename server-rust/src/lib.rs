@@ -17,7 +17,9 @@ mod actions;
 mod config;
 mod error;
 mod frontend;
+mod history;
 mod jobs;
+pub mod message;
 mod models;
 mod publish;
 mod routes;
@@ -26,8 +28,9 @@ mod storage;
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
-pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOptions};
+pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 pub use config::{Config, PORT};
+pub use history::{tag, untag, version, Versioned};
 pub use jobs::{Job, JobData, JobStatus, Jobs};
 pub use storage::published_files_url;
 
@@ -38,7 +41,7 @@ pub async fn build_app(config: Config) -> (Router, u16) {
     }
 
     let app = Router::new()
-        .nest("/api", routes::api_routes())
+        .nest("/api", routes::api_routes(config.body_limit))
         .with_state(routes::AppState::new(&config));
 
     let app = frontend::configure(app).layer(TraceLayer::new_for_http());

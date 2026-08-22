@@ -14,7 +14,7 @@
 //! once something serves it. That is how the hosted version talks to the same
 //! dialog, and the buttons wear the classes the dialog already styles.
 //!
-//! Everything that goes in comes from a forge or from a path on this machine,
+//! Everything that goes in comes from the host or from a path on this machine,
 //! so all of it is escaped: a repository is named by its owner, and a quote in
 //! a name would otherwise end an attribute early.
 
@@ -47,7 +47,7 @@ impl<'a> Button<'a> {
 /// What the button opening the files of the website says
 ///
 /// Never the published website: these are the files the editor generated, the
-/// page generator runs on the forge, and a website whose pages are named by its
+/// page generator runs on the host, and a website whose pages are named by its
 /// author may have no `index.html` among them. Opening this can show a list of
 /// files, which is what it promises.
 pub const FILES_ON_THIS_COMPUTER: &str = "See the files on this computer";
@@ -136,17 +136,17 @@ mod tests {
 
     #[test]
     fn a_button_with_nowhere_to_go_is_not_shown() {
-        // A forge that could not say where its build is still gets a message
+        // A host that could not say where its build is still gets a message
         let written = told("Building your website", &[Button::secondary("See the build", "")]);
         assert_eq!(written, "<p><strong>Building your website</strong></p>");
         assert!(!written.contains("<div"), "no empty row of buttons: {}", written);
     }
 
     #[test]
-    fn what_a_forge_named_cannot_end_an_attribute_of_ours() {
+    fn what_a_host_named_cannot_end_an_attribute_of_ours() {
         let written = told(
             "The build failed",
-            &[Button::secondary("See the build", "https://forge/x\"><script>alert(1)</script>")],
+            &[Button::secondary("See the build", "https://host/x\"><script>alert(1)</script>")],
         );
         assert!(!written.contains("<script>"), "{}", written);
         assert!(written.contains("&quot;&gt;&lt;script&gt;"), "{}", written);

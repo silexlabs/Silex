@@ -7,206 +7,95 @@
  * the Free Software Foundation, either version 3 of the License, or any later version.
  */
 
-//! Versioning a website, and sending it somewhere
+//! The git of the user, and what it knows about a website
 //!
-//! Two different things, done two different ways. Making a version of a website
-//! is reading and writing files in its own folder, and the library embedded in
-//! Silex does it: it works whether or not the user has git, so a website always
-//! has a history. Sending that version to a forge is somebody else's network,
-//! somebody else's keys and somebody else's passwords — the git of the user
-//! does that, because it already knows all three.
-//!
-//! Versions the website the way the SaaS server does on GitLab: one commit per
-//! save, on one branch, everything in it. A website is a folder of files first.
+//! Sending a website somewhere is somebody else's network, somebody else's keys
+//! and somebody else's passwords, and the git of the user already knows all
+//! three. How a repository is set up is read through that same program, so that
+//! Silex carries no git of its own. Making versions of a website is not done
+//! here at all: a history is files in the website folder, and the server keeps
+//! it.
 
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 
-use git2::{IndexAddOption, Repository, RepositoryInitOptions, RepositoryOpenFlags};
+use super::run::{failure, run, run_catch_up, run_transfer, run_transfer_verbatim, Ran};
 
-use super::run::{failure, run_transfer, run_transfer_verbatim, Ran};
-
-/// The branch a website is versioned on
-///
-/// Not the one the user's git config would pick: publishing pushes to this one.
+/// The branch assumed when git cannot say which one HEAD is on
 const BRANCH: &str = "main";
 
-/// Who a website is committed as, when the user never told git who they are
-const NOBODY: (&str, &str) = ("Silex", "silex@localhost");
-
-// ---------------------------------------------------------------------------
-// Versioning: the website's own folder, with no program to install
-// ---------------------------------------------------------------------------
-
-/// Add everything in the website folder to a new version of it
+/// Ask git about the repository of the website, and nothing over the network
 ///
-/// Nothing is left out but what the website's own `.gitignore` says: the
-/// published files live in the website folder too, and the SaaS keeps sources
-/// and publication in the same repository.
-pub fn version(site: &Path, message: &str) -> Result<(), String> {
-    patiently(|| {
-        let repo = open_or_start(site)?;
-        let mut index = repo.index().map_err(said)?;
-        // What `git add -A` does, in the two halves libgit2 keeps apart: what
-        // is already followed and may have been changed or deleted, then what
-        // is new
-        index.update_all(["*"], None).map_err(said)?;
-        index.add_all(["*"], IndexAddOption::DEFAULT, None).map_err(said)?;
-        index.write().map_err(said)?;
-
-        let tree_id = index.write_tree().map_err(said)?;
-        let last = repo.head().ok().and_then(|head| head.peel_to_commit().ok());
-
-        // Saving a website that did not change is not a failure, it just has
-        // nothing to version
-        if last.as_ref().is_some_and(|last| last.tree_id() == tree_id) {
-            return Ok(());
-        }
-
-        let tree = repo.find_tree(tree_id).map_err(said)?;
-        let who = whoever(&repo)?;
-        let parents: Vec<&git2::Commit> = last.iter().collect();
-        repo.commit(Some("HEAD"), &who, &who, message, &tree, &parents)
-            .map_err(said)?;
-        Ok(())
-    })
-}
-
-/// Name this version, so that a forge knows a publication when it sees one
-pub fn tag(site: &Path, tag: &str) -> Result<(), String> {
-    patiently(|| {
-        let repo = open(site)?;
-        let head = repo.head().and_then(|head| head.peel(git2::ObjectType::Commit)).map_err(said)?;
-        repo.tag_lightweight(tag, &head, false).map_err(said)?;
-        Ok(())
-    })
-}
-
-/// Take back a name given to a version nobody else ever saw
-pub fn untag(site: &Path, tag: &str) {
-    if let Ok(repo) = open(site) {
-        let _ = repo.tag_delete(tag);
+/// Only the repository in the website folder is read. A website can sit inside
+/// a repository of somebody else's, and git climbs up to that one when the
+/// folder has none, which would answer for the wrong repository.
+fn asked(site: &Path, args: &[&str]) -> Option<String> {
+    if !site.join(".git").exists() {
+        return None;
     }
+    run(&Git::found()?.program, site, args).ok()
 }
 
-/// The remote this website is published to: `origin` when there is one, the
-/// first the user configured otherwise
+/// Every remote of the repository, with the URL it was given
+///
+/// Read from the config rather than from `git remote get-url`, which resolves
+/// insteadOf rewrites: the host of a website is told from what the user wrote,
+/// and pushing resolves them anyway.
+fn remotes(site: &Path) -> Vec<(String, String)> {
+    let Some(configured) = asked(site, &["config", "--local", "--get-regexp", r"^remote\..*\.url$"]) else {
+        return Vec::new();
+    };
+
+    let mut found: Vec<(String, String)> = Vec::new();
+    for line in configured.lines() {
+        let Some((setting, url)) = line.split_once(' ') else {
+            continue;
+        };
+        let name = setting.strip_prefix("remote.").and_then(|rest| rest.strip_suffix(".url"));
+        let Some(name) = name else {
+            continue;
+        };
+        let url = url.trim();
+        // A remote can be given several URLs, and git sends to the first
+        if name.is_empty() || url.is_empty() || found.iter().any(|(known, _)| known == name) {
+            continue;
+        }
+        found.push((name.to_string(), url.to_string()));
+    }
+    found
+}
+
+/// The remote a website is published to: `origin` when there is one, the first
+/// the user configured otherwise
 ///
 /// A repository somebody set up by hand does not always call it `origin`, and
 /// reading that name alone made those websites publish nothing at all, without
 /// a word.
+fn published_to(site: &Path) -> Option<(String, String)> {
+    let remotes = remotes(site);
+    remotes
+        .iter()
+        .find(|(name, _)| name == "origin")
+        .or_else(|| remotes.first())
+        .cloned()
+}
+
+/// The name of that remote
 pub fn remote_name(site: &Path) -> Option<String> {
-    let repo = open(site).ok()?;
-    let remotes = repo.remotes().ok()?;
-    let named: Vec<&str> = remotes.iter().filter_map(|name| name.ok().flatten()).collect();
-    if named.contains(&"origin") {
-        return Some("origin".to_string());
-    }
-    named.first().map(|name| name.to_string())
+    published_to(site).map(|(name, _)| name)
 }
 
-/// The URL of that remote
-///
-/// The raw configured URL, not resolved through insteadOf rewrites: the forge
-/// is told from what the user wrote, pushing still resolves them.
+/// Its URL, as the user wrote it
 pub fn remote_url(site: &Path) -> Option<String> {
-    let repo = open(site).ok()?;
-    let remote = repo.find_remote(&remote_name(site)?).ok()?;
-    let url = remote.url().ok()?.trim();
-    (!url.is_empty()).then(|| url.to_string())
+    published_to(site).map(|(_, url)| url)
 }
 
-/// The branch a publication sends
+/// The branch catching up pulls from
 fn branch_name(site: &Path) -> String {
-    fn named(site: &Path) -> Option<String> {
-        let repo = open(site).ok()?;
-        let head = repo.head().ok()?;
-        let name = head.shorthand().ok()?;
-        Some(name.to_string())
-    }
-    named(site).unwrap_or_else(|| BRANCH.to_string())
+    asked(site, &["symbolic-ref", "--short", "HEAD"])
+        .map(|name| name.trim().to_string())
+        .filter(|name| !name.is_empty())
+        .unwrap_or_else(|| BRANCH.to_string())
 }
-
-/// The website's repository, without ever climbing out of its folder
-///
-/// A website folder can sit inside a repository of somebody else's, and
-/// searching upwards would then version the wrong thing.
-fn open(site: &Path) -> Result<Repository, String> {
-    Repository::open_ext(site, RepositoryOpenFlags::NO_SEARCH, std::iter::empty::<&std::ffi::OsStr>())
-        .map_err(said)
-}
-
-fn open_or_start(site: &Path) -> Result<Repository, String> {
-    if let Ok(repo) = open(site) {
-        return Ok(repo);
-    }
-
-    let mut how = RepositoryInitOptions::new();
-    // The default branch name depends on the user's git config, and publishing
-    // pushes to this one
-    how.initial_head(BRANCH);
-    let repo = Repository::init_opts(site, &how).map_err(said)?;
-
-    // Committing needs a name and a mail address, and the user may never have
-    // set any. Each is looked at on its own: a user with a name but no address
-    // keeps their name. What is made up here is written in this repository, so
-    // that their own git works in this folder too; the global config is left
-    // alone.
-    let mut config = repo.config().map_err(said)?;
-    for (setting, made_up) in [("user.name", NOBODY.0), ("user.email", NOBODY.1)] {
-        if config.get_string(setting).is_err() {
-            config.set_str(setting, made_up).map_err(said)?;
-        }
-    }
-    Ok(repo)
-}
-
-/// Who to commit as: the user, when they told git who they are
-fn whoever(repo: &Repository) -> Result<git2::Signature<'static>, String> {
-    repo.signature()
-        .or_else(|_| git2::Signature::now(NOBODY.0, NOBODY.1))
-        .map_err(said)
-}
-
-fn said(e: git2::Error) -> String {
-    e.message().to_string()
-}
-
-/// Do it, waiting out another git that holds the repository
-///
-/// Two of them writing in the same repository at the same time: the second
-/// finds a lock file and refuses. Silex takes a lock of its own per website,
-/// but a git the user started themselves knows nothing of it, and so does a
-/// tool watching the folder. Waiting is what a person would do.
-fn patiently<T>(mut work: impl FnMut() -> Result<T, String>) -> Result<T, String> {
-    let mut wait = Duration::from_millis(50);
-    for _ in 0..4 {
-        match work() {
-            Err(refused) if holds_the_repository(&refused) => {
-                std::thread::sleep(wait);
-                wait *= 2;
-            }
-            answered => return answered,
-        }
-    }
-    work()
-}
-
-/// Whether it refused because another git is working in this repository
-///
-/// It is not only the index: the same collision happens on `HEAD`, on a branch
-/// and on the packed refs, and each says so its own way. What must not be
-/// caught is a failure that merely says something close.
-fn holds_the_repository(refused: &str) -> bool {
-    (refused.contains(".lock") || refused.contains("failed to lock"))
-        && (refused.contains("File exists")
-            || refused.contains("cannot lock ref")
-            || refused.contains("failed to lock"))
-}
-
-// ---------------------------------------------------------------------------
-// Sending: the user's git, because it already knows their keys
-// ---------------------------------------------------------------------------
 
 /// The git program found on this machine
 pub struct Git {
@@ -214,12 +103,24 @@ pub struct Git {
 }
 
 impl Git {
-    /// The git of this machine, looked for when there is something to send
+    /// The git of this machine, looked for once and kept
     ///
     /// Not an integration: nothing to turn on, nothing to remember. A machine
     /// with no git still saves and versions websites, only sending needs it.
+    ///
+    /// Every candidate is asked its version rather than the first being taken:
+    /// a file being there does not mean it runs, and a broken install first in
+    /// the PATH would otherwise hide a working one further down.
     pub fn found() -> Option<Self> {
-        super::candidates("git").into_iter().next().map(|program| Git { program })
+        static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
+        FOUND
+            .get_or_init(|| {
+                super::programs::candidates("git")
+                    .into_iter()
+                    .find(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
+            })
+            .clone()
+            .map(|program| Git { program })
     }
 
     /// Push the branch, and the tag when there is one
@@ -234,7 +135,7 @@ impl Git {
         });
         if let Err(e) = pushed {
             if let Some(tag) = tag {
-                untag(site, tag);
+                silex_server::untag(site, tag);
             }
             return Err(e);
         }
@@ -256,7 +157,7 @@ impl Git {
             return Err(failure(&self.program, &ran));
         }
         Err(format!(
-            "The repository this website is sent to has versions Silex does not have. Close the website and open it again to catch up with them, then publish. {}",
+            "The repository this website is sent to has versions Silex does not have. {}",
             failure(&self.program, &ran)
         ))
     }
@@ -271,7 +172,7 @@ impl Git {
             return Ok(());
         };
         let branch = branch_name(site);
-        self.send(site, &["pull", "--ff-only", &remote, &branch]).map(|_| ())
+        run_catch_up(&self.program, site, &["pull", "--ff-only", &remote, &branch]).map(|_| ())
     }
 
     /// A push carries the whole website the first time, and gets the time
@@ -297,111 +198,50 @@ fn behind_remote(ran: &Ran) -> bool {
 mod tests {
     use super::*;
 
-    fn a_website(name: &str) -> PathBuf {
+    /// A repository written by hand, so that no git has to run to make one
+    fn a_website(name: &str, remotes: &str) -> PathBuf {
         let site = std::env::temp_dir().join(format!("silex-git-{}-{}", name, std::process::id()));
         let _ = std::fs::remove_dir_all(&site);
-        std::fs::create_dir_all(&site).unwrap();
+        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
+        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
+        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
+        let config = format!("[core]\n\trepositoryformatversion = 0\n{}", remotes);
+        std::fs::write(site.join(".git/config"), config).unwrap();
         site
     }
 
     #[test]
-    fn versions_a_website_without_git_installed() {
-        let site = a_website("version");
-        std::fs::write(site.join("index.html"), "<h1>one</h1>").unwrap();
+    fn the_remote_is_origin_or_the_first_one_configured() {
+        if Git::found().is_none() {
+            return;
+        }
 
-        version(&site, "Update website data from Silex").unwrap();
-        let repo = open(&site).unwrap();
-        let head = repo.head().unwrap().peel_to_commit().unwrap();
-        assert_eq!(head.message().unwrap(), "Update website data from Silex");
-        assert_eq!(repo.head().unwrap().shorthand().unwrap(), "main", "publishing pushes to main");
-
-        // Saving a website that did not change has nothing to version
-        version(&site, "again").unwrap();
-        let repo = open(&site).unwrap();
-        assert_eq!(repo.head().unwrap().peel_to_commit().unwrap().id(), head.id());
-
-        // What changed, and what was deleted, both make it into the next one
-        std::fs::write(site.join("index.html"), "<h1>two</h1>").unwrap();
-        std::fs::write(site.join("about.html"), "<h1>about</h1>").unwrap();
-        version(&site, "second").unwrap();
-        std::fs::remove_file(site.join("about.html")).unwrap();
-        version(&site, "third").unwrap();
-
-        let repo = open(&site).unwrap();
-        let head = repo.head().unwrap().peel_to_commit().unwrap();
-        let tree = head.tree().unwrap();
-        assert!(tree.get_name("index.html").is_some());
-        assert!(tree.get_name("about.html").is_none(), "a deleted file is deleted in the version too");
-
+        let site = a_website(
+            "origin",
+            "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n[remote \"origin\"]\n\turl = https://gitlab.com/lexoyo/site.git\n",
+        );
+        assert_eq!(remote_name(&site).as_deref(), Some("origin"));
+        assert_eq!(remote_url(&site).as_deref(), Some("https://gitlab.com/lexoyo/site.git"));
+        assert_eq!(branch_name(&site), "main");
         let _ = std::fs::remove_dir_all(&site);
-    }
 
-    #[test]
-    fn what_the_gitignore_says_is_left_out() {
-        let site = a_website("ignore");
-        std::fs::write(site.join(".gitignore"), "_site/\n").unwrap();
-        std::fs::create_dir_all(site.join("_site")).unwrap();
-        std::fs::write(site.join("_site/index.html"), "built").unwrap();
-        std::fs::write(site.join("index.html"), "source").unwrap();
-
-        version(&site, "one").unwrap();
-        let repo = open(&site).unwrap();
-        let head = repo.head().unwrap().peel_to_commit().unwrap();
-        let tree = head.tree().unwrap();
-        assert!(tree.get_name("index.html").is_some());
-        assert!(tree.get_name("_site").is_none(), "the built site is not part of the website");
-
+        // A repository set up by hand does not always call it origin, and
+        // those websites used to publish nothing at all
+        let site = a_website("named", "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n");
+        assert_eq!(remote_name(&site).as_deref(), Some("backup"));
+        assert_eq!(remote_url(&site).as_deref(), Some("git@codeberg.org:alex/site.git"));
         let _ = std::fs::remove_dir_all(&site);
-    }
 
-    #[test]
-    fn names_a_version_and_takes_the_name_back() {
-        let site = a_website("tag");
-        std::fs::write(site.join("index.html"), "one").unwrap();
-        version(&site, "one").unwrap();
-
-        tag(&site, "_silex_1").unwrap();
-        assert!(open(&site).unwrap().find_reference("refs/tags/_silex_1").is_ok());
-        untag(&site, "_silex_1");
-        assert!(open(&site).unwrap().find_reference("refs/tags/_silex_1").is_err());
-
+        let site = a_website("none", "");
+        assert_eq!(remote_name(&site), None);
         let _ = std::fs::remove_dir_all(&site);
-    }
 
-    #[test]
-    fn a_folder_inside_another_repository_is_versioned_on_its_own() {
-        let outer = a_website("outer");
-        std::fs::write(outer.join("theirs.txt"), "not ours").unwrap();
-        version(&outer, "theirs").unwrap();
-
-        let site = outer.join("a-website");
+        // A website with no repository is a website nothing can be read of
+        let site = std::env::temp_dir().join(format!("silex-git-bare-{}", std::process::id()));
         std::fs::create_dir_all(&site).unwrap();
-        std::fs::write(site.join("index.html"), "ours").unwrap();
-        version(&site, "ours").unwrap();
-
-        // Two repositories, not one: searching upwards would have versioned
-        // somebody else's folder
-        assert!(site.join(".git").exists());
-        let repo = open(&site).unwrap();
-        let head = repo.head().unwrap().peel_to_commit().unwrap();
-        let tree = head.tree().unwrap();
-        assert!(tree.get_name("theirs.txt").is_none());
-
-        let _ = std::fs::remove_dir_all(&outer);
-    }
-
-    #[test]
-    fn waits_out_another_git_but_not_anything_that_looks_like_it() {
-        assert!(holds_the_repository("fatal: Unable to create '/site/.git/index.lock': File exists."));
-        assert!(holds_the_repository(
-            "fatal: cannot lock ref 'HEAD': Unable to create '/site/.git/HEAD.lock': File exists."
-        ));
-        assert!(holds_the_repository("failed to lock file '/site/.git/index.lock' for writing"));
-        // A failure that merely says something close is not one to wait out:
-        // retrying would only make the user wait for the same refusal
-        assert!(!holds_the_repository("error: could not write config file .git/config: File exists"));
-        assert!(!holds_the_repository("fatal: pathspec 'package-lock.json' did not match any files"));
-        assert!(!holds_the_repository("fatal: not a git repository"));
+        assert_eq!(remote_url(&site), None);
+        assert_eq!(branch_name(&site), BRANCH);
+        let _ = std::fs::remove_dir_all(&site);
     }
 
     #[test]
@@ -414,7 +254,7 @@ mod tests {
         ));
         assert!(refused("!\tHEAD:refs/heads/main\t[rejected] (fetch first)"));
         // A hook that said no is not a remote that moved on: pulling would not
-        // help, and retrying would hide what the forge is refusing
+        // help, and retrying would hide what the remote is refusing
         assert!(!refused("!\tHEAD:refs/heads/main\t[remote rejected] (pre-receive hook declined)"));
         assert!(!refused("*\tHEAD:refs/heads/main\t[new branch]"));
         assert!(!refused(""));

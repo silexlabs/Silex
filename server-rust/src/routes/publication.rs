@@ -14,8 +14,8 @@
 //! - GET /api/publication/publication/status?jobId=X - Where that publication is
 //!
 //! The editor generates the files and sends them here. Writing them is quick;
-//! what a host application then does with them - sending them to a forge,
-//! waiting for that forge to build them - is not, and an HTTP request held open
+//! what a host application then does with them - sending them on, waiting for
+//! them to be built - is not, and an HTTP request held open
 //! for minutes is one a proxy or a laptop lid closes. So publishing answers a
 //! job straight away and the editor asks about it every couple of seconds,
 //! which is the contract it was written against on the hosted version.
@@ -160,8 +160,8 @@ async fn publish_website(
     publish::publish(&state.data_path, &query.website_id, &files).await?;
 
     // The files are written, and that is the one thing that can be promised
-    // here. Whoever takes them to a forge says the rest through the job, which
-    // the editor follows until the forge has answered.
+    // here. Whoever takes them further says the rest through the job, which
+    // the editor follows until an answer comes.
     let job = state.jobs.start(publishing_message(&state.data_path, &query.website_id));
     let answered = state
         .jobs
@@ -175,7 +175,7 @@ async fn publish_website(
         // Sending a website runs git over the network, on a thread of its own
         // so that a slow push does not freeze the server
         tokio::task::spawn_blocking(move || {
-            actions.deploy(&website_id, &options, &job);
+            actions.deploy(website_id.as_str(), &options, &job);
             // A host that has nothing to send the website to, or one that
             // returned without saying how it went, leaves the publication
             // where it really is rather than open forever
@@ -200,8 +200,12 @@ fn publishing_message(data_path: &std::path::Path, website_id: &WebsiteId) -> St
 }
 
 /// What the user reads when the files are all there is to say
+///
+/// Not a website that is online: nothing here sent it anywhere, and a website
+/// kept on this computer is a way of working rather than a publication that
+/// went wrong.
 fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
-    told("Your website is published.", data_path, website_id)
+    told("Your website is written on this computer.", data_path, website_id)
 }
 
 /// A sentence, and the one button this server can offer with it
@@ -211,13 +215,10 @@ fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> Str
 /// no `index.html` among them. So it says files on this computer, and never
 /// the published website.
 fn told(sentence: &str, data_path: &std::path::Path, website_id: &WebsiteId) -> String {
-    format!(
-        "<p><strong>{}</strong></p>\
-         <div class=\"buttons\">\
-         <a href=\"{}\" target=\"_blank\" class=\"silex-button silex-button--secondary\">\
-         See the files on this computer</a></div>",
+    let files = crate::storage::published_files_url(data_path, website_id.as_str());
+    crate::message::told(
         sentence,
-        crate::storage::published_files_url(data_path, website_id)
+        &[crate::message::Button::secondary(crate::message::FILES_ON_THIS_COMPUTER, &files)],
     )
 }
 
