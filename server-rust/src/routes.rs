@@ -81,7 +81,11 @@ pub fn api_routes(body_limit: usize) -> Router<AppState> {
 /// caller to the route that exists keeps both spellings working, whoever wrote
 /// them.
 async fn same_route_without_the_slash(OriginalUri(asked): OriginalUri) -> Response {
-    let Some(path) = asked.path().strip_suffix('/').filter(|path| !path.is_empty()) else {
+    let Some(path) = asked
+        .path()
+        .strip_suffix('/')
+        .filter(|path| !path.is_empty())
+    else {
         return (StatusCode::NOT_FOUND, "Not found").into_response();
     };
     let elsewhere = match asked.query() {
@@ -90,7 +94,11 @@ async fn same_route_without_the_slash(OriginalUri(asked): OriginalUri) -> Respon
     };
     // Permanent and method-preserving: a POST that lands here has a body to
     // carry over, which a 301 would turn into a GET
-    (StatusCode::PERMANENT_REDIRECT, [(axum::http::header::LOCATION, elsewhere)]).into_response()
+    (
+        StatusCode::PERMANENT_REDIRECT,
+        [(axum::http::header::LOCATION, elsewhere)],
+    )
+        .into_response()
 }
 
 /// Say what a body over the limit is, in words the person editing can act on

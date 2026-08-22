@@ -59,10 +59,15 @@ mod tests {
             path: "../../../elsewhere.txt".to_string(),
             content: b"anything".to_vec(),
         };
-        let refused = publish(&data_path, &website_id, &[leading_out]).await.unwrap_err();
+        let refused = publish(&data_path, &website_id, &[leading_out])
+            .await
+            .unwrap_err();
 
         assert!(refused.to_string().contains("elsewhere.txt"), "{}", refused);
-        assert!(!around.join("elsewhere.txt").exists(), "nothing is written outside the data folder");
+        assert!(
+            !around.join("elsewhere.txt").exists(),
+            "nothing is written outside the data folder"
+        );
 
         let page = File {
             path: "/about/index.html".to_string(),

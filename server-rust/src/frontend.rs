@@ -84,7 +84,11 @@ fn try_serve<E: Embed>(path: &str) -> Option<Response> {
         } else {
             mime.to_string()
         };
-        ([(header::CONTENT_TYPE, content_type)], content.data.to_vec()).into_response()
+        (
+            [(header::CONTENT_TYPE, content_type)],
+            content.data.to_vec(),
+        )
+            .into_response()
     })
 }
 

@@ -204,9 +204,7 @@ impl Syncer {
             .get(website_id)
             .copied()
     }
-
 }
-
 
 /// A website that left for its host, and what to ask about its build
 struct Sent {
@@ -250,14 +248,12 @@ impl silex_server::Actions for SilexActions {
     /// and until it says that build worked nobody knows whether the website is
     /// online: a repository with its builds turned off takes every push and
     /// serves nothing. So the job stays open until the host has answered.
-    fn deploy(
-        &self,
-        website_id: &str,
-        options: &silex_server::PublicationOptions,
-        job: &Job,
-    ) {
+    fn deploy(&self, website_id: &str, options: &silex_server::PublicationOptions, job: &Job) {
         let Some(site) = self.site_path(website_id) else {
-            tracing::warn!("Asked to publish a website that is not there: {}", website_id);
+            tracing::warn!(
+                "Asked to publish a website that is not there: {}",
+                website_id
+            );
             job.failed(message::told(
                 "Silex could not find the folder of this website.",
                 &[],
@@ -500,26 +496,24 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                             sent.settings_url.as_deref().unwrap_or_default(),
                         )],
                     ),
-                })
+                });
             }
-            Build::Failed { ref url, ref reason } => {
+            Build::Failed {
+                ref url,
+                ref reason,
+            } => {
                 return job.failed(message::explained(
                     &format!("The build of your website failed on {}.", host),
-                    reason.as_deref().unwrap_or(
-                        "Read the build to see what went wrong, then publish again.",
-                    ),
+                    reason
+                        .as_deref()
+                        .unwrap_or("Read the build to see what went wrong, then publish again."),
                     &[
-                        Button::primary(
-                            "See the build",
-                            url.as_deref().unwrap_or(&build_url),
-                        ),
+                        Button::primary("See the build", url.as_deref().unwrap_or(&build_url)),
                         Button::secondary(FILES_ON_THIS_COMPUTER, files),
                     ],
                 ))
             }
-            Build::Running(ref url) => {
-                job.progress(building(url.as_deref().unwrap_or(&build_url)))
-            }
+            Build::Running(ref url) => job.progress(building(url.as_deref().unwrap_or(&build_url))),
             // A host that stops answering about a build it was answering
             // about is one to ask again, not one to draw a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
@@ -554,7 +548,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
 /// Say that no build ever started, which is what a website that looks
 /// published and is nowhere really comes down to
 fn nothing_built_it(
-job: &Job,
+    job: &Job,
     host: &str,
     sent: &Sent,
     files: &str,
@@ -585,7 +579,6 @@ job: &Job,
         ],
     ))
 }
-
 
 #[cfg(test)]
 mod sending {
@@ -632,13 +625,18 @@ mod sending {
             syncer.sync("site");
             std::thread::sleep(Duration::from_millis(20));
         }
-        assert!(pushed(&sent).is_empty(), "sent while its author was still working");
+        assert!(
+            pushed(&sent).is_empty(),
+            "sent while its author was still working"
+        );
 
-        assert!(until(|| !pushed(&sent).is_empty()), "never left once the saves stopped");
+        assert!(
+            until(|| !pushed(&sent).is_empty()),
+            "never left once the saves stopped"
+        );
         std::thread::sleep(Duration::from_millis(120));
         assert_eq!(pushed(&sent), ["site"], "one pause, one push");
     }
-
 }
 
 #[cfg(test)]
@@ -751,7 +749,8 @@ mod publications {
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
         watch(&job, Path::new("/nowhere"), &sent(host), FILES, quickly());
-        jobs.read(job.id()).expect("the publication was just followed")
+        jobs.read(job.id())
+            .expect("the publication was just followed")
     }
 
     #[test]
@@ -766,11 +765,23 @@ mod publications {
         let told = followed(&NOTHING);
 
         assert_eq!(told.status, JobStatus::Error);
-        assert!(told.message.contains("did not start a build"), "{}", told.message);
-        assert!(!told.message.contains("live"), "nothing built it: {}", told.message);
+        assert!(
+            told.message.contains("did not start a build"),
+            "{}",
+            told.message
+        );
+        assert!(
+            !told.message.contains("live"),
+            "nothing built it: {}",
+            told.message
+        );
         // And the user is pointed at what to do about it, and at what is on
         // their own disk in the meantime
-        assert!(told.message.contains("Repository settings"), "{}", told.message);
+        assert!(
+            told.message.contains("Repository settings"),
+            "{}",
+            told.message
+        );
         assert!(told.message.contains(FILES), "{}", told.message);
     }
 
@@ -783,7 +794,11 @@ mod publications {
         let told = followed(&BUILDS);
 
         assert_eq!(told.status, JobStatus::Success);
-        assert!(told.message.contains("Your website is now live!"), "{}", told.message);
+        assert!(
+            told.message.contains("Your website is now live!"),
+            "{}",
+            told.message
+        );
         assert!(
             told.message.contains("https://alex.codeberg.page/site/"),
             "the address it is served at: {}",
@@ -801,7 +816,11 @@ mod publications {
         let told = followed(&REFUSES);
 
         assert_eq!(told.status, JobStatus::Error);
-        assert!(told.message.contains("Actions are turned off"), "{}", told.message);
+        assert!(
+            told.message.contains("Actions are turned off"),
+            "{}",
+            told.message
+        );
         assert!(
             started.elapsed() < quickly().a_build_starts_within,
             "a host that answered has nothing to be waited for"
@@ -835,7 +854,11 @@ mod publications {
 
         // The website was sent, so the publication did not fail
         assert_eq!(told.status, JobStatus::Success);
-        assert!(told.message.contains("cannot follow builds"), "{}", told.message);
+        assert!(
+            told.message.contains("cannot follow builds"),
+            "{}",
+            told.message
+        );
         assert!(
             !told.message.contains("now live"),
             "nobody checked: {}",
@@ -851,7 +874,13 @@ mod publications {
         };
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), &sent(&UNREACHABLE), FILES, quickly());
+        watch(
+            &job,
+            Path::new("/nowhere"),
+            &sent(&UNREACHABLE),
+            FILES,
+            quickly(),
+        );
         let told = jobs.read(job.id()).unwrap();
 
         assert_eq!(told.status, JobStatus::Error);
@@ -863,7 +892,11 @@ mod publications {
         );
         // And what the program said is there for whoever wants to read it
         assert_eq!(told.errors[0].len(), 1);
-        assert!(told.errors[0][0].contains("Could not resolve host"), "{:?}", told.errors);
+        assert!(
+            told.errors[0][0].contains("Could not resolve host"),
+            "{:?}",
+            told.errors
+        );
     }
 
     #[test]
@@ -879,13 +912,23 @@ mod publications {
         let job_id = job.id().to_string();
 
         let following = std::thread::spawn(move || {
-            watch(&job, Path::new("/nowhere"), &sent(&BUILDING), FILES, quickly());
+            watch(
+                &job,
+                Path::new("/nowhere"),
+                &sent(&BUILDING),
+                FILES,
+                quickly(),
+            );
         });
         std::thread::sleep(Duration::from_millis(10));
 
         let while_it_builds = jobs.read(&job_id).expect("the publication is still going");
         assert_eq!(while_it_builds.status, JobStatus::InProgress);
-        assert!(while_it_builds.message.contains("Building"), "{}", while_it_builds.message);
+        assert!(
+            while_it_builds.message.contains("Building"),
+            "{}",
+            while_it_builds.message
+        );
         assert!(
             while_it_builds.message.contains(FILES),
             "the files are there to open while the host works: {}",
@@ -901,6 +944,10 @@ mod publications {
         following.join().unwrap();
         let told = jobs.read(&job_id).unwrap();
         assert_eq!(told.status, JobStatus::Error);
-        assert!(told.message.contains("longer than expected"), "{}", told.message);
+        assert!(
+            told.message.contains("longer than expected"),
+            "{}",
+            told.message
+        );
     }
 }

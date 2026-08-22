@@ -34,7 +34,8 @@ pub enum BuildStep {
 // and cp would stop the build. Nothing is silenced, so that a copy failing for a
 // real reason stops the build instead of publishing a website without its
 // stylesheet.
-const COPY_PUBLIC_FOLDERS: &str = "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
+const COPY_PUBLIC_FOLDERS: &str =
+    "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
 
 pub fn generate_build_sh(steps: &[BuildStep]) -> String {
     let build_commands = format!(
@@ -78,9 +79,9 @@ pub fn ensure_build_files(site: &Path) -> Result<(), String> {
 fn ignore_build_output(site: &Path) -> Result<(), String> {
     let path = site.join(GITIGNORE);
     let current = std::fs::read_to_string(&path).unwrap_or_default();
-    if current.lines().any(|line| line.trim() == BUILD_OUTPUT.trim_end_matches('/')
-        || line.trim() == BUILD_OUTPUT)
-    {
+    if current.lines().any(|line| {
+        line.trim() == BUILD_OUTPUT.trim_end_matches('/') || line.trim() == BUILD_OUTPUT
+    }) {
         return Ok(());
     }
 
@@ -118,7 +119,8 @@ mod tests {
     use super::*;
 
     fn a_website(name: &str) -> std::path::PathBuf {
-        let site = std::env::temp_dir().join(format!("silex-pipeline-{}-{}", name, std::process::id()));
+        let site =
+            std::env::temp_dir().join(format!("silex-pipeline-{}-{}", name, std::process::id()));
         let _ = std::fs::remove_dir_all(&site);
         std::fs::create_dir_all(&site).unwrap();
         site
@@ -137,14 +139,26 @@ mod tests {
         assert!(built.contains(COPY_PUBLIC_FOLDERS), "{}", built);
 
         // What the user wrote in build.json is theirs and stays
-        std::fs::write(site.join(BUILD_JSON), r#"[{"type":"sh","value":"npx -y pagefind"}]"#).unwrap();
+        std::fs::write(
+            site.join(BUILD_JSON),
+            r#"[{"type":"sh","value":"npx -y pagefind"}]"#,
+        )
+        .unwrap();
         ensure_build_files(&site).unwrap();
         let build_json = std::fs::read_to_string(site.join(BUILD_JSON)).unwrap();
-        assert!(build_json.contains("pagefind"), "build.json was rewritten: {}", build_json);
+        assert!(
+            build_json.contains("pagefind"),
+            "build.json was rewritten: {}",
+            build_json
+        );
         // build.sh is generated from it, every time
         let build_sh = std::fs::read_to_string(site.join(BUILD_SH)).unwrap();
         assert!(build_sh.contains("npx -y pagefind"), "{}", build_sh);
-        assert!(!build_sh.contains("eleventy"), "the step it no longer asks for: {}", build_sh);
+        assert!(
+            !build_sh.contains("eleventy"),
+            "the step it no longer asks for: {}",
+            build_sh
+        );
 
         let _ = std::fs::remove_dir_all(&site);
     }
@@ -157,7 +171,11 @@ mod tests {
             .current_dir(site)
             .status()
             .unwrap();
-        assert!(status.success(), "the copy step stopped the build: {:?}", status);
+        assert!(
+            status.success(),
+            "the copy step stopped the build: {:?}",
+            status
+        );
     }
 
     #[test]
@@ -211,7 +229,9 @@ mod tests {
 
         ensure_pipeline_file(&site, file, "# silexOverwrite: true\nfirst").unwrap();
         ensure_pipeline_file(&site, file, "# silexOverwrite: true\nsecond").unwrap();
-        assert!(std::fs::read_to_string(site.join(file)).unwrap().contains("second"));
+        assert!(std::fs::read_to_string(site.join(file))
+            .unwrap()
+            .contains("second"));
 
         // Once the marker is gone, the file is the user's
         std::fs::write(site.join(file), "mine").unwrap();

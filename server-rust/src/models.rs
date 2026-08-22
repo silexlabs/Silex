@@ -173,7 +173,16 @@ mod tests {
         assert!("my website".parse::<WebsiteId>().is_ok());
         assert_eq!(WebsiteId::fresh().to_string().len(), 36);
 
-        for refused in ["", ".", "..", ".hidden", "../etc", "a/b", "/home/user", "a\\b"] {
+        for refused in [
+            "",
+            ".",
+            "..",
+            ".hidden",
+            "../etc",
+            "a/b",
+            "/home/user",
+            "a\\b",
+        ] {
             assert!(
                 refused.parse::<WebsiteId>().is_err(),
                 "'{}' should not be a website id",
@@ -188,6 +197,9 @@ mod tests {
         assert!(refused.is_err());
 
         let read: WebsiteId = serde_json::from_str("\"a1b2c3\"").unwrap();
-        assert_eq!(serde_json::to_value(&read).unwrap(), serde_json::json!("a1b2c3"));
+        assert_eq!(
+            serde_json::to_value(&read).unwrap(),
+            serde_json::json!("a1b2c3")
+        );
     }
 }

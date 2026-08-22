@@ -162,7 +162,9 @@ async fn publish_website(
     // The files are written, and that is the one thing that can be promised
     // here. Whoever takes them further says the rest through the job, which
     // the editor follows until an answer comes.
-    let job = state.jobs.start(publishing_message(&state.data_path, &query.website_id));
+    let job = state
+        .jobs
+        .start(publishing_message(&state.data_path, &query.website_id));
     let answered = state
         .jobs
         .read(job.id())
@@ -205,7 +207,11 @@ fn publishing_message(data_path: &std::path::Path, website_id: &WebsiteId) -> St
 /// kept on this computer is a way of working rather than a publication that
 /// went wrong.
 fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
-    told("Your website is written on this computer.", data_path, website_id)
+    told(
+        "Your website is written on this computer.",
+        data_path,
+        website_id,
+    )
 }
 
 /// A sentence, and the one button this server can offer with it
@@ -218,7 +224,10 @@ fn told(sentence: &str, data_path: &std::path::Path, website_id: &WebsiteId) -> 
     let files = crate::storage::published_files_url(data_path, website_id.as_str());
     crate::message::told(
         sentence,
-        &[crate::message::Button::secondary(crate::message::FILES_ON_THIS_COMPUTER, &files)],
+        &[crate::message::Button::secondary(
+            crate::message::FILES_ON_THIS_COMPUTER,
+            &files,
+        )],
     )
 }
 

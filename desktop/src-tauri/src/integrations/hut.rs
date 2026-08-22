@@ -54,7 +54,12 @@ impl Deploy for Hut {
         Remote::of(site).is_some_and(|remote| is_sourcehut(&remote.host))
     }
 
-    fn urls(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Result<Option<Urls>, String> {
+    fn urls(
+        &self,
+        cli: &Path,
+        site: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Option<Urls>, String> {
         // Listing the sites is what proves the user set hut up. Without a
         // config hut says so and stops, which is nobody signed in rather than
         // a failure.
@@ -157,13 +162,40 @@ mod tests {
             .replace("{clone_url}", &clone_url(&remote))
             .replace("{site_host}", &default_site(&remote))
             .replace("{repo}", &remote.repo);
-        assert!(manifest.contains("- https://git.sr.ht/~alex/mysite"), "{}", manifest);
-        assert!(manifest.contains("site: alex.srht.site"), "where pages.sr.ht serves this user: {}", manifest);
-        assert!(!manifest.contains("secret"), "the manifest is committed: {}", manifest);
-        assert!(manifest.contains("image: alpine/latest"), "the stable Alpine: {}", manifest);
-        assert!(manifest.contains("refs/tags/_silex_*"), "only a Silex tag builds: {}", manifest);
-        assert!(!manifest.contains("tar -cvz"), "the file list does not belong in the log");
-        assert!(!manifest.contains('{'), "a placeholder was left: {}", manifest);
+        assert!(
+            manifest.contains("- https://git.sr.ht/~alex/mysite"),
+            "{}",
+            manifest
+        );
+        assert!(
+            manifest.contains("site: alex.srht.site"),
+            "where pages.sr.ht serves this user: {}",
+            manifest
+        );
+        assert!(
+            !manifest.contains("secret"),
+            "the manifest is committed: {}",
+            manifest
+        );
+        assert!(
+            manifest.contains("image: alpine/latest"),
+            "the stable Alpine: {}",
+            manifest
+        );
+        assert!(
+            manifest.contains("refs/tags/_silex_*"),
+            "only a Silex tag builds: {}",
+            manifest
+        );
+        assert!(
+            !manifest.contains("tar -cvz"),
+            "the file list does not belong in the log"
+        );
+        assert!(
+            !manifest.contains('{'),
+            "a placeholder was left: {}",
+            manifest
+        );
     }
 
     #[test]
@@ -186,6 +218,8 @@ mod tests {
         assert!(never_set_up(
             "hut failed: Looks like hut's config file hasn't been set up yet.\nRun `hut init` to configure it."
         ));
-        assert!(!never_set_up("hut failed: failed to list sites: connection refused"));
+        assert!(!never_set_up(
+            "hut failed: failed to list sites: connection refused"
+        ));
     }
 }

@@ -493,62 +493,61 @@ fn main() {
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
             // localStorage/IndexedDB origins, and FsStorage would then scan those origin
             // dirs as if they were websites (→ metadata errors + "No such file or directory").
-            let data_path = app.path().app_data_dir()
+            let data_path = app
+                .path()
+                .app_data_dir()
                 .expect("failed to resolve app data dir")
                 .join("websites");
 
             // On first launch, ask the user for telemetry consent.
             // The choice is saved and takes effect on next launch.
-            let consent_dir = app.path().app_data_dir()
+            let consent_dir = app
+                .path()
+                .app_data_dir()
                 .expect("failed to resolve app data dir");
-            if dsn_available
-                && read_telemetry_consent(&consent_dir).is_none()
-            {
+            if dsn_available && read_telemetry_consent(&consent_dir).is_none() {
                 prompt_telemetry_consent(app.handle(), consent_dir);
             }
 
             // Show splash screen while the app loads
-            let _splash = WebviewWindowBuilder::new(
-                app,
-                "splash",
-                WebviewUrl::App("splash.html".into()),
-            )
-            .title("Silex")
-            .inner_size(400.0, 300.0)
-            .resizable(false)
-            .decorations(false)
-            .center()
-            .always_on_top(true)
-            .build()?;
+            let _splash =
+                WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into()))
+                    .title("Silex")
+                    .inner_size(400.0, 300.0)
+                    .resizable(false)
+                    .decorations(false)
+                    .center()
+                    .always_on_top(true)
+                    .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
             let port = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
-                app.path().app_data_dir().expect("failed to resolve app data dir"),
+                app.path()
+                    .app_data_dir()
+                    .expect("failed to resolve app data dir"),
                 app.state::<AppState>().current_website_id.clone(),
             ));
 
             let url = format!("http://localhost:{}/", port);
             let app_handle_for_splash = app.handle().clone();
-            let window = WebviewWindowBuilder::new(
-                app,
-                "main",
-                WebviewUrl::External(url.parse().unwrap()),
-            )
-            .title("Silex")
-            .maximized(true)
-            .initialization_script(include_str!("../scripts/desktop-bridge.js"))
-            .on_page_load(move |webview, payload| {
-                if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-                    // Close splash — main window is already maximized behind it
-                    if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
-                        let _ = splash.close();
-                    }
-                    let _ = webview.set_focus();
-                }
-            })
-            .build()?;
+            let window =
+                WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse().unwrap()))
+                    .title("Silex")
+                    .maximized(true)
+                    .initialization_script(include_str!("../scripts/desktop-bridge.js"))
+                    .on_page_load(move |webview, payload| {
+                        if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                            // Close splash — main window is already maximized behind it
+                            if let Some(splash) = app_handle_for_splash.get_webview_window("splash")
+                            {
+                                let _ = splash.close();
+                            }
+                            let _ = webview.set_focus();
+                        }
+                    })
+                    .build()?;
 
             // MCP transport: --stdio for agent-managed launch, HTTP otherwise
             if std::env::args().any(|a| a == "--stdio") {

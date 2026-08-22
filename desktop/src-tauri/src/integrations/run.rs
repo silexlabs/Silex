@@ -118,12 +118,7 @@ pub fn failure(program: &Path, ran: &Ran) -> String {
     )
 }
 
-fn run_within(
-    program: &Path,
-    dir: &Path,
-    args: &[&str],
-    timeout: Duration,
-) -> Result<Ran, String> {
+fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> Result<Ran, String> {
     let mut command = Command::new(program);
     command
         .args(args)
@@ -330,7 +325,10 @@ mod tests {
             &["-c", &script],
             Duration::from_secs(1),
         );
-        assert!(timed_out.is_err(), "the program should have run out of time");
+        assert!(
+            timed_out.is_err(),
+            "the program should have run out of time"
+        );
 
         std::thread::sleep(Duration::from_secs(3));
         assert!(

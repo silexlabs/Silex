@@ -106,8 +106,9 @@ async fn read_or_list_website(
             if let Some(actions) = &state.actions {
                 let catching_up = actions.clone();
                 let asked_about = website_id.clone();
-                let _ = tokio::task::spawn_blocking(move || catching_up.catch_up(asked_about.as_str()))
-                    .await;
+                let _ =
+                    tokio::task::spawn_blocking(move || catching_up.catch_up(asked_about.as_str()))
+                        .await;
             }
             let data = storage::read_website(&state.data_path, &website_id).await?;
             Ok(Json(data).into_response())
@@ -184,7 +185,9 @@ fn worth_saying(state: &AppState, website_id: &str, why: &str) -> bool {
         // than turned into a failure of this save.
         held.into_inner()
     });
-    said.insert(website_id.to_string(), why.to_string()).as_deref() != Some(why)
+    said.insert(website_id.to_string(), why.to_string())
+        .as_deref()
+        != Some(why)
 }
 
 /// Forget what was said about a website that versions again
@@ -449,7 +452,10 @@ mod tests {
         // What is not a route is still not a route
         let (status, _) = answered(
             &app,
-            HttpRequest::builder().uri("/api/nowhere").body(Body::empty()).unwrap(),
+            HttpRequest::builder()
+                .uri("/api/nowhere")
+                .body(Body::empty())
+                .unwrap(),
         )
         .await;
         assert_eq!(status, StatusCode::NOT_FOUND);
@@ -482,7 +488,8 @@ mod tests {
     async fn what_is_over_the_limit_is_said_in_words_not_in_http() {
         let (data_path, app, website_id) = a_server("over", 1024 * 1024).await;
 
-        let (status, said) = answered(&app, saving(&website_id, a_website_of(2 * 1024 * 1024))).await;
+        let (status, said) =
+            answered(&app, saving(&website_id, a_website_of(2 * 1024 * 1024))).await;
         assert_eq!(status, StatusCode::PAYLOAD_TOO_LARGE);
         assert!(said.contains("too large"), "{}", said);
         assert!(said.contains("1 MB"), "{}", said);
@@ -508,9 +515,18 @@ mod tests {
         assert_eq!(status, StatusCode::OK, "{}", said);
 
         let assets = data_path.join(website_id.as_str()).join("assets");
-        assert!(assets.join("img").join("photo.png").is_file(), "a sub folder the editor asks for is kept");
-        assert!(assets.join("evil.txt").is_file(), "a file name that is a path is kept as its last part");
-        assert!(!assets.join("tmp").exists(), "the folders of that path are not made");
+        assert!(
+            assets.join("img").join("photo.png").is_file(),
+            "a sub folder the editor asks for is kept"
+        );
+        assert!(
+            assets.join("evil.txt").is_file(),
+            "a file name that is a path is kept as its last part"
+        );
+        assert!(
+            !assets.join("tmp").exists(),
+            "the folders of that path are not made"
+        );
 
         let _ = std::fs::remove_dir_all(&data_path);
     }

@@ -66,14 +66,21 @@ pub fn explained(sentence: &str, more: &str, buttons: &[Button]) -> String {
     if !more.is_empty() {
         written.push_str(&format!("<p>{}</p>", escape(more)));
     }
-    let shown: Vec<&Button> = buttons.iter().filter(|button| !button.url.is_empty()).collect();
+    let shown: Vec<&Button> = buttons
+        .iter()
+        .filter(|button| !button.url.is_empty())
+        .collect();
     if shown.is_empty() {
         return written;
     }
 
     written.push_str("<div class=\"buttons\">");
     for button in shown {
-        let kind = if button.primary { "primary" } else { "secondary" };
+        let kind = if button.primary {
+            "primary"
+        } else {
+            "secondary"
+        };
         written.push_str(&format!(
             "<a href=\"{}\" target=\"_blank\" class=\"silex-button silex-button--{}\">{}</a>",
             escape(button.url),
@@ -111,13 +118,28 @@ mod tests {
             "Your website is now live!",
             &[
                 Button::primary("View your website", "https://alex.codeberg.page/site/"),
-                Button::secondary("Website settings", "https://codeberg.org/alex/site/settings"),
+                Button::secondary(
+                    "Website settings",
+                    "https://codeberg.org/alex/site/settings",
+                ),
             ],
         );
         assert!(written.starts_with("<p><strong>Your website is now live!</strong></p>"));
-        assert!(written.contains("class=\"silex-button silex-button--primary\""), "{}", written);
-        assert!(written.contains("class=\"silex-button silex-button--secondary\""), "{}", written);
-        assert!(written.contains("href=\"https://alex.codeberg.page/site/\""), "{}", written);
+        assert!(
+            written.contains("class=\"silex-button silex-button--primary\""),
+            "{}",
+            written
+        );
+        assert!(
+            written.contains("class=\"silex-button silex-button--secondary\""),
+            "{}",
+            written
+        );
+        assert!(
+            written.contains("href=\"https://alex.codeberg.page/site/\""),
+            "{}",
+            written
+        );
     }
 
     #[test]
@@ -137,16 +159,26 @@ mod tests {
     #[test]
     fn a_button_with_nowhere_to_go_is_not_shown() {
         // A host that could not say where its build is still gets a message
-        let written = told("Building your website", &[Button::secondary("See the build", "")]);
+        let written = told(
+            "Building your website",
+            &[Button::secondary("See the build", "")],
+        );
         assert_eq!(written, "<p><strong>Building your website</strong></p>");
-        assert!(!written.contains("<div"), "no empty row of buttons: {}", written);
+        assert!(
+            !written.contains("<div"),
+            "no empty row of buttons: {}",
+            written
+        );
     }
 
     #[test]
     fn what_a_host_named_cannot_end_an_attribute_of_ours() {
         let written = told(
             "The build failed",
-            &[Button::secondary("See the build", "https://host/x\"><script>alert(1)</script>")],
+            &[Button::secondary(
+                "See the build",
+                "https://host/x\"><script>alert(1)</script>",
+            )],
         );
         assert!(!written.contains("<script>"), "{}", written);
         assert!(written.contains("&quot;&gt;&lt;script&gt;"), "{}", written);

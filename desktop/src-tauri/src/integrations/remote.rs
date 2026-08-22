@@ -82,24 +82,31 @@ impl Remote {
     /// The host part of a URL, `https://codeberg.org/x/y` and `git@sr.ht:~x/y`
     /// alike
     pub fn host_of(url: &str) -> Option<String> {
-        Remote::parse(url)
-            .map(|remote| remote.host)
-            .or_else(|| {
-                let rest = url
-                    .trim()
-                    .split_once("://")
-                    .map(|(_, rest)| rest)
-                    .unwrap_or(url);
-                let authority = rest.split(['/', ':']).next()?;
-                let host = authority.rsplit_once('@').map(|(_, h)| h).unwrap_or(authority);
-                (!host.is_empty()).then(|| host.to_string())
-            })
+        Remote::parse(url).map(|remote| remote.host).or_else(|| {
+            let rest = url
+                .trim()
+                .split_once("://")
+                .map(|(_, rest)| rest)
+                .unwrap_or(url);
+            let authority = rest.split(['/', ':']).next()?;
+            let host = authority
+                .rsplit_once('@')
+                .map(|(_, h)| h)
+                .unwrap_or(authority);
+            (!host.is_empty()).then(|| host.to_string())
+        })
     }
 
     /// A host without the ssh port it was given
     pub(super) fn without_port(authority: &str) -> &str {
         match authority.rsplit_once(':') {
-            Some((host, port)) if !host.is_empty() && !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()) => host,
+            Some((host, port))
+                if !host.is_empty()
+                    && !port.is_empty()
+                    && port.bytes().all(|b| b.is_ascii_digit()) =>
+            {
+                host
+            }
             _ => authority,
         }
     }
@@ -116,19 +123,31 @@ impl Remote {
         {
             let (authority, path) = rest.split_once('/')?;
             // Drop credentials, as in https://user:token@host/owner/repo
-            let host = authority.rsplit_once('@').map(|(_, h)| h).unwrap_or(authority);
+            let host = authority
+                .rsplit_once('@')
+                .map(|(_, h)| h)
+                .unwrap_or(authority);
             format!("{} {}", host, path)
         } else if let Some(rest) = url.strip_prefix("ssh://") {
             let (authority, path) = rest.split_once('/')?;
-            let host = authority.rsplit_once('@').map(|(_, h)| h).unwrap_or(authority);
+            let host = authority
+                .rsplit_once('@')
+                .map(|(_, h)| h)
+                .unwrap_or(authority);
             // An instance answering ssh somewhere other than 22 is the same
             // host as the one an integration was signed in to, and the same one
             // its pages are served from
             format!("{} {}", Remote::without_port(host), path)
-        } else if url.split_once(':').is_some_and(|(before, _)| !before.contains('/')) {
+        } else if url
+            .split_once(':')
+            .is_some_and(|(before, _)| !before.contains('/'))
+        {
             // `git@host:owner/repo`, and the same without a user, which git
             // takes just as well
-            let rest = url.split_once('@').map(|(_, r)| r.to_string()).unwrap_or_else(|| url.to_string());
+            let rest = url
+                .split_once('@')
+                .map(|(_, r)| r.to_string())
+                .unwrap_or_else(|| url.to_string());
             rest.replacen(':', " ", 1)
         } else {
             return None;
@@ -193,22 +212,66 @@ mod tests {
     #[test]
     fn parses_the_shapes_a_remote_comes_in() {
         for (url, host, owner, repo) in [
-            ("https://gitlab.com/lexoyo/site.git", "gitlab.com", "lexoyo", "site"),
-            ("https://user:token@gitlab.com/lexoyo/site.git", "gitlab.com", "lexoyo", "site"),
-            ("git@codeberg.org:alex/site.git", "codeberg.org", "alex", "site"),
+            (
+                "https://gitlab.com/lexoyo/site.git",
+                "gitlab.com",
+                "lexoyo",
+                "site",
+            ),
+            (
+                "https://user:token@gitlab.com/lexoyo/site.git",
+                "gitlab.com",
+                "lexoyo",
+                "site",
+            ),
+            (
+                "git@codeberg.org:alex/site.git",
+                "codeberg.org",
+                "alex",
+                "site",
+            ),
             ("git@git.sr.ht:~alex/site", "git.sr.ht", "alex", "site"),
-            ("ssh://alice@git.example.com/team/site.git", "git.example.com", "team", "site"),
+            (
+                "ssh://alice@git.example.com/team/site.git",
+                "git.example.com",
+                "team",
+                "site",
+            ),
             // git takes the scp form without a user just as well
             ("codeberg.org:alex/site.git", "codeberg.org", "alex", "site"),
-            ("https://gitlab.com/group/subgroup/site.git", "gitlab.com", "group/subgroup", "site"),
+            (
+                "https://gitlab.com/group/subgroup/site.git",
+                "gitlab.com",
+                "group/subgroup",
+                "site",
+            ),
             // A Forgejo of one's own often answers ssh somewhere other than 22,
             // and it is the same host the integration was signed in to
-            ("ssh://git@v15.next.forgejo.org:2150/lexoyo/site.git", "v15.next.forgejo.org", "lexoyo", "site"),
+            (
+                "ssh://git@v15.next.forgejo.org:2150/lexoyo/site.git",
+                "v15.next.forgejo.org",
+                "lexoyo",
+                "site",
+            ),
             // A web port belongs to the address and stays
-            ("https://gitlab.example.com:8443/team/site.git", "gitlab.example.com:8443", "team", "site"),
+            (
+                "https://gitlab.example.com:8443/team/site.git",
+                "gitlab.example.com:8443",
+                "team",
+                "site",
+            ),
         ] {
             let remote = Remote::parse(url).unwrap_or_else(|| panic!("could not parse {}", url));
-            assert_eq!((remote.host.as_str(), remote.owner.as_str(), remote.repo.as_str()), (host, owner, repo), "{}", url);
+            assert_eq!(
+                (
+                    remote.host.as_str(),
+                    remote.owner.as_str(),
+                    remote.repo.as_str()
+                ),
+                (host, owner, repo),
+                "{}",
+                url
+            );
         }
     }
 
@@ -228,26 +291,47 @@ mod tests {
 
         assert!(Remote::of(&site).is_none());
 
-        let added = format!("{}[remote \"origin\"]\n\turl = https://codeberg.org/alex/site.git\n", alone);
+        let added = format!(
+            "{}[remote \"origin\"]\n\turl = https://codeberg.org/alex/site.git\n",
+            alone
+        );
         std::fs::write(site.join(".git/config"), added).unwrap();
 
         let remote = Remote::of(&site).expect("a remote added after a first reading was not seen");
-        assert_eq!((remote.host.as_str(), remote.repo.as_str()), ("codeberg.org", "site"));
+        assert_eq!(
+            (remote.host.as_str(), remote.repo.as_str()),
+            ("codeberg.org", "site")
+        );
 
         let _ = std::fs::remove_dir_all(&site);
     }
 
     #[test]
     fn reads_the_host_of_a_url() {
-        assert_eq!(Remote::host_of("https://codeberg.org/x/y").as_deref(), Some("codeberg.org"));
-        assert_eq!(Remote::host_of("https://git.example.com").as_deref(), Some("git.example.com"));
-        assert_eq!(Remote::host_of("git@git.sr.ht:~x/y").as_deref(), Some("git.sr.ht"));
+        assert_eq!(
+            Remote::host_of("https://codeberg.org/x/y").as_deref(),
+            Some("codeberg.org")
+        );
+        assert_eq!(
+            Remote::host_of("https://git.example.com").as_deref(),
+            Some("git.example.com")
+        );
+        assert_eq!(
+            Remote::host_of("git@git.sr.ht:~x/y").as_deref(),
+            Some("git.sr.ht")
+        );
     }
 
     #[test]
     fn shows_a_url_without_its_password() {
-        assert_eq!(without_secret("https://oauth2:secret@gitlab.com/x/y.git"), "gitlab.com/x/y.git");
-        assert_eq!(without_secret("https://gitlab.com/x/y.git"), "https://gitlab.com/x/y.git");
+        assert_eq!(
+            without_secret("https://oauth2:secret@gitlab.com/x/y.git"),
+            "gitlab.com/x/y.git"
+        );
+        assert_eq!(
+            without_secret("https://gitlab.com/x/y.git"),
+            "https://gitlab.com/x/y.git"
+        );
     }
 
     #[test]
@@ -255,7 +339,11 @@ mod tests {
         let said = "remote: HTTP Basic: Access denied\nfatal: Authentication failed for 'https://lexoyo:glpat-abc123@gitlab.com/lexoyo/site.git/'";
         let shown = redact(said);
         assert!(!shown.contains("glpat-abc123"), "{}", shown);
-        assert!(shown.contains("***@gitlab.com/lexoyo/site.git"), "{}", shown);
+        assert!(
+            shown.contains("***@gitlab.com/lexoyo/site.git"),
+            "{}",
+            shown
+        );
 
         // A URL with nothing to hide is left as it is, twice in a row included
         let plain = "could not read https://codeberg.org/a/b and https://sr.ht/~c/d";
@@ -264,4 +352,3 @@ mod tests {
         assert_eq!(redact("no such remote: origin"), "no such remote: origin");
     }
 }
-
