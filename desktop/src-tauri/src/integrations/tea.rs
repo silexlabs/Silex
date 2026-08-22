@@ -81,10 +81,10 @@ impl Deploy for Tea {
                 OptionsField {
                     name: RUNNER_LABEL.to_string(),
                     r#type: "text".to_string(),
-                    label: "Runner label".to_string(),
+                    label: "Build machine name".to_string(),
                     value: Some(CODEBERG_RUNNER.to_string()),
                     help: Some(
-                        "This is the label the runners of your forge answer to. Codeberg names them codeberg-tiny. A Forgejo of your own may name them something else, and a build nothing answers for waits forever."
+                        "Silex asks a machine on this server to build your website. Codeberg calls its machines codeberg-tiny. On another server the name is different: ask the person who runs it. A wrong name here means your website is never built."
                             .to_string(),
                     ),
                     required: true,

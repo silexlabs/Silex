@@ -703,7 +703,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             if queued {
                 return job.failed(message::explained(
                     &format!("Nothing on {} built your website.", host),
-                    "Silex asks this host for a build machine by name, and no machine there answers to the name it asked for. Change \"Runner label\" in the publication options, then publish again.",
+                    "Silex asks for a build machine by name, and no machine there has that name. Publish again and change \"Build machine name\": on Codeberg it is codeberg-tiny, and on another server the person who runs it can tell you.",
                     &[
                         Button::secondary("See the build", &build_url),
                         Button::secondary(FILES_ON_THIS_COMPUTER, files),

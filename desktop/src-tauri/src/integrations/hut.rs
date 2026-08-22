@@ -80,7 +80,7 @@ impl Deploy for Hut {
             return Err(e);
         }
 
-        let remote = Remote::of(site).ok_or("Silex could not read the remote of this website")?;
+        let remote = Remote::of(site).ok_or(super::git::NOWHERE_TO_SEND_IT)?;
 
         Ok(Some(Urls {
             // Only what the user named. pages.sr.ht ties no site to a
@@ -99,7 +99,7 @@ impl Deploy for Hut {
         site: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        let remote = Remote::of(site).ok_or("No remote to publish to")?;
+        let remote = Remote::of(site).ok_or(super::git::NOWHERE_TO_SEND_IT)?;
         // `hut pages publish` is given a domain, where the user named an
         // address: what stands before the first slash is the site it belongs
         // to. Naming none leaves the manifest with where pages.sr.ht puts a
