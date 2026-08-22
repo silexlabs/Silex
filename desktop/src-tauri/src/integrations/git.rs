@@ -18,7 +18,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::run::{failure, run, run_sync_pull, run_transfer, run_transfer_verbatim, Ran};
+use super::run::{failure, run, run_sync_pull, run_transfer_verbatim, Ran};
 
 /// The branch assumed when git cannot say which one HEAD is on
 const BRANCH: &str = "main";
@@ -141,10 +141,7 @@ impl Git {
     /// behind at every failed attempt, so it goes with the failure.
     pub fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
         let remote = remote_name(site).ok_or("This website has no remote to publish to")?;
-        let pushed = self.push_branch(site, &remote).and_then(|_| match tag {
-            Some(tag) => self.send(site, &["push", &remote, tag]).map(|_| ()),
-            None => Ok(()),
-        });
+        let pushed = self.push_branch(site, &remote, tag);
         if let Err(e) = pushed {
             if let Some(tag) = tag {
                 silex_server::untag(site, tag);
@@ -160,12 +157,13 @@ impl Git {
     /// conflicts, and a merge it started would leave the folder half done in a
     /// state its user has no terminal to get out of. Catching up is a pull of
     /// its own, on opening the website.
-    fn push_branch(&self, site: &Path, remote: &str) -> Result<(), String> {
-        let ran = run_transfer_verbatim(
-            &self.program,
-            site,
-            &["push", "--porcelain", remote, "HEAD"],
-        )?;
+    fn push_branch(&self, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), String> {
+        // The branch and the tag leave together: two pushes mean two
+        // handshakes with the host, which is a second of somebody's
+        // publication spent saying hello twice.
+        let mut sending = vec!["push", "--porcelain", remote, "HEAD"];
+        sending.extend(tag);
+        let ran = run_transfer_verbatim(&self.program, site, &sending)?;
         if !ran.failed {
             return Ok(());
         }
@@ -194,12 +192,6 @@ impl Git {
         run_sync_pull(&self.program, site, &["fetch", &remote, &branch])?;
         run(&self.program, site, &["merge", "--ff-only", "FETCH_HEAD"]).map(|_| ())
     }
-
-    /// A push carries the whole website the first time, and gets the time
-    /// that takes
-    fn send(&self, dir: &Path, args: &[&str]) -> Result<String, String> {
-        run_transfer(&self.program, dir, args)
-    }
 }
 
 /// Whether git refused because the remote has commits this repository has not
@@ -221,7 +213,7 @@ fn behind_remote(ran: &Ran) -> bool {
 /// same, quietly, and the user would never learn what is in the way. Waiting
 /// for a network to come back is the one case where trying again is the answer.
 pub fn worth_another_try(why: &str) -> bool {
-    const BREAKS: [&str; 19] = [
+    const BREAKS: [&str; 20] = [
         "could not resolve host",
         "temporary failure in name resolution",
         "name or service not known",
@@ -244,6 +236,12 @@ pub fn worth_another_try(why: &str) -> bool {
         // slow rather than closed, which is the very case this ladder exists
         // for
         "took more than",
+        // Another git held a lock file of this repository. Every one of them
+        // says it the same way, index.lock as much as HEAD.lock or
+        // refs/heads/main.lock, so the ending is what is looked for. Silex
+        // runs one git per website at a time; this is for the git of the user,
+        // running in their own terminal on the same folder.
+        ".lock': file exists",
     ];
     let why = why.to_lowercase();
     BREAKS.iter().any(|break_down| why.contains(break_down))
