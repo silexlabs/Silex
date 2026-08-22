@@ -203,7 +203,7 @@ export class PublicationUi {
           <p>Click on the button below to publish your website.</p>
           ${this.listedOptions().length > 0 ? html`<p>Publication options:</p><ul>${ this.listedOptions().map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
         ` : nothing}
-        ${this.isSuccess(status) ? html`
+        ${this.isSuccess(status) && !job?.message ? html`
           <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
           ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : nothing}
         ` : nothing}
