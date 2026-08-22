@@ -10,9 +10,11 @@
 // Prevents an extra console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::collections::BTreeMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
@@ -22,6 +24,7 @@ use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
+mod frontend;
 mod integrations;
 mod mcp;
 
@@ -79,7 +82,9 @@ fn prompt_telemetry_consent(app: &tauri::AppHandle, data_dir: PathBuf) {
 // ==================
 
 struct AppState {
-    current_website_id: Mutex<Option<String>>,
+    /// Shared with the actions of the server, which answer about the website
+    /// the editor has open without being told which one that is
+    current_website_id: actions::CurrentWebsiteId,
     current_website_name: Mutex<Option<String>>,
     has_unsaved_changes: Mutex<bool>,
 }
@@ -87,7 +92,7 @@ struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            current_website_id: Mutex::new(None),
+            current_website_id: Arc::new(Mutex::new(None)),
             current_website_name: Mutex::new(None),
             has_unsaved_changes: Mutex::new(false),
         }
@@ -105,9 +110,18 @@ fn set_current_project(
     website_id: String,
     website_name: String,
 ) {
-    *state.current_website_id.lock().unwrap() = Some(website_id);
-    *state.current_website_name.lock().unwrap() = Some(website_name.clone());
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *state
+        .current_website_id
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = Some(website_id);
+    *state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = Some(website_name.clone());
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title(&format!("{} \u{2014} Silex", website_name));
@@ -116,9 +130,18 @@ fn set_current_project(
 
 #[tauri::command]
 fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.current_website_id.lock().unwrap() = None;
-    *state.current_website_name.lock().unwrap() = None;
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *state
+        .current_website_id
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = None;
+    *state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = None;
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title("Silex");
@@ -127,9 +150,17 @@ fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState
 
 #[tauri::command]
 fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.has_unsaved_changes.lock().unwrap() = true;
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = true;
 
-    if let Some(name) = state.current_website_name.lock().unwrap().as_ref() {
+    if let Some(name) = state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .as_ref()
+    {
         if let Some(window) = app.get_webview_window("main") {
             let _ = window.set_title(&format!("\u{2022} {} \u{2014} Silex", name));
         }
@@ -146,6 +177,27 @@ fn open_folder(path: String) {
 #[tauri::command]
 fn log_debug(message: String) {
     tracing::debug!("[webview] {message}");
+}
+
+/// Where every website is on its way to the repository it is kept in
+///
+/// What the dashboard asks for when it opens. It is told of every change after
+/// that by the `sending-changed` event, which carries the same thing.
+#[tauri::command]
+fn get_sending(
+    sendings: tauri::State<'_, actions::Sendings>,
+) -> BTreeMap<String, actions::Sending> {
+    sendings.borrow().clone()
+}
+
+/// Told by the editor once it has finished saving
+///
+/// Called even when it had nothing to save. Quitting waits on this to tell an
+/// empty sending queue with nothing to send from one whose save is still on
+/// its way through the server.
+#[tauri::command]
+fn saved_everything(saves: tauri::State<'_, actions::Saves>) {
+    saves.send_modify(|saves| *saves += 1);
 }
 
 /// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
@@ -221,6 +273,62 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     })
 }
 
+/// The longest "Save & Quit" keeps the app running after the save is asked for
+///
+/// A save is not over when the editor sends it: the server writes the files,
+/// then the website goes to the repository it is kept in, over a network that
+/// answers when it answers. Past this the app closes and says what is left.
+const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
+
+/// Wait for the websites on their way to their repository to get there
+///
+/// The queue is empty when the dialog is answered, and an empty queue means
+/// two opposite things: nothing to send, or a save that has not arrived yet.
+/// Only the editor can tell them apart, so its word is waited for first.
+///
+/// False when the wait ran out with some still on their way.
+async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::Saved) -> bool {
+    let wait_until = tokio::time::Instant::now() + SAVE_AND_QUIT_WAIT;
+
+    // Err is the editor gone rather than a save: nobody is going to say it now
+    if tokio::time::timeout_at(wait_until, saved.changed())
+        .await
+        .is_err()
+    {
+        return false;
+    }
+
+    loop {
+        if !sendings
+            .borrow_and_update()
+            .values()
+            .any(actions::Sending::on_its_way)
+        {
+            return true;
+        }
+        match tokio::time::timeout_at(wait_until, sendings.changed()).await {
+            Err(_) => return false,
+            Ok(Err(_)) => return true,
+            Ok(Ok(())) => {}
+        }
+    }
+}
+
+/// Say what has not left yet, on the one occasion it is worth saying
+///
+/// Their work is saved and versioned on this computer either way. What they
+/// cannot see for themselves is that Silex picks this up when it opens again.
+fn says_what_is_left(app: &tauri::AppHandle) {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+
+    app.dialog()
+        .message("Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open it.")
+        .title("Silex")
+        .kind(MessageDialogKind::Warning)
+        .buttons(MessageDialogButtons::Ok)
+        .blocking_show();
+}
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -235,11 +343,20 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
         ))
         .show(move |result| {
             if result {
+                // Subscribed before the editor is asked, so that the save it
+                // is about to confirm cannot be missed
+                let saved = app_handle.state::<actions::Saves>().subscribe();
                 let _ = app_handle.emit("menu-save", ());
-                // Give a moment for save, then close
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.set_title("Saving your work \u{2014} Silex");
+                }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_secs(2));
+                    let mut sendings = handle.state::<actions::Sendings>().inner().clone();
+                    let mut saved = saved;
+                    if !tauri::async_runtime::block_on(everything_left(&mut sendings, &mut saved)) {
+                        says_what_is_left(&handle);
+                    }
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.destroy();
                     }
@@ -311,7 +428,8 @@ async fn start_server(
     pending_evals: mcp::PendingEvals,
     data_path: std::path::PathBuf,
     app_data_dir: PathBuf,
-) -> u16 {
+    current_website_id: actions::CurrentWebsiteId,
+) -> (u16, actions::Sendings) {
     // SILEX_DATA_PATH lets the user store the websites somewhere else
     let data_path = std::env::var("SILEX_DATA_PATH")
         .map(std::path::PathBuf::from)
@@ -319,7 +437,8 @@ async fn start_server(
 
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load(&app_data_dir);
-    let actions = actions::SilexActions::new(data_path.clone(), integrations);
+    let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
+    let sendings = actions.sending();
 
     let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
 
@@ -333,11 +452,13 @@ async fn start_server(
         )
         .layer(axum::Extension(pending_evals));
 
+    let app = frontend::configure(app);
+
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = match TcpListener::bind(addr).await {
         Ok(l) => l,
         Err(_) => {
-            // Port taken (another instance running) — bind to OS-assigned port
+            // The port belongs to another program on this machine
             let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
             TcpListener::bind(fallback).await.unwrap()
         }
@@ -350,7 +471,17 @@ async fn start_server(
         axum::serve(listener, app).await.unwrap();
     });
 
-    port
+    (port, sendings)
+}
+
+/// Tell the frontend of every change, so it never has to keep asking
+fn tell_of_sending(app: tauri::AppHandle, mut sendings: actions::Sendings) {
+    tauri::async_runtime::spawn(async move {
+        while sendings.changed().await.is_ok() {
+            let websites = sendings.borrow_and_update().clone();
+            let _ = app.emit("sending-changed", websites);
+        }
+    });
 }
 
 // ==================
@@ -439,6 +570,16 @@ fn main() {
         .init();
 
     tauri::Builder::default()
+        // Before every other plugin, as this one asks for: a second Silex would
+        // open a second server on the one directory of websites, and two git
+        // repositories in the one working copy of each.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -449,6 +590,8 @@ fn main() {
             mark_unsaved,
             open_folder,
             log_debug,
+            get_sending,
+            saved_everything,
             get_telemetry_context,
         ])
         .setup(move |app| {
@@ -468,61 +611,64 @@ fn main() {
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
             // localStorage/IndexedDB origins, and FsStorage would then scan those origin
             // dirs as if they were websites (→ metadata errors + "No such file or directory").
-            let data_path = app.path().app_data_dir()
+            let data_path = app
+                .path()
+                .app_data_dir()
                 .expect("failed to resolve app data dir")
                 .join("websites");
 
             // On first launch, ask the user for telemetry consent.
             // The choice is saved and takes effect on next launch.
-            let consent_dir = app.path().app_data_dir()
+            let consent_dir = app
+                .path()
+                .app_data_dir()
                 .expect("failed to resolve app data dir");
-            if dsn_available
-                && read_telemetry_consent(&consent_dir).is_none()
-            {
+            if dsn_available && read_telemetry_consent(&consent_dir).is_none() {
                 prompt_telemetry_consent(app.handle(), consent_dir);
             }
 
             // Show splash screen while the app loads
-            let _splash = WebviewWindowBuilder::new(
-                app,
-                "splash",
-                WebviewUrl::App("splash.html".into()),
-            )
-            .title("Silex")
-            .inner_size(400.0, 300.0)
-            .resizable(false)
-            .decorations(false)
-            .center()
-            .always_on_top(true)
-            .build()?;
+            let _splash =
+                WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into()))
+                    .title("Silex")
+                    .inner_size(400.0, 300.0)
+                    .resizable(false)
+                    .decorations(false)
+                    .center()
+                    .always_on_top(true)
+                    .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
-            let port = tauri::async_runtime::block_on(start_server(
+            let (port, sendings) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
-                app.path().app_data_dir().expect("failed to resolve app data dir"),
+                app.path()
+                    .app_data_dir()
+                    .expect("failed to resolve app data dir"),
+                app.state::<AppState>().current_website_id.clone(),
             ));
+            app.manage(sendings.clone());
+            app.manage(actions::Saves::new(0));
+            tell_of_sending(app.handle().clone(), sendings);
 
             let url = format!("http://localhost:{}/", port);
             let app_handle_for_splash = app.handle().clone();
-            let window = WebviewWindowBuilder::new(
-                app,
-                "main",
-                WebviewUrl::External(url.parse().unwrap()),
-            )
-            .title("Silex")
-            .maximized(true)
-            .initialization_script(include_str!("../scripts/desktop-bridge.js"))
-            .on_page_load(move |webview, payload| {
-                if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-                    // Close splash — main window is already maximized behind it
-                    if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
-                        let _ = splash.close();
-                    }
-                    let _ = webview.set_focus();
-                }
-            })
-            .build()?;
+            let window =
+                WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse().unwrap()))
+                    .title("Silex")
+                    .maximized(true)
+                    .initialization_script(include_str!("../scripts/desktop-bridge.js"))
+                    .on_page_load(move |webview, payload| {
+                        if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                            // Close splash — main window is already maximized behind it
+                            if let Some(splash) = app_handle_for_splash.get_webview_window("splash")
+                            {
+                                let _ = splash.close();
+                            }
+                            let _ = webview.set_focus();
+                        }
+                    })
+                    .build()?;
 
             // MCP transport: --stdio for agent-managed launch, HTTP otherwise
             if std::env::args().any(|a| a == "--stdio") {
@@ -552,7 +698,10 @@ fn main() {
             window.on_window_event(move |event| {
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let state = app_handle.state::<AppState>();
-                    let has_changes = *state.has_unsaved_changes.lock().unwrap();
+                    let has_changes = *state
+                        .has_unsaved_changes
+                        .lock()
+                        .unwrap_or_else(|held| held.into_inner());
                     if has_changes {
                         api.prevent_close();
                         show_quit_dialog(&app_handle);

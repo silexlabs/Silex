@@ -134,7 +134,12 @@ impl SilexMcp {
     /// Check that a project is open.
     fn require_project(&self) -> Result<(), String> {
         let state = self.app_handle.state::<AppState>();
-        if state.current_website_id.lock().unwrap().is_none() {
+        if state
+            .current_website_id
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .is_none()
+        {
             return Err(
                 "No project open. Use website(action: 'open') or website(action: 'create') first."
                     .into(),
@@ -158,8 +163,7 @@ impl SilexMcp {
             let path = url.path();
             if path == "/" && url.query().is_none() {
                 return Err(
-                    "Editor not available — still on dashboard. \
-                     Open or create a project first."
+                    "Editor not available — still on dashboard. Open or create a project first."
                         .to_string(),
                 );
             }
@@ -167,27 +171,39 @@ impl SilexMcp {
 
         let id = self.eval_counter.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = oneshot::channel::<String>();
-        self.pending_evals.lock().unwrap().insert(id, tx);
+        self.pending_evals
+            .lock()
+            .unwrap_or_else(|held| held.into_inner())
+            .insert(id, tx);
 
-        let js_escaped = serde_json::to_string(js_code)
-            .map_err(|e| format!("Failed to escape JS: {}", e))?;
+        let js_escaped =
+            serde_json::to_string(js_code).map_err(|e| format!("Failed to escape JS: {}", e))?;
 
         let wrapped = r#"(async()=>{try{let __r=eval(__JS__);if(__r instanceof Promise)__r=await __r;const __s=(typeof __r==='undefined')?null:(typeof __r==='string')?__r:JSON.stringify(__r);await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:true,result:__s})})}catch(__e){await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:false,error:__e.message||String(__e)})})}})()"#
             .replace("__JS__", &js_escaped)
             .replace("__ID__", &id.to_string());
 
         window.eval(&wrapped).map_err(|e| {
-            self.pending_evals.lock().unwrap().remove(&id);
+            self.pending_evals
+                .lock()
+                .unwrap_or_else(|held| held.into_inner())
+                .remove(&id);
             format!("Failed to inject JS: {}", e)
         })?;
 
         let raw = tokio::time::timeout(std::time::Duration::from_secs(timeout_secs), rx)
             .await
             .map_err(|_| {
-                self.pending_evals.lock().unwrap().remove(&id);
+                self.pending_evals
+                    .lock()
+                    .unwrap_or_else(|held| held.into_inner())
+                    .remove(&id);
                 format!("Timeout waiting for JS result ({}s)", timeout_secs)
             })?
-            .map_err(|_| "Internal error: JS callback channel closed unexpectedly. Retry the operation.".to_string())?;
+            .map_err(|_| {
+                "Internal error: JS callback channel closed unexpectedly. Retry the operation."
+                    .to_string()
+            })?;
 
         #[derive(Deserialize)]
         struct JsResult {
@@ -196,8 +212,8 @@ impl SilexMcp {
             error: Option<String>,
         }
 
-        let parsed: JsResult = serde_json::from_str(&raw)
-            .map_err(|e| format!("Failed to parse JS result: {}", e))?;
+        let parsed: JsResult =
+            serde_json::from_str(&raw).map_err(|e| format!("Failed to parse JS result: {}", e))?;
 
         if parsed.success {
             Ok(parsed.result)
@@ -288,7 +304,11 @@ impl SilexMcp {
 
             let annotations = ToolAnnotations {
                 read_only_hint: cap.read_only.or(Some(false)),
-                destructive_hint: if cap.read_only == Some(true) { None } else { cap.destructive.or(Some(false)) },
+                destructive_hint: if cap.read_only == Some(true) {
+                    None
+                } else {
+                    cap.destructive.or(Some(false))
+                },
                 idempotent_hint: cap.idempotent,
                 open_world_hint: cap.open_world,
                 ..Default::default()
@@ -315,7 +335,8 @@ impl SilexMcp {
                     let mcp: &SilexMcp = ctx.service;
 
                     // Get params as JSON object
-                    let params_json = ctx.arguments
+                    let params_json = ctx
+                        .arguments
                         .as_ref()
                         .map(|v| serde_json::Value::Object(v.clone()).to_string())
                         .unwrap_or_else(|| "{}".into());
@@ -330,7 +351,8 @@ impl SilexMcp {
                         cmd = cmd_js
                     );
 
-                    mcp.require_project().map_err(|e| McpError::internal_error(e, None))?;
+                    mcp.require_project()
+                        .map_err(|e| McpError::internal_error(e, None))?;
                     match mcp.eval_js_internal(&js, 10).await {
                         Ok(result) => {
                             let text = result.unwrap_or_else(|| "null".into());
@@ -400,10 +422,7 @@ impl SilexMcp {
 
     /// Start a Sentry transaction for an MCP tool call.
     fn start_tool_transaction(tool_name: &str, action: &str) -> sentry::TransactionOrSpan {
-        let tx_ctx = sentry::TransactionContext::new(
-            &format!("mcp/{}", tool_name),
-            "mcp.tool",
-        );
+        let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool_name), "mcp.tool");
         let transaction = sentry::start_transaction(tx_ctx);
         transaction.set_data("action", serde_json::Value::String(action.to_string()));
         transaction.into()
@@ -413,7 +432,9 @@ impl SilexMcp {
     // website — list, create, delete, rename, duplicate, open, dashboard
     // ----------------------------------------------------------------------
 
-    #[tool(description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, new editor tools are loaded dynamically — call list_tools to discover them. Use dashboard to return to the website list.")]
+    #[tool(
+        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, new editor tools are loaded dynamically — call list_tools to discover them. Use dashboard to return to the website list."
+    )]
     async fn website(
         &self,
         Parameters(params): Parameters<WebsiteParams>,
@@ -427,9 +448,7 @@ impl SilexMcp {
                 let url = format!("{}/api/website", base_url);
                 match reqwest::get(&url).await {
                     Ok(resp) => match resp.text().await {
-                        Ok(body) => {
-                            Ok(CallToolResult::success(vec![Content::text(body)]))
-                        }
+                        Ok(body) => Ok(CallToolResult::success(vec![Content::text(body)])),
                         Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                     },
                     Err(e) => Ok(tool_error(format!("Error fetching websites: {}", e))),
@@ -464,13 +483,17 @@ impl SilexMcp {
                                                     .and_then(|id| id.as_str().map(String::from))
                                             })
                                     {
-                                        let _ = self
-                                            .navigate_to(&format!("{}/?id={}", base_url, id));
+                                        let _ =
+                                            self.navigate_to(&format!("{}/?id={}", base_url, id));
                                     }
                                     // Load capabilities synchronously so they're available immediately
                                     match self.load_capabilities().await {
-                                        Ok(n) => tracing::info!("Loaded {} capabilities after create", n),
-                                        Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
+                                        Ok(n) => {
+                                            tracing::info!("Loaded {} capabilities after create", n)
+                                        }
+                                        Err(e) => {
+                                            tracing::warn!("Failed to load capabilities: {}", e)
+                                        }
                                     }
                                     Ok(CallToolResult::success(vec![Content::text(response_body)]))
                                 } else {
@@ -503,9 +526,10 @@ impl SilexMcp {
                             // Clear dynamic tools since we're back on dashboard
                             *self.dynamic_tools.write().await = ToolRouter::new();
                             self.capabilities_loaded.store(false, Ordering::Release);
-                            Ok(CallToolResult::success(vec![Content::text(
-                                format!("{{\"success\":true,\"message\":\"Website '{}' deleted\"}}", wid)
-                            )]))
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
+                                wid
+                            ))]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
                             Ok(tool_error(format!("Error deleting website: {}", body)))
@@ -538,9 +562,10 @@ impl SilexMcp {
                 {
                     Ok(resp) => {
                         if resp.status().is_success() {
-                            Ok(CallToolResult::success(vec![Content::text(
-                                format!("{{\"success\":true,\"message\":\"Renamed to '{}'\"}}", name)
-                            )]))
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "{{\"success\":true,\"message\":\"Renamed to '{}'\"}}",
+                                name
+                            ))]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
                             Ok(tool_error(format!("Error renaming website: {}", body)))
@@ -587,7 +612,7 @@ impl SilexMcp {
                             Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
                         }
                         Ok(CallToolResult::success(vec![Content::text(
-                            "{\"success\":true,\"message\":\"Website opened in editor\"}"
+                            "{\"success\":true,\"message\":\"Website opened in editor\"}",
                         )]))
                     }
                     Err(e) => Ok(tool_error(e)),
@@ -599,28 +624,28 @@ impl SilexMcp {
                 *self.dynamic_tools.write().await = ToolRouter::new();
                 self.capabilities_loaded.store(false, Ordering::Release);
                 match self.navigate_to(&format!("{}/", base_url)) {
-                    Ok(_) => {
-                        Ok(CallToolResult::success(vec![Content::text(
-                            "{\"success\":true,\"message\":\"Navigated to dashboard\"}"
-                        )]))
-                    }
+                    Ok(_) => Ok(CallToolResult::success(vec![Content::text(
+                        "{\"success\":true,\"message\":\"Navigated to dashboard\"}",
+                    )])),
                     Err(e) => Ok(tool_error(e)),
                 }
-            },
+            }
         }
     }
-
 
     // ----------------------------------------------------------------------
     // take_screenshot — returns image inline
     // ----------------------------------------------------------------------
 
-    #[tool(description = "Take a screenshot and return it as an image. Use target 'canvas' for the website preview only, or 'ui' (default) for the full editor UI including panels. Use this after making visual changes to verify correctness.")]
+    #[tool(
+        description = "Take a screenshot and return it as an image. Use target 'canvas' for the website preview only, or 'ui' (default) for the full editor UI including panels. Use this after making visual changes to verify correctness."
+    )]
     async fn take_screenshot(
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let _tx = Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
+        let _tx =
+            Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
         let target = params.target.as_deref().unwrap_or("ui");
 
         let screenshot_js = r#"
@@ -682,7 +707,6 @@ impl SilexMcp {
 
         Ok(CallToolResult::success(content))
     }
-
 }
 
 // ==========================================================================
@@ -694,7 +718,11 @@ pub async fn eval_callback(
     axum::extract::Path(id): axum::extract::Path<u64>,
     body: String,
 ) -> &'static str {
-    if let Some(tx) = pending.lock().unwrap().remove(&id) {
+    if let Some(tx) = pending
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .remove(&id)
+    {
         let _ = tx.send(body);
     }
     "ok"
@@ -740,9 +768,11 @@ RULES:
         _context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<ListToolsResult, McpError>> + Send + '_ {
         async move {
-            tracing::info!("[list_tools] Called. caps_loaded={} project_open={}",
+            tracing::info!(
+                "[list_tools] Called. caps_loaded={} project_open={}",
                 self.capabilities_loaded.load(Ordering::Acquire),
-                self.require_project().is_ok());
+                self.require_project().is_ok()
+            );
             // Eagerly load capabilities if a project is open but caps haven't loaded yet
             if !self.capabilities_loaded.load(Ordering::Acquire) && self.require_project().is_ok() {
                 tracing::info!("[list_tools] Loading capabilities eagerly...");
@@ -768,9 +798,18 @@ RULES:
             let dynamic_count = dynamic.list_all().len();
             tools.extend(dynamic.list_all());
             let tool_names: Vec<String> = tools.iter().map(|t| t.name.to_string()).collect();
-            tracing::info!("[list_tools] Returning {} tools ({} static + {} dynamic): {:?}",
-                tools.len(), static_count, dynamic_count, tool_names);
-            Ok(ListToolsResult { tools, next_cursor: None, meta: None })
+            tracing::info!(
+                "[list_tools] Returning {} tools ({} static + {} dynamic): {:?}",
+                tools.len(),
+                static_count,
+                dynamic_count,
+                tool_names
+            );
+            Ok(ListToolsResult {
+                tools,
+                next_cursor: None,
+                meta: None,
+            })
         }
     }
 
@@ -786,13 +825,15 @@ RULES:
                 let caps_before = self.capabilities_loaded.load(Ordering::Acquire);
                 let peer = context.peer.clone();
 
-                let tool_ctx = rmcp::handler::server::tool::ToolCallContext::new(
-                    self, request, context,
-                );
+                let tool_ctx =
+                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
                 let result = self.tool_router.call(tool_ctx).await;
 
                 // If the website tool just loaded capabilities, notify the client
-                if is_website_tool && !caps_before && self.capabilities_loaded.load(Ordering::Acquire) {
+                if is_website_tool
+                    && !caps_before
+                    && self.capabilities_loaded.load(Ordering::Acquire)
+                {
                     if let Err(e) = peer.notify_tool_list_changed().await {
                         tracing::warn!("Failed to send tools/list_changed: {}", e);
                     }
@@ -802,9 +843,8 @@ RULES:
             }
 
             if self.dynamic_tools.read().await.has_route(&request.name) {
-                let tool_ctx = rmcp::handler::server::tool::ToolCallContext::new(
-                    self, request, context,
-                );
+                let tool_ctx =
+                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
                 // Hold read lock across the async call — safe because writes
                 // only happen in load_capabilities() on a separate task.
                 let dynamic = self.dynamic_tools.read().await;
@@ -812,14 +852,19 @@ RULES:
             }
 
             Err(McpError::invalid_params(
-                format!("Tool '{}' not found. Use list_tools to see available tools.", request.name),
+                format!(
+                    "Tool '{}' not found. Use list_tools to see available tools.",
+                    request.name
+                ),
                 None,
             ))
         }
     }
 
     fn get_tool(&self, name: &str) -> Option<Tool> {
-        self.tool_router.get(name).cloned()
+        self.tool_router
+            .get(name)
+            .cloned()
             .or_else(|| self.dynamic_tools.try_read().ok()?.get(name).cloned())
     }
 }
@@ -881,12 +926,15 @@ pub async fn start_mcp_server(
     });
 }
 
-pub async fn start_mcp_stdio(
-    app_handle: tauri::AppHandle,
-    pending_evals: PendingEvals,
-) {
+pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: PendingEvals) {
     let (eval_counter, dynamic_tools, capabilities_loaded) = shared_state();
-    let service = SilexMcp::new(app_handle, pending_evals, eval_counter, dynamic_tools, capabilities_loaded);
+    let service = SilexMcp::new(
+        app_handle,
+        pending_evals,
+        eval_counter,
+        dynamic_tools,
+        capabilities_loaded,
+    );
     tracing::info!("MCP stdio transport starting");
     match service.serve(rmcp::transport::io::stdio()).await {
         Ok(server) => {

@@ -16,9 +16,72 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
+use std::fmt;
+use std::path::Path;
+use std::str::FromStr;
+use uuid::Uuid;
 
-/// Unique identifier for a website
-pub type WebsiteId = String;
+/// Unique identifier for a website, and the name of its folder in the data path
+///
+/// An id comes from a request, so it is checked the moment it is read rather
+/// than at each of its uses: `Path::join` on an absolute path forgets the
+/// folder it was joined to, and `..` walks out of it.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+pub struct WebsiteId(String);
+
+impl WebsiteId {
+    /// The id of a website that does not exist yet
+    pub fn fresh() -> Self {
+        Self(Uuid::new_v4().to_string())
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl FromStr for WebsiteId {
+    type Err = String;
+
+    fn from_str(id: &str) -> Result<Self, Self::Err> {
+        if !names_one_folder(id) {
+            return Err(format!("'{}' is not a website id", id));
+        }
+
+        Ok(Self(id.to_string()))
+    }
+}
+
+/// Whether this names one folder inside another, and nothing else
+///
+/// `Path::join` on an absolute path forgets the folder it was joined to, and
+/// `..` walks out of it, so a name coming from a request is read as a name or
+/// refused.
+pub(crate) fn names_one_folder(name: &str) -> bool {
+    !name.is_empty()
+        && !name.starts_with('.')
+        && !name.contains("..")
+        && !name.contains('/')
+        && !name.contains('\\')
+        && Path::new(name).file_name() == Some(OsStr::new(name))
+}
+
+impl fmt::Display for WebsiteId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl<'de> Deserialize<'de> for WebsiteId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let id = String::deserialize(deserializer)?;
+        id.parse().map_err(serde::de::Error::custom)
+    }
+}
 
 /// Main website data file, and the marker of a Silex website on disk
 pub const WEBSITE_DATA_FILE: &str = "website.json";
@@ -98,4 +161,45 @@ pub fn empty_website() -> serde_json::Value {
         "pages": [{}],
         "pagesFolder": WEBSITE_PAGES_FOLDER,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_website_id_names_a_folder_and_nothing_else() {
+        assert!("a1b2c3".parse::<WebsiteId>().is_ok());
+        assert!("my website".parse::<WebsiteId>().is_ok());
+        assert_eq!(WebsiteId::fresh().to_string().len(), 36);
+
+        for refused in [
+            "",
+            ".",
+            "..",
+            ".hidden",
+            "../etc",
+            "a/b",
+            "/home/user",
+            "a\\b",
+        ] {
+            assert!(
+                refused.parse::<WebsiteId>().is_err(),
+                "'{}' should not be a website id",
+                refused
+            );
+        }
+    }
+
+    #[test]
+    fn a_website_id_that_leads_out_is_a_bad_request_not_a_panic() {
+        let refused: Result<WebsiteId, _> = serde_json::from_str("\"../../etc\"");
+        assert!(refused.is_err());
+
+        let read: WebsiteId = serde_json::from_str("\"a1b2c3\"").unwrap();
+        assert_eq!(
+            serde_json::to_value(&read).unwrap(),
+            serde_json::json!("a1b2c3")
+        );
+    }
 }

@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '~/common/page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ConnectorOptions, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -63,6 +63,19 @@ export type PublicationManagerOptions = {
 // plugin init cod
 export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
+}
+
+/**
+ * The publication options of a website, once the connector has had its say
+ *
+ * A connector can come with options of its own: Silex Desktop reads the forge
+ * of the website and answers the address it serves it at. Those are a starting
+ * point and never more than that. What the user filled in is saved with the
+ * website and wins, or publishing would move a site away from the domain
+ * somebody chose for it.
+ */
+export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
+  return { ...connector.options, ...settings.options }
 }
 
 function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
@@ -172,8 +185,9 @@ export class PublicationManager {
     // Check if the user is already logged in
     if(connector.isLoggedIn) {
       this.settings = {
-        ...this.settings, // In case there are options
+        ...this.settings,
         connector,
+        options: withConnectorOptions(this.settings, connector),
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
@@ -346,17 +360,12 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
-      if (job) {
-        this.job = job
-        this.status = jobStatusToPublicationStatus(this.job.status)
-        this.trackProgress()
-      } else {
-        // No job to poll: the publication was over before the server answered,
-        // which is how Silex Desktop publishes to a local folder
-        this.status = PublicationStatus.STATUS_SUCCESS
-        this.editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: 'Publication success' })
-        this.dialog && this.dialog.displayPending(this.job, this.status)
-      }
+      // Every server answers a job, and it is the job that says how the
+      // publication ended: pushing a website to a forge is not the same as that
+      // forge having built and served it.
+      this.job = job
+      this.status = jobStatusToPublicationStatus(this.job.status)
+      this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {

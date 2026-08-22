@@ -9,21 +9,28 @@
 
 //! Publication API routes
 //!
-//! Route:
+//! Routes:
 //! - POST /api/publication/?websiteId=X - Publish the website
+//! - GET /api/publication/publication/status?jobId=X - Where that publication is
 //!
-//! The editor generates the files and sends them here. Publishing to the local
-//! filesystem is done by the time the response is sent, so there is no job to
-//! poll: the HTTP status is the result. On the SaaS, where publishing means
-//! pushing to a forge and waiting for a build, the server answers a job and the
-//! editor polls it.
+//! The editor generates the files and sends them here. Writing them is quick;
+//! what a host application then does with them - sending them on, waiting for
+//! them to be built - is not, and an HTTP request held open
+//! for minutes is one a proxy or a laptop lid closes. So publishing answers a
+//! job straight away and the editor asks about it every couple of seconds,
+//! which is the contract it was written against on the hosted version.
+//!
+//! The doubled path of the status route is not a mistake: the editor builds it
+//! out of `/publication` and `/publication/status`, and the hosted server
+//! answers it there too.
 
 use axum::extract::{Query, State};
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
+use crate::jobs::{JobData, JobStatus};
 use crate::models::{File, WebsiteId};
 use crate::publish;
 use crate::routes::AppState;
@@ -31,13 +38,40 @@ use crate::storage;
 
 /// Build publication routes
 pub fn routes() -> Router<AppState> {
-    Router::new().route("/", post(publish_website))
+    Router::new()
+        .route("/", post(publish_website))
+        .route("/publication/status", get(publication_status))
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PublishQuery {
     pub website_id: WebsiteId,
+
+    /// The publication options, as JSON
+    ///
+    /// The editor puts everything that is not a string in the query encoded
+    /// that way, so this arrives as text and is read once here. Absent when
+    /// the website has no option at all.
+    #[serde(default)]
+    pub options: Option<String>,
+}
+
+impl PublishQuery {
+    /// What the editor sent with this publication
+    ///
+    /// Options nobody could read are no options: publishing a website matters
+    /// more than the address it names, and what went wrong is said once in the
+    /// log rather than failing the whole request.
+    fn options(&self) -> crate::actions::PublicationOptions {
+        let Some(options) = self.options.as_deref() else {
+            return Default::default();
+        };
+        serde_json::from_str(options).unwrap_or_else(|e| {
+            tracing::warn!("Could not read the options of the publication: {}", e);
+            Default::default()
+        })
+    }
 }
 
 /// Publication request body
@@ -72,11 +106,24 @@ pub struct ClientSideFile {
     pub src: Option<String>,
 }
 
-/// The editor logs the URL and drops it. A published folder has no URL until
-/// something serves it, which is the desktop app's business.
+/// What publishing answers, the moment the files are written
 #[derive(Debug, Serialize)]
 pub struct PublishResponse {
+    /// Where the website is served
+    ///
+    /// Always null here, and kept because `{ url, job }` is what the editor's
+    /// own type says and what the hosted server answers. Nothing serves the
+    /// files at the moment this leaves: where they end up, and whether they
+    /// ever do, is what the job says.
     pub url: Option<String>,
+    pub job: JobData,
+}
+
+/// Which publication the editor is asking about
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusQuery {
+    pub job_id: String,
 }
 
 /// Publish a website
@@ -112,7 +159,99 @@ async fn publish_website(
 
     publish::publish(&state.data_path, &query.website_id, &files).await?;
 
-    Ok(Json(PublishResponse { url: None }))
+    // The files are written, and that is the one thing that can be promised
+    // here. Whoever takes them further says the rest through the job, which
+    // the editor follows until an answer comes.
+    let job = state
+        .jobs
+        .start(publishing_message(&state.data_path, &query.website_id));
+    let answered = state
+        .jobs
+        .read(job.id())
+        .expect("the publication was just opened");
+
+    if let Some(actions) = state.actions.clone() {
+        let website_id = query.website_id.clone();
+        let options = query.options();
+        let data_path = state.data_path.clone();
+        // Sending a website runs git over the network, on a thread of its own
+        // so that a slow push does not freeze the server
+        tokio::task::spawn_blocking(move || {
+            actions.deploy(website_id.as_str(), &options, &job);
+            // A host that has nothing to send the website to, or one that
+            // returned without saying how it went, leaves the publication
+            // where it really is rather than open forever
+            job.succeeded(published_message(&data_path, &website_id));
+        });
+    } else {
+        job.succeeded(published_message(&state.data_path, &query.website_id));
+    }
+
+    Ok(Json(PublishResponse {
+        url: None,
+        job: answered,
+    }))
+}
+
+/// What the user reads while nobody has said anything yet
+///
+/// The files are already on the disk at this point, so there is something to
+/// open rather than a wait in front of nothing.
+fn publishing_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
+    told("Publishing your website", data_path, website_id)
+}
+
+/// What the user reads when the files are all there is to say
+///
+/// Not a website that is online: nothing here sent it anywhere, and a website
+/// kept on this computer is a way of working rather than a publication that
+/// went wrong.
+fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
+    told(
+        "Your website is written on this computer.",
+        data_path,
+        website_id,
+    )
+}
+
+/// A sentence, and the one button this server can offer with it
+///
+/// It opens the files the editor generated, not a website a page generator
+/// built out of them, and a site whose pages are named by its author may have
+/// no `index.html` among them. So it says files on this computer, and never
+/// the published website.
+fn told(sentence: &str, data_path: &std::path::Path, website_id: &WebsiteId) -> String {
+    let files = crate::storage::published_files_url(data_path, website_id.as_str());
+    crate::message::told(
+        sentence,
+        &[crate::message::Button::secondary(
+            crate::message::FILES_ON_THIS_COMPUTER,
+            &files,
+        )],
+    )
+}
+
+/// Where a publication is
+///
+/// GET /api/publication/publication/status?jobId=X
+async fn publication_status(
+    State(state): State<AppState>,
+    Query(query): Query<StatusQuery>,
+) -> Result<Json<JobData>> {
+    // A publication nobody knows about is one this server never opened, or one
+    // it opened before being restarted. Either way the editor would ask about
+    // it forever, so it is told the publication is over and why.
+    let job = state.jobs.read(&query.job_id).unwrap_or_else(|| JobData {
+        job_id: query.job_id.clone(),
+        status: JobStatus::Error,
+        message: "<p>Silex lost track of this publication. Publish again to know how it went.</p>"
+            .to_string(),
+        logs: vec![Vec::new()],
+        errors: vec![Vec::new()],
+        start_time: 0,
+        end_time: None,
+    });
+    Ok(Json(job))
 }
 
 /// Asset name out of the `src` sent by the editor

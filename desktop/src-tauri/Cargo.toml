@@ -14,6 +14,9 @@ tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
+# One Silex at a time: the websites and their git repositories are one shared
+# directory, which two running apps cannot both write
+tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 base64 = "0.22"
@@ -44,5 +47,18 @@ which = "8"
 # Error tracking / telemetry (GlitchTip / Sentry-compatible)
 sentry = { version = "0.35", features = ["tracing"] }
 
-# Silex server as a library
+# What a program writes to be read in a terminal, made readable anywhere else:
+# a real parser rather than a guess at where an escape sequence ends
+strip-ansi-escapes = "0.2"
+
+# Silex server as a library, with the editor compiled into it
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
+
+# The dashboard, compiled into the binary. The one the hosted Silex serves is
+# not this one, so the server crate has no reason to carry it
+rust-embed = "8"
+
+# Stop a whole process tree when an integration hangs: killing git alone leaves
+# the ssh it started behind
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

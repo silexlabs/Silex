@@ -135,6 +135,48 @@
   main {
     max-height: none;
 
+    // What the hosting asks for before publishing. The dialog had no field of
+    // its own until then, so an input here has nothing to inherit from.
+    form.silex-form {
+      // Set apart from the account of what publishing did, which sits above
+      // it: this is the one part of the dialog that is acted on rather than
+      // read.
+      margin: 15px 0 10px;
+      padding-top: 15px;
+      border-top: 1px solid var(--silex-border-color-strong);
+
+      h3 {
+        margin: 0 0 10px;
+      }
+
+      .silex-form__element {
+        display: flex;
+        flex-direction: column;
+      }
+
+      label {
+        margin-bottom: 5px;
+      }
+
+      // Plain text rather than the boxed help of the settings dialog: framed
+      // and shaded right above an input, it reads as a second field
+      .silex-help {
+        margin: 0 0 5px;
+        padding: 0;
+        border: none;
+        background: none;
+        opacity: 0.7;
+      }
+
+      input {
+        appearance: none;
+        padding: 5px;
+        border: none;
+        background-color: var(--silex-input-bg);
+        color: var(--silex-text-primary);
+      }
+    }
+
     .buttons {
       display: grid;
       grid-template-columns: 1fr;
@@ -154,6 +196,17 @@
 
     p {
       margin-top: 0;
+    }
+
+    // What publishing has to say, and what it offers to do about it. Not a
+    // details: the buttons in there are the way out of a failed publication,
+    // and an accordion that scrolls is no place for them.
+    .silex-publication-message {
+      margin: 10px 0;
+
+      p:first-child {
+        margin-top: 0;
+      }
     }
 
     details {

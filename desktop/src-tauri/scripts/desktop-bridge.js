@@ -179,7 +179,16 @@
     });
 
     // Listen for menu events from Tauri (triggered by MCP or quit dialog)
-    safeListen('menu-save', () => editor.store());
+    safeListen('menu-save', async () => {
+      try {
+        await editor.store();
+      } finally {
+        // Quitting waits on this before it closes, so it has to be said even
+        // when the save failed: staying silent would hold the app open until
+        // its own timeout, for a save that is never coming
+        invoke('saved_everything');
+      }
+    });
     safeListen('menu-undo', () => editor.UndoManager.undo());
     safeListen('menu-redo', () => editor.UndoManager.redo());
     safeListen('menu-close-project', () => { window.location.href = '/'; });

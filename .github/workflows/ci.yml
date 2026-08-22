@@ -44,19 +44,40 @@ jobs:
             [ -f "$f" ] || { echo "::error::missing build output $f"; exit 1; }
           done
 
+      # silex-desktop embeds dist/client at compile time, and this is the only
+      # job that builds it. Handed over rather than built twice.
+      - name: Keep the editor for the rust job
+        uses: actions/upload-artifact@v4
+        with:
+          name: editor
+          path: dist/client
+          retention-days: 1
+
       - name: Lint
         run: pnpm lint
 
       - name: Test
         run: pnpm test
 
-  # ── Rust: server-rust library ────────────────────────────────────
+  # ── Rust: server-rust library + desktop app ──────────────────────
   rust:
-    name: rust (server-rust)
+    name: rust (server-rust + desktop)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # silex-desktop compiles the editor and the dashboard into the binary, so
+    # this job needs both: the dashboard is a submodule, the editor is built by
+    # the job above.
+    needs: js
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Take the editor built above
+        uses: actions/download-artifact@v4
+        with:
+          name: editor
+          path: dist/client
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -66,14 +87,25 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
 
+      # silex-desktop links against Tauri, which needs the GTK/WebKitGTK
+      # development packages: without them the build stops on gdk-sys with a
+      # pkg-config error. Same list as desktop.yml.
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: Check
-        run: cargo check -p silex-server
+        run: cargo check -p silex-server -p silex-desktop
+
+      - name: Format
+        run: cargo fmt --all --check
 
       - name: Clippy (informational; pre-existing lints not yet enforced)
-        run: cargo clippy -p silex-server
+        run: cargo clippy -p silex-server -p silex-desktop
 
       - name: Test
-        run: cargo test -p silex-server
+        run: cargo test -p silex-server -p silex-desktop
 
   # ── grapesjs-plugins: build + lint + test each plugin (workspace) ────
   # Enforced gate: each plugin must build, lint and test green. This is where the

@@ -7,59 +7,36 @@
  * the Free Software Foundation, either version 3 of the License, or any later version.
  */
 
-//! Serving of the frontend, compiled into the binary
+//! Serving of the editor, compiled into the binary
 //!
-//! The dashboard is served at `/`, the editor at `/?id=<website id>`.
-//! Without the `embed-frontend` feature the crate serves the API only.
+//! The editor is the one frontend this crate knows: what else is served at `/`
+//! is up to whoever runs the server. Without the `embed-frontend` feature the
+//! crate serves the API only.
 
 use axum::Router;
 
 #[cfg(feature = "embed-frontend")]
-use axum::extract::{Query, Request};
+use axum::extract::Request;
 #[cfg(feature = "embed-frontend")]
 use axum::http::{header, StatusCode};
 #[cfg(feature = "embed-frontend")]
 use axum::response::{IntoResponse, Response};
 #[cfg(feature = "embed-frontend")]
-use axum::routing::get;
-#[cfg(feature = "embed-frontend")]
 use rust_embed::Embed;
-#[cfg(feature = "embed-frontend")]
-use std::collections::HashMap;
 
 /// Editor assets, path relative to this crate's Cargo.toml
 #[cfg(feature = "embed-frontend")]
 #[derive(Embed)]
 #[folder = "../dist/client/"]
-struct EditorAssets;
+pub struct EditorAssets;
 
-/// Dashboard assets, the landing page shown at `/`
-#[cfg(feature = "embed-frontend")]
-#[derive(Embed)]
-#[folder = "../silex-dashboard-2026/public/"]
-struct DashboardAssets;
-
-/// Serve the embedded frontend on the given router
+/// Serve the embedded editor on the given router
+///
+/// A route rather than a fallback would settle what `/` is for everyone, and
+/// the desktop app has its own answer to that.
 #[cfg(feature = "embed-frontend")]
 pub fn configure<S: Clone + Send + Sync + 'static>(app: Router<S>) -> Router<S> {
-    app.route(
-        "/",
-        get(|Query(params): Query<HashMap<String, String>>| async move {
-            if params.contains_key("id") {
-                serve::<EditorAssets>("index.html")
-            } else {
-                serve::<DashboardAssets>("index.html")
-            }
-        }),
-    )
-    // Dashboard assets take priority, the editor serves everything else
-    .fallback(|req: Request| async move {
-        let path = req.uri().path().trim_start_matches('/');
-        match try_serve::<DashboardAssets>(path) {
-            Some(response) => response,
-            None => serve::<EditorAssets>(path),
-        }
-    })
+    app.fallback(|req: Request| async move { serve::<EditorAssets>(asset(req.uri().path())) })
 }
 
 #[cfg(not(feature = "embed-frontend"))]
@@ -67,8 +44,17 @@ pub fn configure<S: Clone + Send + Sync + 'static>(app: Router<S>) -> Router<S> 
     app
 }
 
+/// The file a request asks for, the page itself when it names none
 #[cfg(feature = "embed-frontend")]
-fn try_serve<E: Embed>(path: &str) -> Option<Response> {
+fn asset(path: &str) -> &str {
+    match path.trim_start_matches('/') {
+        "" => "index.html",
+        path => path,
+    }
+}
+
+#[cfg(feature = "embed-frontend")]
+pub fn try_serve<E: Embed>(path: &str) -> Option<Response> {
     // In debug builds rust-embed reads the folder from disk instead of the
     // binary, so a path escaping it has to be refused
     if path.contains("..") {
@@ -84,11 +70,15 @@ fn try_serve<E: Embed>(path: &str) -> Option<Response> {
         } else {
             mime.to_string()
         };
-        ([(header::CONTENT_TYPE, content_type)], content.data.to_vec()).into_response()
+        (
+            [(header::CONTENT_TYPE, content_type)],
+            content.data.to_vec(),
+        )
+            .into_response()
     })
 }
 
 #[cfg(feature = "embed-frontend")]
-fn serve<E: Embed>(path: &str) -> Response {
+pub fn serve<E: Embed>(path: &str) -> Response {
     try_serve::<E>(path).unwrap_or_else(|| StatusCode::NOT_FOUND.into_response())
 }
