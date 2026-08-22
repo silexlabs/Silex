@@ -18,7 +18,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::run::{failure, run, run_catch_up, run_transfer, run_transfer_verbatim, Ran};
+use super::run::{failure, run, run_sync_pull, run_transfer, run_transfer_verbatim, Ran};
 
 /// The branch assumed when git cannot say which one HEAD is on
 const BRANCH: &str = "main";
@@ -103,7 +103,7 @@ pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
 }
 
-/// The branch catching up pulls from
+/// The branch a pull takes its versions from
 fn branch_name(site: &Path) -> String {
     asked(site, &["symbolic-ref", "--short", "HEAD"])
         .map(|name| name.trim().to_string())
@@ -122,16 +122,14 @@ impl Git {
     /// Not an integration: nothing to turn on, nothing to remember. A machine
     /// with no git still saves and versions websites, only sending needs it.
     ///
-    /// Every candidate is asked its version rather than the first being taken:
-    /// a file being there does not mean it runs, and a broken install first in
-    /// the PATH would otherwise hide a working one further down.
+    /// Asked its version rather than taken on sight: a file being there does
+    /// not mean it runs.
     pub fn found() -> Option<Self> {
         static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
         FOUND
             .get_or_init(|| {
-                super::programs::candidates("git")
-                    .into_iter()
-                    .find(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
+                super::programs::found("git")
+                    .filter(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
             })
             .clone()
             .map(|program| Git { program })
@@ -193,7 +191,7 @@ impl Git {
         // Fetched then merged rather than pulled: only the fetch reaches a
         // network, and `pull` reads settings of the user that are not Silex's
         // business to inherit.
-        run_catch_up(&self.program, site, &["fetch", &remote, &branch])?;
+        run_sync_pull(&self.program, site, &["fetch", &remote, &branch])?;
         run(&self.program, site, &["merge", "--ff-only", "FETCH_HEAD"]).map(|_| ())
     }
 
