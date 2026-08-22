@@ -17,7 +17,7 @@
 
 import { getPageSlug } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
-import { Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
@@ -459,6 +459,29 @@ export class PublicationManager {
   }
 
   /**
+   * Find images which have not been given an alt attribute.
+   * An empty alt attribute is intentional for decorative images and must not
+   * be reported as missing.
+   */
+  private getImagesMissingAlt(component: Component): Component[] {
+    const images: Component[] = []
+
+    const visit = (current: Component) => {
+      const tagName = current.get('tagName')?.toLowerCase()
+      const attributes = current.getAttributes()
+
+      if (tagName === 'img' && !Object.prototype.hasOwnProperty.call(attributes, 'alt')) {
+        images.push(current)
+      }
+
+      current.components().forEach(visit)
+    }
+
+    visit(component)
+    return images
+  }
+
+  /**
    * Check for missing SEO tags and emit warnings
    * @param siteSettings - Site settings
    */
@@ -477,6 +500,17 @@ export class PublicationManager {
       const bodyComponent = page.getMainComponent()
       const componentId = bodyComponent?.getId()
       const pageId = page.getId()
+
+      const imagesMissingAlt = bodyComponent ? this.getImagesMissingAlt(bodyComponent) : []
+      if (imagesMissingAlt.length) {
+        this.editor.runCommand('notifications:add', {
+          id: `accessibility-validation-alt-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": ${imagesMissingAlt.length} image${imagesMissingAlt.length === 1 ? '' : 's'} ${imagesMissingAlt.length === 1 ? 'is' : 'are'} missing an alt attribute. Add alt text, or use alt="" for decorative images.`,
+          componentId: imagesMissingAlt[0].getId(),
+          group: 'accessibility-validation',
+        })
+      }
 
       // Check for lang attribute
       const lang = getSetting(pageSettings, 'lang')
