@@ -126,7 +126,7 @@ impl Deploy for Glab {
             "success" => Build::Built,
             "failed" | "canceled" | "cancelled" | "skipped" => Build::Failed {
                 url,
-                reason: job["failure_reason"].as_str().map(String::from),
+                reason: why_it_failed(job["failure_reason"].as_str()),
             },
             // created, waiting_for_resource, preparing, pending, running, and
             // whatever GitLab adds next: still going
@@ -216,6 +216,22 @@ fn host_block(config: &str, host: &str) -> Option<String> {
         }
     }
     theirs.then(|| block.join("\n"))
+}
+
+/// What GitLab said of a build that failed, in words a user can act on
+///
+/// GitLab answers a code of its own — `script_failure` is the most common one
+/// a user ever sees. Left as it came, it is the whole explanation they get for
+/// the thing they were waiting on. None for a code nobody wrote a sentence
+/// for: the caller then says something plain rather than something wrong.
+fn why_it_failed(reason: Option<&str>) -> Option<String> {
+    let said = match reason? {
+        "script_failure" => "Something in your website could not be built. Open the build to read its last lines, then publish again.",
+        "stuck_or_timeout_failure" | "job_execution_timeout" => "The build was stopped because it took too long. Publish again to start a new one.",
+        "runner_system_failure" | "quota_exceeded" => "GitLab could not run the build this time. Try again in a few minutes.",
+        _ => return None,
+    };
+    Some(said.to_string())
 }
 
 /// Whether GitLab is keeping this website to the members of its repository

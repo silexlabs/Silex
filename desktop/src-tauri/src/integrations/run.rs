@@ -93,6 +93,17 @@ fn said(program: &Path, args: &[&str], ran: Ran) -> Result<String, String> {
     Ok(ran.stdout)
 }
 
+/// A program as a user knows it: `git`, not the path it was found at
+///
+/// What Silex ran is its own business, and the arguments of a command line
+/// carry things a user has no reason to read.
+fn named(program: &Path) -> String {
+    program
+        .file_stem()
+        .map(|name| name.to_string_lossy().into_owned())
+        .unwrap_or_else(|| program.display().to_string())
+}
+
 /// What went wrong, in the program's own words
 ///
 /// The name of the program and what it said: a user reads "git failed:
@@ -103,10 +114,7 @@ pub fn failure(program: &Path, ran: &Ran) -> String {
         .into_iter()
         .find(|out| !out.is_empty())
         .unwrap_or("no output");
-    let program_name = program
-        .file_stem()
-        .map(|name| name.to_string_lossy().into_owned())
-        .unwrap_or_else(|| program.display().to_string());
+    let program_name = named(program);
     format!(
         "{} failed: {}",
         program_name,
@@ -164,7 +172,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
         "running"
     );
 
-    let name = program.display();
+    let name = named(program);
     let mut child = command
         .spawn()
         .map_err(|e| format!("Could not run {}: {}", name, e))?;
@@ -186,12 +194,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
         }
         if start.elapsed() >= timeout {
             stop(&mut child);
-            return Err(format!(
-                "{} {} took more than {}s",
-                name,
-                args.join(" "),
-                timeout.as_secs()
-            ));
+            return Err(format!("{} took more than {}s", name, timeout.as_secs()));
         }
         // Growing rather than fixed: a program of this machine answers in a
         // millisecond or two, and waiting twenty for it cost seventeen times

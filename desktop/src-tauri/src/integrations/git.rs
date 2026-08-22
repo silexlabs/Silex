@@ -140,7 +140,7 @@ impl Git {
     /// A tag nothing was pushed with is of no use to anybody and would be left
     /// behind at every failed attempt, so it goes with the failure.
     pub fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
-        let remote = remote_name(site).ok_or("This website has no remote to publish to")?;
+        let remote = remote_name(site).ok_or(NOWHERE_TO_SEND_IT)?;
         let pushed = self.push_branch(site, &remote, tag);
         if let Err(e) = pushed {
             if let Some(tag) = tag {
@@ -205,6 +205,14 @@ fn behind_remote(ran: &Ran) -> bool {
         line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first"))
     })
 }
+
+/// Said when a website has no repository to go to
+///
+/// One sentence for one situation: the same thing was worded three different
+/// ways, and none of them named anything the user can see in Silex. "Remote"
+/// least of all.
+pub const NOWHERE_TO_SEND_IT: &str =
+    "Silex does not know where to send this website. Open it again from the list of websites, or check where it is kept.";
 
 /// Whether a send that broke down could work later, read from what git said
 ///
@@ -281,7 +289,7 @@ mod tests {
             "The repository this website is sent to has versions Silex does not have. git failed: ! refs/heads/main:refs/heads/main [rejected] (fetch first)",
             "! HEAD:refs/heads/main [remote rejected] (pre-receive hook declined)",
             "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
-            "This website has no remote to publish to",
+            NOWHERE_TO_SEND_IT,
         ] {
             assert!(!worth_another_try(never), "kept trying: {}", never);
         }
