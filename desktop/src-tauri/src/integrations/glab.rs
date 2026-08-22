@@ -66,6 +66,9 @@ impl Deploy for Glab {
             site: site_url,
             ci: Some(format!("{}/-/pipelines", web_url)),
             settings: Some(format!("{}/pages", web_url)),
+            warning: kept_from_visitors(&repo).then(|| {
+                "Your website is online, but only the members of its repository can open it. GitLab keeps Pages private until you say otherwise, under \"Address and domain\".".to_string()
+            }),
         }))
     }
 
@@ -215,6 +218,14 @@ fn host_block(config: &str, host: &str) -> Option<String> {
     theirs.then(|| block.join("\n"))
 }
 
+/// Whether GitLab is keeping this website to the members of its repository
+///
+/// The setting is `private` on a new repository, public or not, so a user who
+/// changed nothing has a published website nobody else can open.
+fn kept_from_visitors(repo: &str) -> bool {
+    json_string(repo, "pages_access_level").is_some_and(|level| level != "public")
+}
+
 /// Whether the block of a host holds a way to sign in
 ///
 /// glab writes the block of gitlab.com from its defaults, signed in or not, so
@@ -239,6 +250,21 @@ fn value_of(block: &str, key: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A published website nobody but its owner can open is worth saying,
+    /// and GitLab starts every repository that way
+    #[test]
+    fn pages_kept_to_the_members_of_a_repository_are_worth_a_word() {
+        assert!(kept_from_visitors(r#"{"pages_access_level": "private"}"#));
+        assert!(kept_from_visitors(r#"{"pages_access_level": "enabled"}"#));
+        assert!(!kept_from_visitors(r#"{"pages_access_level": "public"}"#));
+
+        // Said nothing rather than warned about nothing: an older GitLab that
+        // leaves the setting out is not one keeping a website from anybody
+        assert!(!kept_from_visitors(
+            r#"{"web_url": "https://gitlab.com/a/b"}"#
+        ));
+    }
 
     /// What glab writes, shortened: a host of one's own, and gitlab.com as it
     /// stands before anybody signs in

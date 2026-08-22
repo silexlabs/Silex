@@ -52,6 +52,20 @@ pub trait Actions: Send + Sync {
         let _ = website_id;
     }
 
+    /// Where the repository of a website is, when the host application knows
+    /// of one.
+    ///
+    /// The server writes websites in folders and can only answer where those
+    /// folders are. Whoever embeds the crate may know that a website also
+    /// lives in a repository somewhere, and says so here.
+    ///
+    /// Asked once per website in a listing, so it is answered without going on
+    /// a network. None leaves the folder the server named.
+    fn repo_url(&self, website_id: &str) -> Option<String> {
+        let _ = website_id;
+        None
+    }
+
     /// What serves the website currently open, told to the editor as its
     /// hosting connector.
     ///

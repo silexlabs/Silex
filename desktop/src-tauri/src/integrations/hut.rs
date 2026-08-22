@@ -54,6 +54,16 @@ impl Deploy for Hut {
         Remote::of(site).is_some_and(|remote| is_sourcehut(&remote.host))
     }
 
+    /// sourcehut writes the owner of a repository with a leading `~`, which
+    /// `Remote` drops when it reads one
+    fn repo(&self, site: &Path) -> Option<String> {
+        let remote = Remote::of(site)?;
+        Some(format!(
+            "https://{}/~{}/{}",
+            remote.host, remote.owner, remote.repo
+        ))
+    }
+
     fn urls(
         &self,
         cli: &Path,
@@ -78,6 +88,7 @@ impl Deploy for Hut {
             // one's.
             site: options.named(WEBSITE_URL).map(String::from),
             ci: Some(format!("https://builds.sr.ht/~{}", remote.owner)),
+            warning: None,
             settings: Some("https://pages.sr.ht".to_string()),
         }))
     }

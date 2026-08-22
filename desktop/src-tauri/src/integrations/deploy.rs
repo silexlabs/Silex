@@ -12,6 +12,7 @@ use std::path::Path;
 use silex_server::{OptionsForm, PublicationOptions};
 
 use super::git::Git;
+use super::remote::Remote;
 
 /// The addresses of a published website, as far as its host told them
 #[derive(Default)]
@@ -22,6 +23,12 @@ pub struct Urls {
     pub ci: Option<String>,
     /// Where the user sets a domain of their own
     pub settings: Option<String>,
+    /// What the user has to know about their published website, in their own
+    /// words
+    ///
+    /// A build that worked does not always mean a website anybody can open.
+    /// `settings` is where whatever is said here gets fixed.
+    pub warning: Option<String>,
 }
 
 /// What became of the build a publication started
@@ -87,6 +94,23 @@ pub trait Deploy: Send + Sync {
     /// else and a user waits behind it. Two integrations answering yes for the
     /// same website is a mistake in their conditions, not a tie to break.
     fn keeps(&self, site: &Path) -> bool;
+
+    /// Where the repository of this website can be read, as a user would open
+    /// it
+    ///
+    /// Read from the disk alone, never over the network: a dashboard asks this
+    /// of every website it lists at once, and `urls` costs a program and a
+    /// round trip each time. None when the website is only on this computer.
+    ///
+    /// The default suits every forge that serves its repositories at
+    /// `host/owner/repo`.
+    fn repo(&self, site: &Path) -> Option<String> {
+        let remote = Remote::of(site)?;
+        Some(format!(
+            "https://{}/{}/{}",
+            remote.host, remote.owner, remote.repo
+        ))
+    }
 
     /// What is known of the website, once its program can be asked
     ///
@@ -203,4 +227,61 @@ pub fn silex_tag() -> String {
         .map(|since| since.as_millis())
         .unwrap_or_default();
     format!("_silex_{}", timestamp)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A repository written by hand, so that no git has to make one
+    fn a_website(name: &str, remote: &str) -> std::path::PathBuf {
+        let site = std::env::temp_dir().join(format!("silex-repo-{}-{}", name, std::process::id()));
+        let _ = std::fs::remove_dir_all(&site);
+        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
+        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
+        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
+        let config = format!(
+            "[core]\n\trepositoryformatversion = 0\n[remote \"origin\"]\n\turl = {}\n",
+            remote
+        );
+        std::fs::write(site.join(".git/config"), config).unwrap();
+        site
+    }
+
+    #[test]
+    fn the_repository_of_a_website_is_named_as_a_user_would_open_it() {
+        let site = a_website("gitlab", "git@gitlab.com:lexoyo/a-site.git");
+        assert_eq!(
+            super::super::glab::Glab.repo(&site).as_deref(),
+            Some("https://gitlab.com/lexoyo/a-site")
+        );
+
+        // The ssh port an instance answers on is not part of the address its
+        // repositories are read at
+        let site = a_website(
+            "forgejo",
+            "ssh://git@forge.example.org:2150/lexoyo/a-site.git",
+        );
+        assert_eq!(
+            super::super::tea::Tea.repo(&site).as_deref(),
+            Some("https://forge.example.org/lexoyo/a-site")
+        );
+    }
+
+    #[test]
+    fn sourcehut_keeps_the_tilde_its_owners_are_written_with() {
+        let site = a_website("sourcehut", "git@git.sr.ht:~lexoyo/a-site");
+        assert_eq!(
+            super::super::hut::Hut.repo(&site).as_deref(),
+            Some("https://git.sr.ht/~lexoyo/a-site")
+        );
+    }
+
+    #[test]
+    fn a_website_kept_on_this_computer_alone_has_no_repository() {
+        let site = std::env::temp_dir().join(format!("silex-norepo-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&site);
+        std::fs::create_dir_all(&site).unwrap();
+        assert_eq!(super::super::glab::Glab.repo(&site), None);
+    }
 }
