@@ -36,7 +36,7 @@ pub async fn publish(data_path: &Path, website_id: &WebsiteId, files: &[File]) -
             fs::create_dir_all(parent).await?;
         }
 
-        fs::write(&file_path, &file.content).await?;
+        crate::storage::write_file(&file_path, &file.content).await?;
     }
 
     Ok(())
