@@ -110,9 +110,18 @@ fn set_current_project(
     website_id: String,
     website_name: String,
 ) {
-    *state.current_website_id.lock().unwrap() = Some(website_id);
-    *state.current_website_name.lock().unwrap() = Some(website_name.clone());
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *state
+        .current_website_id
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = Some(website_id);
+    *state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = Some(website_name.clone());
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title(&format!("{} \u{2014} Silex", website_name));
@@ -121,9 +130,18 @@ fn set_current_project(
 
 #[tauri::command]
 fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.current_website_id.lock().unwrap() = None;
-    *state.current_website_name.lock().unwrap() = None;
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *state
+        .current_website_id
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = None;
+    *state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = None;
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title("Silex");
@@ -132,9 +150,17 @@ fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState
 
 #[tauri::command]
 fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.has_unsaved_changes.lock().unwrap() = true;
+    *state
+        .has_unsaved_changes
+        .lock()
+        .unwrap_or_else(|held| held.into_inner()) = true;
 
-    if let Some(name) = state.current_website_name.lock().unwrap().as_ref() {
+    if let Some(name) = state
+        .current_website_name
+        .lock()
+        .unwrap_or_else(|held| held.into_inner())
+        .as_ref()
+    {
         if let Some(window) = app.get_webview_window("main") {
             let _ = window.set_title(&format!("\u{2022} {} \u{2014} Silex", name));
         }
@@ -672,7 +698,10 @@ fn main() {
             window.on_window_event(move |event| {
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let state = app_handle.state::<AppState>();
-                    let has_changes = *state.has_unsaved_changes.lock().unwrap();
+                    let has_changes = *state
+                        .has_unsaved_changes
+                        .lock()
+                        .unwrap_or_else(|held| held.into_inner());
                     if has_changes {
                         api.prevent_close();
                         show_quit_dialog(&app_handle);
