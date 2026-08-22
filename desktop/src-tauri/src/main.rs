@@ -10,6 +10,7 @@
 // Prevents an extra console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::collections::BTreeMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -23,6 +24,7 @@ use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
+mod frontend;
 mod integrations;
 mod mcp;
 
@@ -151,6 +153,27 @@ fn log_debug(message: String) {
     tracing::debug!("[webview] {message}");
 }
 
+/// Where every website is on its way to the repository it is kept in
+///
+/// What the dashboard asks for when it opens. It is told of every change after
+/// that by the `sending-changed` event, which carries the same thing.
+#[tauri::command]
+fn get_sending(
+    sendings: tauri::State<'_, actions::Sendings>,
+) -> BTreeMap<String, actions::Sending> {
+    sendings.borrow().clone()
+}
+
+/// Told by the editor once it has finished saving
+///
+/// Called even when it had nothing to save. Quitting waits on this to tell an
+/// empty sending queue with nothing to send from one whose save is still on
+/// its way through the server.
+#[tauri::command]
+fn saved_everything(saves: tauri::State<'_, actions::Saves>) {
+    saves.send_modify(|saves| *saves += 1);
+}
+
 /// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
 /// in, so the binary stays reproducible. The committed file is empty; releases
 /// carry the real one.
@@ -224,14 +247,61 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     })
 }
 
-/// How long "Save & Quit" keeps the app running after the save is asked for
+/// The longest "Save & Quit" keeps the app running after the save is asked for
 ///
 /// A save is not over when the editor sends it: the server writes the files,
-/// then hands the website to its integrations a few seconds later (`SENT_AFTER`
-/// in actions.rs). Quitting before that leaves the work on this computer only.
-/// Nothing here can see the end of that chain, so this is a wait long enough to
-/// cover it in the usual case.
+/// then the website goes to the repository it is kept in, over a network that
+/// answers when it answers. Past this the app closes and says what is left.
 const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
+
+/// Wait for the websites on their way to their repository to get there
+///
+/// The queue is empty when the dialog is answered, and an empty queue means
+/// two opposite things: nothing to send, or a save that has not arrived yet.
+/// Only the editor can tell them apart, so its word is waited for first.
+///
+/// False when the wait ran out with some still on their way.
+async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::Saved) -> bool {
+    let wait_until = tokio::time::Instant::now() + SAVE_AND_QUIT_WAIT;
+
+    // Err is the editor gone rather than a save: nobody is going to say it now
+    if tokio::time::timeout_at(wait_until, saved.changed())
+        .await
+        .is_err()
+    {
+        return false;
+    }
+
+    loop {
+        if !sendings
+            .borrow_and_update()
+            .values()
+            .any(actions::Sending::on_its_way)
+        {
+            return true;
+        }
+        match tokio::time::timeout_at(wait_until, sendings.changed()).await {
+            Err(_) => return false,
+            Ok(Err(_)) => return true,
+            Ok(Ok(())) => {}
+        }
+    }
+}
+
+/// Say what has not left yet, on the one occasion it is worth saying
+///
+/// Their work is saved and versioned on this computer either way. What they
+/// cannot see for themselves is that Silex picks this up when it opens again.
+fn says_what_is_left(app: &tauri::AppHandle) {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+
+    app.dialog()
+        .message("Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open it.")
+        .title("Silex")
+        .kind(MessageDialogKind::Warning)
+        .buttons(MessageDialogButtons::Ok)
+        .blocking_show();
+}
 
 fn show_quit_dialog(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
@@ -247,13 +317,20 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
         ))
         .show(move |result| {
             if result {
+                // Subscribed before the editor is asked, so that the save it
+                // is about to confirm cannot be missed
+                let saved = app_handle.state::<actions::Saves>().subscribe();
                 let _ = app_handle.emit("menu-save", ());
                 if let Some(window) = app_handle.get_webview_window("main") {
                     let _ = window.set_title("Saving your work \u{2014} Silex");
                 }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    std::thread::sleep(SAVE_AND_QUIT_WAIT);
+                    let mut sendings = handle.state::<actions::Sendings>().inner().clone();
+                    let mut saved = saved;
+                    if !tauri::async_runtime::block_on(everything_left(&mut sendings, &mut saved)) {
+                        says_what_is_left(&handle);
+                    }
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.destroy();
                     }
@@ -326,7 +403,7 @@ async fn start_server(
     data_path: std::path::PathBuf,
     app_data_dir: PathBuf,
     current_website_id: actions::CurrentWebsiteId,
-) -> u16 {
+) -> (u16, actions::Sendings) {
     // SILEX_DATA_PATH lets the user store the websites somewhere else
     let data_path = std::env::var("SILEX_DATA_PATH")
         .map(std::path::PathBuf::from)
@@ -335,6 +412,7 @@ async fn start_server(
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load(&app_data_dir);
     let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
+    let sendings = actions.sending();
 
     let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
 
@@ -347,6 +425,8 @@ async fn start_server(
             axum::routing::post(mcp::eval_callback),
         )
         .layer(axum::Extension(pending_evals));
+
+    let app = frontend::configure(app);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = match TcpListener::bind(addr).await {
@@ -365,7 +445,17 @@ async fn start_server(
         axum::serve(listener, app).await.unwrap();
     });
 
-    port
+    (port, sendings)
+}
+
+/// Tell the frontend of every change, so it never has to keep asking
+fn tell_of_sending(app: tauri::AppHandle, mut sendings: actions::Sendings) {
+    tauri::async_runtime::spawn(async move {
+        while sendings.changed().await.is_ok() {
+            let websites = sendings.borrow_and_update().clone();
+            let _ = app.emit("sending-changed", websites);
+        }
+    });
 }
 
 // ==================
@@ -474,6 +564,8 @@ fn main() {
             mark_unsaved,
             open_folder,
             log_debug,
+            get_sending,
+            saved_everything,
             get_telemetry_context,
         ])
         .setup(move |app| {
@@ -521,7 +613,7 @@ fn main() {
                     .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
-            let port = tauri::async_runtime::block_on(start_server(
+            let (port, sendings) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
                 app.path()
@@ -529,6 +621,9 @@ fn main() {
                     .expect("failed to resolve app data dir"),
                 app.state::<AppState>().current_website_id.clone(),
             ));
+            app.manage(sendings.clone());
+            app.manage(actions::Saves::new(0));
+            tell_of_sending(app.handle().clone(), sendings);
 
             let url = format!("http://localhost:{}/", port);
             let app_handle_for_splash = app.handle().clone();
