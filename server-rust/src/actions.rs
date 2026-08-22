@@ -35,9 +35,9 @@ pub trait Actions: Send + Sync {
 
     /// Take in the versions of a website made somewhere else, before it is read.
     ///
-    /// The read waits for it: catching up after the editor loaded the website
-    /// would be too late. Nothing is taken in by default.
-    fn catch_up(&self, website_id: &str) {
+    /// The read waits for it: taking them in after the editor loaded the
+    /// website would be too late. Nothing is taken in by default.
+    fn sync_pull(&self, website_id: &str) {
         let _ = website_id;
     }
 
@@ -47,7 +47,7 @@ pub trait Actions: Send + Sync {
     /// network, and a save must not wait on that. Nothing is sent by default.
     ///
     /// Only upwards: what was pushed from elsewhere comes back through
-    /// `catch_up`, which a read waits for.
+    /// `sync_pull`, which a read waits for.
     fn sync(&self, website_id: &str) {
         let _ = website_id;
     }

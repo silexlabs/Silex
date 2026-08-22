@@ -17,36 +17,25 @@ use super::run;
 
 /// Every place this program could be, the likeliest first
 ///
+/// Where a program is, looked for the way a user would expect
+///
 /// An app started from a desktop launcher does not get the PATH of a shell, so
 /// finding nothing in it proves nothing: a `glab` installed by Homebrew lives
-/// in a folder such an app never hears about. Several are answered rather than
-/// one, because a file being there does not mean it runs: a broken install
-/// first in the PATH would otherwise hide a working one further down.
-/// Answered one at a time, and in the order they are worth trying: whoever
-/// asks stops at the first that runs, and asking the shell of the user costs
-/// half a second of somebody else's startup files. A program found in the PATH
-/// is the common case, and it is answered before that half second is spent.
-pub(crate) fn candidates(name: &str) -> impl Iterator<Item = PathBuf> + '_ {
-    let in_the_path = which::which(name).into_iter();
-    let told_by_the_shell = std::iter::once_with(move || {
-        login_shell_path()
-            .into_iter()
-            .map(move |folder| folder.join(name))
-    })
-    .flatten();
-    let guessed = std::iter::once_with(move || known_paths(name)).flatten();
+/// in a folder such an app never hears about. The shell is asked only when the
+/// PATH answered nothing, because asking it costs half a second of somebody
+/// else's startup files, and having the program in the PATH is the common case.
+pub(crate) fn found(name: &str) -> Option<PathBuf> {
+    let a_file = |path: PathBuf| path.is_file().then_some(path);
 
-    let mut already = Vec::new();
-    in_the_path
-        .chain(told_by_the_shell)
-        .chain(guessed)
-        .filter(move |path| {
-            if already.contains(path) || !path.is_file() {
-                return false;
-            }
-            already.push(path.clone());
-            true
+    which::which(name)
+        .ok()
+        .and_then(a_file)
+        .or_else(|| {
+            login_shell_path()
+                .into_iter()
+                .find_map(|folder| a_file(folder.join(name)))
         })
+        .or_else(|| known_paths(name).into_iter().find_map(a_file))
 }
 
 /// The folders the shell of the user puts in its PATH

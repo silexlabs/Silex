@@ -34,13 +34,13 @@ const LOCAL: Duration = Duration::from_secs(30);
 /// coming back.
 const TRANSFER: Duration = Duration::from_secs(600);
 
-/// How long catching up with what was pushed elsewhere has
+/// How long taking in what was pushed elsewhere has
 ///
 /// A website is read after this, and somebody is waiting in front of an editor
 /// that has not opened yet. A host that takes the connection and then says
 /// nothing would hold them there for the whole transfer timer, so this one is
 /// short: what it does not bring back arrives at the next opening.
-const CATCH_UP: Duration = Duration::from_secs(15);
+const SYNC_PULL: Duration = Duration::from_secs(15);
 
 /// How long the output of a program is waited for once it exited
 ///
@@ -69,8 +69,8 @@ pub fn run_transfer(program: &Path, dir: &Path, args: &[&str]) -> Result<String,
 }
 
 /// Run a program that takes in what was pushed somewhere else
-pub fn run_catch_up(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, args, run_within(program, dir, args, CATCH_UP)?)
+pub fn run_sync_pull(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+    said(program, args, run_within(program, dir, args, SYNC_PULL)?)
 }
 
 /// The same, keeping what the program said even when it failed

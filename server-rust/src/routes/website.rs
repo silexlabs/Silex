@@ -104,10 +104,10 @@ async fn read_or_list_website(
     match query.website_id {
         Some(website_id) => {
             if let Some(actions) = &state.actions {
-                let catching_up = actions.clone();
+                let pulling = actions.clone();
                 let asked_about = website_id.clone();
                 let _ =
-                    tokio::task::spawn_blocking(move || catching_up.catch_up(asked_about.as_str()))
+                    tokio::task::spawn_blocking(move || pulling.sync_pull(asked_about.as_str()))
                         .await;
             }
             let data = storage::read_website(&state.data_path, &website_id).await?;

@@ -443,12 +443,12 @@ struct Sent {
 impl silex_server::Actions for SilexActions {
     /// A website that could not be caught up with is opened as it is: the user
     /// is waiting to work, and what is on this computer is a website
-    fn catch_up(&self, website_id: &str) {
+    fn sync_pull(&self, website_id: &str) {
         let Some(site) = self.site_path(website_id) else {
             return;
         };
-        if let Err(e) = self.integrations.catch_up(&site) {
-            tracing::warn!("Could not catch up with website {}: {}", website_id, e);
+        if let Err(e) = self.integrations.sync_pull(&site) {
+            tracing::warn!("Could not pull website {}: {}", website_id, e);
         }
     }
 

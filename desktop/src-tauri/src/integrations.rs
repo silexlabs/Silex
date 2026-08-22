@@ -24,7 +24,7 @@ use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
 
 use deploy::Deploy;
-use programs::candidates;
+use programs::found;
 
 pub mod deploy;
 pub mod git;
@@ -186,7 +186,7 @@ impl Integrations {
     /// Only for a website an integration answers for, which is the rule
     /// sending already follows: a website Silex would never push to is one it
     /// has no business pulling from either.
-    pub fn catch_up(&self, site: &Path) -> Result<(), String> {
+    pub fn sync_pull(&self, site: &Path) -> Result<(), String> {
         if self.answering_for(site).is_none() {
             return Ok(());
         }
@@ -412,10 +412,8 @@ pub fn load(data_dir: &Path) -> Integrations {
             continue;
         }
         // Asking for a version is how a program that is there but does not run
-        // is told apart from one Silex can use, git included. Every place it
-        // could be is tried: a broken install first in the PATH would
-        // otherwise hide a working one further down.
-        let version = candidates(id).find_map(|path| {
+        // is told apart from one Silex can use, git included.
+        let version = found(id).and_then(|path| {
             match run::run(&path, &std::env::temp_dir(), provider.version_args()) {
                 Ok(version) => Some((
                     path,
