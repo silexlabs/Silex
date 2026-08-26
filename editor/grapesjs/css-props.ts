@@ -540,6 +540,17 @@ export default (editor: Editor, opts) => {
         fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
       }],
     }, { at: 10 })
+    // Not part of the text-decoration shorthand, so it has to be its own property:
+    // adding it to the composite above would produce an invalid `text-decoration` rule
+    editor.StyleManager.addProperty('typography', {
+      name: 'Text underline offset',
+      property: 'text-underline-offset',
+      type: 'integer',
+      units: ['px', 'em', 'rem', '%'],
+      info: 'The text-underline-offset CSS property sets the offset distance of an underline text decoration line from its original position.',
+      default: '',
+      fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
+    }, { at: 11 })
     editor.StyleManager.addProperty('typography', {
       name: 'Text transform',
       property: 'text-transform',
@@ -553,7 +564,7 @@ export default (editor: Editor, opts) => {
         { id: 'lowercase', value: 'lowercase', name: 'lowercase' },
       ],
       info: 'The text-transform CSS property sets how to capitalize an element\'s text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized.',
-    }, { at: 11 })
+    }, { at: 12 })
     editor.StyleManager.addProperty('typography', {
       name: 'Text overflow',
       property: 'text-overflow',
@@ -568,7 +579,7 @@ export default (editor: Editor, opts) => {
         { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
-    }, { at: 12 })
+    }, { at: 13 })
     /***************/
     /* Decorations */
     /***************/
@@ -704,6 +715,105 @@ export default (editor: Editor, opts) => {
       ],
       info: 'The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.',
     })
+    // Grapesjs only offers all, width, height, background-color, transform, box-shadow
+    // and opacity here, so re-add the property with a longer list of animatable properties
+    editor.StyleManager.removeProperty('extra', 'transition')
+    editor.StyleManager.addProperty('extra', {
+      name: 'Transition',
+      property: 'transition',
+      type: 'stack',
+      properties: [{
+        id: 'transition-property-sub',
+        name: 'Property',
+        property: 'transition-property',
+        type: 'select',
+        default: 'width',
+        options: [
+          { id: 'all', value: 'all', name: 'all' },
+          { id: 'width', value: 'width', name: 'width' },
+          { id: 'height', value: 'height', name: 'height' },
+          { id: 'color', value: 'color', name: 'color' },
+          { id: 'background-color', value: 'background-color', name: 'background-color' },
+          { id: 'border-color', value: 'border-color', name: 'border-color' },
+          { id: 'transform', value: 'transform', name: 'transform' },
+          { id: 'box-shadow', value: 'box-shadow', name: 'box-shadow' },
+          { id: 'opacity', value: 'opacity', name: 'opacity' },
+          { id: 'filter', value: 'filter', name: 'filter' },
+          { id: 'backdrop-filter', value: 'backdrop-filter', name: 'backdrop-filter' },
+          { id: 'visibility', value: 'visibility', name: 'visibility' },
+        ],
+        info: 'The transition-property CSS property sets the CSS properties to which a transition effect should be applied.',
+      }, {
+        id: 'transition-duration-sub',
+        name: 'Duration',
+        property: 'transition-duration',
+        type: 'number',
+        default: '2s',
+        units: ['s', 'ms'],
+        info: 'The transition-duration CSS property sets the length of time a transition animation should take to complete.',
+      }, {
+        id: 'transition-timing-function-sub',
+        name: 'Timing function',
+        property: 'transition-timing-function',
+        type: 'select',
+        default: 'ease',
+        options: [
+          { id: 'linear', value: 'linear', name: 'linear' },
+          { id: 'ease', value: 'ease', name: 'ease' },
+          { id: 'ease-in', value: 'ease-in', name: 'ease-in' },
+          { id: 'ease-out', value: 'ease-out', name: 'ease-out' },
+          { id: 'ease-in-out', value: 'ease-in-out', name: 'ease-in-out' },
+        ],
+        info: 'The transition-timing-function CSS property sets how intermediate values are calculated for CSS properties being affected by a transition effect.',
+      }],
+    }, { at: 1 })
+    editor.StyleManager.addProperty('extra', {
+      name: 'Transform origin',
+      property: 'transform-origin',
+      type: 'composite',
+      // Grapesjs joins the sub properties with a space, drops the empty ones and splits
+      // them back by position. A lone token would always be read back into X, so a Y only
+      // value such as `transform-origin: top` would come back in the wrong field - or be
+      // lost, X not accepting `top`. Write both parts, the empty one as `center`, which
+      // is the value the browser uses anyway
+      toStyle: (values, { name }) => {
+        const x = values['transform-origin-x']
+        const y = values['transform-origin-y']
+        return { [name]: x || y ? `${x || 'center'} ${y || 'center'}` : '' }
+      },
+      // Css written outside of Silex may hold a single token, and it may name the axes in
+      // the other order: `top` means `center top` and `top left` means `left top`
+      fromStyle: (style, { name, separator }) => {
+        const value = style[name]
+        const parts = `${(Array.isArray(value) ? value[value.length - 1] : value) ?? ''}`
+          .split(separator)
+          .map(part => part.trim())
+          .filter(Boolean)
+        const swapped = ['top', 'bottom'].includes(parts[0])
+        return {
+          'transform-origin-x': (swapped ? parts[1] : parts[0]) ?? '',
+          'transform-origin-y': (swapped ? parts[0] : parts[1]) ?? '',
+        }
+      },
+      properties: [{
+        name: 'X offset',
+        property: 'transform-origin-x',
+        type: 'number',
+        default: '',
+        units: ['px', '%', 'em', 'rem'],
+        fixedValues: ['left', 'center', 'right', 'inherit', 'initial', 'revert', 'unset'],
+        info: 'Horizontal position of the origin: a length, a percentage, or left, center, right.',
+      }, {
+        name: 'Y offset',
+        property: 'transform-origin-y',
+        type: 'number',
+        default: '',
+        units: ['px', '%', 'em', 'rem'],
+        fixedValues: ['top', 'center', 'bottom', 'inherit', 'initial', 'revert', 'unset'],
+        info: 'Vertical position of the origin: a length, a percentage, or top, center, bottom.',
+      }],
+      info: 'The transform-origin CSS property sets the origin for an element\'s transformations, ie the point it is rotated or scaled around.',
+    }, { at: 3 })
     editor.StyleManager.addProperty('extra', {
       name: 'Cursor',
       property: 'cursor',
@@ -749,7 +859,7 @@ export default (editor: Editor, opts) => {
         { id: 'zoom-out', value: 'zoom-out', name: 'zoom-out' },
       ],
       info: 'The cursor CSS property sets the type of mouse cursor, if any, to show when the mouse pointer is over an element.',
-    }, { at: 3 })
+    }, { at: 4 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column count',
       property: 'column-count',
@@ -759,7 +869,7 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
       min: 1,
-    }, { at: 4 })
+    }, { at: 5 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column width',
       property: 'column-width',
@@ -768,7 +878,7 @@ export default (editor: Editor, opts) => {
       info: 'The column-width CSS property suggests an optimal column width. This is not an absolute value but a mere hint. Browser will adjust the width of the element automatically.',
       default: '',
       fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
-    }, { at: 5 })
+    }, { at: 6 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column gap',
       property: 'column-gap',
@@ -777,7 +887,7 @@ export default (editor: Editor, opts) => {
       info: 'The column-gap CSS property sets the size of the gap (gutter) between an element\'s columns.',
       default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
-    }, { at: 6 })
+    }, { at: 7 })
     editor.StyleManager.addProperty('extra', {
       name: 'Row Gap',
       property: 'row-gap',
@@ -786,7 +896,7 @@ export default (editor: Editor, opts) => {
       info: 'The row-gap CSS property sets the size of the gap (gutter) between an element\'s rows.',
       default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
-    }, { at: 7 })
+    }, { at: 8 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column rule',
       property: 'column-rule',
@@ -826,7 +936,7 @@ export default (editor: Editor, opts) => {
         defaults: '',
         info: 'The column-rule-color CSS property sets the color of the line drawn between columns in a multi-column layout.',
       }],
-    }, { at: 8 })
+    }, { at: 9 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column span',
       property: 'column-span',
@@ -838,7 +948,7 @@ export default (editor: Editor, opts) => {
         { id: 'all', value: 'all', name: 'all' },
       ],
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
-    }, { at: 9 })
+    }, { at: 10 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Behavior',
       property: 'scroll-behavior',
@@ -850,7 +960,7 @@ export default (editor: Editor, opts) => {
         { id: 'smooth', value: 'smooth', name: 'smooth' }
       ],
       info: 'Sets smooth or auto scroll behavior.',
-    }, { at: 10 })
+    }, { at: 11 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Type',
       property: 'scroll-snap-type',
@@ -881,7 +991,7 @@ export default (editor: Editor, opts) => {
         ],
       }],
       info: 'The scroll-snap-type CSS property sets the direction and mode of enforced snap points on the scroll container.',
-    }, { at: 11 })
+    }, { at: 12 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Padding',
       property: 'scroll-padding',
@@ -889,7 +999,7 @@ export default (editor: Editor, opts) => {
       defaults: '',
       units: ['px', 'em', 'rem', '%'],
       info: 'Defines offsets for scroll snapping.',
-    }, { at: 12 })
+    }, { at: 13 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Align',
       property: 'scroll-snap-align',
@@ -903,7 +1013,7 @@ export default (editor: Editor, opts) => {
         { id: 'center', value: 'center', name: 'center' },
       ],
       info: 'Aligns elements to scroll snaps.',
-    }, { at: 13 })
+    }, { at: 14 })
 
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
