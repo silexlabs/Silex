@@ -37,7 +37,7 @@ const tagCategories = [
   },
   {
     label: 'Content grouping',
-    tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE'],
+    tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE', 'TIME'],
   },
   {
     label: 'Lists',
@@ -75,7 +75,13 @@ export const semanticPlugin = (editor, opts) => {
       name: 'for',
       type: 'for-trait',
       placeholder: 'ID of input',
-    }
+    },
+    {
+      label: 'Datetime',
+      name: 'datetime',
+      type: 'datetime-trait',
+      placeholder: 'YYYY-MM-DD or date/time string',
+    },
   ]
 
   // Add the extra traits to all component types
@@ -89,11 +95,12 @@ export const semanticPlugin = (editor, opts) => {
     })
   })
 
-  // Shared render function for select and for-trait
+  // Shared render function for select, for-trait and datetime-trait
   function renderTrait(el: HTMLElement, opts: {
     tagName?: string,
     forAttr?: string,
-    type: 'tag' | 'for'
+    datetimeAttr?: string,
+    type: 'tag' | 'for' | 'datetime'
   }) {
     const tagName = (opts.tagName || '').toUpperCase()
     if (opts.type === 'tag') {
@@ -133,6 +140,20 @@ export const semanticPlugin = (editor, opts) => {
           >
         `, el)
       }
+    } else if (opts.type === 'datetime') {
+      // Render "datetime" input, hide if not TIME
+      const wrapper = el.closest('.gjs-trt-trait__wrp-datetime') as HTMLElement
+      if (tagName !== 'TIME') {
+        if(wrapper) wrapper.style.display = 'none'
+        render(html``, el)
+      } else {
+        if(wrapper) wrapper.style.display = 'initial'
+        render(html`
+          <input type="text" placeholder="YYYY-MM-DD or date/time string" value="${opts.datetimeAttr || ''}"
+            @input=${event => renderTrait(el, { datetimeAttr: (event.target as HTMLInputElement).value, tagName, type: 'datetime' })}
+          >
+        `, el)
+      }
     }
   }
 
@@ -145,6 +166,14 @@ export const semanticPlugin = (editor, opts) => {
       tagName: selected?.get('tagName') || '',
       forAttr: selected?.getAttributes().for || '',
       type: 'for'
+    })
+  }
+  function doRenderCurrentDatetime(el: HTMLElement) {
+    const selected = editor.getSelected()
+    renderTrait(el, {
+      tagName: selected?.get('tagName') || '',
+      datetimeAttr: selected?.getAttributes().datetime || '',
+      type: 'datetime'
     })
   }
 
@@ -187,6 +216,27 @@ export const semanticPlugin = (editor, opts) => {
       const forAttr = component.getAttributes().for || ''
       const tagName = component.get('tagName') || ''
       renderTrait(elInput, { forAttr, tagName, type: 'for' })
+    },
+  })
+
+  editor.TraitManager.addType('datetime-trait', {
+    createInput({ trait, component }) {
+      const el = document.createElement('div')
+      editor.on('page', () => doRenderCurrentDatetime(el))
+      editor.on('component:update', () => doRenderCurrentDatetime(el))
+      doRenderCurrentDatetime(el)
+      return el
+    },
+    onEvent({ elInput, component, event }) {
+      const value = (event.target as HTMLInputElement).value
+      if(component.getAttributes().datetime !== value){
+        component.setAttributes({ datetime: value })
+      }
+    },
+    onUpdate({ elInput, component }) {
+      const datetimeAttr = component.getAttributes().datetime || ''
+      const tagName = component.get('tagName') || ''
+      renderTrait(elInput, { datetimeAttr, tagName, type: 'datetime' })
     },
   })
 }
