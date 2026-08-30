@@ -28,19 +28,21 @@ function resetPanel(editor: Editor): void {
 }
 
 /**
- * Escapes the current context in this order : modal, Publish dialog, left panel.
+ * Escapes the current context in this order : preview mode, modal, Publish dialog, left panel.
  * If none of these are open, it selects the body.
  * @param editor The editor.
  */
 function escapeContext(editor: Editor): void {
-  const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
-  const projectBarPanel = editor.Panels.getPanel('project-bar-panel')
+  const publishDialog = (editor as PublishableEditor).PublicationManager?.dialog
+  const projectBarPanel = editor.Panels?.getPanel('project-bar-panel')
 
-  if (editor.Modal.isOpen()) {
+  if (editor.Commands.isActive('preview')) {
+    editor.stopCommand('preview')
+  } else if (editor.Modal?.isOpen()) {
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
-  } else if (projectBarPanel.buttons.some(b => b.get('active'))) {
+  } else if (projectBarPanel?.buttons?.some(b => b.get('active'))) {
     resetPanel(editor)
   } else {
     selectBody(editor)
@@ -188,20 +190,47 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
     })
   }
 
-  // Handling the Escape keymap during text edition
-  document.addEventListener('keydown', event => {
+  // Handling the Escape keymap during text edition and preview mode
+  const onKeyDown = (event: KeyboardEvent) => {
     if (event.key.toLowerCase() === defaultKms.kmClosePanel.keys) {
+      if (editor.Commands.isActive('preview')) {
+        editor.stopCommand('preview')
+        return
+      }
       const target = event.target as HTMLElement | null
-      if(editor.getEditing()) return // Close the rich text edition
-      if(editor.Modal.isOpen()) {
+      if (editor.getEditing()) return // Close the rich text edition
+      if (editor.Modal?.isOpen()) {
         editor.Modal.close()
-      } else if (target) { // If target exists...
-        if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') { // If it's a submit button...
+      } else if (target && typeof target.getAttribute === 'function') {
+        if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') {
           escapeContext(editor)
-        } else if (isTextOrInputField(target)) { // If it's a text field...
+        } else if (isTextOrInputField(target)) {
           target.blur()
+        } else {
+          escapeContext(editor)
         }
+      } else {
+        escapeContext(editor)
       }
     }
-  })
+  }
+
+  document.addEventListener('keydown', onKeyDown)
+
+  const attachCanvasListener = () => {
+    try {
+      const canvasDoc = editor.Canvas?.getDocument?.()
+      if (canvasDoc) {
+        canvasDoc.removeEventListener('keydown', onKeyDown)
+        canvasDoc.addEventListener('keydown', onKeyDown)
+      }
+    } catch {
+      // Ignore canvas access errors in headless environments
+    }
+  }
+
+  editor.on('canvas:frame:load load', attachCanvasListener)
+  if (editor.Canvas?.getDocument?.()?.body) {
+    attachCanvasListener()
+  }
 }
