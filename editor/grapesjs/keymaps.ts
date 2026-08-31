@@ -51,7 +51,7 @@ function escapeContext(editor: Editor): void {
 
 function whenNoFocus(editor: Editor, cbk: () => void): void {
   if(editor.getEditing()) return
-  if(editor.Modal.isOpen()) return
+  if(editor.Modal?.isOpen()) return
   const target = document.activeElement as HTMLElement | null
   if (target && target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') return
   if (target && isTextOrInputField(target)) return
@@ -190,47 +190,20 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
     })
   }
 
-  // Handling the Escape keymap during text edition and preview mode
-  const onKeyDown = (event: KeyboardEvent) => {
+  // Handling the Escape keymap during text edition
+  document.addEventListener('keydown', event => {
     if (event.key.toLowerCase() === defaultKms.kmClosePanel.keys) {
-      if (editor.Commands.isActive('preview')) {
-        editor.stopCommand('preview')
-        return
-      }
       const target = event.target as HTMLElement | null
       if (editor.getEditing()) return // Close the rich text edition
       if (editor.Modal?.isOpen()) {
         editor.Modal.close()
-      } else if (target && typeof target.getAttribute === 'function') {
-        if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') {
+      } else if (target) { // If target exists...
+        if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') { // If it's a submit button...
           escapeContext(editor)
-        } else if (isTextOrInputField(target)) {
+        } else if (isTextOrInputField(target)) { // If it's a text field...
           target.blur()
-        } else {
-          escapeContext(editor)
         }
-      } else {
-        escapeContext(editor)
       }
     }
-  }
-
-  document.addEventListener('keydown', onKeyDown)
-
-  const attachCanvasListener = () => {
-    try {
-      const canvasDoc = editor.Canvas?.getDocument?.()
-      if (canvasDoc) {
-        canvasDoc.removeEventListener('keydown', onKeyDown)
-        canvasDoc.addEventListener('keydown', onKeyDown)
-      }
-    } catch {
-      // Ignore canvas access errors in headless environments
-    }
-  }
-
-  editor.on('canvas:frame:load load', attachCanvasListener)
-  if (editor.Canvas?.getDocument?.()?.body) {
-    attachCanvasListener()
-  }
+  })
 }

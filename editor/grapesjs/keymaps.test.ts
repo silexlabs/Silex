@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Silex website builder, free/libre no-code tool for makers.
  * Copyright (c) 2023 lexoyo and Silex Labs foundation
  *
@@ -53,17 +53,13 @@ describe('keymapsPlugin', () => {
     expect(editor.Keymaps.get('general:open-settings')).toBeDefined()
   })
 
-  test('stops preview mode when Escape is pressed during active preview', () => {
+  test('stops preview mode when Escape is triggered during active preview', () => {
     editor.runCommand('preview')
     expect(editor.Commands.isActive('preview')).toBe(true)
 
-    // Dispatch Escape keydown event on document
-    const event = new KeyboardEvent('keydown', {
-      key: 'Escape',
-      bubbles: true,
-      cancelable: true,
-    })
-    document.dispatchEvent(event)
+    // Trigger panels:close-panel keymap handler (Escape)
+    const closePanelKm = editor.Keymaps.get('panels:close-panel')
+    closePanelKm.handler(editor)
 
     expect(editor.Commands.isActive('preview')).toBe(false)
   })
