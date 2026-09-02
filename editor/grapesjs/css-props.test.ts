@@ -110,21 +110,34 @@ describe('transform-origin', () => {
     expect(prop.getType()).toBe('composite')
     expect(prop.isDetached()).toBe(false)
     expect(prop.getProperties().map((sub: any) => sub.getName()))
-      .toEqual(['transform-origin-x', 'transform-origin-y'])
+      .toEqual(['transform-origin-x', 'transform-origin-y', 'transform-origin-z'])
+  })
+
+  // Z only takes a length: no keyword is valid there, and a percentage would void the
+  // whole declaration
+  it('takes a length only on Z', () => {
+    const prop = getProperty('extra', 'transform-origin')
+    expect(prop.getProperty('transform-origin-z').get('fixedValues')).toEqual([])
+    expect(prop.getProperty('transform-origin-z').getUnits()).toEqual(['px', 'em', 'rem'])
+    expect(prop.getProperty('transform-origin-x').getUnits()).toContain('%')
   })
 
   it.each([
-    ['left top', 'left', 'top'],
-    ['top left', 'left', 'top'],
-    ['50% 20px', '50%', '20px'],
-    ['left', 'left', ''],
-    ['top', '', 'top'],
-    ['bottom center', 'center', 'bottom'],
-  ])('reads `transform-origin: %s` as x=%s y=%s', (value, x, y) => {
+    ['left top', 'left', 'top', ''],
+    ['top left', 'left', 'top', ''],
+    ['50% 20px', '50%', '20px', ''],
+    ['left', 'left', '', ''],
+    ['top', '', 'top', ''],
+    ['bottom center', 'center', 'bottom', ''],
+    ['left top 30px', 'left', 'top', '30px'],
+    ['top left 30px', 'left', 'top', '30px'],
+    ['50% 20px 30px', '50%', '20px', '30px'],
+  ])('reads `transform-origin: %s` as x=%s y=%s z=%s', (value, x, y, z) => {
     selectNewRule({ 'transform-origin': value })
     expect(getProperty('extra', 'transform-origin').getValues()).toEqual({
       'transform-origin-x': x,
       'transform-origin-y': y,
+      'transform-origin-z': z,
     })
   })
 
@@ -137,6 +150,20 @@ describe('transform-origin', () => {
     expect(getProperty('extra', 'transform-origin').getValues()).toEqual({
       'transform-origin-x': 'center',
       'transform-origin-y': 'top',
+      'transform-origin-z': '',
+    })
+  })
+
+  // Css only accepts a Z after an X and a Y, so both are written even when only Z is set
+  it('writes the three axes when only Z is set, and reads them back on reload', () => {
+    const rule = selectNewRule()
+    getProperty('extra', 'transform-origin').getProperty('transform-origin-z').upValue('30px')
+    expect(rule.getStyle()).toEqual({ 'transform-origin': 'center center 30px' })
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    expect(getProperty('extra', 'transform-origin').getValues()).toEqual({
+      'transform-origin-x': 'center',
+      'transform-origin-y': 'center',
+      'transform-origin-z': '30px',
     })
   })
 

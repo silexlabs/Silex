@@ -774,12 +774,17 @@ export default (editor: Editor, opts) => {
       // Grapesjs joins the sub properties with a space, drops the empty ones and splits
       // them back by position. A lone token would always be read back into X, so a Y only
       // value such as `transform-origin: top` would come back in the wrong field - or be
-      // lost, X not accepting `top`. Write both parts, the empty one as `center`, which
-      // is the value the browser uses anyway
+      // lost, X not accepting `top`. Write X and Y in every case, the empty one as
+      // `center`, which is the value the browser uses anyway
       toStyle: (values, { name }) => {
         const x = values['transform-origin-x']
         const y = values['transform-origin-y']
-        return { [name]: x || y ? `${x || 'center'} ${y || 'center'}` : '' }
+        const z = values['transform-origin-z']
+        if (!x && !y && !z) return { [name]: '' }
+        // Css only accepts a Z after an X and a Y, which is exactly what is written here
+        const parts = [x || 'center', y || 'center']
+        if (z) parts.push(z)
+        return { [name]: parts.join(' ') }
       },
       // Css written outside of Silex may hold a single token, and it may name the axes in
       // the other order: `top` means `center top` and `top left` means `left top`
@@ -793,6 +798,7 @@ export default (editor: Editor, opts) => {
         return {
           'transform-origin-x': (swapped ? parts[1] : parts[0]) ?? '',
           'transform-origin-y': (swapped ? parts[0] : parts[1]) ?? '',
+          'transform-origin-z': parts[2] ?? '',
         }
       },
       properties: [{
@@ -811,6 +817,16 @@ export default (editor: Editor, opts) => {
         units: ['px', '%', 'em', 'rem'],
         fixedValues: ['top', 'center', 'bottom', 'inherit', 'initial', 'revert', 'unset'],
         info: 'Vertical position of the origin: a length, a percentage, or top, center, bottom.',
+      }, {
+        name: 'Z offset',
+        property: 'transform-origin-z',
+        type: 'number',
+        default: '',
+        // A percentage is invalid in the Z slot and voids the whole declaration, and no
+        // keyword is allowed there either: Z only takes a length
+        units: ['px', 'em', 'rem'],
+        fixedValues: [],
+        info: 'Depth of the origin, a length only. It moves the axis a 3D transform turns around, eg rotateX or rotateY.',
       }],
       info: 'The transform-origin CSS property sets the origin for an element\'s transformations, ie the point it is rotated or scaled around.',
     }, { at: 3 })
