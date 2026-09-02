@@ -5,6 +5,7 @@ import { websiteMetaRead } from '../api' // Adjust as needed
 import { ClientConfig, config } from '..'
 import { Editor } from 'grapesjs'
 import { cmdRenderSection } from './settings'
+import { getAvailableLocales, LOCALE_STORAGE_KEY, resolveLocale } from '../src/i18n'
 
 // ID of the code editor wrapper
 export const idCodeWrapper = 'settings-head-wrapper'
@@ -47,6 +48,19 @@ export const defaultSections: SettingsSection[] = [{
             <h3>Page name</h3>
             <p class="silex-help">Label of the page in the editor, and file name of the published HTML page.</p>
             <input type="text" name="name" .value=${live(model.get('name') || '')}/>
+          </label>
+          ` : nothing }
+        ${isSite(model) ? html`
+          <label class="silex-form__element">
+            <h3>Editor language</h3>
+            <p class="silex-help">Language of the Silex editor interface. This does not affect the published website's language.</p>
+            <select @change=${(e: Event) => {
+    const locale = resolveLocale((e.target as HTMLSelectElement).value, getAvailableLocales())
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+    config.getEditor().I18n.setLocale(locale)
+  }}>
+              ${getAvailableLocales().map(locale => html`<option value=${locale} ?selected=${locale === config.getEditor().I18n.getLocale()}>${locale}</option>`)}
+            </select>
           </label>
           ` : nothing }
       </div>

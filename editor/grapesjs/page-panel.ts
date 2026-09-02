@@ -296,6 +296,9 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
   editor.on('page', () => {
     doRender()
   })
+  editor.on('i18n:locale', () => {
+    doRender()
+  })
   editor.on('load', () => {
     open = false
     document.querySelector(opts.appendTo).appendChild(el)

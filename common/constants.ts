@@ -25,7 +25,7 @@ export const LEGACY_WEBSITE_PAGES_FOLDER = 'src' // This is used in legacy websi
 export const WEBSITE_PAGES_FOLDER = 'pages' // This is the default now, if not specified in the website data
 
 export const DEFAULT_WEBSITE_ID = 'default'
-export const DEFAULT_LANGUAGE = 'en'
+export const DEFAULT_LANGUAGE = 'en-US'
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 
 export const API_PATH = '/api'

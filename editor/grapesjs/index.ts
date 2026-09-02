@@ -176,8 +176,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     telemetry: false,
 
     i18n: {
+      localeFallback: 'en-US',
       messages: {
-        en: {
+        'en-US': {
           traitManager: {
             label: '',
           },
