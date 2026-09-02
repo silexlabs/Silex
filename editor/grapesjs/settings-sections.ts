@@ -1,11 +1,12 @@
 import {live} from 'lit-html/directives/live.js'
 import {html, TemplateResult, nothing} from 'lit-html'
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 import { WebsiteMeta, WebsiteSettings } from '~/common/types'
 import { websiteMetaRead } from '../api' // Adjust as needed
 import { ClientConfig, config } from '..'
 import { Editor } from 'grapesjs'
 import { cmdRenderSection } from './settings'
-import { getAvailableLocales, LOCALE_STORAGE_KEY, resolveLocale } from '../src/i18n'
+import { getAvailableLocales, LOCALE_STORAGE_KEY, resolveLocale, t } from '../src/i18n'
 
 // ID of the code editor wrapper
 export const idCodeWrapper = 'settings-head-wrapper'
@@ -239,9 +240,7 @@ export const defaultSections: SettingsSection[] = [{
   render: (settings, model) => html`
     <div id="settings-social" class="silex-hideable silex-hidden">
       <div class="silex-help">
-        <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
-        <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>,
-        <a target="_blank" href="https://www.linkedin.com/post-inspector/inspect/">Linkedin</a></p>
+        ${unsafeHTML(t(config.getEditor(), '<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>, <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>, <a target="_blank" href="https://www.linkedin.com/post-inspector/inspect/">Linkedin</a></p>'))}
       </div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">

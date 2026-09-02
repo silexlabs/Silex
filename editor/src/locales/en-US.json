@@ -1,1 +1,12 @@
-{}
+{
+  "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>": "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>",
+  "Are you sure?": "Are you sure?",
+  "Cancel": "Cancel",
+  "Container": "Container",
+  "Do you really want to remove this page?": "Do you really want to remove this page?",
+  "Import from website": "Import from website",
+  "Login": "Login",
+  "New Page": "New Page",
+  "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.": "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.",
+  "Undo (Ctrl+Z)": "Undo (Ctrl+Z)"
+}

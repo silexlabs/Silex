@@ -4,6 +4,7 @@ import { ApiConnectorLoggedInPostMessage, ConnectorData, ConnectorId, ConnectorT
 import { connectorList, getUser, logout } from '../api'
 import { WebsiteId } from '~/common/types'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '~/common/constants'
+import { t } from '../src/i18n'
 
 export const cmdLogin = 'silex:auth:login'
 export const cmdLogout = 'silex:auth:logout'
@@ -62,7 +63,7 @@ export default function loginDialogPlugin(editor, opts) {
     editor.trigger(eventLoggingIn)
     open = true
     editor.Modal.open({
-      title: 'Login',
+      title: t(editor, 'Login'),
       content: '<div id="LoginDialog__content"></div>',
     }, {
       closeOnConfirm: false,

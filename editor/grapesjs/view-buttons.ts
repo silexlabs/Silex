@@ -17,6 +17,7 @@
  */
 
 import { Editor } from 'grapesjs'
+import { t } from '../src/i18n'
 
 const pasteBtnClass = 'fa fa-fw fa-paste silex-button'
 const undoBtnClass = 'fa fa-fw fa-rotate-left silex-button'
@@ -30,7 +31,7 @@ export default function(editor: Editor) {
     id: 'undo',
     className: undoBtnClass + disabledClass,
     command: () => editor.UndoManager.undo(),
-    attributes: { title: 'Undo (Ctrl+Z)' },
+    attributes: { title: t(editor, 'Undo (Ctrl+Z)') },
   }, {
     id: 'redo',
     className: redoBtnClass + disabledClass,

@@ -17,6 +17,7 @@
 
 import {html, render} from 'lit-html'
 import {live} from 'lit-html/directives/live.js'
+import { t } from '../src/i18n'
 
 
 const name = 'new-page-dialog'
@@ -29,7 +30,7 @@ export const newPageDialog = (editor, opts) => {
   editor.Commands.add(cmdOpenNewPageDialog, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({
-        title: 'New Page',
+        title: t(editor, 'New Page'),
         content: '',
         attributes: { class: 'new-page-dialog' },
       })
@@ -67,8 +68,8 @@ function displayDialog(editor, config, page) {
         <input type="text" name="name" .value=${live(page.getName() || '')}/>
       </label>
       <footer>
-        <input class="silex-button" type="button" @click=${e => onImport(editor, page)} value="Import from website">
-        <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenNewPageDialog)} value="Cancel">
+        <input class="silex-button" type="button" @click=${e => onImport(editor, page)} value=${t(editor, 'Import from website')}>
+        <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenNewPageDialog)} value=${t(editor, 'Cancel')}>
         <input class="silex-button" type="submit" value="Ok">
       </footer>
     </form>
