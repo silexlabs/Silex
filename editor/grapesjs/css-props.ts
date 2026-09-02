@@ -22,6 +22,9 @@ import { registerSector } from './sectors'
  * @fileoverview Adds various css properties
  */
 
+// A css wide keyword is the value of a whole declaration, it is never one part of one
+const CSS_WIDE_KEYWORDS = ['inherit', 'initial', 'revert', 'unset']
+
 export default (editor: Editor, opts) => {
   // custom StyleManager type for background-image with Asset Manager integration
   editor.StyleManager.addType('background-image-asset', {
@@ -781,6 +784,10 @@ export default (editor: Editor, opts) => {
         const y = values['transform-origin-y']
         const z = values['transform-origin-z']
         if (!x && !y && !z) return { [name]: '' }
+        // `transform-origin: inherit center` is invalid and the browser drops the whole
+        // declaration, so a css wide keyword is written on its own, and it wins: it is
+        // the value of the property, the axes cannot add anything to it
+        if (CSS_WIDE_KEYWORDS.includes(x)) return { [name]: x }
         // Css only accepts a Z after an X and a Y, which is exactly what is written here
         const parts = [x || 'center', y || 'center']
         if (z) parts.push(z)
@@ -807,7 +814,10 @@ export default (editor: Editor, opts) => {
         type: 'number',
         default: '',
         units: ['px', '%', 'em', 'rem'],
-        fixedValues: ['left', 'center', 'right', 'inherit', 'initial', 'revert', 'unset'],
+        // The css wide keywords are offered on X only, and `fromStyle` reads a lone token
+        // into X, so `transform-origin: inherit` shows up in the panel and can be cleared.
+        // On Y they could only ever be a second token, which voids the declaration
+        fixedValues: ['left', 'center', 'right', ...CSS_WIDE_KEYWORDS],
         info: 'Horizontal position of the origin: a length, a percentage, or left, center, right.',
       }, {
         name: 'Y offset',
@@ -815,7 +825,7 @@ export default (editor: Editor, opts) => {
         type: 'number',
         default: '',
         units: ['px', '%', 'em', 'rem'],
-        fixedValues: ['top', 'center', 'bottom', 'inherit', 'initial', 'revert', 'unset'],
+        fixedValues: ['top', 'center', 'bottom'],
         info: 'Vertical position of the origin: a length, a percentage, or top, center, bottom.',
       }, {
         name: 'Z offset',

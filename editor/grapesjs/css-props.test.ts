@@ -122,6 +122,43 @@ describe('transform-origin', () => {
     expect(prop.getProperty('transform-origin-x').getUnits()).toContain('%')
   })
 
+  // A css wide keyword is the value of the whole property. Written next to an axis it
+  // would give `transform-origin: inherit center`, which browsers drop entirely
+  it.each(['inherit', 'initial', 'revert', 'unset'])('writes `%s` on its own', (keyword) => {
+    const rule = selectNewRule()
+    const prop = getProperty('extra', 'transform-origin')
+    prop.getProperty('transform-origin-x').upValue(keyword)
+    expect(rule.getStyle()).toEqual({ 'transform-origin': keyword })
+    // the keyword wins over the axes, it can never end up as one token among others
+    prop.getProperty('transform-origin-y').upValue('top')
+    prop.getProperty('transform-origin-z').upValue('30px')
+    expect(rule.getStyle()).toEqual({ 'transform-origin': keyword })
+  })
+
+  // Css written outside of Silex can hold one. It has to show in the panel: otherwise the
+  // property looks unset, the clear button is not rendered and the next edit destroys it
+  it.each(['inherit', 'initial', 'revert', 'unset'])('reads `%s` back, so it can be seen and cleared', (keyword) => {
+    const rule = selectNewRule({ 'transform-origin': keyword })
+    const prop = getProperty('extra', 'transform-origin')
+    expect(prop.getValues()).toEqual({
+      'transform-origin-x': keyword,
+      'transform-origin-y': '',
+      'transform-origin-z': '',
+    })
+    expect(prop.hasValue({ noParent: true })).toBe(true)
+    expect(prop.canClear()).toBe(true)
+    expect(rule.getStyle()).toEqual({ 'transform-origin': keyword })
+  })
+
+  // They are not offered on Y, where they could only ever be a second token
+  it('does not let a css wide keyword through on Y', () => {
+    const prop = getProperty('extra', 'transform-origin')
+    expect(prop.getProperty('transform-origin-y').get('fixedValues')).toEqual(['top', 'center', 'bottom'])
+    const rule = selectNewRule()
+    prop.getProperty('transform-origin-y').upValue('inherit')
+    expect(rule.getStyle()).toEqual({})
+  })
+
   it.each([
     ['left top', 'left', 'top', ''],
     ['top left', 'left', 'top', ''],
