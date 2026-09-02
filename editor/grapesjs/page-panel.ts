@@ -102,6 +102,10 @@ function removePage(editor, page) {
 }
 
 function removePageWithConfirm(editor, page) {
+  if (editor.Pages.getAll().length <= 1) {
+    console.error('can not delete the only page')
+    return
+  }
   const content = document.createElement('div')
   const modal = editor.Modal.open({
     title: 'Are you sure?',
@@ -272,10 +276,10 @@ function renderPages(editor, config) {
                ></i>
                ${ name }
              </div>
-             <i class="pages__icon pages__remove-btn fa fa-trash" @click=${e => removePage(editor, getPageFromEvent(e))}></i>
-             <i class="pages__icon pages__clone-btn fa fa-clone" @click=${e => clonePage(editor, getPageFromEvent(e))}></i>
-             <i class="pages__icon fa fa-cog" @click=${e => settingsPage(editor, config, getPageFromEvent(e))}></i>
-           </div>
+              <i class="pages__icon pages__clone-btn fa fa-clone" title="Clone page" @click=${(e: Event) => { e.stopPropagation(); clonePage(editor, getPageFromEvent(e)) }}></i>
+              <i class="pages__icon fa fa-cog" title="Page settings" @click=${(e: Event) => { e.stopPropagation(); settingsPage(editor, config, getPageFromEvent(e)) }}></i>
+              <i class="pages__icon pages__remove-btn fa fa-trash" title="Delete page" @click=${(e: Event) => { e.stopPropagation(); removePageWithConfirm(editor, getPageFromEvent(e)) }}></i>
+            </div>
           </div>
           `
   })}
