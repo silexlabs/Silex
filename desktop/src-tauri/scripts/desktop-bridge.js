@@ -35,7 +35,9 @@
   const safeListen = (event, handler) => {
     window.Sentry?.addBreadcrumb?.({ category: 'tauri', message: `listen ${event}`, level: 'info' });
     return listen(event, handler).catch((err) => {
-      window.Sentry?.captureException?.(err, { tags: { tauri_command: `plugin:event|listen:${event}` } });
+      // Tauri rejects with a string, which GlitchTip titles <unknown>
+      const failure = err instanceof Error ? err : new Error(`tauri listen ${event}: ${String(err)}`);
+      window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
     });
   };
 
@@ -169,6 +171,14 @@
     // Track project_publish
     editor.on('silex:publish:start', () => {
       editor.__publishSpan = window.Sentry?.startInactiveSpan?.({ name: 'project_publish', op: 'lifecycle', forceTransaction: true });
+    });
+    editor.on('silex:publish:data', ({ data }) => {
+      const files = data?.files ?? [];
+      editor.__publishSpan?.setAttributes({
+        files: files.length,
+        pages: data?.pages?.length ?? 0,
+        bytes: files.reduce((n, f) => n + (typeof f.content === 'string' ? f.content.length : 0), 0),
+      });
     });
     editor.on('silex:publish:end', () => {
       editor.__publishSpan?.end();
