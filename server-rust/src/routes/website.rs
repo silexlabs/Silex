@@ -33,6 +33,7 @@ use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
+use crate::held::held;
 use crate::history::{self, Versioned};
 use crate::models::{File, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
 use crate::routes::AppState;
@@ -115,7 +116,7 @@ async fn read_or_list_website(
         }
         None => {
             let websites = storage::list_websites(&state.data_path).await?;
-            let websites = where_they_are_kept(&state, websites).await?;
+            let websites = where_they_are_kept(&state, websites).await;
             Ok(Json(websites).into_response())
         }
     }
@@ -129,9 +130,9 @@ async fn update_website(
 ) -> Result<Json<MessageResponse>> {
     storage::update_website(&state.data_path, &query.website_id, &data).await?;
 
-    let site = storage::website_path(&state.data_path, &query.website_id)?;
-    // On a thread of its own: a save landing during a publication waits for the
-    // repository, and waiting there would hold a thread the server answers with.
+    let site = storage::website_path(&state.data_path, &query.website_id);
+    // On a thread of its own: a save landing during a publication waits for
+    // the repository, and would hold a thread the server answers with
     let versioned = tokio::task::spawn_blocking(move || {
         // Same message as the SaaS server writes, so that a history reads the
         // same wherever the website was edited.
@@ -143,8 +144,8 @@ async fn update_website(
         Ok(Ok(versioned)) => {
             forget(&state, query.website_id.as_str());
             if let (Versioned::Created, Some(actions)) = (versioned, &state.actions) {
-                // A website nobody changed is sent nowhere: syncing it costs
-                // seconds and several processes to send what is already there
+                // A website nobody changed is sent nowhere: it costs seconds
+                // and several processes to send what is already there
                 actions.sync(query.website_id.as_str());
             }
             None
@@ -155,11 +156,9 @@ async fn update_website(
 
     if let Some(why) = why {
         tracing::warn!("Could not version website {}: {}", query.website_id, why);
-        // Reporting and forgetting was the first answer here, on the grounds
-        // that the website is on the disk and an error would tell the editor the
-        // work is lost. What it tells the user instead is nothing at all, while
-        // their history quietly stops being written, so it is said, in words
-        // that put the saving first.
+        // Said rather than logged: the history quietly stops being written
+        // otherwise. The words put the saving first, because the files are on
+        // the disk.
         if worth_saying(&state, query.website_id.as_str(), &why) {
             return Err(Error::Told(format!(
                 "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
@@ -175,17 +174,11 @@ async fn update_website(
 
 /// Whether this is worth stopping the user for
 ///
-/// True the first time a website cannot be versioned, and again whenever it
-/// starts failing for another reason. The rest of the time the editor would
-/// show the same message every few seconds, which is how a real problem becomes
-/// something people click through without reading.
+/// True the first time a website cannot be versioned, and again whenever the
+/// reason changes. The editor would otherwise show the same message every few
+/// seconds.
 fn worth_saying(state: &AppState, website_id: &str, why: &str) -> bool {
-    let mut said = state.not_versioned.lock().unwrap_or_else(|held| {
-        // Another request panicked holding this. What it left says nothing
-        // about the website that was just saved, so it is taken back rather
-        // than turned into a failure of this save.
-        held.into_inner()
-    });
+    let mut said = held(&state.not_versioned);
     said.insert(website_id.to_string(), why.to_string())
         .as_deref()
         != Some(why)
@@ -193,13 +186,9 @@ fn worth_saying(state: &AppState, website_id: &str, why: &str) -> bool {
 
 /// Forget what was said about a website that versions again
 ///
-/// Whatever fails next is news, including the same words as the failure before.
+/// Whatever fails next is news, the same words as before included.
 fn forget(state: &AppState, website_id: &str) {
-    state
-        .not_versioned
-        .lock()
-        .unwrap_or_else(|held| held.into_inner())
-        .remove(website_id);
+    held(&state.not_versioned).remove(website_id);
 }
 
 /// Create a website
@@ -245,39 +234,43 @@ async fn get_meta(
     Query(query): Query<WebsiteQuery>,
 ) -> Result<Json<WebsiteMeta>> {
     let meta = storage::get_website_meta(&state.data_path, &query.website_id).await?;
-    let mut named = where_they_are_kept(&state, vec![meta]).await?;
+    let named = where_they_are_kept(&state, vec![meta]).await;
 
-    Ok(Json(named.remove(0)))
+    Ok(Json(
+        named.into_iter().next().expect("one website in, one out"),
+    ))
 }
 
 /// Let the host application name the repository these websites live in
 ///
-/// The server only knows the folder it writes, and says so; the application
-/// around it may know that a website also lives on a forge. Left as it was
-/// when nobody knows better, so a website kept on this computer alone still
-/// answers where its files are.
+/// Left as it was when nobody knows better, so a website kept on this computer
+/// alone still answers where its files are.
 ///
-/// On a thread of its own: answering starts a program for every website of the
-/// list, and a listing of a dozen would hold the thread the server answers
-/// with for as long as they all take.
-async fn where_they_are_kept(
-    state: &AppState,
-    mut websites: Vec<WebsiteMeta>,
-) -> Result<Vec<WebsiteMeta>> {
+/// On a thread of its own: answering starts a program per website, and a
+/// listing of a dozen would hold the thread the server answers with.
+async fn where_they_are_kept(state: &AppState, websites: Vec<WebsiteMeta>) -> Vec<WebsiteMeta> {
     let Some(actions) = state.actions.clone() else {
-        return Ok(websites);
+        return websites;
     };
-    websites = tokio::task::spawn_blocking(move || {
-        for website in &mut websites {
-            if let Some(kept) = actions.repo_url(website.website_id.as_str()) {
-                website.repo_url = Some(kept);
-            }
-        }
-        websites
+    let asking = websites.clone();
+    tokio::task::spawn_blocking(move || {
+        asking
+            .into_iter()
+            .map(|mut website| {
+                if let Some(kept) = actions.repo_url(website.website_id.as_str()) {
+                    website.repo_url = Some(kept);
+                }
+                website
+            })
+            .collect()
     })
     .await
-    .map_err(|held| Error::Io(std::io::Error::other(held)))?;
-    Ok(websites)
+    .unwrap_or_else(|panicked| {
+        // A host application that panics here leaves the dashboard with the
+        // websites it already had, rather than with nothing at all
+        tracing::warn!("Could not ask where the websites are kept: {}", panicked);
+        websites
+    })
 }
 
 /// Write the metadata of a website
@@ -315,22 +308,14 @@ async fn write_assets(
     mut multipart: Multipart,
 ) -> Result<Json<AssetsResponse>> {
     let mut files = Vec::new();
-    let body_limit = state.body_limit;
 
-    while let Some(field) = multipart
-        .next_field()
-        .await
-        .map_err(|e| unreadable_upload(e, body_limit))?
-    {
+    while let Some(field) = multipart.next_field().await.map_err(unreadable_upload)? {
         let file_name = field
             .file_name()
             .map(String::from)
             .unwrap_or_else(|| "unknown".to_string());
 
-        let content = field
-            .bytes()
-            .await
-            .map_err(|e| unreadable_upload(e, body_limit))?;
+        let content = field.bytes().await.map_err(unreadable_upload)?;
 
         files.push(File {
             path: stored_as(&file_name),
@@ -356,10 +341,9 @@ async fn write_assets(
 
 /// Where an uploaded file goes in the assets folder of the website
 ///
-/// GrapesJS sends back the `/assets/` an asset is already under, so a sub folder
-/// is meant. A name that is a path of its own is not: it comes from the machine
-/// the file was picked on, and would make those folders here. A relative `..` is
-/// left as it is, for the storage to refuse it.
+/// GrapesJS sends back the `/assets/` an asset is already under, so a sub
+/// folder is meant. A name that is a path of its own comes from the machine the
+/// file was picked on, and would make those folders here.
 fn stored_as(file_name: &str) -> String {
     let asked = std::path::Path::new(file_name.strip_prefix("/assets/").unwrap_or(file_name));
 
@@ -376,9 +360,12 @@ fn stored_as(file_name: &str) -> String {
 }
 
 /// What to tell the person adding a file Silex could not read
-fn unreadable_upload(e: MultipartError, body_limit: usize) -> Error {
+///
+/// A body over the limit only carries its status here: the middleware writes
+/// the words, and it is the one that knows what the limit is.
+fn unreadable_upload(e: MultipartError) -> Error {
     if e.status() == StatusCode::PAYLOAD_TOO_LARGE {
-        return Error::TooLarge(body_limit);
+        return Error::TooLarge(None);
     }
 
     Error::InvalidInput(format!("Silex could not read the file you added: {}", e))

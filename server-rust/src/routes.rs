@@ -40,15 +40,11 @@ pub struct AppState {
     pub actions: Option<Arc<dyn Actions>>,
     /// Why a website could not be versioned, the last time it was said
     ///
-    /// A website saves itself every few seconds. A repository that cannot take
-    /// a version fails at every one of those saves, and saying so each time
-    /// would bury the editor under one message. It is said once, and again only
-    /// when the reason changes.
+    /// A website saves itself every few seconds, so a repository that cannot
+    /// take a version is said once, and again only when the reason changes.
     pub not_versioned: Arc<Mutex<HashMap<String, String>>>,
     /// The publications the editor is following
     pub jobs: Jobs,
-    /// Largest request body accepted, in bytes
-    pub body_limit: usize,
 }
 
 impl AppState {
@@ -58,7 +54,6 @@ impl AppState {
             actions: config.actions.clone(),
             not_versioned: Arc::new(Mutex::new(HashMap::new())),
             jobs: Jobs::default(),
-            body_limit: config.body_limit,
         }
     }
 }
@@ -77,9 +72,7 @@ pub fn api_routes(body_limit: usize) -> Router<AppState> {
 /// Answer `/api/connector/` the way `/api/connector` is answered
 ///
 /// The Express server this one stands in for answers a route with or without
-/// its last slash, and the dashboard asks for `/api/connector/`. Sending the
-/// caller to the route that exists keeps both spellings working, whoever wrote
-/// them.
+/// its last slash, and the dashboard asks for `/api/connector/`.
 async fn same_route_without_the_slash(OriginalUri(asked): OriginalUri) -> Response {
     let Some(path) = asked
         .path()
@@ -103,13 +96,13 @@ async fn same_route_without_the_slash(OriginalUri(asked): OriginalUri) -> Respon
 
 /// Say what a body over the limit is, in words the person editing can act on
 ///
-/// The extractors turn it into "Failed to buffer the request body: length limit
-/// exceeded", which the editor shows as it is.
+/// The extractors turn it into "Failed to buffer the request body: length
+/// limit exceeded", which the editor shows as it is.
 async fn in_plain_words(State(body_limit): State<usize>, request: Request, next: Next) -> Response {
     let response = next.run(request).await;
 
     if response.status() == StatusCode::PAYLOAD_TOO_LARGE {
-        return Error::TooLarge(body_limit).into_response();
+        return Error::TooLarge(Some(body_limit)).into_response();
     }
 
     response

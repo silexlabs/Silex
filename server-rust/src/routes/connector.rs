@@ -15,10 +15,8 @@
 //! true is what makes the editor skip the login dialog and hide the logout
 //! button.
 //!
-//! Everything else is a constant until a host application says otherwise. One
-//! that knows where the website it has open is served names that host and
-//! answers for it, which is how Silex Desktop tells the editor where the
-//! website is kept.
+//! Everything else is a constant until a host application says otherwise,
+//! which is how Silex Desktop tells the editor where a website is kept.
 //!
 //! Routes:
 //! - GET /api/connector/?type=STORAGE|HOSTING - List connectors
@@ -70,13 +68,12 @@ pub struct ConnectorData {
 
     /// What publishing already knows, `websiteUrl` among it
     ///
-    /// Only Silex Desktop has anything to say here: it is the one that knows
-    /// who holds the website, and what they answered about it.
+    /// Only Silex Desktop has anything to say here.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<serde_json::Value>,
 
-    /// What to ask the user before publishing, when the host cannot say
-    /// where the website is served. Silex Desktop only, as above.
+    /// What to ask the user before publishing, when the host cannot say where
+    /// the website is served. Silex Desktop only, as above.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options_form: Option<OptionsForm>,
 }
@@ -91,12 +88,10 @@ pub struct ConnectorUser {
 
 async fn connector_data(state: &AppState, connector_type: ConnectorType) -> ConnectorData {
     // Only the hosting is asked about: the storage is these files whoever
-    // embeds the crate, while what serves a website depends on the machine.
-    // Served alone, nobody answers and the constants below stand.
+    // embeds the crate, while what serves a website depends on the machine
     let hosting = match (connector_type, state.actions.clone()) {
-        // Answering this starts a command line program, which reaches the
-        // network. On a thread of its own, so that a slow answer does not hold
-        // up everything else the editor asks for.
+        // Answering this starts a program that reaches the network, so a slow
+        // answer must not hold up what else the editor asks for
         (ConnectorType::Hosting, Some(actions)) => {
             tokio::task::spawn_blocking(move || actions.hosting())
                 .await

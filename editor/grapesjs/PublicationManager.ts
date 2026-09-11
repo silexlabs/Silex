@@ -68,11 +68,9 @@ export default function publishPlugin(editor, opts) {
 /**
  * The publication options of a website, once the connector has had its say
  *
- * A connector can come with options of its own: Silex Desktop reads the forge
- * of the website and answers the address it serves it at. Those are a starting
- * point and never more than that. What the user filled in is saved with the
- * website and wins, or publishing would move a site away from the domain
- * somebody chose for it.
+ * What a connector answers is a starting point. What the user filled in is
+ * saved with the website and wins, or publishing would move a site away from
+ * the domain somebody chose for it.
  */
 export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
   return { ...connector.options, ...settings.options }
@@ -360,9 +358,8 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
-      // Every server answers a job, and it is the job that says how the
-      // publication ended: pushing a website to a forge is not the same as that
-      // forge having built and served it.
+      // The job is what says how the publication ended: pushing a website to
+      // a forge is not that forge having built and served it
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
       this.trackProgress()

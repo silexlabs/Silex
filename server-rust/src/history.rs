@@ -9,12 +9,9 @@
 
 //! The history of a website: one version per save, in the website's own folder
 //!
-//! Writing a website and keeping a version of it are the same gesture, done in
-//! the same place. The library doing it is embedded, so a website has a history
-//! whether or not the user has git, and the server still starts no process.
-//!
-//! Versions a website the way the SaaS server does on GitLab: one commit per
-//! save, on one branch, everything in it.
+//! The library doing it is embedded, so a website has a history whether or not
+//! the user has git, and the server still starts no process. One commit per
+//! save on one branch, the way the SaaS server does on GitLab.
 
 use std::path::Path;
 use std::time::Duration;
@@ -26,10 +23,9 @@ use git2::{ErrorCode, IndexAddOption, Repository, RepositoryInitOptions, Reposit
 /// Not the one the user's git config would pick: publishing pushes to this one.
 const BRANCH: &str = "main";
 
-/// Who a website is committed as, when the user never told git who they are
+/// Committed as, when the user never told git who they are
 const NOBODY: (&str, &str) = ("Silex", "silex@localhost");
 
-/// What versioning a website came to
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Versioned {
     /// A version was created
@@ -40,35 +36,29 @@ pub enum Versioned {
 
 /// Add everything in the website folder to a new version of it
 ///
-/// Nothing is left out but what the website's own `.gitignore` says: the
-/// published files live in the website folder too, and the SaaS keeps sources
-/// and publication in the same repository.
+/// Nothing is left out but what its own `.gitignore` says: the SaaS keeps
+/// sources and publication in the same repository.
 pub fn version(site: &Path, message: &str) -> Result<Versioned, String> {
     patiently(|| {
         let repo = open_or_start(site)?;
-        let mut index = repo.index().map_err(said)?;
-        // What `git add -A` does, in the two halves libgit2 keeps apart: what is
-        // already followed and may have been changed or deleted, then what is new
-        index.update_all(["*"], None).map_err(said)?;
-        index
-            .add_all(["*"], IndexAddOption::DEFAULT, None)
-            .map_err(said)?;
-        index.write().map_err(said)?;
+        let mut index = repo.index()?;
+        // What `git add -A` does, in the two halves libgit2 keeps apart
+        index.update_all(["*"], None)?;
+        index.add_all(["*"], IndexAddOption::DEFAULT, None)?;
+        index.write()?;
 
-        let tree_id = index.write_tree().map_err(said)?;
+        let tree_id = index.write_tree()?;
         let last = repo.head().ok().and_then(|head| head.peel_to_commit().ok());
 
-        // Saving a website that did not change is not a failure, it just has
-        // nothing to version
+        // Saving a website that did not change is not a failure
         if last.as_ref().is_some_and(|last| last.tree_id() == tree_id) {
             return Ok(Versioned::Unchanged);
         }
 
-        let tree = repo.find_tree(tree_id).map_err(said)?;
+        let tree = repo.find_tree(tree_id)?;
         let who = whoever(&repo)?;
         let parents: Vec<&git2::Commit> = last.iter().collect();
-        repo.commit(Some("HEAD"), &who, &who, message, &tree, &parents)
-            .map_err(said)?;
+        repo.commit(Some("HEAD"), &who, &who, message, &tree, &parents)?;
         Ok(Versioned::Created)
     })
 }
@@ -79,36 +69,34 @@ pub fn tag(site: &Path, tag: &str) -> Result<(), String> {
         let repo = open(site)?;
         let head = repo
             .head()
-            .and_then(|head| head.peel(git2::ObjectType::Commit))
-            .map_err(said)?;
-        repo.tag_lightweight(tag, &head, false).map_err(said)?;
+            .and_then(|head| head.peel(git2::ObjectType::Commit))?;
+        repo.tag_lightweight(tag, &head, false)?;
         Ok(())
     })
 }
 
 /// Take the remotes out of a repository, keeping everything else in it
 ///
-/// Reading `.git/config` for them is not enough: `[remote "origin"]` and
-/// `[remote.origin]` both name a remote and git honours both, so git is the
-/// one asked.
+/// git is asked rather than `.git/config` read: `[remote "origin"]` and
+/// `[remote.origin]` both name a remote and git honours both.
 pub fn drop_the_remotes(site: &Path) -> Result<(), String> {
     let Ok(repo) = open(site) else {
         return Ok(());
     };
 
-    let remotes = repo.remotes().map_err(said)?;
+    let remotes = repo.remotes().map_err(words_of)?;
     let mut named = Vec::new();
     for remote in remotes.iter() {
         // A remote left behind is the copy publishing over the website it was
-        // copied from, so one Silex cannot name stops the copy
-        match remote.map_err(said)? {
+        // copied from
+        match remote.map_err(words_of)? {
             Some(name) => named.push(name.to_string()),
             None => return Err("this website has a remote with an unreadable name".to_string()),
         }
     }
 
     for name in named {
-        repo.remote_delete(&name).map_err(said)?;
+        repo.remote_delete(&name).map_err(words_of)?;
     }
 
     Ok(())
@@ -123,14 +111,13 @@ pub fn untag(site: &Path, tag: &str) {
 
 /// The website's repository, without ever climbing out of its folder
 ///
-/// A website folder can sit inside a repository of somebody else's, and
-/// searching upwards would then version the wrong thing.
-fn open(site: &Path) -> Result<Repository, Refused> {
+/// Searching upwards would version the repository the folder sits in.
+fn open(site: &Path) -> Result<Repository, git2::Error> {
     let nowhere = std::iter::empty::<&std::ffi::OsStr>();
-    Repository::open_ext(site, RepositoryOpenFlags::NO_SEARCH, nowhere).map_err(said)
+    Repository::open_ext(site, RepositoryOpenFlags::NO_SEARCH, nowhere)
 }
 
-fn open_or_start(site: &Path) -> Result<Repository, Refused> {
+fn open_or_start(site: &Path) -> Result<Repository, git2::Error> {
     if let Ok(repo) = open(site) {
         return Ok(repo);
     }
@@ -139,84 +126,48 @@ fn open_or_start(site: &Path) -> Result<Repository, Refused> {
     // The default branch name depends on the user's git config, and publishing
     // pushes to this one
     how.initial_head(BRANCH);
-    let repo = Repository::init_opts(site, &how).map_err(said)?;
+    let repo = Repository::init_opts(site, &how)?;
 
-    // Each is looked at on its own: a user with a name but no address keeps
-    // their name. What is made up here is written in this repository, so that
-    // their own git works in this folder too; the global config is left alone.
-    let mut config = repo.config().map_err(said)?;
+    // Each on its own, so that a user with a name but no address keeps their
+    // name. Written in this repository, never in the global config.
+    let mut config = repo.config()?;
     for (setting, made_up) in [("user.name", NOBODY.0), ("user.email", NOBODY.1)] {
         if config.get_string(setting).is_err() {
-            config.set_str(setting, made_up).map_err(said)?;
+            config.set_str(setting, made_up)?;
         }
     }
     Ok(repo)
 }
 
 /// Who to commit as: the user, when they told git who they are
-fn whoever(repo: &Repository) -> Result<git2::Signature<'static>, Refused> {
+fn whoever(repo: &Repository) -> Result<git2::Signature<'static>, git2::Error> {
     repo.signature()
         .or_else(|_| git2::Signature::now(NOBODY.0, NOBODY.1))
-        .map_err(said)
-}
-
-/// Why work on a website's repository did not go through
-///
-/// git says a repository already held by another git with a code of its own,
-/// and only says it in words as an afterthought: the words differ from one
-/// lock to the next, the code does not.
-#[derive(Debug)]
-enum Refused {
-    /// Another git is working in this repository
-    Locked(String),
-    /// Anything else git had to say
-    Flatly(String),
-}
-
-impl Refused {
-    fn holds_the_repository(&self) -> bool {
-        matches!(self, Refused::Locked(_))
-    }
-
-    fn message(self) -> String {
-        match self {
-            Refused::Locked(said) | Refused::Flatly(said) => said,
-        }
-    }
-}
-
-impl From<Refused> for String {
-    fn from(refused: Refused) -> Self {
-        refused.message()
-    }
-}
-
-fn said(e: git2::Error) -> Refused {
-    let words = e.message().to_string();
-    match e.code() {
-        ErrorCode::Locked => Refused::Locked(words),
-        _ => Refused::Flatly(words),
-    }
 }
 
 /// Do it, waiting out another git that holds the repository
 ///
-/// Two of them writing in the same repository at the same time: the second
-/// finds a lock file and refuses. A git the user started themselves knows
-/// nothing of the locks Silex takes, and so does a tool watching the folder.
-/// Waiting is what a person would do.
-fn patiently<T>(mut work: impl FnMut() -> Result<T, Refused>) -> Result<T, String> {
+/// A git the user started themselves knows nothing of the locks Silex takes,
+/// and neither does a tool watching the folder. git answers a code of its own
+/// for a held repository; its words differ from one lock to the next, the code
+/// does not.
+fn patiently<T>(mut work: impl FnMut() -> Result<T, git2::Error>) -> Result<T, String> {
     let mut wait = Duration::from_millis(50);
     for _ in 0..4 {
         match work() {
-            Err(refused) if refused.holds_the_repository() => {
+            Err(e) if e.code() == ErrorCode::Locked => {
                 std::thread::sleep(wait);
                 wait *= 2;
             }
-            answered => return answered.map_err(Refused::message),
+            answered => return answered.map_err(words_of),
         }
     }
-    work().map_err(Refused::message)
+    work().map_err(words_of)
+}
+
+/// What git said, without the code it said it with
+fn words_of(e: git2::Error) -> String {
+    e.message().to_string()
 }
 
 #[cfg(test)]
@@ -278,8 +229,10 @@ mod tests {
         let answer = patiently(|| {
             tries.set(tries.get() + 1);
             if tries.get() < 3 {
-                Err(Refused::Locked(
-                    "held, and this says nothing of it".to_string(),
+                Err(git2::Error::new(
+                    ErrorCode::Locked,
+                    git2::ErrorClass::Index,
+                    "held, and this says nothing of it",
                 ))
             } else {
                 Ok(tries.get())
@@ -290,8 +243,10 @@ mod tests {
         let tries = std::cell::Cell::new(0);
         let refused = patiently(|| {
             tries.set(tries.get() + 1);
-            Err::<(), Refused>(Refused::Flatly(
-                "index.lock: File exists, cannot lock ref, failed to lock".to_string(),
+            Err::<(), git2::Error>(git2::Error::new(
+                ErrorCode::NotFound,
+                git2::ErrorClass::Index,
+                "index.lock: File exists, cannot lock ref, failed to lock",
             ))
         });
         assert!(refused.is_err());
@@ -314,7 +269,6 @@ mod tests {
         let refused = index.write().unwrap_err();
 
         assert_eq!(refused.code(), ErrorCode::Locked);
-        assert!(said(refused).holds_the_repository());
 
         let _ = std::fs::remove_dir_all(&site);
     }

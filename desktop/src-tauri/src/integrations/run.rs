@@ -9,9 +9,9 @@
 
 //! Running an external program
 //!
-//! What makes running a program dangerous is handled here, once: an explicit
-//! working directory, no way for the program to ask the user anything, a time
-//! limit, a bounded amount of output kept, and no secret in what comes back.
+//! What makes running one dangerous is handled here, once: an explicit working
+//! directory, no way for it to ask the user anything, a time limit, a bounded
+//! amount of output kept, and no secret in what comes back.
 
 use std::io::Read;
 use std::path::Path;
@@ -21,32 +21,27 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use super::remote::redact;
+use crate::held::held;
 
 /// How long a program has to answer before it is killed
 const LOCAL: Duration = Duration::from_secs(30);
 
 /// How long a program sending a whole website has
 ///
-/// The first push carries every image and font the website has, over whatever
-/// connection the user is on. Thirty seconds is a failure waiting to happen;
-/// ten minutes means something is really stuck. Asking a question over the
-/// network stays on the short timer: one that takes half a minute is not
-/// coming back.
+/// The first push carries every image and font, over whatever connection the
+/// user is on. Asking a question over the network stays on the short timer.
 const TRANSFER: Duration = Duration::from_secs(600);
 
 /// How long taking in what was pushed elsewhere has
 ///
-/// A website is read after this, and somebody is waiting in front of an editor
-/// that has not opened yet. A host that takes the connection and then says
-/// nothing would hold them there for the whole transfer timer, so this one is
+/// Somebody is waiting in front of an editor that has not opened yet, so it is
 /// short: what it does not bring back arrives at the next opening.
 const SYNC_PULL: Duration = Duration::from_secs(15);
 
 /// How long the output of a program is waited for once it exited
 ///
-/// A program can leave a child of its own holding the pipe: what was read is
-/// used and the pipe is left behind, rather than waiting for a process Silex
-/// never started.
+/// A program can leave a child of its own holding the pipe, and that child is
+/// not waited for.
 const OUTPUT: Duration = Duration::from_secs(2);
 
 /// The longest Silex goes without looking at a program that is still running
@@ -55,17 +50,14 @@ const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
 /// How much of the output of a program is kept, the rest is read and dropped
 const MAX_OUTPUT: usize = 64 * 1024;
 
-/// Run a program and wait for what it has to say
-///
 /// `dir` is always explicit, so that a program never runs in the working
-/// directory of the app, which could be inside somebody else's repository.
+/// directory of the app, which could be inside somebody else's repository
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, args, run_within(program, dir, args, LOCAL)?)
+    said(program, run_within(program, dir, args, LOCAL)?)
 }
 
-/// Run a program that takes in what was pushed somewhere else
 pub fn run_sync_pull(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, args, run_within(program, dir, args, SYNC_PULL)?)
+    said(program, run_within(program, dir, args, SYNC_PULL)?)
 }
 
 /// The same, keeping what the program said even when it failed
@@ -76,17 +68,14 @@ pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Resul
     run_within(program, dir, args, TRANSFER)
 }
 
-/// What a program said, and whether it worked
 pub struct Ran {
     pub stdout: String,
     pub stderr: String,
     pub failed: bool,
 }
 
-/// What a caller that only wants the answer gets: the output, or an error made
-/// of the program's own words
-fn said(program: &Path, args: &[&str], ran: Ran) -> Result<String, String> {
-    let _ = args;
+/// The output, or an error made of the program's own words
+fn said(program: &Path, ran: Ran) -> Result<String, String> {
     if ran.failed {
         return Err(failure(program, &ran));
     }
@@ -94,9 +83,6 @@ fn said(program: &Path, args: &[&str], ran: Ran) -> Result<String, String> {
 }
 
 /// A program as a user knows it: `git`, not the path it was found at
-///
-/// What Silex ran is its own business, and the arguments of a command line
-/// carry things a user has no reason to read.
 fn named(program: &Path) -> String {
     program
         .file_stem()
@@ -106,8 +92,8 @@ fn named(program: &Path) -> String {
 
 /// What went wrong, in the program's own words
 ///
-/// The name of the program and what it said: a user reads "git failed:
-/// Authentication failed", not the path of a binary and its arguments.
+/// A user reads "git failed: Authentication failed", not the path of a binary
+/// and its arguments.
 pub fn failure(program: &Path, ran: &Ran) -> String {
     // Programs say what went wrong on either stream
     let reason = [ran.stderr.trim(), ran.stdout.trim()]
@@ -129,8 +115,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
     command
         .args(args)
         .current_dir(dir)
-        // A program with nothing to read cannot wait for an answer, and git
-        // asking for a password would otherwise freeze a save forever
+        // git asking for a password would otherwise freeze a save forever
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -143,13 +128,12 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
         .env("SSH_ASKPASS_REQUIRE", "never")
         // Colour codes are unreadable in an error and break reading JSON
         .env("NO_COLOR", "1")
-        // Programs answer in the language of the user otherwise, and what they
-        // say ends up read by Silex, shown in English sentences, and sent to
-        // telemetry
+        // Programs answer in the language of the user otherwise, and Silex
+        // reads what they say
         .env("LC_ALL", "C");
 
-    // A killed program should take with it whatever it started: git leaves an
-    // ssh behind, and that ssh holds the connection and the pipes
+    // A killed program takes with it whatever it started: git leaves an ssh
+    // behind, and that ssh holds the connection and the pipes
     #[cfg(unix)]
     {
         use std::os::unix::process::CommandExt;
@@ -164,8 +148,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
         command.creation_flags(CREATE_NO_WINDOW);
     }
 
-    // What was run is not in the error a user reads, so it has to be
-    // somewhere: a failure they report is unreproducible otherwise
+    // What was run is not in the error a user reads, so it has to be here
     tracing::debug!(
         program = %program.display(),
         args = %redact(&args.join(" ")),
@@ -197,8 +180,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
             return Err(format!("{} took more than {}s", name, timeout.as_secs()));
         }
         // Growing rather than fixed: a program of this machine answers in a
-        // millisecond or two, and waiting twenty for it cost seventeen times
-        // what it takes. What runs long is asked about rarely.
+        // millisecond or two, and what runs long is asked about rarely
         std::thread::sleep(asked_again_after);
         asked_again_after = (asked_again_after * 2).min(LOOKED_AT_AT_LEAST_EVERY);
     };
@@ -214,8 +196,8 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
 fn stop(child: &mut Child) {
     #[cfg(unix)]
     {
-        // The program was put in a group of its own, so this reaches the ssh or
-        // the helper it spawned as well
+        // The program was put in a group of its own, so this reaches the ssh
+        // it spawned as well
         let group = child.id() as i32;
         unsafe { libc::killpg(group, libc::SIGKILL) };
     }
@@ -231,10 +213,8 @@ struct Draining {
 
 /// Read a pipe to its end in a thread of its own
 ///
-/// A program filling a pipe nobody reads stops writing and never exits, so the
-/// pipes are emptied while it runs, even though only the beginning is kept.
-/// What was read is shared as it comes, rather than at the end: a program can
-/// leave a child of its own holding the pipe, and the end may never come.
+/// A program filling a pipe nobody reads stops writing and never exits. What
+/// was read is shared as it comes, because the end may never come.
 fn drain(pipe: Option<impl Read + Send + 'static>) -> Draining {
     let read_so_far = Arc::new(Mutex::new(Vec::new()));
     let (closed, wait_for_it) = mpsc::channel();
@@ -247,7 +227,7 @@ fn drain(pipe: Option<impl Read + Send + 'static>) -> Draining {
                 if read == 0 {
                     break;
                 }
-                let mut kept = filling.lock().unwrap_or_else(|held| held.into_inner());
+                let mut kept = held(&filling);
                 let room = MAX_OUTPUT.saturating_sub(kept.len());
                 kept.extend_from_slice(&chunk[..read.min(room)]);
             }
@@ -264,28 +244,20 @@ fn drain(pipe: Option<impl Read + Send + 'static>) -> Draining {
 /// What a pipe gave, waiting only for what a finished program can still owe
 fn collect(output: Draining) -> String {
     let _ = output.closed.recv_timeout(OUTPUT);
-    let kept = output
-        .read_so_far
-        .lock()
-        .unwrap_or_else(|held| held.into_inner());
+    let kept = held(&output.read_so_far);
     String::from_utf8_lossy(&kept).into_owned()
 }
 
 /// What a program said, made readable outside a terminal
 ///
-/// A program writes to be read in a terminal, so it can carry the codes that
-/// make its text bold or coloured. `NO_COLOR` asks them not to and most listen,
-/// but tea writes its version in bold whatever it is told, and those codes are
-/// unreadable in a file a user sends us or in what Silex shows them when a
-/// publication fails. Reading where a sequence ends is a state machine, not a
-/// guess, so a parser does it.
+/// `NO_COLOR` is asked of every program and most listen, but tea writes its
+/// version in bold whatever it is told. Reading where a sequence ends is a
+/// state machine, not a guess, so a parser does it.
 ///
-/// Only what a person reads goes through here: what a program answers to be
-/// parsed, JSON above all, is left exactly as it came.
+/// Only what a person reads goes through here: JSON is left as it came.
 pub fn readable(said: &str) -> String {
     // A tab is a control character too, and the parser drops it with the rest.
-    // It is what tea puts between the fields of its version, and a space says
-    // the same thing to somebody reading it.
+    // tea puts one between the fields of its version.
     let spaced = said.replace('\t', " ");
     String::from_utf8_lossy(&strip_ansi_escapes::strip(spaced)).into_owned()
 }
@@ -302,8 +274,7 @@ mod tests {
 
     #[test]
     fn does_not_wait_for_a_child_the_program_left_behind() {
-        // git leaves an ssh holding the pipes and exits; waiting for the pipes
-        // to close would then mean waiting for that ssh
+        // git leaves an ssh holding the pipes and exits
         let started = Instant::now();
         let out = run(
             Path::new("/bin/sh"),
@@ -320,9 +291,7 @@ mod tests {
 
     #[test]
     fn a_program_that_ran_out_of_time_takes_its_children_with_it() {
-        // The reason stop() kills the whole group rather than the program
-        // alone: git leaves an ssh behind, and that ssh holds the connection.
-        // The grandchild writes the marker if it survived.
+        // The grandchild writes the marker if it survived
         let marker = a_temp_file("survivor");
         let script = format!("(sleep 2; touch {}) & sleep 30", marker.display());
         let timed_out = run_within(
@@ -363,8 +332,7 @@ mod tests {
             readable("Version: \u{1b}[1m0.15.1\u{1b}[0m\tgolang: 1.26.5").trim(),
             "Version: 0.15.1 golang: 1.26.5"
         );
-        // A sequence that ends in something other than `m`: reading to the
-        // first `m` would swallow the rest of the line
+        // A sequence that ends in something other than `m`
         assert_eq!(readable("\u{1b}[2Jstill here"), "still here");
         // And one that ends in a bell rather than a letter at all
         assert_eq!(readable("\u{1b}]0;a title\u{7}still here"), "still here");

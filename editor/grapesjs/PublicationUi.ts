@@ -40,9 +40,8 @@ import { ClientEvent } from '../events'
 // Constants
 export const cmdPublish = 'publish-open-dialog'
 
-// The form the hosting asks for, and the ids that tie its parts together.
 // The publish button is the submit button of this form even though it stands
-// outside of it, which is what the `form` attribute of a button is for.
+// outside of it, which is what the `form` attribute of a button is for
 const optionsFormId = 'publish-options-form'
 const fieldId = (field: OptionsField) => `publish-option--${field.name}`
 const helpId = (field: OptionsField) => `publish-option--${field.name}--help`
@@ -83,8 +82,7 @@ export class PublicationUi {
   /**
    * Why the dialog is showing the list of hostings
    *
-   * Landing back on that list with nothing said reads as a bug, so the reason
-   * is written here and shown in place of the usual line.
+   * Landing back on that list with nothing said reads as a bug.
    */
   private notice = ''
   /**
@@ -244,9 +242,7 @@ export class PublicationUi {
           <button
             class="silex-button ${this.isSuccess(status) ? 'silex-button--secondary' : 'silex-button--primary'}"
             id="publish-button--primary"
-            type=${this.settings.connector?.optionsForm ? 'submit' : 'button'}
-            form=${this.settings.connector?.optionsForm ? optionsFormId : nothing}
-            @click=${this.settings.connector?.optionsForm ? nothing : () => this.editor.Commands.run(cmdPublicationStart)}
+            @click=${() => this.requestPublish()}
           >${this.isSuccess(status) ? 'Publish again' : 'Publish'}</button>
         `}
       `}
@@ -273,14 +269,11 @@ export class PublicationUi {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
-      // A hosting the server just refused is not swapped for another one
-      // behind the user's back: they are shown the list and pick, even when
-      // there is only one to pick from
+      // `notice` says the server refused the hosting this website was saved
+      // with, and the user then picks from the list themselves
       if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && !this.notice) {
         this.settings.connector = loggedConnectors[0]
-        // The only hosting there is, taken without going through the login
-        // command: what it knows about this website still has to be read, and
-        // what the user filled in still wins over it
+        // One hosting, already logged in: taken without the login step
         this.settings.options = withConnectorOptions(this.settings, loggedConnectors[0])
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
@@ -339,8 +332,7 @@ export class PublicationUi {
   /**
    * The options shown as a list, which are the ones the form does not ask for
    *
-   * An option the user is about to fill in is in the field made for it, and
-   * printing it a second line above only makes the dialog say things twice.
+   * An option the user is about to fill in is already in the field made for it.
    */
   private listedOptions(): Array<[string, unknown]> {
     const asked = (this.settings.connector?.optionsForm?.fields ?? []).map(field => field.name)
@@ -351,11 +343,10 @@ export class PublicationUi {
   /**
    * What the hosting needs to know and cannot find out on its own
    *
-   * The browser does the work here: the label points at its input, the input
-   * carries the type of the field so that a phone offers the right keyboard and
-   * an address is checked before it is sent, and the help text is tied to the
-   * input so that a screen reader reads it with the field. The publish button
-   * submits this form, which is what makes the Enter key publish.
+   * The browser does the work: the input carries the type of the field, so a
+   * phone offers the right keyboard and an address is checked before it is
+   * sent, and the help text is tied to the input for a screen reader. The
+   * publish button submits this form, which is what makes Enter publish.
    */
   renderOptionsForm(): TemplateResult | typeof nothing {
     const optionsForm = this.settings.connector?.optionsForm
@@ -385,11 +376,22 @@ export class PublicationUi {
   }
 
   /**
+   * Publish, going through the options form when it is on screen
+   *
+   * The form is only rendered before a publication, so after one the button has
+   * nothing to submit and asks for the publication itself.
+   */
+  private requestPublish() {
+    const form = this.el.querySelector(`#${optionsFormId}`) as HTMLFormElement | null
+    if (form) form.requestSubmit()
+    else this.editor.Commands.run(cmdPublicationStart)
+  }
+
+  /**
    * Keep what the user wrote, then publish
    *
    * Nothing is saved here: the options leave with the publication itself, and
-   * the website is written by the next save like any other change. Publishing
-   * is not saving, and a publication must not decide when a site is written.
+   * the next save writes the website like any other change.
    */
   private publishWithOptions(event: Event) {
     event.preventDefault()
@@ -450,8 +452,7 @@ export class PublicationUi {
     //this.editor.Commands.run(cmdPublicationStart)
     this.renderDialog(null, PublicationStatus.STATUS_NONE)
     this.editor.trigger(ClientEvent.PUBLICATION_UI_OPEN, { publicationUi: this })
-    // Shown first and asked about after: the answer takes a round trip to the
-    // server, and a dialog that waits for it is a dialog that opens late
+    // Shown first and asked about after, or the dialog opens late
     await this.refreshConnector()
     this.renderDialog(null, PublicationStatus.STATUS_NONE)
   }
@@ -460,14 +461,11 @@ export class PublicationUi {
    * Ask the hosting again about this website, as the dialog opens
    *
    * The connector is saved with the website, so a site published a while ago
-   * carries what its hosting answered back then, without the address or the
-   * form the hosting knows how to give today. Asked here rather than when the
-   * website loads: this is the moment the answer is used, and a website nobody
-   * publishes never pays for it.
+   * carries what its hosting answered back then. Asked here rather than on
+   * load, so that a website nobody publishes never pays for it.
    *
-   * Only a connector with the same id ever takes its place. On the hosted
-   * version a user has several, and moving a website to another hosting is not
-   * something a dialog opening decides.
+   * Only a connector with the same id ever takes its place: moving a website
+   * to another hosting is not something a dialog opening decides.
    */
   private async refreshConnector(): Promise<void> {
     this.notice = ''
@@ -478,8 +476,8 @@ export class PublicationUi {
     try {
       connectors = await connectorList({ type: ConnectorType.HOSTING })
     } catch (err) {
-      // Nothing was learned, so nothing changes: what was saved still
-      // publishes, and a server that did not answer must not stop the user
+      // A server that did not answer must not stop the user: what was saved
+      // still publishes
       console.error('Could not ask which hostings are available', err)
       return
     }
@@ -491,10 +489,9 @@ export class PublicationUi {
       return
     }
 
-    // The server just said it has no such hosting: a website saved on the
-    // hosted version and opened in Silex Desktop, or the other way around.
-    // Keeping it would let the user publish to nothing, so the dialog goes back
-    // to the list and says why. What they typed is theirs and stays.
+    // The server has no such hosting: a website saved on the hosted version
+    // and opened in Silex Desktop, or the other way around. Keeping it would
+    // let the user publish to nothing. What they typed stays.
     this.settings.connector = null
     this.notice = connectors.length > 0
       ? `Silex cannot publish to ${saved.displayName} here. Please choose where to publish.`

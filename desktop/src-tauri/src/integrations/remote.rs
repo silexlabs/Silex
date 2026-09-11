@@ -9,14 +9,15 @@
 
 //! What a remote URL says
 //!
-//! Kept as small as possible on purpose: an integration is asked what it knows
-//! about a website rather than having Silex read it off a URL. Only the
-//! programs that cannot be asked read this.
+//! Kept small on purpose: an integration is asked what it knows about a
+//! website rather than having Silex read it off a URL.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 use std::time::SystemTime;
+
+use crate::held::held;
 
 /// Host, owner and repository name of a git remote
 #[derive(Clone)]
@@ -37,22 +38,17 @@ fn remembered() -> &'static Mutex<Remembered> {
 impl Remote {
     /// The remote of a website, asked by the integrations that work from one
     ///
-    /// Reading it starts a git, and one publication asks several times, so the
-    /// answer is kept against the file a remote is written in. The owner of a
-    /// website who runs `git remote add` in a terminal changes that file, and
-    /// the next question is read again rather than answered with a remembered
-    /// "this website has none". Its date alone would not do: a file system
-    /// that keeps dates to the second cannot tell that second apart.
+    /// Reading it starts a git, so the answer is kept against the file a remote
+    /// is written in: `git remote add` in a terminal changes that file and the
+    /// question is asked again. Its date alone would not do, a file system that
+    /// keeps dates to the second cannot tell that second apart.
     pub fn of(site: &Path) -> Option<Remote> {
-        // A website with no repository has no such file, which is an answer
-        // like any other rather than a failure
+        // A website with no repository has no such file
         let written = std::fs::metadata(site.join(".git/config"))
             .ok()
             .and_then(|file| Some((file.modified().ok()?, file.len())));
 
-        let known = remembered()
-            .lock()
-            .unwrap_or_else(|held| held.into_inner())
+        let known = held(remembered())
             .get(site)
             .filter(|(when, _)| *when == written)
             .map(|(_, read)| read.clone());
@@ -60,13 +56,9 @@ impl Remote {
             return known;
         }
 
-        // Read outside the lock: this starts a program, and a website nobody
-        // asked about should not wait for it
+        // Read outside the lock, because this starts a program
         let read = Remote::read(site);
-        remembered()
-            .lock()
-            .unwrap_or_else(|held| held.into_inner())
-            .insert(site.to_path_buf(), (written, read.clone()));
+        held(remembered()).insert(site.to_path_buf(), (written, read.clone()));
         read
     }
 
@@ -135,15 +127,13 @@ impl Remote {
                 .map(|(_, h)| h)
                 .unwrap_or(authority);
             // An instance answering ssh somewhere other than 22 is the same
-            // host as the one an integration was signed in to, and the same one
-            // its pages are served from
+            // host an integration was signed in to
             format!("{} {}", Remote::without_port(host), path)
         } else if url
             .split_once(':')
             .is_some_and(|(before, _)| !before.contains('/'))
         {
-            // `git@host:owner/repo`, and the same without a user, which git
-            // takes just as well
+            // `git@host:owner/repo`, and the same without a user
             let rest = url
                 .split_once('@')
                 .map(|(_, r)| r.to_string())
@@ -154,8 +144,8 @@ impl Remote {
         };
 
         let (host, path) = rest.split_once(' ')?;
-        // A GitLab repository can live in nested groups, all of them are its
-        // owner as far as an address is concerned
+        // A GitLab repository can live in nested groups, all of them its owner
+        // as far as an address is concerned
         let (owner, repo) = path.rsplit_once('/')?;
         let owner = owner.trim_start_matches('~');
         if owner.is_empty() || repo.is_empty() {
@@ -176,9 +166,8 @@ pub fn without_secret(remote_url: &str) -> &str {
 
 /// The same, in the middle of a sentence a program wrote
 ///
-/// A remote can carry a token, and git quotes the remote back in its errors.
-/// Those errors are shown to the user and sent to telemetry, so every URL in
-/// them loses what stands before its host.
+/// git quotes the remote back in its errors, token included, and those errors
+/// are shown to the user and sent to telemetry.
 pub fn redact(text: &str) -> String {
     let mut redacted = String::with_capacity(text.len());
     let mut rest = text;
@@ -245,8 +234,8 @@ mod tests {
                 "group/subgroup",
                 "site",
             ),
-            // A Forgejo of one's own often answers ssh somewhere other than 22,
-            // and it is the same host the integration was signed in to
+            // A Forgejo of one's own often answers ssh somewhere other than
+            // 22
             (
                 "ssh://git@v15.next.forgejo.org:2150/lexoyo/site.git",
                 "v15.next.forgejo.org",

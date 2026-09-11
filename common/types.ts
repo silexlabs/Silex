@@ -49,9 +49,8 @@ export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: Conn
 /**
  * What publishing answers
  *
- * Always a job: writing the files is quick, and everything that turns them into
- * a website somebody can visit takes long enough that the answer cannot wait
- * for it. `url` is null until something serves those files.
+ * Always a job: turning the files into a website somebody can visit takes
+ * longer than a request. `url` is null until something serves them.
  */
 export type ApiPublicationPublishResponse = { url: string | null, job: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
@@ -277,9 +276,7 @@ export interface ConnectorData {
    * What the host already knows about publishing this website, `websiteUrl`
    * among it.
    *
-   * Only Silex Desktop sends this: it is the one that knows which forge holds
-   * the website and what that forge answered about it. What the user filled in
-   * is kept in the publication settings and wins over this.
+   * Only Silex Desktop sends this. What the user filled in wins over it.
    */
   options?: ConnectorOptions
   /**
@@ -292,18 +289,15 @@ export interface ConnectorData {
 /**
  * A form the publication dialog shows before the publish button
  *
- * Sent by Silex Desktop only: the command line of a forge does not always know
- * which address serves which repository, and what it cannot say is asked of the
- * user rather than guessed.
+ * Sent by Silex Desktop only: a forge does not always know which address
+ * serves which repository, and what it cannot say is asked of the user.
  */
 export interface OptionsForm {
   title: string
   fields: OptionsField[]
 }
 
-/**
- * One thing the user is asked for, kept in the publication options under `name`
- */
+/** One thing the user is asked for, kept in the options under `name` */
 export interface OptionsField {
   name: string
   type: 'text' | 'url' | 'checkbox' | 'select'

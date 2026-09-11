@@ -46,10 +46,9 @@ use crate::models::{
 
 /// Resolve a path in the data path, and refuse it if it leads out of it
 ///
-/// Website ids are checked when they are read, but page ids, asset names and
-/// published file names are not: they are whatever the editor sent. The file
-/// may not exist yet, so `..` is resolved on the components rather than on the
-/// disk.
+/// Page ids, asset names and published file names are whatever the editor
+/// sent. The file may not exist yet, so `..` is resolved on the components
+/// rather than on the disk.
 pub(crate) fn under_data_path(data_path: &Path, path: impl AsRef<Path>) -> Result<PathBuf> {
     let path = path.as_ref();
     let asked = resolved(&data_path.join(path));
@@ -82,38 +81,32 @@ fn resolved(path: &Path) -> PathBuf {
 }
 
 /// Directory holding one website
-pub fn website_path(data_path: &Path, website_id: &WebsiteId) -> Result<PathBuf> {
-    under_data_path(data_path, website_id.as_str())
+///
+/// A `WebsiteId` names one folder and nothing else, checked when it is read, so
+/// nothing here can lead out of the data path.
+pub fn website_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
+    data_path.join(website_id.as_str())
 }
 
 /// Where the published files of a website are, as an address a browser opens
 ///
 /// These are the files the editor generated, not the website that gets built
-/// out of them: nothing here ran the page generator. Said in one place because
-/// the metadata of a website and the message of a publication both point at
-/// this same folder.
-pub fn published_files_url(data_path: &Path, website_id: &str) -> String {
-    // Nothing but the data path is ours to show, so an id naming anything else
-    // is shown as the data path rather than as the folder it asked for
-    let website = website_id
-        .parse::<WebsiteId>()
-        .ok()
-        .and_then(|website_id| website_path(data_path, &website_id).ok())
-        .unwrap_or_else(|| data_path.to_path_buf());
-
+/// out of them.
+pub fn published_files_url(data_path: &Path, website_id: &WebsiteId) -> String {
+    let website = website_path(data_path, website_id);
     format!("file://{}", website.join(PUBLIC_FOLDER).display())
 }
 
-fn website_data_path(data_path: &Path, website_id: &WebsiteId) -> Result<PathBuf> {
-    Ok(website_path(data_path, website_id)?.join(WEBSITE_DATA_FILE))
+fn website_data_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
+    website_path(data_path, website_id).join(WEBSITE_DATA_FILE)
 }
 
-fn website_meta_path(data_path: &Path, website_id: &WebsiteId) -> Result<PathBuf> {
-    Ok(website_path(data_path, website_id)?.join(WEBSITE_META_DATA_FILE))
+fn website_meta_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
+    website_path(data_path, website_id).join(WEBSITE_META_DATA_FILE)
 }
 
-fn assets_path(data_path: &Path, website_id: &WebsiteId) -> Result<PathBuf> {
-    Ok(website_path(data_path, website_id)?.join(ASSETS_FOLDER))
+fn assets_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
+    website_path(data_path, website_id).join(ASSETS_FOLDER)
 }
 
 /// Make sure the storage root exists.
@@ -127,13 +120,9 @@ pub async fn init(data_path: &Path) -> Result<()> {
 
 /// Write a file by writing beside it and moving it onto its name
 ///
-/// A write cut short leaves the file that was there, never half of a new one:
-/// half a page file, or half a `website.json`, makes the whole website
-/// unreadable.
-///
-/// The name written to belongs to this write alone. The editor saving while
-/// something else saves the same website is two writes of the same file at
-/// once, and on one shared name the second one finds nothing left to move.
+/// A write cut short leaves the file that was there: half a `website.json`
+/// makes the whole website unreadable. The name written to belongs to this
+/// write alone, or two writes at once would leave the second nothing to move.
 pub(crate) async fn write_file(path: &Path, content: impl AsRef<[u8]>) -> Result<()> {
     let being_written = written_beside(path)?;
 
@@ -187,9 +176,7 @@ pub async fn list_websites(data_path: &Path) -> Result<Vec<WebsiteMeta>> {
         let Ok(website_id) = entry.file_name().to_string_lossy().parse::<WebsiteId>() else {
             continue;
         };
-        let Ok(data_file) = website_data_path(data_path, &website_id) else {
-            continue;
-        };
+        let data_file = website_data_path(data_path, &website_id);
         if fs::metadata(data_file).await.is_err() {
             continue;
         }
@@ -202,7 +189,7 @@ pub async fn list_websites(data_path: &Path) -> Result<Vec<WebsiteMeta>> {
 
 /// Read a website, pages included
 pub async fn read_website(data_path: &Path, website_id: &WebsiteId) -> Result<serde_json::Value> {
-    let path = website_data_path(data_path, website_id)?;
+    let path = website_data_path(data_path, website_id);
 
     let content = fs::read_to_string(&path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
@@ -212,14 +199,14 @@ pub async fn read_website(data_path: &Path, website_id: &WebsiteId) -> Result<se
         }
     })?;
 
-    merge_website_data(&website_path(data_path, website_id)?, &content).await
+    merge_website_data(&website_path(data_path, website_id), &content).await
 }
 
 /// Create a website and return its id
 pub async fn create_website(data_path: &Path, meta: &WebsiteMetaFileContent) -> Result<WebsiteId> {
     let website_id = WebsiteId::fresh();
 
-    fs::create_dir_all(assets_path(data_path, &website_id)?).await?;
+    fs::create_dir_all(assets_path(data_path, &website_id)).await?;
     set_website_meta(data_path, &website_id, meta).await?;
     update_website(data_path, &website_id, &empty_website()).await?;
 
@@ -242,7 +229,7 @@ pub async fn update_website(
         )
     })?;
 
-    let website_path = website_path(data_path, website_id)?;
+    let website_path = website_path(data_path, website_id);
     fs::create_dir_all(&website_path).await?;
 
     let files = split_website_data(data, pages_folder)?;
@@ -278,7 +265,7 @@ pub async fn update_website(
 
 /// Delete a website and everything in its directory
 pub async fn delete_website(data_path: &Path, website_id: &WebsiteId) -> Result<()> {
-    fs::remove_dir_all(website_path(data_path, website_id)?)
+    fs::remove_dir_all(website_path(data_path, website_id))
         .await
         .map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
@@ -293,7 +280,7 @@ pub async fn delete_website(data_path: &Path, website_id: &WebsiteId) -> Result<
 pub async fn duplicate_website(data_path: &Path, website_id: &WebsiteId) -> Result<WebsiteId> {
     let new_website_id = WebsiteId::fresh();
 
-    let source_path = website_path(data_path, website_id)?;
+    let source_path = website_path(data_path, website_id);
     if fs::metadata(&source_path).await.is_err() {
         return Err(Error::NotFound(format!(
             "Website '{}' not found",
@@ -301,7 +288,7 @@ pub async fn duplicate_website(data_path: &Path, website_id: &WebsiteId) -> Resu
         )));
     }
 
-    let copy_path = website_path(data_path, &new_website_id)?;
+    let copy_path = website_path(data_path, &new_website_id);
     copy_dir_recursive(source_path, copy_path.clone()).await?;
     keep_the_history_drop_the_remotes(&copy_path)?;
 
@@ -317,10 +304,8 @@ pub async fn duplicate_website(data_path: &Path, website_id: &WebsiteId) -> Resu
 
 /// Take the remotes out of the repository a copy inherited
 ///
-/// A duplicated website keeps its history but must not keep where it was sent:
-/// publishing the copy would push over the website it was copied from. Git is
-/// asked rather than its config file read, because a remote can be written
-/// there in more than one shape and each of them counts.
+/// A duplicated website keeps its history but must not keep where it was sent,
+/// or publishing it would push over the website it was copied from.
 fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
     history::drop_the_remotes(site).map_err(|why| {
         Error::Told(format!(
@@ -340,7 +325,7 @@ pub async fn write_assets(
     website_id: &WebsiteId,
     files: Vec<crate::models::File>,
 ) -> Result<Vec<String>> {
-    let assets_path = assets_path(data_path, website_id)?;
+    let assets_path = assets_path(data_path, website_id);
     fs::create_dir_all(&assets_path).await?;
 
     let mut written_paths = Vec::new();
@@ -367,7 +352,7 @@ pub async fn read_asset(
     file_name: &str,
 ) -> Result<Vec<u8>> {
     let relative_path = file_name.trim_start_matches('/');
-    let path = under_data_path(&assets_path(data_path, website_id)?, relative_path)?;
+    let path = under_data_path(&assets_path(data_path, website_id), relative_path)?;
 
     fs::read(&path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
@@ -384,13 +369,11 @@ pub async fn read_asset(
 
 /// Read the metadata of a website
 ///
-/// `meta.json` is optional: a cloned website has none (the SaaS keeps its
-/// metadata where the website is kept), and the marker of a Silex website
-/// is `website.json`. Metadata that is missing, or there but damaged, falls
-/// back to the directory name: one website nobody can name is not a reason to
-/// leave the user in front of a dashboard with none of their websites on it.
+/// `meta.json` is optional: a cloned website has none, and what marks a Silex
+/// website is `website.json`. Metadata missing or damaged falls back to the
+/// directory name, so that one website does not empty the whole dashboard.
 pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Result<WebsiteMeta> {
-    let website_path = website_path(data_path, website_id)?;
+    let website_path = website_path(data_path, website_id);
 
     let metadata = fs::metadata(&website_path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
@@ -400,7 +383,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         }
     })?;
 
-    let meta_path = website_meta_path(data_path, website_id)?;
+    let meta_path = website_meta_path(data_path, website_id);
     let named_after_its_folder = || WebsiteMetaFileContent {
         name: website_id.to_string(),
         image_url: None,
@@ -417,7 +400,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
     let pages_url = fs::metadata(website_path.join(PUBLIC_FOLDER))
         .await
         .is_ok()
-        .then(|| published_files_url(data_path, website_id.as_str()));
+        .then(|| published_files_url(data_path, website_id));
 
     Ok(WebsiteMeta {
         website_id: website_id.clone(),
@@ -436,11 +419,10 @@ pub async fn set_website_meta(
     website_id: &WebsiteId,
     meta: &WebsiteMetaFileContent,
 ) -> Result<()> {
-    // Through a `Value` so the keys come out in alphabetical order: written
-    // straight from the struct they would come out in the order it declares
-    // them, and the Node server sorts them.
+    // Through a `Value` so the keys come out sorted, as the Node server
+    // writes them
     let content = serialize_json(&serde_json::to_value(meta)?)?;
-    write_file(&website_meta_path(data_path, website_id)?, content).await?;
+    write_file(&website_meta_path(data_path, website_id), content).await?;
     Ok(())
 }
 
@@ -590,9 +572,6 @@ async fn merge_website_data(
 }
 
 /// Parse one file of a website, naming it when it cannot be read
-///
-/// A website is several files, and a parsing error naming none of them leaves
-/// the user with nothing to look at.
 fn parse_file<T: serde::de::DeserializeOwned>(path: &Path, content: &str) -> Result<T> {
     serde_json::from_str(content).map_err(|e| {
         Error::InvalidWebsite(format!(
@@ -632,9 +611,7 @@ fn page_slug(page_name: Option<&str>) -> String {
 /// Write a website file the way the Node server writes it
 ///
 /// A website is kept in a git repository, so saving it twice must give the
-/// same bytes and a diff must show only what the user changed. The keys come
-/// out in alphabetical order on their own, a `serde_json` object being a
-/// sorted map here.
+/// same bytes and a diff must show only what the user changed.
 fn serialize_json(data: &serde_json::Value) -> Result<String> {
     Ok(serde_json::to_string_pretty(data)?)
 }
@@ -736,7 +713,7 @@ mod tests {
             image_url: None,
         };
         let website_id = create_website(&data_path, &meta).await.unwrap();
-        let site = website_path(&data_path, &website_id).unwrap();
+        let site = website_path(&data_path, &website_id);
         crate::history::version(&site, "one").unwrap();
 
         // The shape git writes is `[remote "origin"]`, this one it only reads
@@ -751,7 +728,7 @@ mod tests {
         );
 
         let copy_id = duplicate_website(&data_path, &website_id).await.unwrap();
-        let copy = website_path(&data_path, &copy_id).unwrap();
+        let copy = website_path(&data_path, &copy_id);
 
         assert!(
             remotes_of(&copy).is_empty(),

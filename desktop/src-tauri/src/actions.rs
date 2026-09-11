@@ -31,27 +31,20 @@ use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
 /// How long Silex waits on a host, and how often it asks
 ///
-/// A value rather than four constants in the loop, so that a test can follow a
-/// whole publication without waiting the minute a real one takes.
+/// A value rather than constants, so that a test can follow a whole
+/// publication without waiting the minute a real one takes.
 #[derive(Clone, Copy)]
 struct Patience {
-    /// How often the host is asked about a build that has not appeared yet
     looking_for_the_build: Duration,
 
     /// How long the host has to start a build before Silex says it never did
     ///
-    /// A host that takes the push queues its build within seconds. Waiting
-    /// longer only leaves the user in front of a progress bar for a website
-    /// that was never going to come online.
+    /// A host that takes the push queues its build within seconds.
     a_build_starts_within: Duration,
 
-    /// How often the host is asked about a build that is running
     while_it_builds: Duration,
 
-    /// How long Silex follows a build before it stops watching
-    ///
-    /// Building a website is a minute of work. Past this, something is wrong in
-    /// a way Silex cannot name, and saying so beats watching forever.
+    /// Building a website is a minute of work
     a_build_ends_within: Duration,
 }
 
@@ -68,23 +61,21 @@ impl Default for Patience {
 
 /// How long the answer about what serves a website is reused
 ///
-/// Answering starts the command line of an integration and reaches the network, and
-/// the editor asks when it loads a website and again every time the publication
-/// dialog opens. Long enough that one burst of questions costs one answer,
-/// short enough that a user who just signed in sees it.
+/// Answering runs a program and reaches the network. Long enough that one
+/// burst of questions costs one answer, short enough that a user who just
+/// signed in sees it.
 const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 
 /// How long a website that is already on its way waits before it goes again
 ///
-/// The first save of a burst leaves at once; this waits out the rest of the
-/// burst, so that one keystroke after another is not one push after another.
+/// The first save of a burst leaves at once, so that one keystroke after
+/// another is not one push after another.
 const SENT_AFTER: Duration = Duration::from_secs(5);
 
 /// How long Silex leaves a send that broke down before trying it again
 ///
-/// Only for what could work later. The last one is kept repeating, so a
-/// machine that stays off the network is tried once an hour rather than never
-/// again.
+/// The last one is kept repeating, so a machine that stays off the network is
+/// tried once an hour rather than never again.
 const TRIED_AGAIN_AFTER: [Duration; 4] = [
     Duration::from_secs(60),
     Duration::from_secs(5 * 60),
@@ -94,38 +85,30 @@ const TRIED_AGAIN_AFTER: [Duration; 4] = [
 
 /// The website the editor has open, shared with the Tauri state
 ///
-/// Written by `set_current_project`, read here: the editor asks for its hosting
-/// connector without naming a website, so the only way to answer about the
-/// right one is to know which one is open.
+/// The editor asks for its hosting connector without naming a website.
 pub type CurrentWebsiteId = Arc<Mutex<Option<String>>>;
 
-/// Where a website is on its way to the repository it is kept in
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sending {
     pub state: State,
     /// What the last attempt that failed said, until one works
     ///
-    /// Apart from `state` on purpose: a save waiting its turn says nothing
-    /// about how the attempt before it went. Held in the state alone, the
-    /// error would leave the screen as soon as the user typed something, which
-    /// is when they are there to read it.
+    /// Apart from `state` on purpose: held in it, the error would leave the
+    /// screen as soon as the user typed something.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_failure: Option<Failure>,
 }
 
-/// What is happening to a website right now
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum State {
-    /// A save is waiting its turn
     Waiting,
     Sending,
     Sent,
     Failed,
 }
 
-/// Why an attempt did not work
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Failure {
@@ -136,15 +119,15 @@ pub struct Failure {
 
 /// What becomes of the error a website carried, when it moves to a new state
 ///
-/// Three answers and not two: an attempt that starts says nothing yet about
-/// the one before it, and must neither drop its error nor claim it as its own.
+/// Three answers and not two: an attempt that starts must neither drop the
+/// error before it nor claim it as its own.
 enum LastFailure {
-    /// Leave what is there
     Kept,
     /// Something worked, so there is nothing left to explain
     Cleared,
     Told(Failure),
 }
+use crate::held::held;
 use LastFailure::{Cleared, Kept, Told};
 
 impl Sending {
@@ -162,15 +145,15 @@ impl Sending {
 
 /// Where every website is, as it changes
 ///
-/// A watch and not a stream of events: what matters is where things stand, and
-/// whoever asks later has to be told without having had to listen all along.
+/// A watch and not a stream of events: whoever asks later has to be told
+/// without having had to listen all along.
 pub type Sendings = watch::Receiver<BTreeMap<String, Sending>>;
 
 /// Told by the editor once it has finished saving, whether or not it had
 /// anything to save
 ///
-/// A count and not a flag: what waits on this needs to know that one more save
-/// has happened since it started waiting, never that any ever did.
+/// A count and not a flag: what waits on this needs one more save since it
+/// started waiting, not that any ever happened.
 pub type Saves = watch::Sender<u64>;
 pub type Saved = watch::Receiver<u64>;
 
@@ -182,9 +165,8 @@ pub struct SilexActions {
     syncer: Arc<Syncer>,
     /// What was last answered about who serves a website, and when
     ///
-    /// Held across the asking on purpose: two questions arriving together cost
-    /// one answer, the second waiting for the first instead of starting a
-    /// second command line of its own.
+    /// Held across the asking, so that two questions arriving together cost
+    /// one answer rather than two programs.
     what_hosts_it: Mutex<Option<(String, Instant, Option<Hosting>)>>,
 }
 
@@ -203,7 +185,7 @@ impl SilexActions {
                     Box::new(move |website_id| {
                         let site = site_path(&data_path, website_id)
                             .ok_or_else(|| format!("Unknown website '{}'", website_id))?;
-                        integrations.sync(&site, None)
+                        integrations.sync(&site)
                     })
                 },
                 sent_after: SENT_AFTER,
@@ -219,7 +201,6 @@ impl SilexActions {
         }
     }
 
-    /// Follow where the websites are on their way to their repository
     pub fn sending(&self) -> Sendings {
         self.syncer.state.subscribe()
     }
@@ -232,8 +213,8 @@ impl SilexActions {
 /// The folder of a website, refusing anything that leads out of the data path
 ///
 /// A website id comes from a request, and `Path::join` on an absolute path
-/// forgets the folder it was joined to: without this, an id could name any
-/// repository on the machine and have git run in it.
+/// forgets the folder it was joined to: an id could then name any repository
+/// on the machine and have git run in it.
 fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     let site = data_path.join(website_id);
     let data_path = data_path.canonicalize().ok()?;
@@ -241,24 +222,20 @@ fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     canonical.starts_with(&data_path).then_some(canonical)
 }
 
-/// Sends websites to their host, and remembers how that went
 struct Syncer {
     syncs: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
     sent_after: Duration,
     tried_again_after: Vec<Duration>,
     /// The websites a thread is looking after, and what is left to do
     ///
-    /// An entry lives for as long as that thread, which keeps it to one thread
-    /// per website.
+    /// An entry lives as long as that thread, which keeps it to one per website.
     queue: Mutex<HashMap<String, Queued>>,
     /// Wakes the thread of a website whose turn a save moved closer
     wake: Condvar,
     state: watch::Sender<BTreeMap<String, Sending>>,
 }
 
-/// What is left to do about a website
 struct Queued {
-    /// When the next attempt is due
     due: Instant,
     /// A save landed since the attempt in flight started, so it does not carry
     /// it and another one is needed
@@ -268,7 +245,7 @@ struct Queued {
 impl Syncer {
     fn sync(self: &Arc<Self>, website_id: &str) {
         let looked_after = {
-            let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+            let mut queue = held(&self.queue);
             match queue.get_mut(website_id) {
                 Some(queued) => {
                     queued.again = true;
@@ -303,10 +280,9 @@ impl Syncer {
 
     /// Send this website, and again for as long as there is a reason to
     ///
-    /// The first save leaves at once, and the ones that land in the time it
-    /// takes leave together at the end of it: waiting out every save left the
-    /// most common one, a single change, sitting on this computer for five
-    /// seconds.
+    /// The first save leaves at once and the ones that land while it goes
+    /// leave together after it: waiting out every save left a single change
+    /// sitting on this computer for five seconds.
     fn sends(&self, website_id: &str) {
         let mut broke_down = 0;
         loop {
@@ -334,7 +310,7 @@ impl Syncer {
             };
 
             {
-                let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+                let mut queue = held(&self.queue);
                 let Some(queued) = queue.get_mut(website_id) else {
                     self.publishes(website_id, state, failure);
                     return;
@@ -351,11 +327,10 @@ impl Syncer {
         }
     }
 
-    /// Sleep until this website is due, waking if a save moves its turn closer
-    ///
-    /// False when nothing is left to do for it.
+    /// Sleep until this website is due, waking if a save moves its turn
+    /// closer. False when nothing is left to do for it.
     fn waits_for_its_turn(&self, website_id: &str) -> bool {
-        let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+        let mut queue = held(&self.queue);
         loop {
             let Some(queued) = queue.get(website_id) else {
                 return false;
@@ -373,11 +348,10 @@ impl Syncer {
 
     /// Whether the attempt about to start has anything to carry
     ///
-    /// It carries every save that landed before it. Once a whole wait goes by
-    /// with none, the website stops being looked after and the save after that
-    /// leaves at once again.
+    /// Once a whole wait goes by with nothing, the website stops being looked
+    /// after and the next save leaves at once again.
     fn takes(&self, website_id: &str) -> bool {
-        let mut queue = self.queue.lock().unwrap_or_else(|held| held.into_inner());
+        let mut queue = held(&self.queue);
         if let Some(queued) = queue.get_mut(website_id) {
             if queued.again {
                 queued.again = false;
@@ -420,29 +394,22 @@ impl Syncer {
     }
 }
 
-/// A website that left for its host, and what to ask about its build
 struct Sent {
     provider: &'static dyn Deploy,
     cli: PathBuf,
-    /// Where the website is kept, as the user knows it: the host of its remote
+    /// The host of its remote, as the user knows it
     host: String,
     prepared: Prepared,
-    /// Where the website is served, when the host or the user named it
     site_url: Option<String>,
-    /// Where the user sets an address of their own
     settings_url: Option<String>,
-    /// Where the build of this publication can be watched
     build_url: Option<String>,
-    /// Whether the user is signed in to that host, which is what lets Silex
-    /// ask it anything at all
     signed_in: bool,
-    /// What the host had to warn about a website it serves
     warning: Option<String>,
 }
 
 impl silex_server::Actions for SilexActions {
-    /// A website that could not be caught up with is opened as it is: the user
-    /// is waiting to work, and what is on this computer is a website
+    /// A website that could not be caught up with is opened as it is: the
+    /// user is waiting to work
     fn sync_pull(&self, website_id: &str) {
         let Some(site) = self.site_path(website_id) else {
             return;
@@ -457,13 +424,9 @@ impl silex_server::Actions for SilexActions {
         self.syncer.sync(website_id);
     }
 
-    /// Publish the website: whichever integration answers for it prepares the
-    /// build and sends it
-    ///
-    /// Sending is not publishing. The host takes what was pushed and builds it,
-    /// and until it says that build worked nobody knows whether the website is
-    /// online: a repository with its builds turned off takes every push and
-    /// serves nothing. So the job stays open until the host has answered.
+    /// Sending is not publishing: a repository with its builds turned off
+    /// takes every push and serves nothing. The job stays open until the host
+    /// has answered.
     fn deploy(&self, website_id: &str, options: &silex_server::PublicationOptions, job: &Job) {
         let Some(site) = self.site_path(website_id) else {
             tracing::warn!(
@@ -479,22 +442,24 @@ impl silex_server::Actions for SilexActions {
 
         job.step("Your website is written on this computer");
 
-        // The files the editor generated are on the disk already, so there is
-        // something to open while the rest happens
-        let files = silex_server::published_files_url(&self.data_path, website_id);
+        // On the disk already, so there is something to open while the rest
+        // happens
+        // An id the storage refuses leaves the button without an address, and
+        // a button without an address is not shown
+        let files = website_id
+            .parse()
+            .map(|website_id| silex_server::published_files_url(&self.data_path, &website_id))
+            .unwrap_or_default();
         let on_this_computer = || Button::secondary(FILES_ON_THIS_COMPUTER, &files);
 
-        // A website with nowhere to send it is a local one, which is a way of
-        // working rather than something missing. The server says so itself,
-        // once, for whoever publishes without one.
+        // A local website is a way of working rather than something missing,
+        // and the server says so itself
         let Some(remote_url) = git::remote_url(&site) else {
             return;
         };
 
         let remote = without_secret(&remote_url).to_string();
-        // One instance is not another, and a GitLab of one's own is not
-        // gitlab.com: the user is told the host they push to, never the name of
-        // the software it runs
+        // The user is told the host they push to, never the software it runs
         let host = Remote::host_of(&remote_url).unwrap_or_else(|| remote.clone());
         let sent = self
             .integrations
@@ -518,12 +483,9 @@ impl silex_server::Actions for SilexActions {
         match sent {
             Err(failure) => {
                 tracing::warn!("Could not publish website {}: {}", website_id, failure);
-                // What the program answered, and nothing read into it. Silex
-                // knows the publication failed; why it failed is written in
-                // words it did not choose, in a form that changes with the
-                // version of git, the host and the language of the machine.
-                // Reading a cause out of them means being wrong one day, and
-                // being wrong here sends somebody looking in the wrong place.
+                // What the program answered, and nothing read into it: those
+                // words change with the version of git, the host and the
+                // language of the machine
                 job.detail(failure.clone());
                 job.failed(message::explained(
                     &format!("Silex could not send your website to {}.", remote),
@@ -538,8 +500,8 @@ impl silex_server::Actions for SilexActions {
                 job.succeeded(message::explained(
                     &format!("Your website is sent to {}.", remote),
                     &format!(
-                        "Sign in to {} to see the build and the address of your website.",
-                        program
+                        "Silex cannot tell whether {} built it, because nobody is signed in there. Sign in with the {} command to see the build and the address of your website.",
+                        host, program
                     ),
                     &[on_this_computer()],
                 ))
@@ -548,34 +510,21 @@ impl silex_server::Actions for SilexActions {
         }
     }
 
-    /// Where this website is kept, asked of the integration that answers for
-    /// it
-    ///
-    /// A listing asks this of every website, so the integration answers from
-    /// the folder alone and no program is run.
+    /// A listing asks this of every website, so no program is run.
     fn repo_url(&self, website_id: &str) -> Option<String> {
         let site = self.site_path(website_id)?;
         let (integration, _) = self.integrations.answering_for(&site)?;
         integration.repo(&site)
     }
 
-    /// Where the website being edited is kept, named to the editor, with what
-    /// its program answered about it and what it could not answer
+    /// Where the website being edited is kept, named to the editor
     ///
-    /// None as long as no website is open, and none for a website no
-    /// integration speaks for: the editor then shows the file system hosting it
-    /// showed before, which publishes just as well.
+    /// None for a website no integration speaks for: the editor then shows the
+    /// file system hosting it showed before, which publishes just as well.
     fn hosting(&self) -> Option<Hosting> {
-        let website_id = self
-            .current_website_id
-            .lock()
-            .unwrap_or_else(|held| held.into_inner())
-            .clone()?;
+        let website_id = held(&self.current_website_id).clone()?;
 
-        let mut said = self
-            .what_hosts_it
-            .lock()
-            .unwrap_or_else(|held| held.into_inner());
+        let mut said = held(&self.what_hosts_it);
         if let Some((asked_about, when, answer)) = said.as_ref() {
             if asked_about == &website_id && when.elapsed() < WHAT_HOSTS_IT_KEPT {
                 return answer.clone();
@@ -589,15 +538,12 @@ impl silex_server::Actions for SilexActions {
 }
 
 impl SilexActions {
-    /// Who serves this website, asked of the programs of this machine
+    /// Asked of the programs of this machine
     fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
         let site = self.site_path(website_id)?;
 
-        // An integration that could not tell is not one that said no, but here
-        // there is nothing to fail: the editor is told what it was told before.
-        // No options handed over: nobody is publishing, and what the user
-        // answered is with the editor, which keeps it saved and prefers it to
-        // anything answered here
+        // No options handed over: nobody is publishing, and the editor keeps
+        // what the user answered
         let asked = self
             .integrations
             .resolve_deploy(&site, &PublicationOptions::default());
@@ -612,10 +558,8 @@ impl SilexActions {
         Some(Hosting {
             connector_id: "fs-hosting",
             display_name: Remote::of(&site)?.host,
-            // Only what the program of the host answered by itself. A host that
-            // asks instead is left to its form: an address worked out from a
-            // field nobody has filled in yet would land in that very field and
-            // stay there, whatever the user answers afterwards.
+            // A host that asks is left to its form: an address worked out
+            // from an empty field would land in that field and stay there
             options: options_form
                 .is_none()
                 .then(|| urls.and_then(|urls| urls.site))
@@ -628,8 +572,8 @@ impl SilexActions {
 
 /// Ask what the build did, until it says, and tell the user
 ///
-/// Nothing here ever calls a publication a success on its own: the website is
-/// live when the host says its build worked, and not when a push returned.
+/// The website is live when the host says its build worked, not when a push
+/// returned.
 fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     let host = sent.host.as_str();
     let ask = || sent.provider.build(&sent.cli, site, &sent.prepared);
@@ -644,10 +588,9 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     };
     let build_url = sent.build_url.clone().unwrap_or_default();
     job.progress(building(&build_url));
-    job.step(format!("Waiting for {} to start the build", host));
+    job.step(format!("Waiting for {} to build your website", host));
 
-    // Looking for the build this publication started. A host that has
-    // nothing to show after a minute is one that will never build it.
+    // A host that has nothing to show after a minute will never build it
     let started = Instant::now();
     let mut answered = false;
     let mut queued = false;
@@ -681,19 +624,17 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                 ))
             }
             Ok(Build::NotStarted) => answered = true,
-            // A build nobody has taken is not a build that started: leaving
-            // the loop here would follow it until the fifteen minutes a real
-            // build is given, for a job that is not moving at all
+            // Leaving the loop here would follow a job that is not moving for
+            // the fifteen minutes a real build is given
             Ok(Build::Queued) => {
                 if !queued {
                     queued = true;
-                    job.step("The build is waiting for a runner");
+                    job.step("Waiting for a build machine");
                 }
                 answered = true;
             }
             Ok(build) => break build,
-            // A host that could not be asked this time is asked again:
-            // one refused request is not an answer about a build
+            // One refused request is not an answer about a build
             Err(e) => {
                 tracing::warn!("Could not ask {} about the build: {}", host, e);
                 could_not_ask = Some(e);
@@ -710,8 +651,8 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                     ],
                 ));
             }
-            // Never once got an answer: what is known is that the host
-            // could not be asked, not that it built nothing
+            // Never once got an answer: the host could not be asked, which is
+            // not it having built nothing
             let never_answered = if answered { None } else { could_not_ask };
             return nothing_built_it(job, host, sent, files, never_answered);
         }
@@ -772,8 +713,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             // A build that went back to waiting was taken and given up, which
             // a runner coming back picks up again
             Build::Queued => job.progress(building(&build_url)),
-            // A host that stops answering about a build it was answering
-            // about is one to ask again, not one to draw a conclusion from
+            // Asked again rather than drawn a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
         }
         if started.elapsed() >= patience.a_build_ends_within {
@@ -803,8 +743,6 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     }
 }
 
-/// Say that no build ever started, which is what a website that looks
-/// published and is nowhere really comes down to
 fn nothing_built_it(
     job: &Job,
     host: &str,
@@ -873,8 +811,7 @@ mod sending {
         noted.lock().unwrap().clone()
     }
 
-    /// Waits for what a thread does, without waiting the whole of it when it is
-    /// already done
+    /// Waits for what a thread does, no longer than it takes
     fn until(done: impl Fn() -> bool) -> bool {
         for _ in 0..200 {
             if done() {
@@ -910,8 +847,8 @@ mod sending {
     fn saves_that_land_while_a_website_is_leaving_go_together_after_it() {
         let (syncer, sent) = watching(Duration::from_millis(80));
 
-        // Typing in the editor: one save after another, close enough together
-        // that only the first is on its own
+        // Typing in the editor: saves close enough that only the first is on
+        // its own
         for _ in 0..5 {
             syncer.sync("site");
             std::thread::sleep(Duration::from_millis(20));
@@ -982,9 +919,6 @@ mod sending {
         assert!(until(|| state(&syncer, "site") == Some(State::Sent)));
     }
 
-    /// A website that failed, then had a save land while it waited to try
-    /// again, says both: what it is doing now, and why the last try did not
-    /// work
     #[test]
     fn a_save_waiting_its_turn_does_not_hide_the_failure_before_it() {
         let (syncer, _) = watching(Duration::from_millis(20));
@@ -1027,17 +961,13 @@ mod publications {
     use silex_server::{JobData, JobStatus, Jobs};
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    /// What a host answers when it is asked about a build
     #[derive(Clone, Copy)]
     enum Says {
-        /// It has nothing about this publication
         Nothing,
-        /// It will not build this website at all
         Refuses,
         Running,
         Built,
         Failed,
-        /// Silex has no way to follow builds there
         CannotBeFollowed,
         /// The question itself did not go through
         Unreachable,
@@ -1101,7 +1031,6 @@ mod publications {
 
     const FILES: &str = "file:///data/site/public";
 
-    /// A publication sent to a host that answers this
     fn sent(host: &'static Host) -> Sent {
         Sent {
             provider: host,
@@ -1137,9 +1066,8 @@ mod publications {
 
     #[test]
     fn a_host_that_never_starts_a_build_is_not_a_publication_that_worked() {
-        // Codeberg with its Actions off, and gitlab.com with an account it has
-        // not verified: the push works, and the website is never built. This is
-        // the failure Silex used to show as a green success.
+        // Codeberg with its Actions off, or an account GitLab has not
+        // verified: the push works and the website is never built
         static NOTHING: Host = Host {
             says: &[Says::Nothing],
             asked: AtomicUsize::new(0),
@@ -1157,8 +1085,7 @@ mod publications {
             "nothing built it: {}",
             told.message
         );
-        // And the user is pointed at what to do about it, and at what is on
-        // their own disk in the meantime
+        // And pointed at what to do about it
         assert!(
             told.message.contains("Repository settings"),
             "{}",
@@ -1283,8 +1210,6 @@ mod publications {
 
     #[test]
     fn what_silex_wrote_is_offered_while_the_host_is_still_building() {
-        // The user waits on a build that is not theirs to speed up, and the
-        // files the editor generated are on their disk already
         static BUILDING: Host = Host {
             says: &[Says::Running],
             asked: AtomicUsize::new(0),

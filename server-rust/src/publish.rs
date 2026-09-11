@@ -21,7 +21,7 @@ use crate::storage::{under_data_path, website_path};
 
 /// Write the published files under `{data_path}/{website_id}/public/`
 pub async fn publish(data_path: &Path, website_id: &WebsiteId, files: &[File]) -> Result<()> {
-    let target_dir = website_path(data_path, website_id)?.join(PUBLIC_FOLDER);
+    let target_dir = website_path(data_path, website_id).join(PUBLIC_FOLDER);
 
     tracing::info!(
         "Publishing {} files to {}",
@@ -48,9 +48,8 @@ pub async fn publish(data_path: &Path, website_id: &WebsiteId, files: &[File]) -
 
 /// Delete the pages of a publication that no longer has them
 ///
-/// A page somebody deleted keeps being served until its file goes: it was
-/// written here once and nothing ever takes it back. Only pages are looked at,
-/// and only those this publication did not write: everything else in the folder
+/// A page somebody deleted keeps being served until its file goes. Only pages
+/// this publication did not write are looked at: the rest of the folder
 /// belongs to whoever put it there.
 async fn took_a_page_away(target_dir: &Path, written: &std::collections::HashSet<PathBuf>) {
     let mut folders = vec![target_dir.to_path_buf()];
@@ -78,8 +77,7 @@ async fn took_a_page_away(target_dir: &Path, written: &std::collections::HashSet
 mod tests {
     use super::*;
 
-    /// The page somebody deleted stops being served, and nothing else in the
-    /// folder is touched
+    /// Nothing else in the folder is touched
     #[tokio::test]
     async fn a_page_that_is_gone_is_taken_off_the_published_site() {
         let data_path = std::env::temp_dir().join(format!("silex-gone-{}", std::process::id()));
@@ -88,8 +86,8 @@ mod tests {
         let public = data_path.join("site").join(PUBLIC_FOLDER);
         fs::create_dir_all(public.join("contact")).await.unwrap();
 
-        // What a publication of two pages left behind, plus what nobody but
-        // the owner of the website put there
+        // What a publication of two pages left behind, plus what its owner
+        // put there
         fs::write(public.join("index.html"), "old").await.unwrap();
         fs::write(public.join("contact/index.html"), "gone")
             .await

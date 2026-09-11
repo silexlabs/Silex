@@ -9,12 +9,9 @@
 
 //! The git of the user, and what it knows about a website
 //!
-//! Sending a website somewhere is somebody else's network, somebody else's keys
-//! and somebody else's passwords, and the git of the user already knows all
-//! three. How a repository is set up is read through that same program, so that
-//! Silex carries no git of its own. Making versions of a website is not done
-//! here at all: a history is files in the website folder, and the server keeps
-//! it.
+//! Sending a website somewhere is somebody else's network, keys and passwords,
+//! and the git of the user already knows all three. Silex carries no git of its
+//! own. Making versions of a website is the server's, not this.
 
 use std::path::{Path, PathBuf};
 
@@ -25,9 +22,8 @@ const BRANCH: &str = "main";
 
 /// Ask git about the repository of the website, and nothing over the network
 ///
-/// Only the repository in the website folder is read. A website can sit inside
-/// a repository of somebody else's, and git climbs up to that one when the
-/// folder has none, which would answer for the wrong repository.
+/// Only the repository in the website folder: git climbs up to an enclosing
+/// one when the folder has none, and would answer for the wrong repository.
 fn asked(site: &Path, args: &[&str]) -> Option<String> {
     if !site.join(".git").exists() {
         return None;
@@ -38,12 +34,10 @@ fn asked(site: &Path, args: &[&str]) -> Option<String> {
 /// Every remote of the repository, with the URL it was given
 ///
 /// Read from the config rather than from `git remote get-url`, which resolves
-/// insteadOf rewrites: the host of a website is told from what the user wrote,
-/// and pushing resolves them anyway.
+/// insteadOf rewrites: the host is told from what the user wrote.
 fn remotes(site: &Path) -> Vec<(String, String)> {
-    // -z: one entry per NUL, its name and its value parted by a newline. A URL
-    // holding a space or a line of its own is then read whole, where splitting
-    // lines on the first space would have cut it in two.
+    // -z: one entry per NUL, name and value parted by a newline, so that a URL
+    // holding a space or a newline is read whole
     let Some(configured) = asked(
         site,
         &[
@@ -81,9 +75,8 @@ fn remotes(site: &Path) -> Vec<(String, String)> {
 /// The remote a website is published to: `origin` when there is one, the first
 /// the user configured otherwise
 ///
-/// A repository somebody set up by hand does not always call it `origin`, and
-/// reading that name alone made those websites publish nothing at all, without
-/// a word.
+/// A repository set up by hand does not always call it `origin`, and reading
+/// that name alone leaves those websites publishing nothing at all.
 fn published_to(site: &Path) -> Option<(String, String)> {
     let remotes = remotes(site);
     remotes
@@ -93,17 +86,15 @@ fn published_to(site: &Path) -> Option<(String, String)> {
         .cloned()
 }
 
-/// The name of that remote
 pub fn remote_name(site: &Path) -> Option<String> {
     published_to(site).map(|(name, _)| name)
 }
 
-/// Its URL, as the user wrote it
+/// As the user wrote it
 pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
 }
 
-/// The branch a pull takes its versions from
 fn branch_name(site: &Path) -> String {
     asked(site, &["symbolic-ref", "--short", "HEAD"])
         .map(|name| name.trim().to_string())
@@ -119,11 +110,9 @@ pub struct Git {
 impl Git {
     /// The git of this machine, looked for once and kept
     ///
-    /// Not an integration: nothing to turn on, nothing to remember. A machine
-    /// with no git still saves and versions websites, only sending needs it.
-    ///
-    /// Asked its version rather than taken on sight: a file being there does
-    /// not mean it runs.
+    /// Not an integration: nothing to turn on, nothing to remember. Asked its
+    /// version rather than taken on sight, because a file being there does not
+    /// mean it runs.
     pub fn found() -> Option<Self> {
         static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
         FOUND
@@ -137,8 +126,8 @@ impl Git {
 
     /// Push the branch, and the tag when there is one
     ///
-    /// A tag nothing was pushed with is of no use to anybody and would be left
-    /// behind at every failed attempt, so it goes with the failure.
+    /// A tag nothing was pushed with would be left behind at every failed
+    /// attempt, so it goes with the failure.
     pub fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
         let remote = remote_name(site).ok_or(NOWHERE_TO_SEND_IT)?;
         let pushed = self.push_branch(site, &remote, tag);
@@ -153,14 +142,10 @@ impl Git {
 
     /// Send the branch, saying so plainly when the remote moved on
     ///
-    /// Nothing is merged and nothing is rebased here. Silex does not resolve
-    /// conflicts, and a merge it started would leave the folder half done in a
-    /// state its user has no terminal to get out of. Catching up is a pull of
-    /// its own, on opening the website.
+    /// Nothing is merged or rebased here: a merge Silex started would leave
+    /// the folder in a state its user has no terminal to get out of.
     fn push_branch(&self, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), String> {
-        // The branch and the tag leave together: two pushes mean two
-        // handshakes with the host, which is a second of somebody's
-        // publication spent saying hello twice.
+        // Together, because two pushes mean two handshakes with the host
         let mut sending = vec!["push", "--porcelain", remote, "HEAD"];
         sending.extend(tag);
         let ran = run_transfer_verbatim(&self.program, site, &sending)?;
@@ -171,16 +156,15 @@ impl Git {
             return Err(failure(&self.program, &ran));
         }
         Err(format!(
-            "The repository this website is sent to has versions Silex does not have. {}",
+            "This website was changed somewhere else, and those changes are not on this computer. Open it again from the list of websites to take them in, then publish again. {}",
             failure(&self.program, &ran)
         ))
     }
 
     /// Take in what was pushed from somewhere else, and only that
     ///
-    /// Fast-forward only: a website whose versions here and there have both
-    /// moved on is one Silex leaves alone, for its user to sort out in the git
-    /// client they already have.
+    /// Fast-forward only: a website that moved on both here and there is left
+    /// to its user and the git client they already have.
     pub fn pull(&self, site: &Path) -> Result<(), String> {
         let Some(remote) = remote_name(site) else {
             return Ok(());
@@ -197,9 +181,8 @@ impl Git {
 /// Whether git refused because the remote has commits this repository has not
 ///
 /// Read from `--porcelain`, which writes one line per ref as
-/// `<flag> \t <from>:<to> \t <summary> (<reason>)`. `!` is a ref that was
-/// refused, and only the reason tells a remote that moved on from a hook that
-/// said no — pulling helps with the first, never with the second.
+/// `<flag> \t <from>:<to> \t <summary> (<reason>)`. Only the reason tells a
+/// remote that moved on from a hook that said no.
 fn behind_remote(ran: &Ran) -> bool {
     ran.stdout.lines().any(|line| {
         line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first"))
@@ -208,18 +191,16 @@ fn behind_remote(ran: &Ran) -> bool {
 
 /// Said when a website has no repository to go to
 ///
-/// One sentence for one situation: the same thing was worded three different
-/// ways, and none of them named anything the user can see in Silex. "Remote"
-/// least of all.
+/// One sentence for one situation, and none of the words the user cannot see
+/// in Silex. "Remote" least of all.
 pub const NOWHERE_TO_SEND_IT: &str =
     "Silex does not know where to send this website. Open it again from the list of websites, or check where it is kept.";
 
 /// Whether a send that broke down could work later, read from what git said
 ///
-/// Anything unrecognised counts as permanent. A wrong password, a repository
-/// that is gone, a remote that moved on: trying those again would fail just the
-/// same, quietly, and the user would never learn what is in the way. Waiting
-/// for a network to come back is the one case where trying again is the answer.
+/// Anything unrecognised counts as permanent: trying a wrong password again
+/// fails the same way, quietly, and the user never learns what is in the way.
+/// A network coming back is the one case worth waiting for.
 pub fn worth_another_try(why: &str) -> bool {
     const BREAKS: [&str; 20] = [
         "could not resolve host",
@@ -240,15 +221,12 @@ pub fn worth_another_try(why: &str) -> bool {
         "http 5",
         "returned error: 5",
         "gateway time-out",
-        // Silex's own words, when it stopped waiting for git: the network was
-        // slow rather than closed, which is the very case this ladder exists
-        // for
+        // Silex's own words, when it stopped waiting for git: a slow network
+        // rather than a closed one
         "took more than",
-        // Another git held a lock file of this repository. Every one of them
-        // says it the same way, index.lock as much as HEAD.lock or
-        // refs/heads/main.lock, so the ending is what is looked for. Silex
-        // runs one git per website at a time; this is for the git of the user,
-        // running in their own terminal on the same folder.
+        // The git of the user, running in their own terminal on the same
+        // folder, held a lock file. index.lock, HEAD.lock and the rest all end
+        // the same way.
         ".lock': file exists",
     ];
     let why = why.to_lowercase();
@@ -307,9 +285,6 @@ mod tests {
         site
     }
 
-    /// Read line by line, a URL written across two lines came back cut at the
-    /// first of them, and Silex went looking for a host that was not the one
-    /// in the config
     #[test]
     fn a_remote_url_written_across_two_lines_is_read_whole() {
         if Git::found().is_none() {
@@ -345,8 +320,7 @@ mod tests {
         assert_eq!(branch_name(&site), "main");
         let _ = std::fs::remove_dir_all(&site);
 
-        // A repository set up by hand does not always call it origin, and
-        // those websites used to publish nothing at all
+        // A repository set up by hand does not always call it origin
         let site = a_website(
             "named",
             "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
@@ -383,8 +357,7 @@ mod tests {
             "To gitlab.com/x/y.git\n!\trefs/heads/main:refs/heads/main\t[rejected] (non-fast-forward)\nDone"
         ));
         assert!(refused("!\tHEAD:refs/heads/main\t[rejected] (fetch first)"));
-        // A hook that said no is not a remote that moved on: pulling would not
-        // help, and retrying would hide what the remote is refusing
+        // A hook that said no is not a remote that moved on
         assert!(!refused(
             "!\tHEAD:refs/heads/main\t[remote rejected] (pre-receive hook declined)"
         ));

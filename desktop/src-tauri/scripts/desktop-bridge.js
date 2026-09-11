@@ -183,9 +183,8 @@
       try {
         await editor.store();
       } finally {
-        // Quitting waits on this before it closes, so it has to be said even
-        // when the save failed: staying silent would hold the app open until
-        // its own timeout, for a save that is never coming
+        // Said even when the save failed: quitting waits on this, and silence
+        // would hold the app open until its own timeout
         invoke('saved_everything');
       }
     });

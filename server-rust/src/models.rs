@@ -24,9 +24,8 @@ use uuid::Uuid;
 
 /// Unique identifier for a website, and the name of its folder in the data path
 ///
-/// An id comes from a request, so it is checked the moment it is read rather
-/// than at each of its uses: `Path::join` on an absolute path forgets the
-/// folder it was joined to, and `..` walks out of it.
+/// Checked the moment it is read rather than at each of its uses: `Path::join`
+/// on an absolute path forgets the folder it was joined to.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub struct WebsiteId(String);
 
@@ -54,10 +53,6 @@ impl FromStr for WebsiteId {
 }
 
 /// Whether this names one folder inside another, and nothing else
-///
-/// `Path::join` on an absolute path forgets the folder it was joined to, and
-/// `..` walks out of it, so a name coming from a request is read as a name or
-/// refused.
 pub(crate) fn names_one_folder(name: &str) -> bool {
     !name.is_empty()
         && !name.starts_with('.')

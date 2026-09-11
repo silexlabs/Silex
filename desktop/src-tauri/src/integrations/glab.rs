@@ -20,9 +20,8 @@ use super::run::run;
 
 /// The instance GitLab runs itself
 ///
-/// A repository there is on GitLab whether or not the user signed in. Anywhere
-/// else the host says nothing on its own, and what glab was signed in to is
-/// what tells a GitLab of one's own from any other forge.
+/// Anywhere else the host says nothing on its own, and what glab was signed in
+/// to is what tells a GitLab of one's own from any other forge.
 const GITLAB: &str = "gitlab.com";
 
 pub struct Glab;
@@ -50,11 +49,9 @@ impl Deploy for Glab {
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
-        // The address the user named is the one to show: they are the ones who
-        // know where their domain points, and asking GitLab for its own would
-        // cost a request whose answer is only used when nobody named one. A
-        // Pages address exists once the site has been published, so before that
-        // there is nothing to ask for anyway.
+        // The address the user named rather than the one GitLab would answer:
+        // that request costs a round trip, and before a first publication
+        // there is nothing to ask for anyway
         let site_url = match options.named(WEBSITE_URL) {
             Some(url) => Some(url.to_string()),
             None => run(cli, site, &["api", "projects/:fullpath/pages"])
@@ -95,8 +92,7 @@ impl Deploy for Glab {
         })
     }
 
-    /// GitLab says which ref each of its jobs ran on, so the one this
-    /// publication started is the one on the tag it was given
+    /// GitLab says which ref each of its jobs ran on
     fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
         // Nothing was tagged, so there is nothing to recognise a job by
         let Some(tag) = prepared.tag.as_deref() else {
@@ -114,9 +110,8 @@ impl Deploy for Glab {
         let Some(jobs) = jobs.as_array() else {
             return Err(format!("{} did not list the builds", self.program()));
         };
-        // A project whose builds are turned off, and an account GitLab has not
-        // verified, both list nothing at all: waiting is what tells them apart
-        // from a build that has not appeared yet
+        // Builds turned off and an unverified account both list nothing at
+        // all, and only waiting tells them from a build that is on its way
         let Some(job) = jobs.iter().find(|job| job["ref"].as_str() == Some(tag)) else {
             return Ok(Build::NotStarted);
         };
@@ -129,13 +124,13 @@ impl Deploy for Glab {
                 reason: why_it_failed(job["failure_reason"].as_str()),
             },
             // created, waiting_for_resource, preparing, pending, running, and
-            // whatever GitLab adds next: still going
+            // whatever GitLab adds next
             _ => Build::Running(url),
         })
     }
 
-    /// GitLab lists the pipelines of one ref, so the user sees the publication
-    /// that just left instead of every one that ever ran
+    /// GitLab lists the pipelines of one ref, so the user lands on the
+    /// publication that just left
     fn watch(&self, urls: &Urls, prepared: &Prepared) -> Option<String> {
         match (urls.ci.as_deref(), prepared.tag.as_deref()) {
             (Some(pipelines), Some(tag)) => Some(format!("{pipelines}?ref={tag}")),
@@ -149,11 +144,8 @@ fn json_string(output: &str, key: &str) -> Option<String> {
     value.get(key)?.as_str().map(String::from)
 }
 
-/// Whether the user signed in to that host, read from what glab keeps here
-///
-/// Asking glab itself means `glab auth status`, which calls the instance:
-/// close to a third of a second, spent before a user is told anything, and
-/// spent again for every website they open.
+/// Read from what glab keeps rather than from `glab auth status`, which calls
+/// the instance and costs a third of a second per website opened
 fn signed_in_to(host: &str) -> bool {
     config_file()
         .and_then(|file| std::fs::read_to_string(file).ok())
@@ -161,10 +153,8 @@ fn signed_in_to(host: &str) -> bool {
         .is_some_and(|block| holds_a_login(&block))
 }
 
-/// Where glab keeps what it knows
-///
-/// In the home of the user rather than where the system puts configuration,
-/// on every platform, and that one wins over the XDG folder when both exist.
+/// In the home of the user on every platform, and that one wins over the XDG
+/// folder when both exist
 fn config_file() -> Option<PathBuf> {
     if let Some(named) = std::env::var_os("GLAB_CONFIG_DIR") {
         return Some(PathBuf::from(named).join("config.yml"));
@@ -179,9 +169,8 @@ fn config_file() -> Option<PathBuf> {
 
 /// What the configuration of glab holds for one host
 ///
-/// Its `hosts:` section has one block per host, named by the host itself. Read
-/// by hand rather than as YAML: this is one section of one file of another
-/// program, and reading it wrong is a website Silex says nothing about.
+/// Its `hosts:` section has one block per host. Read by hand rather than as
+/// YAML: it is one section of one file of another program.
 fn host_block(config: &str, host: &str) -> Option<String> {
     let mut lines = config
         .lines()
@@ -220,10 +209,8 @@ fn host_block(config: &str, host: &str) -> Option<String> {
 
 /// What GitLab said of a build that failed, in words a user can act on
 ///
-/// GitLab answers a code of its own — `script_failure` is the most common one
-/// a user ever sees. Left as it came, it is the whole explanation they get for
-/// the thing they were waiting on. None for a code nobody wrote a sentence
-/// for: the caller then says something plain rather than something wrong.
+/// GitLab answers a code of its own, `script_failure` above all. None for a
+/// code nobody wrote a sentence for: the caller then says something plain.
 fn why_it_failed(reason: Option<&str>) -> Option<String> {
     let said = match reason? {
         "script_failure" => "Something in your website could not be built. Open the build to read its last lines, then publish again.",
@@ -236,22 +223,20 @@ fn why_it_failed(reason: Option<&str>) -> Option<String> {
 
 /// Whether GitLab is keeping this website to the members of its repository
 ///
-/// The setting is `private` on a new repository, public or not, so a user who
-/// changed nothing has a published website nobody else can open.
+/// The setting is `private` on a new repository, so a user who changed nothing
+/// has a published website nobody else can open.
 fn kept_from_visitors(repo: &str) -> bool {
     json_string(repo, "pages_access_level").is_some_and(|level| level != "public")
 }
 
-/// Whether the block of a host holds a way to sign in
-///
-/// glab writes the block of gitlab.com from its defaults, signed in or not, so
-/// it is what the block holds that answers rather than the block being there.
+/// glab writes the block of gitlab.com from its defaults, signed in or not,
+/// so it is what the block holds that answers rather than the block being
+/// there
 fn holds_a_login(block: &str) -> bool {
     ["token", "oauth2_refresh_token"]
         .iter()
         .any(|key| value_of(block, key).is_some())
-        // The token is in the keyring of the system, out of reach here and
-        // none of Silex's business: glab reads it when it needs it.
+        // The token is in the keyring of the system, where glab reads it
         || value_of(block, "use_keyring").is_some_and(|kept| kept == "true" || kept == "1")
 }
 
@@ -267,23 +252,21 @@ fn value_of(block: &str, key: &str) -> Option<String> {
 mod tests {
     use super::*;
 
-    /// A published website nobody but its owner can open is worth saying,
-    /// and GitLab starts every repository that way
+    /// GitLab starts every repository private, website included
     #[test]
     fn pages_kept_to_the_members_of_a_repository_are_worth_a_word() {
         assert!(kept_from_visitors(r#"{"pages_access_level": "private"}"#));
         assert!(kept_from_visitors(r#"{"pages_access_level": "enabled"}"#));
         assert!(!kept_from_visitors(r#"{"pages_access_level": "public"}"#));
 
-        // Said nothing rather than warned about nothing: an older GitLab that
-        // leaves the setting out is not one keeping a website from anybody
+        // An older GitLab leaves the setting out, which is not it keeping a
+        // website from anybody
         assert!(!kept_from_visitors(
             r#"{"web_url": "https://gitlab.com/a/b"}"#
         ));
     }
 
-    /// What glab writes, shortened: a host of one's own, and gitlab.com as it
-    /// stands before anybody signs in
+    /// What glab writes, shortened
     const CONFIG: &str = r#"
 git_protocol: ssh
 host: gitlab.com

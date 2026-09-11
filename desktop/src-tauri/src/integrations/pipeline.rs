@@ -30,10 +30,8 @@ pub enum BuildStep {
     Sh { value: String },
 }
 
-// The guard is for a public/ with no folder at all: the glob then stays literal
-// and cp would stop the build. Nothing is silenced, so that a copy failing for a
-// real reason stops the build instead of publishing a website without its
-// stylesheet.
+// The guard is for a public/ with no folder at all: the glob then stays
+// literal and cp would stop the build
 const COPY_PUBLIC_FOLDERS: &str =
     "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
 
@@ -54,10 +52,8 @@ pub fn generate_build_sh(steps: &[BuildStep]) -> String {
     )
 }
 
-/// Write build.json and build.sh in the website folder
-///
-/// build.json is created once and never rewritten afterwards, build.sh always
-/// follows what it says.
+/// build.json is created once and never rewritten, build.sh always follows
+/// what it says
 pub fn ensure_build_files(site: &Path) -> Result<(), String> {
     let build_json = site.join(BUILD_JSON);
     let steps: Vec<BuildStep> = if build_json.exists() {
@@ -74,8 +70,8 @@ pub fn ensure_build_files(site: &Path) -> Result<(), String> {
 
 /// Keep the built site out of the versioned website
 ///
-/// The website folder is versioned whole, so running build.sh once would
-/// otherwise put a copy of the site in its own history.
+/// The folder is versioned whole, so build.sh would otherwise put a copy of
+/// the site in its own history.
 fn ignore_build_output(site: &Path) -> Result<(), String> {
     let path = site.join(GITIGNORE);
     let current = std::fs::read_to_string(&path).unwrap_or_default();
@@ -96,8 +92,7 @@ fn ignore_build_output(site: &Path) -> Result<(), String> {
 
 /// Write the pipeline file, unless the user took it over
 ///
-/// The marker means Silex owns the file; without it the file was customized
-/// and it keeps working untouched.
+/// The marker means Silex owns the file. Without it, the file is theirs.
 pub fn ensure_pipeline_file(site: &Path, path: &Path, content: &str) -> Result<(), String> {
     let full_path = site.join(path);
     let keep = match std::fs::read_to_string(&full_path) {
@@ -132,8 +127,8 @@ mod tests {
         ensure_build_files(&site).unwrap();
         let built = generate_build_sh(&[BuildStep::Build]);
         assert!(built.contains("@11ty/eleventy@"));
-        // Nothing is silenced: a copy that fails for a real reason stops the
-        // build rather than publishing a website without its stylesheet
+        // Nothing is silenced: a copy that fails stops the build rather than
+        // publishing a website without its stylesheet
         assert!(!built.contains("2>/dev/null"), "{}", built);
         assert!(!built.contains("|| true"), "{}", built);
         assert!(built.contains(COPY_PUBLIC_FOLDERS), "{}", built);

@@ -9,12 +9,10 @@
 
 //! Publications the editor follows, kept in memory
 //!
-//! Sending a website to its host and waiting for it to build takes minutes, and
-//! an HTTP request held open for that long is one a proxy or a laptop lid
-//! closes. So publishing answers straight away with a job, the editor asks
-//! about that job every couple of seconds, and whoever does the work says where
-//! it is. This is the same contract as the hosted version, which the editor was
-//! written against.
+//! An HTTP request held open for the minutes a publication takes is one a
+//! proxy or a laptop lid closes. So publishing answers straight away with a
+//! job and the editor asks about it every couple of seconds, which is the
+//! contract the hosted version already had.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -22,17 +20,13 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
 
-/// How long a finished publication is still answered
-///
-/// The editor stops asking as soon as a job is over, so this is only for the
-/// window where its last question crosses our answer.
-const KEPT_AFTER_END: Duration = Duration::from_secs(10 * 60);
+use crate::held::held;
 
-/// How long a publication nobody ever finished is kept
+/// How long a publication is still answered after it started
 ///
-/// Whoever does the work always ends its job, so reaching this means something
-/// went wrong in a way nobody caught. Forgetting it beats holding it forever.
-const KEPT_UNFINISHED: Duration = Duration::from_secs(2 * 60 * 60);
+/// The editor stops asking as soon as a job is over, and a publication runs
+/// for minutes, so this only has to outlast the longest one.
+const KEPT: Duration = Duration::from_secs(2 * 60 * 60);
 
 /// Where a publication is, as the editor reads it
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -53,8 +47,7 @@ pub struct JobData {
     /// What the user reads, written as HTML
     ///
     /// The editor puts it in the dialog as it comes, so a sentence can carry
-    /// the buttons that go with it: where the build is, where the website is
-    /// once it is served. The hosted version writes its messages the same way.
+    /// the buttons that go with it.
     pub message: String,
 
     /// The lines the editor shows under "Logs", empty here
@@ -62,9 +55,7 @@ pub struct JobData {
 
     /// The words of the programs that failed, shown under "Errors"
     ///
-    /// Kept apart from the message: a user reads one sentence they can act on,
-    /// and what the programs really said is there underneath for the times
-    /// when that sentence is not enough.
+    /// Kept apart from the message, which is one sentence to act on.
     pub errors: Vec<Vec<String>>,
 
     pub start_time: u64,
@@ -80,9 +71,6 @@ impl JobData {
 }
 
 /// The publications this server knows about
-///
-/// Owned by the server, and handed to whoever embeds the crate so that they
-/// can follow one of their own publications in a test.
 #[derive(Clone, Default)]
 pub struct Jobs {
     known: Arc<Mutex<HashMap<String, JobData>>>,
@@ -102,7 +90,7 @@ impl Jobs {
             end_time: None,
         };
 
-        let mut known = self.known.lock().unwrap_or_else(|held| held.into_inner());
+        let mut known = held(&self.known);
         forget_the_old(&mut known);
         known.insert(job_id.clone(), job);
         Job {
@@ -111,18 +99,17 @@ impl Jobs {
         }
     }
 
-    /// Where a publication is, or nothing when it is not one we opened
+    /// Nothing when it is not one we opened
     pub fn read(&self, job_id: &str) -> Option<JobData> {
-        let known = self.known.lock().unwrap_or_else(|held| held.into_inner());
+        let known = held(&self.known);
         known.get(job_id).cloned()
     }
 
     fn change(&self, job_id: &str, change: impl FnOnce(&mut JobData)) {
-        let mut known = self.known.lock().unwrap_or_else(|held| held.into_inner());
+        let mut known = held(&self.known);
         match known.get_mut(job_id) {
             Some(job) => change(job),
-            // Nothing to do about it, and the publication itself is unaffected:
-            // it is only what the editor is told that is lost
+            // Only what the editor is told is lost, not the publication
             None => tracing::warn!("Nobody is following the publication {}", job_id),
         }
     }
@@ -130,9 +117,8 @@ impl Jobs {
 
 /// One publication, as whoever does the work reports on it
 ///
-/// A job is ended once. Saying something after that is refused rather than
-/// applied: an answer arriving late must not turn a publication the user was
-/// told had failed into a success.
+/// A job is ended once, and a late answer is refused rather than applied: it
+/// must not turn a publication the user was told had failed into a success.
 pub struct Job {
     job_id: String,
     jobs: Jobs,
@@ -155,9 +141,8 @@ impl Job {
 
     /// Note a step of the publication, for whoever opens the logs
     ///
-    /// Written as it happens rather than at the end: a publication waits for
-    /// minutes, and a bar that moves without saying anything leaves the user
-    /// wondering whether it is doing something at all.
+    /// Written as it happens rather than at the end, because a publication
+    /// waits for minutes.
     pub fn step(&self, step: impl Into<String>) {
         let step = step.into();
         self.jobs.change(&self.job_id, |job| {
@@ -196,11 +181,7 @@ impl Job {
 /// Drop the publications nobody can be asking about any more
 fn forget_the_old(known: &mut HashMap<String, JobData>) {
     let now = now();
-    let older_than = |since: u64, age: Duration| now.saturating_sub(since) > age.as_millis() as u64;
-    known.retain(|_, job| match job.end_time {
-        Some(ended) => !older_than(ended, KEPT_AFTER_END),
-        None => !older_than(job.start_time, KEPT_UNFINISHED),
-    });
+    known.retain(|_, job| now.saturating_sub(job.start_time) <= KEPT.as_millis() as u64);
 }
 
 /// The time as the editor reads it, milliseconds since the epoch
@@ -278,11 +259,11 @@ mod tests {
         let job = jobs.start("Publishing");
         job.succeeded("Done");
 
-        // Ended long enough ago that the editor cannot still be asking
+        // Started long enough ago that the editor cannot still be asking
         {
             let mut known = jobs.known.lock().unwrap();
             let ended = known.get_mut(job.id()).unwrap();
-            ended.end_time = Some(now() - KEPT_AFTER_END.as_millis() as u64 - 1);
+            ended.start_time = now() - KEPT.as_millis() as u64 - 1;
         }
         let next = jobs.start("Publishing again");
 

@@ -9,9 +9,8 @@
 
 //! Serving of the editor, compiled into the binary
 //!
-//! The editor is the one frontend this crate knows: what else is served at `/`
-//! is up to whoever runs the server. Without the `embed-frontend` feature the
-//! crate serves the API only.
+//! What else is served at `/` is up to whoever runs the server. Without the
+//! `embed-frontend` feature the crate serves the API only.
 
 use axum::Router;
 
@@ -30,10 +29,8 @@ use rust_embed::Embed;
 #[folder = "../dist/client/"]
 pub struct EditorAssets;
 
-/// Serve the embedded editor on the given router
-///
-/// A route rather than a fallback would settle what `/` is for everyone, and
-/// the desktop app has its own answer to that.
+/// A fallback rather than a route: a route would settle what `/` is for
+/// everyone, and the desktop app has its own answer to that
 #[cfg(feature = "embed-frontend")]
 pub fn configure<S: Clone + Send + Sync + 'static>(app: Router<S>) -> Router<S> {
     app.fallback(|req: Request| async move { serve::<EditorAssets>(asset(req.uri().path())) })

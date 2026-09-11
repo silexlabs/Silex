@@ -20,11 +20,13 @@ use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+use crate::held::held;
 use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
 mod frontend;
+mod held;
 mod integrations;
 mod mcp;
 
@@ -110,18 +112,9 @@ fn set_current_project(
     website_id: String,
     website_name: String,
 ) {
-    *state
-        .current_website_id
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = Some(website_id);
-    *state
-        .current_website_name
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = Some(website_name.clone());
-    *state
-        .has_unsaved_changes
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = false;
+    *held(&state.current_website_id) = Some(website_id);
+    *held(&state.current_website_name) = Some(website_name.clone());
+    *held(&state.has_unsaved_changes) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title(&format!("{} \u{2014} Silex", website_name));
@@ -130,18 +123,9 @@ fn set_current_project(
 
 #[tauri::command]
 fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state
-        .current_website_id
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = None;
-    *state
-        .current_website_name
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = None;
-    *state
-        .has_unsaved_changes
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = false;
+    *held(&state.current_website_id) = None;
+    *held(&state.current_website_name) = None;
+    *held(&state.has_unsaved_changes) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title("Silex");
@@ -150,17 +134,9 @@ fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState
 
 #[tauri::command]
 fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state
-        .has_unsaved_changes
-        .lock()
-        .unwrap_or_else(|held| held.into_inner()) = true;
+    *held(&state.has_unsaved_changes) = true;
 
-    if let Some(name) = state
-        .current_website_name
-        .lock()
-        .unwrap_or_else(|held| held.into_inner())
-        .as_ref()
-    {
+    if let Some(name) = held(&state.current_website_name).as_ref() {
         if let Some(window) = app.get_webview_window("main") {
             let _ = window.set_title(&format!("\u{2022} {} \u{2014} Silex", name));
         }
@@ -181,8 +157,8 @@ fn log_debug(message: String) {
 
 /// Where every website is on its way to the repository it is kept in
 ///
-/// What the dashboard asks for when it opens. It is told of every change after
-/// that by the `sending-changed` event, which carries the same thing.
+/// What the dashboard asks for when it opens. Every change after that comes
+/// through the `sending-changed` event.
 #[tauri::command]
 fn get_sending(
     sendings: tauri::State<'_, actions::Sendings>,
@@ -192,9 +168,8 @@ fn get_sending(
 
 /// Told by the editor once it has finished saving
 ///
-/// Called even when it had nothing to save. Quitting waits on this to tell an
-/// empty sending queue with nothing to send from one whose save is still on
-/// its way through the server.
+/// Called even when it had nothing to save: quitting waits on this to tell an
+/// empty queue from one whose save is still on its way.
 #[tauri::command]
 fn saved_everything(saves: tauri::State<'_, actions::Saves>) {
     saves.send_modify(|saves| *saves += 1);
@@ -275,16 +250,14 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
 
 /// The longest "Save & Quit" keeps the app running after the save is asked for
 ///
-/// A save is not over when the editor sends it: the server writes the files,
-/// then the website goes to the repository it is kept in, over a network that
-/// answers when it answers. Past this the app closes and says what is left.
+/// The website still has to reach its repository, over a network that answers
+/// when it answers. Past this the app closes and says what is left.
 const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
 
 /// Wait for the websites on their way to their repository to get there
 ///
-/// The queue is empty when the dialog is answered, and an empty queue means
-/// two opposite things: nothing to send, or a save that has not arrived yet.
-/// Only the editor can tell them apart, so its word is waited for first.
+/// An empty queue means two opposite things, nothing to send or a save that
+/// has not arrived yet, and only the editor tells them apart.
 ///
 /// False when the wait ran out with some still on their way.
 async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::Saved) -> bool {
@@ -316,8 +289,8 @@ async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::
 
 /// Say what has not left yet, on the one occasion it is worth saying
 ///
-/// Their work is saved and versioned on this computer either way. What they
-/// cannot see for themselves is that Silex picks this up when it opens again.
+/// Their work is saved on this computer either way. What they cannot see is
+/// that Silex picks this up when it opens again.
 fn says_what_is_left(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -570,9 +543,8 @@ fn main() {
         .init();
 
     tauri::Builder::default()
-        // Before every other plugin, as this one asks for: a second Silex would
-        // open a second server on the one directory of websites, and two git
-        // repositories in the one working copy of each.
+        // Before every other plugin, as this one asks for: a second Silex
+        // would open a second server on the one directory of websites
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();
@@ -698,10 +670,7 @@ fn main() {
             window.on_window_event(move |event| {
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let state = app_handle.state::<AppState>();
-                    let has_changes = *state
-                        .has_unsaved_changes
-                        .lock()
-                        .unwrap_or_else(|held| held.into_inner());
+                    let has_changes = *held(&state.has_unsaved_changes);
                     if has_changes {
                         api.prevent_close();
                         show_quit_dialog(&app_handle);

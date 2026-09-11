@@ -10,8 +10,8 @@
 //! The dashboard, and what `/` opens on
 //!
 //! The hosted Silex has a dashboard of its own, so the server crate knows
-//! nothing about this one. Here the dashboard is served at `/`, the editor at
-//! `/?id=<website id>`.
+//! nothing about this one: `/` is the dashboard, `/?id=<website id>` the
+//! editor.
 
 use std::collections::HashMap;
 
@@ -22,7 +22,7 @@ use axum::Router;
 use rust_embed::Embed;
 use silex_server::frontend::{serve, try_serve, EditorAssets};
 
-/// Dashboard assets, path relative to this crate's Cargo.toml
+/// Path relative to this crate's Cargo.toml
 #[derive(Embed)]
 #[folder = "../../silex-dashboard-2026/public/"]
 struct DashboardAssets;

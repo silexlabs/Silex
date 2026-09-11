@@ -10,13 +10,11 @@
 //! What the user reads about a publication
 //!
 //! The editor shows the message of a publication as HTML, so a sentence comes
-//! with the buttons that belong to it: where the build is, where the website is
-//! once something serves it. That is how the hosted version talks to the same
-//! dialog, and the buttons wear the classes the dialog already styles.
+//! with the buttons that belong to it, wearing the classes the dialog already
+//! styles.
 //!
-//! Everything that goes in comes from the host or from a path on this machine,
-//! so all of it is escaped: a repository is named by its owner, and a quote in
-//! a name would otherwise end an attribute early.
+//! Everything that goes in is escaped: a repository is named by its owner, and
+//! a quote in a name would end an attribute early.
 
 /// One button of a message
 pub struct Button<'a> {
@@ -46,10 +44,8 @@ impl<'a> Button<'a> {
 
 /// What the button opening the files of the website says
 ///
-/// Never the published website: these are the files the editor generated, the
-/// page generator runs on the host, and a website whose pages are named by its
-/// author may have no `index.html` among them. Opening this can show a list of
-/// files, which is what it promises.
+/// Never the published website: the page generator runs on the host, so these
+/// files may not even have an `index.html` among them.
 pub const FILES_ON_THIS_COMPUTER: &str = "See the files on this computer";
 
 /// A sentence to act on, and the buttons that go with it
@@ -59,8 +55,8 @@ pub fn told(sentence: &str, buttons: &[Button]) -> String {
 
 /// The same, with what somebody who wants to know more needs after it
 ///
-/// The first sentence is the one a user acts on and it is the one in bold; what
-/// follows explains it. Reading only the first line has to be enough.
+/// The first sentence is the one in bold, and reading only it has to be
+/// enough.
 pub fn explained(sentence: &str, more: &str, buttons: &[Button]) -> String {
     let mut written = format!("<p><strong>{}</strong></p>", escape(sentence));
     if !more.is_empty() {

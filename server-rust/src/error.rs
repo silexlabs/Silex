@@ -31,12 +31,12 @@ pub enum Error {
     #[error("Invalid input: {0}")]
     InvalidInput(String),
 
-    /// More was sent than the server accepts, in bytes (HTTP 413)
+    /// More was sent than the server accepts (HTTP 413)
     ///
-    /// Written for the person who hit it, like `Told`: the editor shows it as
-    /// it is, and "413" or "request body" would tell them nothing.
-    #[error("This is too large to save. Silex takes up to {} MB at a time. If you are adding a file, please use a smaller one.", .0 / 1024 / 1024)]
-    TooLarge(usize),
+    /// Only the middleware knows the limit, so only it names one. A handler
+    /// carries the status up to it and says nothing of the size.
+    #[error("This is too large to save.{}", .0.map(|limit| format!(" Silex takes up to {} MB at a time. If you are adding a file, please use a smaller one.", limit / 1024 / 1024)).unwrap_or_default())]
+    TooLarge(Option<usize>),
 
     /// The stored website is not usable as is (HTTP 500)
     #[error("Invalid website data: {0}")]
@@ -52,9 +52,8 @@ pub enum Error {
 
     /// Something the person editing has to know, in their own words (HTTP 500)
     ///
-    /// The editor shows the message of a failed request as it is written here,
-    /// so this one carries no prefix naming what went wrong technically: it is
-    /// written for the person reading it.
+    /// The editor shows it as it is written here, so no prefix names what went
+    /// wrong technically.
     #[error("{0}")]
     Told(String),
 }

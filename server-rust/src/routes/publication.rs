@@ -13,12 +13,11 @@
 //! - POST /api/publication/?websiteId=X - Publish the website
 //! - GET /api/publication/publication/status?jobId=X - Where that publication is
 //!
-//! The editor generates the files and sends them here. Writing them is quick;
-//! what a host application then does with them - sending them on, waiting for
-//! them to be built - is not, and an HTTP request held open
-//! for minutes is one a proxy or a laptop lid closes. So publishing answers a
-//! job straight away and the editor asks about it every couple of seconds,
-//! which is the contract it was written against on the hosted version.
+//! The editor generates the files and sends them here. Writing them is quick,
+//! sending them on and waiting for a build is not, and an HTTP request held
+//! open for minutes is one a proxy or a laptop lid closes. So publishing
+//! answers a job straight away and the editor asks about it every couple of
+//! seconds, which is the contract it was written against.
 //!
 //! The doubled path of the status route is not a mistake: the editor builds it
 //! out of `/publication` and `/publication/status`, and the hosted server
@@ -50,9 +49,8 @@ pub struct PublishQuery {
 
     /// The publication options, as JSON
     ///
-    /// The editor puts everything that is not a string in the query encoded
-    /// that way, so this arrives as text and is read once here. Absent when
-    /// the website has no option at all.
+    /// The editor encodes everything that is not a string that way. Absent
+    /// when the website has no option at all.
     #[serde(default)]
     pub options: Option<String>,
 }
@@ -60,9 +58,8 @@ pub struct PublishQuery {
 impl PublishQuery {
     /// What the editor sent with this publication
     ///
-    /// Options nobody could read are no options: publishing a website matters
-    /// more than the address it names, and what went wrong is said once in the
-    /// log rather than failing the whole request.
+    /// Options nobody could read are no options: publishing matters more than
+    /// the address, so it is logged rather than failing the request.
     fn options(&self) -> crate::actions::PublicationOptions {
         let Some(options) = self.options.as_deref() else {
             return Default::default();
@@ -112,9 +109,7 @@ pub struct PublishResponse {
     /// Where the website is served
     ///
     /// Always null here, and kept because `{ url, job }` is what the editor's
-    /// own type says and what the hosted server answers. Nothing serves the
-    /// files at the moment this leaves: where they end up, and whether they
-    /// ever do, is what the job says.
+    /// own type says. Where the files end up is what the job says.
     pub url: Option<String>,
     pub job: JobData,
 }
@@ -145,7 +140,7 @@ async fn publish_website(
             }
             (None, None) => {
                 return Err(Error::InvalidInput(format!(
-                    "File '{}' has neither content nor src",
+                    "Silex could not read the file '{}' of your website: it has nothing in it and points at nothing.",
                     file.path
                 )))
             }
@@ -159,9 +154,8 @@ async fn publish_website(
 
     publish::publish(&state.data_path, &query.website_id, &files).await?;
 
-    // The files are written, and that is the one thing that can be promised
-    // here. Whoever takes them further says the rest through the job, which
-    // the editor follows until an answer comes.
+    // The files are written, which is the one thing that can be promised
+    // here. Whoever takes them further says the rest through the job.
     let job = state
         .jobs
         .start(publishing_message(&state.data_path, &query.website_id));
@@ -178,9 +172,8 @@ async fn publish_website(
         // so that a slow push does not freeze the server
         tokio::task::spawn_blocking(move || {
             actions.deploy(website_id.as_str(), &options, &job);
-            // A host that has nothing to send the website to, or one that
-            // returned without saying how it went, leaves the publication
-            // where it really is rather than open forever
+            // A host that returned without saying how it went leaves the
+            // publication where it really is rather than open forever
             job.succeeded(published_message(&data_path, &website_id));
         });
     } else {
@@ -194,18 +187,13 @@ async fn publish_website(
 }
 
 /// What the user reads while nobody has said anything yet
-///
-/// The files are already on the disk at this point, so there is something to
-/// open rather than a wait in front of nothing.
 fn publishing_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
     told("Publishing your website", data_path, website_id)
 }
 
 /// What the user reads when the files are all there is to say
 ///
-/// Not a website that is online: nothing here sent it anywhere, and a website
-/// kept on this computer is a way of working rather than a publication that
-/// went wrong.
+/// Not a website that is online: nothing here sent it anywhere.
 fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> String {
     told(
         "Your website is written on this computer.",
@@ -216,12 +204,10 @@ fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> Str
 
 /// A sentence, and the one button this server can offer with it
 ///
-/// It opens the files the editor generated, not a website a page generator
-/// built out of them, and a site whose pages are named by its author may have
-/// no `index.html` among them. So it says files on this computer, and never
-/// the published website.
+/// It opens the files the editor generated, which may not even have an
+/// `index.html` among them, so it never says the published website.
 fn told(sentence: &str, data_path: &std::path::Path, website_id: &WebsiteId) -> String {
-    let files = crate::storage::published_files_url(data_path, website_id.as_str());
+    let files = crate::storage::published_files_url(data_path, website_id);
     crate::message::told(
         sentence,
         &[crate::message::Button::secondary(
@@ -238,9 +224,8 @@ async fn publication_status(
     State(state): State<AppState>,
     Query(query): Query<StatusQuery>,
 ) -> Result<Json<JobData>> {
-    // A publication nobody knows about is one this server never opened, or one
-    // it opened before being restarted. Either way the editor would ask about
-    // it forever, so it is told the publication is over and why.
+    // One this server never opened, or opened before being restarted. Either
+    // way the editor would ask about it forever.
     let job = state.jobs.read(&query.job_id).unwrap_or_else(|| JobData {
         job_id: query.job_id.clone(),
         status: JobStatus::Error,

@@ -19,35 +19,18 @@ use super::deploy::{silex_tag, Build, Deploy, EarlierBuild, Prepared, Urls};
 use super::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::remote::Remote;
 use super::run::run;
+use crate::held::held;
 
-/// A repository there runs on Forgejo whether or not the user signed in.
-/// Anywhere else, a login is what says so.
 const CODEBERG: &str = "codeberg.org";
 
-/// The domain Codeberg serves pages at, which the field starts from
-///
-/// Another Forgejo serves them somewhere else, and nothing says where: it is
-/// the one thing the user has to name.
 const CODEBERG_PAGES: &str = "codeberg.page";
-
-/// The key the pages domain is asked and kept under
 const PAGES_DOMAIN: &str = "pagesDomain";
-
-/// The key the label of the runner is asked and kept under
 const RUNNER_LABEL: &str = "runnerLabel";
 
-/// Codeberg names its runners itself, and a job asking for a label no runner
-/// has waits forever. Another instance names its own.
-///
-/// The smallest one: Codeberg lends these machines and asks for the label that
-/// matches what a job needs, no more. Building a website there took 45 seconds,
-/// download of the build tool included, against the two minutes this label
-/// allows. A website that outgrows it is a line to change in the workflow,
-/// which the marker at the top of that file explains how to take over.
+/// A job asking for a label no runner has waits forever
 const CODEBERG_RUNNER: &str = "codeberg-tiny";
 
-/// The repository a pages server serves at the root of the subdomain of its
-/// owner, rather than under a path of its own
+/// Served at the root of the subdomain of its owner, not under a path
 const PAGES_REPO: &str = "pages";
 
 const PIPELINE: &str = ".forgejo/workflows/pages.yml";
@@ -59,9 +42,6 @@ impl Deploy for Tea {
         "tea"
     }
 
-    /// The address of the website follows from the domain its pages are served
-    /// at, so that domain is what is asked. A domain of one's own follows from
-    /// nothing, so it is asked too, and left empty by the users who have none.
     fn options_form(&self, site: &Path) -> Option<OptionsForm> {
         let host = Remote::of(site).map(|remote| remote.host);
         Some(OptionsForm {
@@ -111,9 +91,8 @@ impl Deploy for Tea {
         if remote.host == CODEBERG {
             return true;
         }
-        // Forgejo is not one address: anywhere else, a login tea was given for
-        // that host is what says this is a Forgejo at all, and what keeps a
-        // GitLab or a sourcehut from being answered for here.
+        // Forgejo is not one address: a login for that host is what tells it
+        // from a GitLab or a sourcehut
         signed_in_to(&remote.host)
     }
 
@@ -136,9 +115,7 @@ impl Deploy for Tea {
                 "https://{}/{}/{}/actions",
                 remote.host, remote.owner, remote.repo
             )),
-            // The Units page rather than the settings landing page: Actions are
-            // off by default and it is there that they are turned on, which is
-            // the one thing that stops a website from being built.
+            // Actions are off by default and turned on there
             settings: Some(format!(
                 "https://{}/{}/{}/settings/units",
                 remote.host, remote.owner, remote.repo
@@ -169,11 +146,10 @@ impl Deploy for Tea {
         silex_server::tag(site, &tag)?;
         Ok(Prepared {
             tag: Some(tag),
-            // Forgejo does not say which push a run came from, so the run at
-            // the top of the list before this one is pushed is the mark to tell
-            // ours apart from the last publication's
+            // Forgejo does not say which push a run came from: the run on top
+            // before this push is the mark that tells ours from the last one
             before: match runs(cli, site) {
-                Ok(listed) => match newest_run(&listed) {
+                Ok(listed) => match listed.first().and_then(run_id) {
                     Some(run) => EarlierBuild::Run(run),
                     None => EarlierBuild::Nothing,
                 },
@@ -185,14 +161,8 @@ impl Deploy for Tea {
         })
     }
 
-    /// Forgejo lists the runs of the repository, newest first, and says nothing
-    /// about which push each came from: the one this publication started is
-    /// whichever is newer than the one that was on top before the push
     fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
         let remote = Remote::of(site);
-        // Asked of the forge rather than read out of an error message: whether
-        // a repository builds anything is a field it answers, and the sentence
-        // it writes when it does not is its own to change.
         if let Some(remote) = &remote {
             let repository = repository(cli, site, remote)?;
             if repository["has_actions"] == serde_json::Value::Bool(false) {
@@ -209,61 +179,38 @@ impl Deploy for Tea {
             }
         }
 
-        // Asked after the repository, which answers what is wrong when nothing
-        // builds at all
-        build_of(&prepared.before, prepared.tag.as_deref(), || {
-            runs(cli, site)
-        })
+        build_of(&prepared.before, || runs(cli, site))
     }
 }
 
-/// What the runs of the repository say of the publication that was pushed
+/// The build this publication started, among the runs of the repository
 ///
-/// The runs are only asked for once they can answer: without a mark to tell
-/// ours apart from the last publication's, no run here is this publication's
-/// and the user is sent to look rather than promised a website.
+/// Without a mark to tell ours from the last publication's, the runs are not
+/// even asked for: the user is sent to look rather than promised a website.
 fn build_of(
     before: &EarlierBuild,
-    tag: Option<&str>,
     runs: impl FnOnce() -> Result<Vec<serde_json::Value>, String>,
 ) -> Result<Build, String> {
     let mark = match before {
         EarlierBuild::CouldNotAsk => return Ok(Build::Unknown),
         EarlierBuild::Run(run) => Some(run.as_str()),
-        EarlierBuild::Nothing | EarlierBuild::NoNeedToKnow => None,
+        EarlierBuild::Nothing => None,
     };
 
     let listed = runs()?;
-
-    // The run of this publication is the one built from the tag it pushed.
-    // Taking the newest instead would call somebody else's push ours: a
-    // colleague publishing at the same minute, or a run the repository starts
-    // on a timer. Where nothing names what it was built from, the newest is
-    // all there is to go on, and the mark taken before the push is what keeps
-    // it from being an older one.
-    let ours = match tag {
-        Some(tag) if listed.iter().any(|run| started_from(run).is_some()) => {
-            listed.iter().find(|run| started_from(run) == Some(tag))
-        }
-        _ => listed.first(),
-    };
-    let Some(ours) = ours else {
+    let Some(ours) = listed.first() else {
         return Ok(Build::NotStarted);
     };
 
-    let Some(newest) = newest_run(&listed) else {
-        return Ok(Build::NotStarted);
-    };
-    if Some(newest.as_str()) == mark {
+    // Still the run that was on top before the push: this publication has not
+    // started building yet, and that one is the last publication's
+    if run_id(ours).as_deref() == mark {
         return Ok(Build::NotStarted);
     }
 
-    // No address for the run itself: Forgejo numbers a run inside its
-    // repository and the API answers a number of its own, so the user is
-    // taken to the list of runs, where theirs is the first
+    // No address for the run itself: Forgejo numbers it inside the repository
+    // and the API answers another number, so the user is sent to the list
     Ok(match ours["status"].as_str().unwrap_or_default() {
-        // Nobody has taken this build yet, which on a forge whose runners
-        // answer to another label is where it stays
         "waiting" => Build::Queued,
         "success" => Build::Built,
         "failure" | "cancelled" | "canceled" | "skipped" | "blocked" => Build::Failed {
@@ -275,22 +222,7 @@ fn build_of(
     })
 }
 
-/// The tag or branch a run was built from, under whichever name tea gives it
-///
-/// tea 0.15 lists seven fields of a run and leaves the ref, the branch and the
-/// commit of it empty, so a publication cannot be told apart by what it pushed.
-/// The names a later tea may answer are read here, and none of them being there
-/// is what sends the caller back to the newest run.
-fn started_from(run: &serde_json::Value) -> Option<&str> {
-    ["prettyref", "branch", "head_branch"]
-        .into_iter()
-        .find_map(|named| run[named].as_str().filter(|it| !it.is_empty()))
-}
-
-/// The runs of this repository, newest first, as tea answers them
-///
-/// A repository nothing ever built gets a sentence rather than an empty list,
-/// which is what a website being published for the first time answers.
+/// The runs of this repository, newest first
 fn runs(cli: &Path, site: &Path) -> Result<Vec<serde_json::Value>, String> {
     read_runs(&run(
         cli,
@@ -299,6 +231,7 @@ fn runs(cli: &Path, site: &Path) -> Result<Vec<serde_json::Value>, String> {
     )?)
 }
 
+/// A repository nothing ever built answers a sentence rather than an empty list
 fn read_runs(listed: &str) -> Result<Vec<serde_json::Value>, String> {
     if !listed.trim_start().starts_with('[') {
         return Ok(Vec::new());
@@ -306,39 +239,31 @@ fn read_runs(listed: &str) -> Result<Vec<serde_json::Value>, String> {
     serde_json::from_str(listed).map_err(|e| format!("Could not read the runs of tea: {}", e))
 }
 
-/// Which run was at the top of the list
-///
-/// Forgejo numbers a run, and answers that number as a number on some versions
-/// and as a string on others. Reading only one of the two shapes would have
-/// every build read as never started.
-fn newest_run(listed: &[serde_json::Value]) -> Option<String> {
-    match listed.first()?.get("id")? {
+/// The id comes back as a number on some Forgejo versions and as a string on
+/// others
+fn run_id(run: &serde_json::Value) -> Option<String> {
+    match run.get("id")? {
         serde_json::Value::String(id) => Some(id.clone()),
         serde_json::Value::Number(id) => Some(id.to_string()),
         _ => None,
     }
 }
 
-/// The domain the pages of this instance are served at
 fn pages_domain(options: &PublicationOptions) -> &str {
     options.named(PAGES_DOMAIN).unwrap_or(CODEBERG_PAGES)
 }
 
-/// The label the runners of this forge answer to, as the user named it
 fn runner_label(options: &PublicationOptions) -> &str {
     options.named(RUNNER_LABEL).unwrap_or(CODEBERG_RUNNER)
 }
 
 /// Where the workflow publishes to
 ///
-/// The address the user named, when they named one. Otherwise the one the
-/// pages server works out from the repository, which the forge fills in itself
-/// so that a repository being renamed does not stop it from publishing.
+/// Left to the forge when the user named no address, so that renaming the
+/// repository does not stop it from publishing.
 fn site_url(options: &PublicationOptions) -> String {
     match options.named(WEBSITE_URL) {
-        // The website is served under that address, so the trailing slash is
-        // part of it: without it the pages server is told about a file rather
-        // than about a site
+        // Without the trailing slash the pages server is told about a file
         Some(url) if url.ends_with('/') => url.to_string(),
         Some(url) => format!("{}/", url),
         None => format!(
@@ -348,12 +273,8 @@ fn site_url(options: &PublicationOptions) -> String {
     }
 }
 
-/// Where the website is served
-///
-/// A domain of one's own points wherever its owner made it point, so it wins
-/// over anything worked out here. Without one, git-pages serves a repository
-/// under the subdomain of its owner, except the repository named `pages`,
-/// which is the site of that owner and sits at the root of the subdomain.
+/// git-pages serves a repository under the subdomain of its owner, except the
+/// one named `pages`, which sits at the root of that subdomain.
 fn website_url(remote: &Remote, options: &PublicationOptions) -> String {
     if let Some(named) = options.named(WEBSITE_URL) {
         return named.to_string();
@@ -365,17 +286,11 @@ fn website_url(remote: &Remote, options: &PublicationOptions) -> String {
     format!("https://{}.{}/{}/", remote.owner, domain, remote.repo)
 }
 
-/// Whether the user signed in to that instance, read from the config of tea
 fn login_for(cli: &Path, site: &Path, host: &str) -> Result<Option<String>, String> {
-    // Asked again every ten seconds while a publication is followed, for an
-    // answer that is a file on this machine. Only a login that was found is
-    // kept: somebody signing in while Silex is open has to be seen.
+    // Asked again every ten seconds while a publication is followed. Only a
+    // login that was found is kept: signing in while Silex is open has to show.
     static KNOWN: Mutex<BTreeMap<String, String>> = Mutex::new(BTreeMap::new());
-    if let Some(login) = KNOWN
-        .lock()
-        .unwrap_or_else(|held| held.into_inner())
-        .get(host)
-    {
+    if let Some(login) = held(&KNOWN).get(host) {
         return Ok(Some(login.clone()));
     }
 
@@ -384,15 +299,11 @@ fn login_for(cli: &Path, site: &Path, host: &str) -> Result<Option<String>, Stri
         .map_err(|e| format!("Could not read the logins of tea: {}", e))?;
     let login = login_named(&logins, host);
     if let Some(login) = &login {
-        KNOWN
-            .lock()
-            .unwrap_or_else(|held| held.into_inner())
-            .insert(host.to_string(), login.clone());
+        held(&KNOWN).insert(host.to_string(), login.clone());
     }
     Ok(login)
 }
 
-/// The name tea gave the login it has on that host, among the ones it listed
 fn login_named(logins: &[serde_json::Value], host: &str) -> Option<String> {
     logins
         .iter()
@@ -408,18 +319,14 @@ fn login_named(logins: &[serde_json::Value], host: &str) -> Option<String> {
         .map(String::from)
 }
 
-/// Whether tea was given a login for that host
-///
-/// Read out of the file tea keeps rather than asked of the program: this
-/// answers whether a website is ours at all, a user waits behind it, and
-/// running a program for it costs a process at every save.
+/// Read from the file rather than asked of the program: this is answered at
+/// every save, and spawning a process there is felt.
 fn signed_in_to(host: &str) -> bool {
     config_file()
         .and_then(|file| std::fs::read_to_string(file).ok())
         .is_some_and(|config| names_the_host(&config, host))
 }
 
-/// Where tea keeps what it knows
 fn config_file() -> Option<PathBuf> {
     std::env::var_os("XDG_CONFIG_HOME")
         .map(PathBuf::from)
@@ -429,10 +336,7 @@ fn config_file() -> Option<PathBuf> {
         .find(|file| file.is_file())
 }
 
-/// Whether one of the logins of that file is for this host
-///
-/// Read line by line rather than parsed: this is the file of another program,
-/// and the two keys that name a host are the two this reads.
+/// Read line by line rather than parsed: it is the file of another program.
 fn names_the_host(config: &str, host: &str) -> bool {
     config.lines().any(|line| {
         let Some((key, value)) = line.split_once(':') else {
@@ -448,10 +352,8 @@ fn names_the_host(config: &str, host: &str) -> bool {
     })
 }
 
-/// What the forge says of the repository
-///
-/// Named to tea, because without a login it answers about whichever instance
-/// it fell back to rather than saying it could not tell.
+/// The login is named, because without one tea answers about whichever
+/// instance it fell back to.
 fn repository(cli: &Path, site: &Path, remote: &Remote) -> Result<serde_json::Value, String> {
     let Some(login) = login_for(cli, site, &remote.host)? else {
         return Err(format!("Not signed in to {}", remote.host));
@@ -474,7 +376,6 @@ fn repository(cli: &Path, site: &Path, remote: &Remote) -> Result<serde_json::Va
 mod tests {
     use super::*;
 
-    /// The options as the editor sends them, which is JSON
     fn answered(json: &str) -> PublicationOptions {
         serde_json::from_str(json).expect("options of a publication")
     }
@@ -486,15 +387,12 @@ mod tests {
             .replace("{runner}", runner_label(options))
     }
 
-    /// A forge whose runners answer to a label of their own still gets a
-    /// workflow that runs: the label is asked of the user, like the domain
     #[test]
     fn the_workflow_names_the_runner_the_user_said_they_have() {
         let mine = workflow(&answered(r#"{"runnerLabel": "ubuntu-latest"}"#));
         assert!(mine.contains("runs-on: ubuntu-latest"), "{}", mine);
 
-        // Codeberg is what most users publish to, so its label is what the
-        // form offers before anybody answers
+        // The label the form offers before anybody answers
         let untouched = workflow(&answered("{}"));
         assert!(
             untouched.contains("runs-on: codeberg-tiny"),
@@ -502,53 +400,20 @@ mod tests {
             untouched
         );
 
-        // A field the user emptied is nobody having answered, not a workflow
-        // that runs on nothing
+        // A field the user emptied is nobody having answered
         let cleared = workflow(&answered(r#"{"runnerLabel": "  "}"#));
         assert!(cleared.contains("runs-on: codeberg-tiny"), "{}", cleared);
     }
 
-    /// Somebody else pushing at the same minute must not be announced as this
-    /// publication going live
-    #[test]
-    fn the_build_of_this_publication_is_the_one_built_from_its_tag() {
-        let both = || {
-            Ok(vec![
-                serde_json::json!({"id": 9, "prettyref": "main", "status": "success"}),
-                serde_json::json!({"id": 8, "prettyref": "_silex_1", "status": "waiting"}),
-            ])
-        };
-
-        let ours = build_of(&EarlierBuild::Nothing, Some("_silex_1"), both).unwrap();
-        assert!(
-            matches!(ours, Build::Queued),
-            "took the newest run for ours"
-        );
-    }
-
-    /// tea answers a run without saying what it was built from, and a
-    /// publication followed by its tag alone would never find its own build
-    #[test]
-    fn a_run_that_says_nothing_of_its_tag_is_still_this_publication() {
-        let silent = || Ok(vec![serde_json::json!({"id": 8, "status": "waiting"})]);
-
-        let ours = build_of(&EarlierBuild::Nothing, Some("_silex_1"), silent).unwrap();
-        assert!(
-            matches!(ours, Build::Queued),
-            "a build was waiting and Silex said none had started"
-        );
-    }
-
-    /// A build nobody has taken says so, instead of passing for one that runs
     #[test]
     fn a_build_waiting_for_a_runner_is_not_a_build_that_started() {
-        let queued = build_of(&EarlierBuild::Nothing, None, || {
+        let queued = build_of(&EarlierBuild::Nothing, || {
             Ok(vec![serde_json::json!({"id": 1, "status": "waiting"})])
         })
         .unwrap();
         assert!(matches!(queued, Build::Queued));
 
-        let running = build_of(&EarlierBuild::Nothing, None, || {
+        let running = build_of(&EarlierBuild::Nothing, || {
             Ok(vec![serde_json::json!({"id": 1, "status": "running"})])
         })
         .unwrap();
@@ -557,15 +422,13 @@ mod tests {
 
     #[test]
     fn a_login_of_tea_is_read_from_its_file_without_running_it() {
-        // The shape tea writes: a list of logins, each naming its instance
         let config = "logins:\n- name: codeberg\n  url: https://codeberg.org\n  ssh_host: codeberg.org\n  user: alex\n  token: secret\n- name: forgejo-next\n  url: https://v15.next.forgejo.org\n  ssh_host: v15.next.forgejo.org:2150\n  user: alex\n  token: secret\n";
         assert!(names_the_host(config, "codeberg.org"));
         // An instance answering ssh on a port of its own is the same host
         assert!(names_the_host(config, "v15.next.forgejo.org"));
         assert!(!names_the_host(config, "gitlab.com"));
         assert!(!names_the_host(config, "git.sr.ht"));
-        // A host named inside a value that is not one of the two keys says
-        // nothing about a login
+        // A host named under another key is not a login
         assert!(!names_the_host(
             "logins:\n- name: github.com\n  url: https://codeberg.org\n",
             "github.com"
@@ -575,8 +438,7 @@ mod tests {
 
     #[test]
     fn a_repository_nothing_ever_built_has_no_runs_rather_than_an_error() {
-        // What tea answers on the first publication of a website, where the
-        // list of runs it was asked for is a sentence and not a list
+        // What tea answers on the first publication of a website
         assert_eq!(read_runs("No workflow runs found").unwrap().len(), 0);
         assert_eq!(read_runs("").unwrap().len(), 0);
         assert_eq!(read_runs("[]").unwrap().len(), 0);
@@ -592,8 +454,7 @@ mod tests {
     #[test]
     fn the_workflow_leaves_the_repository_to_the_forge() {
         let workflow = workflow(&answered("{}"));
-        // Neither the owner nor the repository name comes from us: the forge
-        // fills both, so a repository that is renamed keeps publishing
+        // The forge fills both, so a renamed repository keeps publishing
         assert!(
             workflow.contains(
                 "site: https://${{ forge.repository_owner }}.codeberg.page/${{ forge.event.repository.name }}/"
@@ -623,8 +484,7 @@ mod tests {
             "only a Silex tag publishes: {}",
             workflow
         );
-        // Every placeholder of ours is filled: once what the forge reads
-        // itself is taken out, no brace is left
+        // Every placeholder of ours is filled
         let ours = workflow.replace("${{", "").replace("}}", "");
         assert!(!ours.contains('{'), "a placeholder was left: {}", ours);
     }
@@ -637,15 +497,14 @@ mod tests {
             "{}",
             elsewhere
         );
-        // Worked out by the forge from the domain it was given, so that a
-        // repository being renamed keeps publishing
+        // Worked out by the forge from the domain it was given
         assert!(
             elsewhere.contains("${{ forge.repository_owner }}.pages.example.org/"),
             "{}",
             elsewhere
         );
 
-        // Nobody named one: Codeberg, which is what the field starts from
+        // Nobody named one: the default
         let untouched = workflow(&answered(r#"{"pagesDomain":"   "}"#));
         assert!(untouched.contains("server: codeberg.page"), "{}", untouched);
     }
@@ -658,8 +517,7 @@ mod tests {
         // An empty field is nobody having named one either
         assert!(site_url(r#"{"websiteUrl":"  "}"#).contains("${{ forge.repository_owner }}"));
 
-        // The website is served under that address, so it ends on a slash
-        // whether or not the user typed one
+        // Ends on a slash whether or not the user typed one
         assert_eq!(
             site_url(r#"{"websiteUrl":"https://blog.example.com"}"#),
             "https://blog.example.com/"
@@ -675,8 +533,7 @@ mod tests {
             "{}",
             named
         );
-        // The pages server still has to be named, or the certificate is never
-        // asked for
+        // The pages server still has to be named, or no certificate is asked for
         assert!(named.contains("server: codeberg.page"), "{}", named);
     }
 
@@ -690,8 +547,7 @@ mod tests {
             served("git@codeberg.org:alex/mysite.git", "{}"),
             "https://alex.codeberg.page/mysite/"
         );
-        // A repository named `pages` is the site of its owner, served at the
-        // root of their subdomain and not under a path of its own
+        // A repository named `pages` sits at the root of the subdomain
         assert_eq!(
             served("git@codeberg.org:alex/pages.git", "{}"),
             "https://alex.codeberg.page/"
@@ -727,13 +583,12 @@ mod tests {
             login_named(&logins, "codeberg.org").as_deref(),
             Some("codeberg")
         );
-        // Any Forgejo the user signed in to, and not Codeberg alone: it is this
-        // login that says a repository elsewhere is one of ours
+        // Any Forgejo the user signed in to, not Codeberg alone
         assert_eq!(
             login_named(&logins, "v15.next.forgejo.org").as_deref(),
             Some("forgejo-next")
         );
-        // And nothing for a host another integration answers for
+        // Nothing for a host another integration answers for
         assert_eq!(login_named(&logins, "gitlab.com"), None);
         assert_eq!(login_named(&logins, "git.sr.ht"), None);
     }
@@ -742,48 +597,35 @@ mod tests {
     fn a_publication_whose_earlier_runs_could_not_be_read_is_never_called_built() {
         let successful = || Ok(serde_json::from_str(r#"[{"id":842,"status":"success"}]"#).unwrap());
 
-        // That run finished, but nothing says it is not the last
-        // publication's: calling it built would tell the user their website is
-        // online when nothing of theirs was ever built
-        let unread = build_of(&EarlierBuild::CouldNotAsk, None, || {
+        // That run finished, but nothing says it is not the last publication's
+        let unread = build_of(&EarlierBuild::CouldNotAsk, || {
             panic!("the runs tell nothing apart here, so they are not asked")
         });
         assert!(matches!(unread.unwrap(), Build::Unknown));
 
         // The same run, known to be newer than what was there, and then known
         // to be what was there
-        let ours = build_of(&EarlierBuild::Run("841".to_string()), None, successful);
+        let ours = build_of(&EarlierBuild::Run("841".to_string()), successful);
         assert!(matches!(ours.unwrap(), Build::Built));
-        let theirs = build_of(&EarlierBuild::Run("842".to_string()), None, successful);
+        let theirs = build_of(&EarlierBuild::Run("842".to_string()), successful);
         assert!(matches!(theirs.unwrap(), Build::NotStarted));
 
-        let first = build_of(&EarlierBuild::Nothing, None, successful);
+        let first = build_of(&EarlierBuild::Nothing, successful);
         assert!(matches!(first.unwrap(), Build::Built));
         assert!(matches!(
-            build_of(&EarlierBuild::Nothing, None, || Ok(Vec::new())).unwrap(),
+            build_of(&EarlierBuild::Nothing, || Ok(Vec::new())).unwrap(),
             Build::NotStarted
         ));
     }
 
     #[test]
     fn a_run_forgejo_answered_as_a_number_is_read_all_the_same() {
-        let listed = |json: &str| -> Vec<serde_json::Value> { serde_json::from_str(json).unwrap() };
-        // Reading the string alone would have build() answer "not started" for
-        // a build that ran, right up to the timeout
+        let run = |json: &str| -> serde_json::Value { serde_json::from_str(json).unwrap() };
         assert_eq!(
-            newest_run(&listed(r#"[{"id":842,"status":"success"}]"#)).as_deref(),
+            run_id(&run(r#"{"id":842,"status":"success"}"#)).as_deref(),
             Some("842")
         );
-        assert_eq!(
-            newest_run(&listed(r#"[{"id":"842"}]"#)).as_deref(),
-            Some("842")
-        );
-        // The newest is the one at the top, as tea lists them
-        assert_eq!(
-            newest_run(&listed(r#"[{"id":842},{"id":841}]"#)).as_deref(),
-            Some("842")
-        );
-        assert_eq!(newest_run(&listed(r#"[{"status":"success"}]"#)), None);
-        assert_eq!(newest_run(&[]), None);
+        assert_eq!(run_id(&run(r#"{"id":"842"}"#)).as_deref(), Some("842"));
+        assert_eq!(run_id(&run(r#"{"status":"success"}"#)), None);
     }
 }

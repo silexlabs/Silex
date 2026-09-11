@@ -17,6 +17,7 @@ mod actions;
 mod config;
 mod error;
 pub mod frontend;
+mod held;
 mod history;
 mod jobs;
 pub mod message;
@@ -32,6 +33,7 @@ pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOption
 pub use config::{Config, PORT};
 pub use history::{tag, untag, version, Versioned};
 pub use jobs::{Job, JobData, JobStatus, Jobs};
+pub use models::WebsiteId;
 pub use storage::published_files_url;
 
 /// Build the application router, ready to be served

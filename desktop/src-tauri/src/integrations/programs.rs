@@ -8,8 +8,6 @@
  */
 
 //! Where the programs of this machine are
-//!
-//! Knows nothing of what a program is for.
 
 use std::path::PathBuf;
 
@@ -17,13 +15,9 @@ use super::run;
 
 /// Every place this program could be, the likeliest first
 ///
-/// Where a program is, looked for the way a user would expect
-///
 /// An app started from a desktop launcher does not get the PATH of a shell, so
-/// finding nothing in it proves nothing: a `glab` installed by Homebrew lives
-/// in a folder such an app never hears about. The shell is asked only when the
-/// PATH answered nothing, because asking it costs half a second of somebody
-/// else's startup files, and having the program in the PATH is the common case.
+/// finding nothing in it proves nothing. The shell is asked only then, because
+/// asking it costs half a second of somebody else's startup files.
 pub(crate) fn found(name: &str) -> Option<PathBuf> {
     let a_file = |path: PathBuf| path.is_file().then_some(path);
 
@@ -41,14 +35,12 @@ pub(crate) fn found(name: &str) -> Option<PathBuf> {
 /// The folders the shell of the user puts in its PATH
 ///
 /// A program installed by nvm, volta, fnm, asdf or mise lives in a folder only
-/// their shell knows about, and an app started from a desktop launcher never
-/// hears of it. Asking the shell is one question, where guessing is a list of
-/// folders that is never finished.
+/// their shell knows about. Asking is one question, where guessing is a list
+/// that is never finished.
 #[cfg(not(target_os = "windows"))]
 fn login_shell_path() -> Vec<PathBuf> {
-    // Starting a login shell runs every startup file the user has, which is
-    // half a second of somebody else's configuration. The answer is the same
-    // all session long.
+    // Starting a login shell runs every startup file the user has, and the
+    // answer is the same all session long
     static ASKED: std::sync::OnceLock<Vec<PathBuf>> = std::sync::OnceLock::new();
     ASKED.get_or_init(ask_the_login_shell).clone()
 }
@@ -66,9 +58,8 @@ fn ask_the_login_shell() -> Vec<PathBuf> {
         return Vec::new();
     }
 
-    // -l so that it reads the files a version manager is set up in, -i because
-    // most of them are set up in the interactive ones. Reading nothing back is
-    // an answer like any other: the folders below are still looked at.
+    // -l so that it reads the files a version manager is set up in, -i
+    // because most of them are set up in the interactive ones
     let asked = format!("echo {}$PATH", MARKER);
     let Ok(said) = run::run(&shell, &std::env::temp_dir(), &["-lic", &asked]) else {
         return Vec::new();
@@ -96,25 +87,23 @@ fn known_paths(name: &str) -> Vec<PathBuf> {
     let mut installs = Vec::new();
 
     // Read the folder rather than hard coding C:\Program Files: it is
-    // translated on some installs, and can live on another drive
+    // translated on some installs
     for variable in ["ProgramFiles", "ProgramFiles(x86)"] {
         if let Some(folder) = std::env::var_os(variable) {
             installs.push(PathBuf::from(folder));
         }
     }
-    // What an installer does when installing "for me only", which is what
-    // happens without administrator rights
+    // Where an installer puts a program installed "for me only"
     if let Some(folder) = std::env::var_os("LOCALAPPDATA") {
         installs.push(PathBuf::from(folder).join("Programs"));
     }
 
-    // An installer writes an .exe, npm and scoop write a .cmd shim, and some
-    // write a .bat. Looking for the .exe alone misses most of what a user
-    // installs themselves.
+    // npm and scoop write a .cmd shim and some write a .bat, so the .exe
+    // alone misses most of what a user installs themselves
     installs
         .iter()
-        // Git puts in cmd the programs meant to be called from the outside and
-        // in bin the bare ones; both exist, and which one is there varies
+        // Git puts in cmd what is meant to be called from the outside and in
+        // bin the bare ones; which one is there varies
         .flat_map(|install| {
             [
                 install.join(name).join("cmd"),
@@ -141,8 +130,7 @@ fn known_paths(name: &str) -> Vec<PathBuf> {
         "/opt/homebrew/bin",
         "/opt/homebrew/sbin",
         "/opt/local/bin",
-        // Where Ubuntu puts what it installs as a snap, which is how glab
-        // itself is distributed there
+        // Where Ubuntu puts a snap, which is how glab is distributed there
         "/snap/bin",
         // Flatpak, installed for everybody
         "/var/lib/flatpak/exports/bin",
