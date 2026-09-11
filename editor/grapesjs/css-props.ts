@@ -445,7 +445,7 @@ export default (editor: Editor, opts) => {
         { id: 'left', label: 'left' },
         { id: 'center', label: 'center' },
         { id: 'right', label: 'right' },
-        { id: 'justified', label: 'justified' },
+        { id: 'justify', label: 'justify' },
         { id: 'inherit', label: 'inherit' },
         { id: 'initial', label: 'initial' },
         { id: 'unset', label: 'unset' },
