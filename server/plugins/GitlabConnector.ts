@@ -1114,11 +1114,11 @@ export default class GitlabConnector implements StorageConnector {
     }
   }
 
-  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback, removeUnlisted = false): Promise<void> {
+  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback, removeUnlisted = false, preloadedFiles?: Map<string, string>): Promise<void> {
     status && await status({ message: `Preparing ${files.length} files`, status: JobStatus.IN_PROGRESS })
 
     // List all the files in assets folder
-    const existingFiles = await this.ls({
+    const existingFiles = preloadedFiles ?? await this.ls({
       session,
       websiteId,
       recursive: true,
