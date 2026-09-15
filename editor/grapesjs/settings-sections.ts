@@ -1,10 +1,12 @@
 import {live} from 'lit-html/directives/live.js'
 import {html, TemplateResult, nothing} from 'lit-html'
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 import { WebsiteMeta, WebsiteSettings } from '~/common/types'
 import { websiteMetaRead } from '../api' // Adjust as needed
 import { ClientConfig, config } from '..'
 import { Editor } from 'grapesjs'
 import { cmdRenderSection } from './settings'
+import { getAvailableLocales, LOCALE_STORAGE_KEY, resolveLocale, t } from '../src/i18n'
 
 // ID of the code editor wrapper
 export const idCodeWrapper = 'settings-head-wrapper'
@@ -47,6 +49,19 @@ export const defaultSections: SettingsSection[] = [{
             <h3>Page name</h3>
             <p class="silex-help">Label of the page in the editor, and file name of the published HTML page.</p>
             <input type="text" name="name" .value=${live(model.get('name') || '')}/>
+          </label>
+          ` : nothing }
+        ${isSite(model) ? html`
+          <label class="silex-form__element">
+            <h3>Editor language</h3>
+            <p class="silex-help">Language of the Silex editor interface. This does not affect the published website's language.</p>
+            <select @change=${(e: Event) => {
+    const locale = resolveLocale((e.target as HTMLSelectElement).value, getAvailableLocales())
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+    config.getEditor().I18n.setLocale(locale)
+  }}>
+              ${getAvailableLocales().map(locale => html`<option value=${locale} ?selected=${locale === config.getEditor().I18n.getLocale()}>${locale}</option>`)}
+            </select>
           </label>
           ` : nothing }
       </div>
@@ -225,9 +240,7 @@ export const defaultSections: SettingsSection[] = [{
   render: (settings, model) => html`
     <div id="settings-social" class="silex-hideable silex-hidden">
       <div class="silex-help">
-        <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
-        <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>,
-        <a target="_blank" href="https://www.linkedin.com/post-inspector/inspect/">Linkedin</a></p>
+        ${unsafeHTML(t(config.getEditor(), '<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>, <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>, <a target="_blank" href="https://www.linkedin.com/post-inspector/inspect/">Linkedin</a></p>'))}
       </div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">

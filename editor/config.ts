@@ -17,7 +17,7 @@
 
 import { Config } from '~/common/silex-plugins'
 import { getEditor, getEditorConfig } from './grapesjs'
-import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID, SILEX_VERSION } from '~/common/constants'
+import { CLIENT_CONFIG_FILE_NAME, DEFAULT_WEBSITE_ID, SILEX_VERSION } from '~/common/constants'
 import { ConnectorId, WebsiteId } from '~/common/types'
 import { Editor, EditorConfig, Page } from 'grapesjs'
 import { PublicationTransformer, publicationTransformerDefault, validatePublicationTransformer } from './publication-transformers'
@@ -25,6 +25,7 @@ import * as api from './api'
 import { assetsPublicationTransformer } from './assetUrl'
 import { SettingsSection } from './grapesjs/settings-sections'
 import { addSection, removeSection } from './grapesjs/settings'
+import { getAvailableLocales, LOCALE_STORAGE_KEY, resolveLocale } from './src/i18n'
 
 // Plugins
 import publishCustomCodeBlock from './publish-custom-code-block'
@@ -52,8 +53,13 @@ export class ClientConfig extends Config {
 
   /**
    * language for I18n module
+   * Falls back to the browser language, then to the source locale (en-US),
+   * resolved against the locale files actually shipped (see editor/src/i18n).
    */
-  lang = new URL(location.href).searchParams.get('lang') ?? DEFAULT_LANGUAGE
+  lang = resolveLocale(
+    new URL(location.href).searchParams.get('lang') ?? localStorage.getItem(LOCALE_STORAGE_KEY) ?? navigator.language,
+    getAvailableLocales(),
+  )
 
   /**
    * root url of Silex app
