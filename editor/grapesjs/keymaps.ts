@@ -28,19 +28,21 @@ function resetPanel(editor: Editor): void {
 }
 
 /**
- * Escapes the current context in this order : modal, Publish dialog, left panel.
+ * Escapes the current context in this order : preview mode, modal, Publish dialog, left panel.
  * If none of these are open, it selects the body.
  * @param editor The editor.
  */
 function escapeContext(editor: Editor): void {
-  const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
-  const projectBarPanel = editor.Panels.getPanel('project-bar-panel')
+  const publishDialog = (editor as PublishableEditor).PublicationManager?.dialog
+  const projectBarPanel = editor.Panels?.getPanel('project-bar-panel')
 
-  if (editor.Modal.isOpen()) {
+  if (editor.Commands.isActive('preview')) {
+    editor.stopCommand('preview')
+  } else if (editor.Modal?.isOpen()) {
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
-  } else if (projectBarPanel.buttons.some(b => b.get('active'))) {
+  } else if (projectBarPanel?.buttons?.some(b => b.get('active'))) {
     resetPanel(editor)
   } else {
     selectBody(editor)
@@ -49,7 +51,7 @@ function escapeContext(editor: Editor): void {
 
 function whenNoFocus(editor: Editor, cbk: () => void): void {
   if(editor.getEditing()) return
-  if(editor.Modal.isOpen()) return
+  if(editor.Modal?.isOpen()) return
   const target = document.activeElement as HTMLElement | null
   if (target && target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') return
   if (target && isTextOrInputField(target)) return
@@ -192,8 +194,8 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
   document.addEventListener('keydown', event => {
     if (event.key.toLowerCase() === defaultKms.kmClosePanel.keys) {
       const target = event.target as HTMLElement | null
-      if(editor.getEditing()) return // Close the rich text edition
-      if(editor.Modal.isOpen()) {
+      if (editor.getEditing()) return // Close the rich text edition
+      if (editor.Modal?.isOpen()) {
         editor.Modal.close()
       } else if (target) { // If target exists...
         if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') { // If it's a submit button...
