@@ -37,7 +37,7 @@ const tagCategories = [
   },
   {
     label: 'Content grouping',
-    tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE'],
+    tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE', 'TIME'],
   },
   {
     label: 'Lists',
@@ -51,6 +51,24 @@ const tagCategories = [
 
 // Flatten all tags for lookup
 const tags = tagCategories.flatMap(cat => cat.tags)
+
+// Tag-specific attribute traits
+const conditionalTraits = [
+  {
+    attrName: 'for',
+    tagName: 'LABEL',
+    label: 'For',
+    type: 'for-trait',
+    placeholder: 'ID of input',
+  },
+  {
+    attrName: 'datetime',
+    tagName: 'TIME',
+    label: 'Datetime',
+    type: 'datetime-trait',
+    placeholder: 'YYYY-MM-DD or date/time string',
+  },
+]
 
 // plugin code
 export const semanticPlugin = (editor, opts) => {
@@ -70,12 +88,12 @@ export const semanticPlugin = (editor, opts) => {
       type: 'tag-name',
       name: 'tag-name',
     },
-    {
-      label: 'For',
-      name: 'for',
-      type: 'for-trait',
-      placeholder: 'ID of input',
-    }
+    ...conditionalTraits.map(t => ({
+      label: t.label,
+      name: t.attrName,
+      type: t.type,
+      placeholder: t.placeholder,
+    })),
   ]
 
   // Add the extra traits to all component types
@@ -89,104 +107,102 @@ export const semanticPlugin = (editor, opts) => {
     })
   })
 
-  // Shared render function for select and for-trait
-  function renderTrait(el: HTMLElement, opts: {
-    tagName?: string,
-    forAttr?: string,
-    type: 'tag' | 'for'
-  }) {
+  // Render tag select
+  function renderTagSelect(el: HTMLElement, opts: { tagName?: string }) {
     const tagName = (opts.tagName || '').toUpperCase()
-    if (opts.type === 'tag') {
-      // Render tag select
-      let categoriesWithCurrent = tagCategories.map(cat => ({
-        ...cat,
-        tags: cat.tags.slice(),
-      }))
-      if (tagName && !tags.includes(tagName)) {
-        categoriesWithCurrent = [
-          ...categoriesWithCurrent,
-          { label: 'Other', tags: [tagName] }
-        ]
-      }
-      render(html`
-        <select @change=${event => renderTrait(el, { tagName: event.target.value, type: 'tag' })}>
-          ${map(categoriesWithCurrent, cat => html`
-            <optgroup label="${cat.label}">
-              ${map(cat.tags, tag => html`
-                <option value="${tag}" ?selected=${tagName === tag}>${tag}</option>
-              `)}
-            </optgroup>
-          `)}
-        </select>
-      `, el)
-    } else if (opts.type === 'for') {
-      // Render "for" input, hide if not LABEL
-      const wrapper = el.closest('.gjs-trt-trait__wrp-for') as HTMLElement
-      if (tagName !== 'LABEL') {
-        if(wrapper) wrapper.style.display = 'none'
-        render(html``, el)
-      } else {
-        if(wrapper) wrapper.style.display = 'initial'
-        render(html`
-          <input type="text" placeholder="ID of input" value="${opts.forAttr || ''}"
-            @input=${event => renderTrait(el, { forAttr: (event.target as HTMLInputElement).value, tagName, type: 'for' })}
-          >
-        `, el)
-      }
+    let categoriesWithCurrent = tagCategories.map(cat => ({
+      ...cat,
+      tags: cat.tags.slice(),
+    }))
+    if (tagName && !tags.includes(tagName)) {
+      categoriesWithCurrent = [
+        ...categoriesWithCurrent,
+        { label: 'Other', tags: [tagName] }
+      ]
     }
+    render(html`
+      <select @change=${(event: Event) => renderTagSelect(el, { tagName: (event.target as HTMLSelectElement).value })}>
+        ${map(categoriesWithCurrent, cat => html`
+          <optgroup label="${cat.label}">
+            ${map(cat.tags, tag => html`
+              <option value="${tag}" ?selected=${tagName === tag}>${tag}</option>
+            `)}
+          </optgroup>
+        `)}
+      </select>
+    `, el)
   }
 
-  function doRenderCurrent(el: HTMLElement) {
-    renderTrait(el, { tagName: editor.getSelected()?.get('tagName') || '', type: 'tag' })
-  }
-  function doRenderCurrentFor(el: HTMLElement) {
-    const selected = editor.getSelected()
-    renderTrait(el, {
-      tagName: selected?.get('tagName') || '',
-      forAttr: selected?.getAttributes().for || '',
-      type: 'for'
-    })
+  function doRenderCurrentTag(el: HTMLElement) {
+    renderTagSelect(el, { tagName: editor.getSelected()?.get('tagName') || '' })
   }
 
-  // Add semantic traits
-  // inspired by https://github.com/olivmonnier/grapesjs-plugin-header/blob/master/src/components.js
+  // Add tag-name trait
   editor.TraitManager.addType('tag-name', {
-    createInput({ trait, component }) {
+    createInput() {
       const el = document.createElement('div')
-      editor.on('page', () => doRenderCurrent(el))
-      doRenderCurrent(el)
+      editor.on('page', () => doRenderCurrentTag(el))
+      doRenderCurrentTag(el)
       return el
     },
-    onEvent({ elInput, component, event }) {
+    onEvent({ component, event }) {
       const value = (event.target as HTMLSelectElement).value
-      if(component.get('tagName').toUpperCase() !== value.toUpperCase()){
+      if (component.get('tagName').toUpperCase() !== value.toUpperCase()) {
         component.set('tagName', value)
       }
     },
     onUpdate({ elInput, component }) {
       const tagName = component.get('tagName')
-      renderTrait(elInput, { tagName, type: 'tag' })
+      renderTagSelect(elInput, { tagName })
     },
   })
 
-  editor.TraitManager.addType('for-trait', {
-    createInput({ trait, component }) {
-      const el = document.createElement('div')
-      editor.on('page', () => doRenderCurrentFor(el))
-      editor.on('component:update', () => doRenderCurrentFor(el))
-      doRenderCurrentFor(el)
-      return el
-    },
-    onEvent({ elInput, component, event }) {
-      const value = (event.target as HTMLInputElement).value
-      if(component.getAttributes().for !== value){
-        component.setAttributes({ for: value })
+  // Register all conditional tag-specific attribute traits
+  conditionalTraits.forEach(traitDef => {
+    const { attrName, tagName: targetTag, type, placeholder } = traitDef
+
+    function renderInput(el: HTMLElement, opts: { tagName?: string; attrVal?: string }) {
+      const tagName = (opts.tagName || '').toUpperCase()
+      const wrapper = el.closest(`.gjs-trt-trait__wrp-${attrName}`) as HTMLElement
+      if (tagName !== targetTag) {
+        if (wrapper) wrapper.style.display = 'none'
+        render(html``, el)
+      } else {
+        if (wrapper) wrapper.style.display = 'initial'
+        render(html`
+          <input type="text" placeholder="${placeholder}" value="${opts.attrVal || ''}"
+            @input=${(event: Event) => renderInput(el, { attrVal: (event.target as HTMLInputElement).value, tagName })}
+          >
+        `, el)
       }
-    },
-    onUpdate({ elInput, component }) {
-      const forAttr = component.getAttributes().for || ''
-      const tagName = component.get('tagName') || ''
-      renderTrait(elInput, { forAttr, tagName, type: 'for' })
-    },
+    }
+
+    function doRender(el: HTMLElement) {
+      const selected = editor.getSelected()
+      renderInput(el, {
+        tagName: selected?.get('tagName') || '',
+        attrVal: selected?.getAttributes()[attrName] || '',
+      })
+    }
+
+    editor.TraitManager.addType(type, {
+      createInput() {
+        const el = document.createElement('div')
+        editor.on('page component:update', () => doRender(el))
+        doRender(el)
+        return el
+      },
+      onEvent({ component, event }) {
+        const value = (event.target as HTMLInputElement).value
+        if (component.getAttributes()[attrName] !== value) {
+          component.setAttributes({ [attrName]: value })
+        }
+      },
+      onUpdate({ elInput, component }) {
+        const attrVal = component.getAttributes()[attrName] || ''
+        const tagName = component.get('tagName') || ''
+        renderInput(elInput, { attrVal, tagName })
+      },
+    })
   })
 }
