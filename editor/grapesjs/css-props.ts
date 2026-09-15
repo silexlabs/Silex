@@ -191,13 +191,12 @@ export default (editor: Editor, opts) => {
 
           requestAnimationFrame(() => {
             try {
-              const state = editor.StyleManager
+              // GrapesJS only fills `state` when the selector is made of classes only,
+              // so a tag or a compound selector (div:before, p.foo:before) leaves it empty
+              const selector = editor.StyleManager
                 .getSelected()
-                ?.get('state')
-              if (state && ['before', 'after'].includes(state)) {
-                return resolve(true)
-              }
-              return resolve(false)
+                ?.getSelectorsString() ?? ''
+              return resolve(/::?(before|after)\b/.test(selector))
             } catch(e) {
               reject(e)
             }
