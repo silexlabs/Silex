@@ -106,7 +106,6 @@
     "@fontsource/ubuntu": "^5.2.8",
     "@fortawesome/fontawesome-free": "7.3.0",
     "@types/archiver": "^8.0.0",
-    "adm-zip": "0.5.18",
     "archiver": "^8.0.0",
     "basic-ftp": "^6.0.1",
     "body-parser": "2.3.0",
@@ -132,7 +131,6 @@
     "grapesjs-style-bg": "^2.0.2",
     "grapesjs-style-border": "1.0.4",
     "grapesjs-style-filter": "^1.0.2",
-    "html-minifier": "^4.0.0",
     "lit": "^3.3.3",
     "lit-html": "3.3.3",
     "locale": "0.1.0",
@@ -140,7 +138,6 @@
     "node-fetch": "3.3.2",
     "node_modules-path": "2.4.0",
     "normalize.css": "8.0.1",
-    "npm-run-all": "^4.1.5",
     "object-path": "0.11.8",
     "sass": "1.101.0",
     "serve-static": "2.2.1",
@@ -166,6 +163,7 @@
     "livereload": "0.10.3",
     "mini-css-extract-plugin": "^2.10.2",
     "nodemon": "3.1.14",
+    "npm-run-all": "^4.1.5",
     "npm-watch": "0.13.0",
     "sass-loader": "^17.0.0",
     "terser-webpack-plugin": "^5.6.1",
@@ -176,5 +174,11 @@
     "webpack": "5.108.2",
     "webpack-cli": "7.1.0"
   },
-  "packageManager": "pnpm@10.34.4"
+  "packageManager": "pnpm@10.34.4",
+  "pnpm": {
+    "overrides": {
+      "brace-expansion@>=4.0.0 <5.0.9": ">=5.0.9",
+      "underscore@<1.13.8": ">=1.13.8"
+    }
+  }
 }
