@@ -31,55 +31,6 @@ mod integrations;
 mod mcp;
 
 // ==================
-// Telemetry consent
-// ==================
-
-fn telemetry_consent_path(data_dir: &PathBuf) -> PathBuf {
-    data_dir.join("telemetry_consent")
-}
-
-/// Returns Some(true) if opted in, Some(false) if opted out, None if never asked.
-fn read_telemetry_consent(data_dir: &PathBuf) -> Option<bool> {
-    std::fs::read_to_string(telemetry_consent_path(data_dir))
-        .ok()
-        .map(|s| s.trim() == "true")
-}
-
-fn write_telemetry_consent(data_dir: &PathBuf, accepted: bool) {
-    let _ = std::fs::create_dir_all(data_dir);
-    let _ = std::fs::write(
-        telemetry_consent_path(data_dir),
-        if accepted { "true" } else { "false" },
-    );
-}
-
-/// Prompt the user for telemetry consent (non-blocking, saves result for next launch).
-fn prompt_telemetry_consent(app: &tauri::AppHandle, data_dir: PathBuf) {
-    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
-
-    app.dialog()
-        .message(
-            "Help improve Silex by sending anonymous crash reports and basic usage data?\n\n\
-             No personal data or website content is ever collected.\n\
-             You can change this later in Settings.",
-        )
-        .title("Telemetry")
-        .kind(MessageDialogKind::Info)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            "Yes, help improve Silex".into(),
-            "No thanks".into(),
-        ))
-        .show(move |accepted| {
-            write_telemetry_consent(&data_dir, accepted);
-            if accepted {
-                tracing::info!("Telemetry opted in");
-            } else {
-                tracing::info!("Telemetry opted out");
-            }
-        });
-}
-
-// ==================
 // App State
 // ==================
 
@@ -231,11 +182,7 @@ struct TelemetryContext {
 
 #[tauri::command]
 fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
-    // Only expose telemetry config to the frontend if the user has opted in
     let data_dir = dirs::data_dir()?.join("org.silex.desktop");
-    if read_telemetry_consent(&data_dir) != Some(true) {
-        return None;
-    }
     let dsn = glitchtip_dsn(app.path().resource_dir().ok())?;
     let version = app.package_info().version.to_string();
     Some(TelemetryContext {
@@ -410,6 +357,18 @@ async fn start_server(
 
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load(&app_data_dir);
+
+    // Names as a tag, versions beside them: a version string as a tag would make
+    // an indexed value of its own out of every machine
+    sentry::configure_scope(|scope| {
+        let names: Vec<&str> = integrations.at_hand().map(|(id, _)| id).collect();
+        scope.set_tag("integrations", names.join(","));
+        let versions = integrations
+            .at_hand()
+            .filter_map(|(id, version)| Some((id.to_string(), version?.into())))
+            .collect();
+        scope.set_context("integrations", sentry::protocol::Context::Other(versions));
+    });
     let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
     let sendings = actions.sending();
 
@@ -424,6 +383,8 @@ async fn start_server(
             axum::routing::post(mcp::eval_callback),
         )
         .layer(axum::Extension(pending_evals));
+
+    let app = app.layer(sentry::integrations::tower::SentryHttpLayer::with_transaction());
 
     let app = frontend::configure(app);
 
@@ -440,8 +401,18 @@ async fn start_server(
     let port = addr.port();
     tracing::info!("Silex server listening on http://{}", addr);
 
+    // A hub per request, or the layer above stacks an event processor on the one
+    // shared scope at every request and never takes one off
+    let served = tower::ServiceBuilder::new()
+        .layer(sentry::integrations::tower::NewSentryLayer::<
+            axum::extract::Request,
+        >::new_from_top())
+        .service(app);
+
     tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
+        axum::serve(listener, tower::make::Shared::new(served))
+            .await
+            .unwrap();
     });
 
     (port, sendings)
@@ -490,37 +461,19 @@ fn main() {
     let dsn = glitchtip_dsn(
         tauri::utils::platform::resource_dir(context.package_info(), &tauri::Env::default()).ok(),
     );
-    let dsn_available = dsn.is_some();
 
-    // Initialize error tracking (GlitchTip / Sentry-compatible).
-    // Sentry is always initialized when GLITCHTIP_DSN is set, but events are only
-    // sent if the user has opted in. This way consent takes effect immediately
-    // (no need to restart after opting in on first launch).
-    let consent_dir_for_send = app_data_dir.clone();
-    let consent_dir_for_traces = app_data_dir.clone();
     let _sentry_guard = sentry::init(sentry::ClientOptions {
         dsn: dsn.as_deref().and_then(|s| s.parse().ok()),
         release: Some(app_version.clone().into()),
         environment: Some(telemetry_environment(&app_version).into()),
-        before_send: Some(std::sync::Arc::new(move |event| {
-            if read_telemetry_consent(&consent_dir_for_send) == Some(true) {
-                Some(event)
-            } else {
-                None
-            }
-        })),
-        // Sample 100% of transactions (volume is low for a desktop app),
-        // but only if the user has opted in.
-        traces_sampler: Some(std::sync::Arc::new(move |_ctx| {
-            if read_telemetry_consent(&consent_dir_for_traces) == Some(true) {
-                1.0
-            } else {
-                0.0
-            }
-        })),
-        // Track sessions for user count and crash-free rate
-        auto_session_tracking: true,
+        traces_sample_rate: 1.0,
+        // Started below instead, once the scope carries the install id: started
+        // here the session goes out with nobody attached
+        auto_session_tracking: false,
         session_mode: sentry::SessionMode::Application,
+        attach_stacktrace: true,
+        // A single publication spends the default of 100 in git commands alone
+        max_breadcrumbs: 300,
         ..Default::default()
     });
     sentry::configure_scope(|scope| {
@@ -532,11 +485,12 @@ fn main() {
             ..Default::default()
         }));
     });
+    sentry::start_session();
 
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "silex_server=info,silex_desktop=info".into()),
+                .unwrap_or_else(|_| "warn,silex_server=info,silex_desktop=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .with(sentry::integrations::tracing::layer())
@@ -567,17 +521,9 @@ fn main() {
             get_telemetry_context,
         ])
         .setup(move |app| {
-            // Log app launch with OS/arch info (visible in Issues even without errors)
-            sentry::capture_event(sentry::protocol::Event {
-                message: Some("app_started".into()),
-                level: sentry::Level::Info,
-                ..Default::default()
-            });
-
             // Start a performance transaction for app startup
             let tx_ctx = sentry::TransactionContext::new("app_startup", "lifecycle");
             let transaction = sentry::start_transaction(tx_ctx);
-            sentry::configure_scope(|scope| scope.set_span(Some(transaction.clone().into())));
 
             // Silex website data lives under app_data_dir/"websites".
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
@@ -588,16 +534,6 @@ fn main() {
                 .app_data_dir()
                 .expect("failed to resolve app data dir")
                 .join("websites");
-
-            // On first launch, ask the user for telemetry consent.
-            // The choice is saved and takes effect on next launch.
-            let consent_dir = app
-                .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir");
-            if dsn_available && read_telemetry_consent(&consent_dir).is_none() {
-                prompt_telemetry_consent(app.handle(), consent_dir);
-            }
 
             // Show splash screen while the app loads
             let _splash =
@@ -619,6 +555,14 @@ fn main() {
                     .expect("failed to resolve app data dir"),
                 app.state::<AppState>().current_website_id.clone(),
             ));
+            // After the server, which is what puts the integrations on the scope:
+            // the one event every launch produces is where they are worth having
+            sentry::capture_event(sentry::protocol::Event {
+                message: Some("app_started".into()),
+                level: sentry::Level::Info,
+                ..Default::default()
+            });
+
             app.manage(sendings.clone());
             app.manage(actions::Saves::new(0));
             tell_of_sending(app.handle().clone(), sendings);
@@ -680,6 +624,17 @@ fn main() {
 
             Ok(())
         })
-        .run(context)
-        .expect("error while running tauri application");
+        .build(context)
+        .expect("error while building tauri application")
+        .run(|_app, event| {
+            // Tauri exits the process itself and the guard is never dropped
+            if let tauri::RunEvent::Exit = event {
+                sentry::end_session();
+                if let Some(client) = sentry::Hub::current().client() {
+                    if !client.flush(Some(std::time::Duration::from_secs(2))) {
+                        tracing::warn!("telemetry did not finish sending before quitting");
+                    }
+                }
+            }
+        });
 }
