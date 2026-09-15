@@ -25,6 +25,8 @@ import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
+import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
+import { EleventyDataSourceId } from './cms/DataSource'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -238,6 +240,42 @@ export class PublicationManager {
     }
   }
 
+  /**
+   * The 11ty directory data file, published with every website
+   *
+   * Publishing runs 11ty on the whole site, whether or not it reads data. On a
+   * site that does not, 11ty would rename `about.html` to `about/index.html`,
+   * which breaks every link in the site, and read the pages as Liquid
+   * templates, which empties anything between double braces and fails the
+   * build on anything between brace and percent. This file tells it to keep
+   * the file names and to leave the pages alone.
+   *
+   * On a site that reads a data source, the front matter of each page says
+   * what to do, so this says nothing and lets them.
+   */
+  eleventyDirectoryData(): ClientSideFile {
+    const readsData = getAllDataSources()
+      .filter(dataSource => dataSource.id !== EleventyDataSourceId)
+      .length > 0
+    const content = readsData
+      ? 'export default {}\n'
+      : `export default {
+  // Keep the name and the place of every page: \`about.html\` stays
+  // \`about.html\`, so the links inside the site keep working
+  permalink: data => \`\${data.page.filePathStem}.html\`,
+  // The pages are already what they should be, not templates to render
+  templateEngineOverride: false,
+}
+`
+    return {
+      // Named after the folder it sits in, which is how 11ty reads a directory
+      // data file
+      path: '/public.11tydata.js',
+      content,
+      type: ClientSideFileType.OTHER,
+    } as ClientSideFile
+  }
+
   async getPublicationData(projectData, siteSettings, preventDefault: () => void): Promise<PublicationData> {
     // Data to publish
     // See assetUrl.ts which is a default transformer, always present
@@ -282,6 +320,7 @@ export class PublicationManager {
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
+    files.push(this.eleventyDirectoryData())
     // Create the data to send to the server
     const data: PublicationData = {
       ...projectData,
