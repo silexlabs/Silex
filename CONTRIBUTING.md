@@ -86,7 +86,7 @@ The SaaS server serves the pre-built dashboard from `silex-dashboard/_site` (see
 4. Run the checks that match what you changed (CI runs all of them on the PR):
    - **App** (`editor/`, `server/`, `common/`): `pnpm build`, `pnpm lint`, `pnpm test`.
    - **A plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` — or scope to one: `pnpm --filter @silexlabs/grapesjs-<name> run test`.
-   - **Rust** (`server-rust/`, `desktop/`): `cargo check -p silex-server` and `cargo test -p silex-server`.
+   - **Rust** (`server-rust/`, `desktop/`): `./scripts/ci-rust.sh` — runs what CI runs, in the same order, and says where CI would fail. It needs `dist/client` (from `pnpm build`) and the dashboard submodule, which is what `silex-desktop` compiles into the binary.
 
    There is no pre-commit hook — CI on the PR is the gate, so run the relevant checks yourself before pushing.
 5. The PR is **squash-merged**, so its **title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`) — it becomes the changelog entry.

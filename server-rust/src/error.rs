@@ -31,6 +31,13 @@ pub enum Error {
     #[error("Invalid input: {0}")]
     InvalidInput(String),
 
+    /// More was sent than the server accepts (HTTP 413)
+    ///
+    /// Only the middleware knows the limit, so only it names one. A handler
+    /// carries the status up to it and says nothing of the size.
+    #[error("This is too large to save.{}", .0.map(|limit| format!(" Silex takes up to {} MB at a time. If you are adding a file, please use a smaller one.", limit / 1024 / 1024)).unwrap_or_default())]
+    TooLarge(Option<usize>),
+
     /// The stored website is not usable as is (HTTP 500)
     #[error("Invalid website data: {0}")]
     InvalidWebsite(String),
@@ -42,6 +49,13 @@ pub enum Error {
     /// JSON parsing/serialization failed (HTTP 500)
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    /// Something the person editing has to know, in their own words (HTTP 500)
+    ///
+    /// The editor shows it as it is written here, so no prefix names what went
+    /// wrong technically.
+    #[error("{0}")]
+    Told(String),
 }
 
 impl Error {
@@ -50,9 +64,11 @@ impl Error {
         match self {
             Error::NotFound(_) => StatusCode::NOT_FOUND,
             Error::InvalidInput(_) => StatusCode::BAD_REQUEST,
+            Error::TooLarge(_) => StatusCode::PAYLOAD_TOO_LARGE,
             Error::InvalidWebsite(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Json(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Told(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }

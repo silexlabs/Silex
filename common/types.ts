@@ -46,8 +46,13 @@ export class ApiError extends Error {
 export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
-// A server which publishes synchronously answers no job, and no url until something serves the files
-export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData }
+/**
+ * What publishing answers
+ *
+ * Always a job: turning the files into a website somebody can visit takes
+ * longer than a request. `url` is null until something serves them.
+ */
+export type ApiPublicationPublishResponse = { url: string | null, job: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
@@ -272,6 +277,40 @@ export interface ConnectorData {
   oauthUrl: string | null
   color: string
   background: string
+  /**
+   * What the host already knows about publishing this website, `websiteUrl`
+   * among it.
+   *
+   * Only Silex Desktop sends this. What the user filled in wins over it.
+   */
+  options?: ConnectorOptions
+  /**
+   * What to ask the user before publishing, when the host cannot say where the
+   * website is served. Only Silex Desktop sends this, as above.
+   */
+  optionsForm?: OptionsForm
+}
+
+/**
+ * A form the publication dialog shows before the publish button
+ *
+ * Sent by Silex Desktop only: a forge does not always know which address
+ * serves which repository, and what it cannot say is asked of the user.
+ */
+export interface OptionsForm {
+  title: string
+  fields: OptionsField[]
+}
+
+/** One thing the user is asked for, kept in the options under `name` */
+export interface OptionsField {
+  name: string
+  type: 'text' | 'url' | 'checkbox' | 'select'
+  label: string
+  /** What to start from, until the user writes something of their own */
+  value?: string
+  help?: string
+  required: boolean
 }
 
 /**

@@ -1,0 +1,36 @@
+# silexOverwrite: true
+# Written by Silex at every publication. Change what is built in build.json.
+# To change anything else here, the size of the runner or when it runs, remove
+# the line above: Silex then leaves this file to you.
+image: node:22-slim
+pages:
+  stage: deploy
+  environment: production
+  # A build that is still going after that is stuck, not slow
+  timeout: 15 minutes
+  # Two publications in a row: the older one gets out of the way, so that the
+  # last one asked for is the last one deployed
+  interruptible: true
+  resource_group: pages
+  # npx downloads the whole build tool on every job otherwise
+  cache:
+    key: silex-npm
+    paths:
+      - .npm
+  variables:
+    npm_config_cache: .npm
+  script:
+    - sh build.sh
+    - echo "The site will be deployed to $CI_PAGES_URL"
+  pages:
+    publish: _site
+  rules:
+    # What Silex tags when publishing. Another tag is the user's own business
+    - if: '$CI_COMMIT_TAG =~ /^_silex_/'
+    # And the ways to publish again without going through Silex: a trigger
+    # token, the API, the button in the pipelines page, and a schedule the user
+    # sets up when their site is built from a CMS or a data source
+    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'

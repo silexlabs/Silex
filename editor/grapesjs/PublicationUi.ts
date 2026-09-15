@@ -17,9 +17,10 @@
 
 import { html, nothing, render, TemplateResult } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
+import { live } from 'lit-html/directives/live.js'
 //import { map } from 'lit-html/directives/map.js'
-import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
-import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings } from '~/common/types'
+import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor, withConnectorOptions } from './PublicationManager'
+import { ConnectorData, ConnectorType, OptionsField, PublicationJobData, PublicationSettings } from '~/common/types'
 import { connectorList } from '../api'
 import { defaultKms } from './keymaps'
 import { titleCase } from '../utils'
@@ -38,6 +39,12 @@ import { ClientEvent } from '../events'
 // **
 // Constants
 export const cmdPublish = 'publish-open-dialog'
+
+// The publish button is the submit button of this form even though it stands
+// outside of it, which is what the `form` attribute of a button is for
+const optionsFormId = 'publish-options-form'
+const fieldId = (field: OptionsField) => `publish-option--${field.name}`
+const helpId = (field: OptionsField) => `publish-option--${field.name}--help`
 
 // **
 // Semantic Icons
@@ -72,6 +79,12 @@ export class PublicationUi {
    * Dialog content
    */
   private errorMessage = ''
+  /**
+   * Why the dialog is showing the list of hostings
+   *
+   * Landing back on that list with nothing said reads as a bug.
+   */
+  private notice = ''
   /**
    * Dialog element
    * This is the DOM element of the dialog
@@ -186,28 +199,28 @@ export class PublicationUi {
         ` : nothing}
         ${this.isReady(status) ? html`
           <p>Click on the button below to publish your website.</p>
-          ${this.settings.options && Object.entries(this.settings.options).length > 0 ? html`<p>Publication options:</p><ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
+          ${this.listedOptions().length > 0 ? html`<p>Publication options:</p><ul>${ this.listedOptions().map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
         ` : nothing}
-        ${this.isSuccess(status) ? html`
+        ${this.isSuccess(status) && !job?.message ? html`
           <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
           ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : nothing}
         ` : nothing}
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
-          <details open>
-            <summary>Details</summary>
-            ${unsafeHTML(this.errorMessage)}
-          </details>
+          ${this.errorMessage ? html`
+            <details open>
+              <summary>Details</summary>
+              ${unsafeHTML(this.errorMessage)}
+            </details>
+          ` : nothing}
         ` : nothing}
         ${job?.message ? html`
-          <details open>
-            <summary>Details</summary>
-            ${unsafeHTML(job.message)}
-          </details>
+          <div class="silex-publication-message">${unsafeHTML(job.message)}</div>
         ` : nothing}
         ${this.isPending(status) ? html`
           <progress></progress>
         ` : nothing}
+        ${this.isReady(status) ? this.renderOptionsForm() : nothing}
         ${job?.logs?.length > 0 && job.logs[0].length > 0 ? html`
           <details>
             <summary>Logs</summary>
@@ -229,7 +242,7 @@ export class PublicationUi {
           <button
             class="silex-button ${this.isSuccess(status) ? 'silex-button--secondary' : 'silex-button--primary'}"
             id="publish-button--primary"
-            @click=${() => this.editor.Commands.run(cmdPublicationStart)}
+            @click=${() => this.requestPublish()}
           >${this.isSuccess(status) ? 'Publish again' : 'Publish'}</button>
         `}
       `}
@@ -256,8 +269,12 @@ export class PublicationUi {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
-      if (hostingConnectors.length === 1 && loggedConnectors.length === 1) {
+      // `notice` says the server refused the hosting this website was saved
+      // with, and the user then picks from the list themselves
+      if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && !this.notice) {
         this.settings.connector = loggedConnectors[0]
+        // One hosting, already logged in: taken without the login step
+        this.settings.options = withConnectorOptions(this.settings, loggedConnectors[0])
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
       //const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
@@ -267,7 +284,7 @@ export class PublicationUi {
       //}
       return html`
       <main>
-        <p>You need to select a hosting connector to publish your website.</p>
+        <p>${this.notice || 'You need to select a hosting connector to publish your website.'}</p>
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <p>Login error</p>
           <div>${this.errorMessage ? unsafeHTML(this.errorMessage) : nothing}</div>
@@ -312,6 +329,82 @@ export class PublicationUi {
     `
     }
   }
+  /**
+   * The options shown as a list, which are the ones the form does not ask for
+   *
+   * An option the user is about to fill in is already in the field made for it.
+   */
+  private listedOptions(): Array<[string, unknown]> {
+    const asked = (this.settings.connector?.optionsForm?.fields ?? []).map(field => field.name)
+    return Object.entries(this.settings.options ?? {})
+      .filter(([key]) => !asked.includes(key))
+  }
+
+  /**
+   * What the hosting needs to know and cannot find out on its own
+   *
+   * The browser does the work: the input carries the type of the field, so a
+   * phone offers the right keyboard and an address is checked before it is
+   * sent, and the help text is tied to the input for a screen reader. The
+   * publish button submits this form, which is what makes Enter publish.
+   */
+  renderOptionsForm(): TemplateResult | typeof nothing {
+    const optionsForm = this.settings.connector?.optionsForm
+    if (!optionsForm) return nothing
+    const options = this.settings.options ?? {}
+    return html`
+      <form id=${optionsFormId} class="silex-form" @submit=${(event: Event) => this.publishWithOptions(event)}>
+        <h3>${optionsForm.title}</h3>
+        <div class="silex-form__group">
+          ${optionsForm.fields.map(field => html`
+            <div class="silex-form__element">
+              <label for=${fieldId(field)}>${field.label}</label>
+              ${field.help ? html`<p class="silex-help" id=${helpId(field)}>${field.help}</p>` : nothing}
+              <input
+                id=${fieldId(field)}
+                name=${field.name}
+                type=${field.type}
+                ?required=${field.required}
+                aria-describedby=${field.help ? helpId(field) : nothing}
+                .value=${live(options[field.name] ?? field.value ?? '')}
+              />
+            </div>
+          `)}
+        </div>
+      </form>
+    `
+  }
+
+  /**
+   * Publish, going through the options form when it is on screen
+   *
+   * The form is only rendered before a publication, so after one the button has
+   * nothing to submit and asks for the publication itself.
+   */
+  private requestPublish() {
+    const form = this.el.querySelector(`#${optionsFormId}`) as HTMLFormElement | null
+    if (form) form.requestSubmit()
+    else this.editor.Commands.run(cmdPublicationStart)
+  }
+
+  /**
+   * Keep what the user wrote, then publish
+   *
+   * Nothing is saved here: the options leave with the publication itself, and
+   * the next save writes the website like any other change.
+   */
+  private publishWithOptions(event: Event) {
+    event.preventDefault()
+    const options = { ...this.settings.options }
+    new FormData(event.target as HTMLFormElement).forEach((value, name) => {
+      const written = typeof value === 'string' ? value.trim() : ''
+      if (written) options[name] = written
+      else delete options[name]
+    })
+    this.settings.options = options
+    this.editor.Commands.run(cmdPublicationStart)
+  }
+
   displayPending(job: PublicationJobData, status: PublicationStatus) {
     this.errorMessage = null
     this.renderDialog(job, status)
@@ -359,5 +452,49 @@ export class PublicationUi {
     //this.editor.Commands.run(cmdPublicationStart)
     this.renderDialog(null, PublicationStatus.STATUS_NONE)
     this.editor.trigger(ClientEvent.PUBLICATION_UI_OPEN, { publicationUi: this })
+    // Shown first and asked about after, or the dialog opens late
+    await this.refreshConnector()
+    this.renderDialog(null, PublicationStatus.STATUS_NONE)
+  }
+
+  /**
+   * Ask the hosting again about this website, as the dialog opens
+   *
+   * The connector is saved with the website, so a site published a while ago
+   * carries what its hosting answered back then. Asked here rather than on
+   * load, so that a website nobody publishes never pays for it.
+   *
+   * Only a connector with the same id ever takes its place: moving a website
+   * to another hosting is not something a dialog opening decides.
+   */
+  private async refreshConnector(): Promise<void> {
+    this.notice = ''
+    const saved = this.settings.connector
+    if (!saved) return
+
+    let connectors: ConnectorData[]
+    try {
+      connectors = await connectorList({ type: ConnectorType.HOSTING })
+    } catch (err) {
+      // A server that did not answer must not stop the user: what was saved
+      // still publishes
+      console.error('Could not ask which hostings are available', err)
+      return
+    }
+
+    const sameOne = connectors.find(connector => connector.connectorId === saved.connectorId)
+    if (sameOne) {
+      this.settings.connector = sameOne
+      this.settings.options = withConnectorOptions(this.settings, sameOne)
+      return
+    }
+
+    // The server has no such hosting: a website saved on the hosted version
+    // and opened in Silex Desktop, or the other way around. Keeping it would
+    // let the user publish to nothing. What they typed stays.
+    this.settings.connector = null
+    this.notice = connectors.length > 0
+      ? `Silex cannot publish to ${saved.displayName} here. Please choose where to publish.`
+      : 'There is no hosting to publish to here.'
   }
 }

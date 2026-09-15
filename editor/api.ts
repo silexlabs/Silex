@@ -57,7 +57,7 @@ export async function logout({type, connectorId}: {type: ConnectorType, connecto
   return api<ApiConnectorLogoutQuery, null, null>(ApiRoute.CONNECTOR_LOGOUT, 'POST', { connectorId, type })
 }
 
-export async function publish({websiteId, hostingId, storageId, data, options}: {websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, data: PublicationData, options: ConnectorOptions}): Promise<[url: string | null, job?: PublicationJobData]> {
+export async function publish({websiteId, hostingId, storageId, data, options}: {websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, data: PublicationData, options: ConnectorOptions}): Promise<[url: string | null, job: PublicationJobData]> {
   const { url, job } = await api<ApiPublicationPublishQuery, ApiPublicationPublishBody, ApiPublicationPublishResponse>(
     ApiRoute.PUBLICATION_PUBLISH,
     'POST',
