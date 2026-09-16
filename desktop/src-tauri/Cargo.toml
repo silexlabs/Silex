@@ -19,7 +19,7 @@ tauri-plugin-process = "2"
 tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-base64 = "0.22"
+base64 = "0.23"
 tokio = { version = "1", features = ["full"] }
 axum = "0.8"
 tracing = "0.1"
@@ -27,7 +27,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # MCP (Model Context Protocol) support
 reqwest = { version = "0.13", features = ["json"] }
-rmcp = { version = "0.15", features = ["server", "transport-streamable-http-server", "transport-io"] }
+rmcp = { version = "3.4", features = ["server", "transport-streamable-http-server", "transport-io"] }
 # Required as a direct dependency: the JsonSchema derive expands to ::schemars paths
 schemars = "1"
 
@@ -35,7 +35,7 @@ schemars = "1"
 open = "5"
 
 # Platform-specific directories (for telemetry consent before Tauri init)
-dirs = "6"
+dirs = "7"
 
 # Anonymous install id (persistent UUID for telemetry user count)
 uuid = { version = "1", features = ["v4"] }
