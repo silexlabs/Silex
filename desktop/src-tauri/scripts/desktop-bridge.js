@@ -8,10 +8,17 @@
   // Frontend error tracking (GlitchTip / Sentry-compatible).
   // Real version, channel, anonymous install id and OS/arch come from Rust so the
   // webview reports the same identity as the native side (not a hardcoded 0.1.0).
+
+  // The query names the website being edited
+  const withoutQuery = (event) => {
+    if (event.request?.url) event.request.url = event.request.url.split('?')[0];
+    if (event.request?.headers) delete event.request.headers.Referer;
+    return event;
+  };
   invoke('get_telemetry_context').then((ctx) => {
     if (!ctx?.dsn) return;
     const script = document.createElement('script');
-    script.src = 'https://browser.sentry-cdn.com/8.46.0/bundle.tracing.min.js';
+    script.src = 'https://browser.sentry-cdn.com/10.74.0/bundle.tracing.min.js';
     script.crossOrigin = 'anonymous';
     script.onload = () => {
       if (!window.Sentry) return;
@@ -21,6 +28,8 @@
         environment: ctx.environment,
         tracesSampleRate: 1.0,
         integrations: [window.Sentry.browserTracingIntegration()],
+        beforeSend: withoutQuery,
+        beforeSendTransaction: withoutQuery,
       });
       window.Sentry.setUser({ id: ctx.user_id });
       window.Sentry.setTag('os', ctx.os);

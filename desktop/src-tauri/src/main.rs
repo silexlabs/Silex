@@ -344,6 +344,47 @@ fn check_for_updates(app: tauri::AppHandle) {
 // Server
 // ==================
 
+/// A path under the home folder names the user
+fn without_home(text: &str) -> String {
+    match dirs::home_dir().and_then(|home| home.to_str().map(String::from)) {
+        Some(home) => text.replace(&home, "~"),
+        None => text.to_string(),
+    }
+}
+
+/// The query of an API call carries what the user typed to publish
+fn without_query(request: &sentry::protocol::Request) -> sentry::protocol::Request {
+    let mut url = request.url.clone();
+    if let Some(url) = url.as_mut() {
+        url.set_query(None);
+    }
+    sentry::protocol::Request {
+        method: request.method.clone(),
+        url,
+        ..Default::default()
+    }
+}
+
+/// The tracing layer attaches the whole request to the transaction, and sentry
+/// offers no hook to change a transaction before it is sent
+async fn trace_without_query(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    sentry::configure_scope(|scope| {
+        if let Some(span) = scope.get_span() {
+            span.set_request(sentry::protocol::Request {
+                method: Some(request.method().to_string()),
+                url: format!("http://localhost{}", request.uri().path())
+                    .parse()
+                    .ok(),
+                ..Default::default()
+            });
+        }
+    });
+    next.run(request).await
+}
+
 async fn start_server(
     pending_evals: mcp::PendingEvals,
     data_path: std::path::PathBuf,
@@ -384,7 +425,9 @@ async fn start_server(
         )
         .layer(axum::Extension(pending_evals));
 
-    let app = app.layer(sentry::integrations::tower::SentryHttpLayer::with_transaction());
+    let app = app
+        .layer(axum::middleware::from_fn(trace_without_query))
+        .layer(sentry::integrations::tower::SentryHttpLayer::new().enable_transaction());
 
     let app = frontend::configure(app);
 
@@ -462,23 +505,44 @@ fn main() {
         tauri::utils::platform::resource_dir(context.package_info(), &tauri::Env::default()).ok(),
     );
 
-    let _sentry_guard = sentry::init(sentry::ClientOptions {
-        dsn: dsn.as_deref().and_then(|s| s.parse().ok()),
-        release: Some(app_version.clone().into()),
-        environment: Some(telemetry_environment(&app_version).into()),
-        traces_sample_rate: 1.0,
+    let mut options = sentry::ClientOptions::new()
+        .release(app_version.clone())
+        .environment(telemetry_environment(&app_version))
+        .traces_sample_rate(1.0)
         // Named rather than left out: unset, sentry puts the hostname of the
         // machine in every event, which names the user
-        server_name: Some("desktop".into()),
+        .server_name("desktop")
         // Started below instead, once the scope carries the install id: started
         // here the session goes out with nobody attached
-        auto_session_tracking: false,
-        session_mode: sentry::SessionMode::Application,
-        attach_stacktrace: true,
+        .auto_session_tracking(false)
+        .session_mode(sentry::SessionMode::Application)
+        .attach_stacktrace(true)
         // A single publication spends the default of 100 in git commands alone
-        max_breadcrumbs: 300,
-        ..Default::default()
-    });
+        .max_breadcrumbs(300)
+        .before_send(|mut event| {
+            if let Some(request) = event.request.as_mut() {
+                *request = without_query(request);
+            }
+            event.message = event.message.as_deref().map(without_home);
+            if let Some(entry) = event.logentry.as_mut() {
+                entry.message = without_home(&entry.message);
+            }
+            for exception in event.exception.values.iter_mut() {
+                exception.value = exception.value.as_deref().map(without_home);
+            }
+            Some(event)
+        })
+        .before_breadcrumb(|mut breadcrumb| {
+            breadcrumb.message = breadcrumb.message.as_deref().map(without_home);
+            for value in breadcrumb.data.values_mut() {
+                if let sentry::protocol::Value::String(text) = value {
+                    *text = without_home(text);
+                }
+            }
+            Some(breadcrumb)
+        });
+    options.dsn = dsn.as_deref().and_then(|s| s.parse().ok());
+    let _sentry_guard = sentry::init(options);
     sentry::configure_scope(|scope| {
         scope.set_tag("os", std::env::consts::OS);
         scope.set_tag("arch", std::env::consts::ARCH);
@@ -496,7 +560,17 @@ fn main() {
                 .unwrap_or_else(|_| "warn,silex_server=info,silex_desktop=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
-        .with(sentry::integrations::tracing::layer())
+        // Logs are left out: they carry paths, and so the name of the user
+        .with(
+            sentry::integrations::tracing::layer().event_filter(|metadata| {
+                use sentry::integrations::tracing::EventFilter;
+                match *metadata.level() {
+                    tracing::Level::ERROR => EventFilter::Event,
+                    tracing::Level::WARN | tracing::Level::INFO => EventFilter::Breadcrumb,
+                    _ => EventFilter::Ignore,
+                }
+            }),
+        )
         .init();
 
     tauri::Builder::default()
