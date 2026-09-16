@@ -467,6 +467,9 @@ fn main() {
         release: Some(app_version.clone().into()),
         environment: Some(telemetry_environment(&app_version).into()),
         traces_sample_rate: 1.0,
+        // Named rather than left out: unset, sentry puts the hostname of the
+        // machine in every event, which names the user
+        server_name: Some("desktop".into()),
         // Started below instead, once the scope carries the install id: started
         // here the session goes out with nobody attached
         auto_session_tracking: false,
