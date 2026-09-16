@@ -1,9 +1,14 @@
 {
   "identifier": "default",
   "description": "Default capabilities for Silex desktop",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "remote": {
-    "urls": ["http://localhost:*", "http://127.0.0.1:*"]
+    "urls": [
+      "http://localhost:*",
+      "http://127.0.0.1:*"
+    ]
   },
   "permissions": [
     "core:default",
@@ -14,6 +19,14 @@
     "core:window:allow-unmaximize",
     "core:window:allow-set-size",
     "core:window:allow-center",
-    "dialog:default"
+    "dialog:default",
+    "allow-set-current-project",
+    "allow-clear-current-project",
+    "allow-mark-unsaved",
+    "allow-open-folder",
+    "allow-log-debug",
+    "allow-get-sending",
+    "allow-saved-everything",
+    "allow-get-telemetry-context"
   ]
 }
