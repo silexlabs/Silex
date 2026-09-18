@@ -5,22 +5,23 @@
 import { jest } from '@jest/globals'
 import fs from 'fs'
 import path from 'path'
-import grapesjs from 'grapesjs'
+import grapesjs, { Editor } from 'grapesjs'
 import plugin from './index'
-import { Type, Field, DataSourceType } from './types'
+import { Type, Field, DataSourceType, Properties, COMPONENT_STATE_CHANGED } from './types'
 import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
 import { setPreviewData } from './api'
 import { compare, GroupingReporter } from 'dom-compare'
 import { diff as jestDiff } from 'jest-diff'
+import { setState, removeState } from './model/state'
+import { getFixedToken } from './utils'
 
 // ////
 // Use require instead of import so the TextEncoder/TextDecoder polyfill is set before jsdom loads (avoids hoisting).
 /* @ts-expect-error Workaround jest+jsdom bug */
 import { TextEncoder, TextDecoder } from 'util'
 import { doRender } from './view/canvas'
-;import { act } from 'react'
 (global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
 ;(global as any).ReadableStream = require('stream/web').ReadableStream
@@ -502,3 +503,432 @@ _______________________
     })
   })
 })
+
+describe('Issue #1845 - Live canvas synchronization', () => {
+  let container: HTMLDivElement
+  let editor: Editor
+
+  beforeEach((done) => {
+    container = document.createElement('div')
+    document.body.appendChild(container)
+
+    editor = grapesjs.init({
+      container,
+      headless: false,
+      plugins: [plugin],
+      pluginsOpts: {
+        [plugin.toString()]: {
+          view: {
+            el: null,
+            previewRefreshEvents: '',
+          },
+          filters: 'liquid',
+        },
+      },
+    })
+
+    editor.on('load', () => {
+      done()
+    })
+  })
+
+  afterEach(() => {
+    editor.destroy()
+    container.remove()
+  })
+
+  test('A. Attribute addition: model attribute title="hello" -> canvas DOM contains title="hello"', () => {
+    const [comp] = editor.addComponents('<div id="comp-attr-add">Test</div>')
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('hello')],
+    }, false)
+
+    doRender(editor)
+
+    expect(comp.view?.el.getAttribute('title')).toBe('hello')
+  })
+
+  test('B. Attribute update: title="hello" -> title="world" -> canvas DOM contains title="world"', () => {
+    const [comp] = editor.addComponents('<div id="comp-attr-update">Test</div>')
+
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('hello')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('hello')
+
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('world')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('world')
+  })
+
+  test('C. Attribute removal: title="hello" -> remove title -> canvas DOM no longer contains title', () => {
+    const [comp] = editor.addComponents('<div id="comp-attr-rm">Test</div>')
+
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('hello')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('hello')
+
+    // Remove the attribute
+    removeState(comp, 'test-attr-title', false)
+
+    // Render preview again
+    doRender(editor)
+
+    // Expected: title attribute must disappear from canvas DOM immediately without reload
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+  })
+
+  test('D. Multiple attributes: title="hello", data-test="123" -> remove title -> data-test remains, title is gone', () => {
+    const [comp] = editor.addComponents('<div id="comp-attr-multi">Test</div>')
+
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('hello')],
+    }, false)
+    setState(comp, 'test-attr-datatest', {
+      label: 'data-test',
+      expression: [getFixedToken('123')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('hello')
+    expect(comp.view?.el.getAttribute('data-test')).toBe('123')
+
+    removeState(comp, 'test-attr-title', false)
+    doRender(editor)
+
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+    expect(comp.view?.el.getAttribute('data-test')).toBe('123')
+  })
+
+  test('E. Repeated changes: add -> remove -> add -> change -> remove -> DOM always matches current model', () => {
+    const [comp] = editor.addComponents('<div id="comp-attr-repeated">Test</div>')
+
+    // 1. add title="first"
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('first')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('first')
+
+    // 2. remove title
+    removeState(comp, 'test-attr-title', false)
+    doRender(editor)
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+
+    // 3. add title="second"
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('second')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('second')
+
+    // 4. change title="third"
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('third')],
+    }, false)
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('third')
+
+    // 5. remove title
+    removeState(comp, 'test-attr-title', false)
+    doRender(editor)
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+  })
+
+  test('Dynamic attribute overriding an existing/base attribute is restored correctly after removal', () => {
+    const [comp] = editor.addComponents('<a id="comp-link" href="https://original.com">Link</a>')
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('href')).toBe('https://original.com')
+
+    // Add dynamic attribute that overrides 'href'
+    setState(comp, 'test-attr-href', {
+      label: 'href',
+      expression: [getFixedToken('https://dynamic.com')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('href')).toBe('https://dynamic.com')
+
+    // Remove the dynamic attribute
+    removeState(comp, 'test-attr-href', false)
+
+    doRender(editor)
+
+    // Expected: href attribute should revert to the base model attribute value
+    expect(comp.view?.el.getAttribute('href')).toBe('https://original.com')
+  })
+
+  test('Dynamic class overriding an existing base class is restored correctly after removal', () => {
+    const [comp] = editor.addComponents('<div id="comp-class" class="foo">Test</div>')
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('class')).toBe('foo')
+
+    // Add dynamic attribute that overrides 'class'
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('bar')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('class')).toBe('bar')
+
+    // Remove the dynamic attribute
+    removeState(comp, 'test-attr-class', false)
+
+    doRender(editor)
+
+    // Expected: class attribute should revert to base class 'foo', NOT removed entirely
+    expect(comp.view?.el.getAttribute('class')).toBe('foo')
+  })
+
+  test('Dynamic class overriding multiple existing base classes is restored correctly after removal', () => {
+    const [comp] = editor.addComponents('<div id="comp-classes" class="foo bar">Test</div>')
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('class')).toBe('foo bar')
+
+    // Add dynamic attribute that overrides 'class'
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('baz')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('class')).toBe('baz')
+
+    // Remove the dynamic attribute
+    removeState(comp, 'test-attr-class', false)
+
+    doRender(editor)
+
+    // Expected: class attribute should revert to base classes 'foo bar', NOT removed entirely
+    expect(comp.view?.el.getAttribute('class')).toBe('foo bar')
+  })
+
+  test('Dynamic class on a component without base class is removed cleanly after removal', () => {
+    const [comp] = editor.addComponents('<div id="comp-no-class">Test</div>')
+
+    doRender(editor)
+    expect(comp.view?.el.hasAttribute('class')).toBe(false)
+
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('baz')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('class')).toBe('baz')
+
+    removeState(comp, 'test-attr-class', false)
+
+    doRender(editor)
+
+    expect(comp.view?.el.hasAttribute('class')).toBe(false)
+  })
+
+  test('F. HTML content: changing/clearing HTML content immediately updates the canvas DOM and restores original', () => {
+    const [comp] = editor.addComponents('<div id="comp-html"><p class="orig-p">Original Paragraph</p></div>')
+
+    doRender(editor)
+    expect(comp.view?.el.querySelector('.orig-p')).not.toBeNull()
+    expect(comp.view?.el.textContent).toContain('Original Paragraph')
+
+    // Set dynamic HTML content
+    setState(comp, Properties.innerHTML, {
+      expression: [getFixedToken('<span class="dyn-span">Dynamic Span</span>')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.querySelector('.dyn-span')).not.toBeNull()
+    expect(comp.view?.el.querySelector('.orig-p')).toBeNull()
+    expect(comp.view?.el.textContent).toContain('Dynamic Span')
+
+    // Change dynamic HTML content
+    setState(comp, Properties.innerHTML, {
+      expression: [getFixedToken('<em class="dyn-em">Updated Emphasis</em>')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.querySelector('.dyn-em')).not.toBeNull()
+    expect(comp.view?.el.querySelector('.dyn-span')).toBeNull()
+    expect(comp.view?.el.textContent).toContain('Updated Emphasis')
+
+    // Clear dynamic HTML content
+    setState(comp, Properties.innerHTML, {
+      expression: [],
+    }, false)
+
+    doRender(editor)
+
+    // Expected: original paragraph restored on the live DOM immediately
+    expect(comp.view?.el.querySelector('.orig-p')).not.toBeNull()
+    expect(comp.view?.el.querySelector('.dyn-em')).toBeNull()
+    expect(comp.view?.el.textContent).toContain('Original Paragraph')
+  })
+
+  test('G. Visibility condition: changing/clearing condition immediately updates the canvas DOM', () => {
+    const [comp] = editor.addComponents('<div id="comp-vis">Visible Content</div>')
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).not.toBe('none')
+
+    // Set visibility condition to falsy (empty string fixed token)
+    setState(comp, Properties.condition, {
+      expression: [getFixedToken('')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).toBe('none')
+
+    // Change condition to truthy
+    setState(comp, Properties.condition, {
+      expression: [getFixedToken('true')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).not.toBe('none')
+
+    // Set visibility condition back to falsy
+    setState(comp, Properties.condition, {
+      expression: [getFixedToken('')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).toBe('none')
+
+    // Clear visibility condition
+    setState(comp, Properties.condition, {
+      expression: [],
+    }, false)
+
+    doRender(editor)
+
+    // Expected: display: none is removed immediately
+    expect(comp.view?.el.style.display).not.toBe('none')
+  })
+})
+
+describe('Issue #1845 - Live canvas synchronization (event-driven production flow)', () => {
+  let container: HTMLDivElement
+  let editor: Editor
+
+  const waitFor = (fn: () => boolean, timeout = 3000, interval = 25): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const start = Date.now()
+      const check = () => {
+        if (fn()) {
+          resolve()
+        } else if (Date.now() - start > timeout) {
+          reject(new Error(`Timed out waiting for condition after ${timeout}ms`))
+        } else {
+          setTimeout(check, interval)
+        }
+      }
+      check()
+    })
+
+  beforeEach((done) => {
+    container = document.createElement('div')
+    document.body.appendChild(container)
+
+    editor = grapesjs.init({
+      container,
+      headless: false,
+      plugins: [plugin],
+      pluginsOpts: {
+        [plugin.toString()]: {
+          view: {
+            el: null,
+            // Keep default previewRefreshEvents enabled (which includes COMPONENT_STATE_CHANGED)
+          },
+          filters: 'liquid',
+        },
+      },
+    })
+
+    editor.on('load', () => {
+      done()
+    })
+  })
+
+  afterEach(() => {
+    editor.destroy()
+    container.remove()
+  })
+
+  test('Event-driven: removing a dynamic attribute triggers COMPONENT_STATE_CHANGED and removes live DOM attribute without manual doRender', async () => {
+    const [comp] = editor.addComponents('<div id="comp-event-async">Test</div>')
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+
+    const stateChangeEvents: unknown[] = []
+    editor.on(COMPONENT_STATE_CHANGED, (data) => {
+      stateChangeEvents.push(data)
+    })
+
+    // 1. Add dynamic attribute via state mutation
+    // State mutation -> COMPONENT_STATE_CHANGED -> debounced canvas refresh -> renderPreview -> live DOM updated
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('hello-event')],
+    }, false)
+
+    await waitFor(() => comp.view?.el.getAttribute('title') === 'hello-event')
+    expect(stateChangeEvents.length).toBeGreaterThanOrEqual(1)
+    expect(comp.view?.el.getAttribute('title')).toBe('hello-event')
+
+    // 2. Remove dynamic attribute via state mutation
+    // State mutation -> COMPONENT_STATE_CHANGED -> debounced canvas refresh -> renderPreview -> DOM synchronization
+    const eventCountBeforeRemoval = stateChangeEvents.length
+    removeState(comp, 'test-attr-title', false)
+
+    await waitFor(() => !comp.view?.el.hasAttribute('title'))
+    expect(stateChangeEvents.length).toBeGreaterThan(eventCountBeforeRemoval)
+    expect(comp.view?.el.hasAttribute('title')).toBe(false)
+  })
+
+  test('Event-driven: removing a dynamic class triggers COMPONENT_STATE_CHANGED and restores base class on live DOM without manual doRender', async () => {
+    const [comp] = editor.addComponents('<div id="comp-event-class" class="base-badge">Test</div>')
+    expect(comp.view?.el.getAttribute('class')).toBe('base-badge')
+
+    const stateChangeEvents: unknown[] = []
+    editor.on(COMPONENT_STATE_CHANGED, (data) => {
+      stateChangeEvents.push(data)
+    })
+
+    // Add dynamic class
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('dynamic-badge')],
+    }, false)
+
+    await waitFor(() => comp.view?.el.getAttribute('class') === 'dynamic-badge')
+    expect(stateChangeEvents.length).toBeGreaterThanOrEqual(1)
+    expect(comp.view?.el.getAttribute('class')).toBe('dynamic-badge')
+
+    // Remove dynamic class
+    const eventCountBeforeRemoval = stateChangeEvents.length
+    removeState(comp, 'test-attr-class', false)
+
+    await waitFor(() => comp.view?.el.getAttribute('class') === 'base-badge')
+    expect(stateChangeEvents.length).toBeGreaterThan(eventCountBeforeRemoval)
+    expect(comp.view?.el.getAttribute('class')).toBe('base-badge')
+  })
+})
+
