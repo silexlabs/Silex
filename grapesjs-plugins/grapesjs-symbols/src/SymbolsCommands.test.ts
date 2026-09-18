@@ -107,8 +107,16 @@ describe('SymbolsCommands', () => {
       expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
     })
 
-    it('throws if missing component', () => {
-      expect(() => _unlinkSymbolInstance(editor, null, { component: null as any })).toThrow()
+    it('uses the selected component when no component is provided', async () => {
+      const { unbindSymbolInstance } = await import('./utils')
+      expect(() => _unlinkSymbolInstance(editor, null, {})).not.toThrow()
+      expect(editor.getSelected).toHaveBeenCalled()
+      expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
+    })
+
+    it('throws if no component is selected', () => {
+      editor.getSelected.mockReturnValue(null)
+      expect(() => _unlinkSymbolInstance(editor, null, {})).toThrow('missing param component')
     })
   })
 

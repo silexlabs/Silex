@@ -88,7 +88,7 @@ export function _removeSymbol(
 
 export function _unlinkSymbolInstance(
   editor: Editor,
-  _: any, { component }: { component: Component },
+  _: any, { component = editor.getSelected() }: { component?: Component },
 ) {
   if(!component) {
     throw new Error('Can not unlink the component: missing param component')
