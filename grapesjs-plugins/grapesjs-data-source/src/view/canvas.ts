@@ -357,9 +357,23 @@ export function isComponentVisible(
   }
 }
 
+// Tracks attribute names that were dynamically applied by data-source to each live DOM element
+const renderedAttributesMap = new WeakMap<Element, Set<string>>()
+
+// Tracks elements that currently have dynamic innerHTML applied
+const renderedInnerHTMLMap = new WeakSet<Element>()
+
 function renderAttributes(
   component: Component,
 ): void {
+  const el = component.view?.el
+  if (!el) {
+    return
+  }
+
+  const prevAttributes = renderedAttributesMap.get(el) || new Set<string>()
+  const currentAttributes = new Set<string>()
+
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
     // Skip condition states and internal data states - they should not become HTML attributes
@@ -369,16 +383,42 @@ function renderAttributes(
         state.id !== Properties.condition &&
         state.id !== Properties.condition2 &&
         state.expression) {
+      const attrName = state.label || state.id
       try {
         const value = evaluateExpression(state.expression, component, true)
         if (value !== null && value !== undefined) {
-          component.view?.el.setAttribute(state.label || state.id, String(value))
+          el.setAttribute(attrName, String(value))
+          currentAttributes.add(attrName)
         }
       } catch (e) {
         console.warn(`Error evaluating attribute ${state.id}:`, e)
       }
     }
   })
+
+  // Clean up any attributes that were previously rendered by data-source
+  // but are no longer present or evaluated to null/undefined
+  prevAttributes.forEach(attrName => {
+    if (!currentAttributes.has(attrName)) {
+      const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
+      const baseVal = baseAttrs[attrName]
+      if (baseVal !== undefined && baseVal !== null) {
+        if (typeof baseVal === 'boolean') {
+          if (baseVal) {
+            el.setAttribute(attrName, '')
+          } else {
+            el.removeAttribute(attrName)
+          }
+        } else {
+          el.setAttribute(attrName, String(baseVal))
+        }
+      } else {
+        el.removeAttribute(attrName)
+      }
+    }
+  })
+
+  renderedAttributesMap.set(el, currentAttributes)
 }
 
 // // Helper to extend a component instance
@@ -409,10 +449,16 @@ function renderContent(comp: Component, deep: number) {
   const innerHtml = renderInnerHTML(comp)
 
   if (innerHtml === null) {
+    const el = comp.view?.el
+    if (el && renderedInnerHTMLMap.has(el)) {
+      renderedInnerHTMLMap.delete(el)
+      comp.view!.render()
+    }
     comp.components()
       .forEach(c => renderPreview(c, deep+1))
   } else {
     const el = comp.view!.el
+    renderedInnerHTMLMap.add(el)
 
     // Parse new HTML into a temporary container
     const temp = document.createElement('div')
@@ -445,6 +491,31 @@ export function restoreOriginalRender(comp: Component) {
   const view = comp.view
   if (!view) {
     return
+  }
+
+  if (view.el) {
+    const prevAttrs = renderedAttributesMap.get(view.el)
+    if (prevAttrs) {
+      const baseAttrs: Record<string, unknown> = (comp.getAttributes ? comp.getAttributes() : comp.get?.('attributes')) || {}
+      prevAttrs.forEach(attrName => {
+        const baseVal = baseAttrs[attrName]
+        if (baseVal !== undefined && baseVal !== null) {
+          if (typeof baseVal === 'boolean') {
+            if (baseVal) {
+              view.el.setAttribute(attrName, '')
+            } else {
+              view.el.removeAttribute(attrName)
+            }
+          } else {
+            view.el.setAttribute(attrName, String(baseVal))
+          }
+        } else {
+          view.el.removeAttribute(attrName)
+        }
+      })
+      renderedAttributesMap.delete(view.el)
+    }
+    renderedInnerHTMLMap.delete(view.el)
   }
 
   // Force standard GrapesJS render
@@ -616,6 +687,7 @@ export function renderPreview(comp: Component, deep = 0) {
         } else {
           // Just set innerHTML directly without diffing in the loop
           el.innerHTML = innerHtml
+          renderedInnerHTMLMap.add(el)
         }
         renderAttributes(comp)
       }
