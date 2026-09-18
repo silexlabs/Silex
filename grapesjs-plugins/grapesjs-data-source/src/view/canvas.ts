@@ -363,6 +363,47 @@ const renderedAttributesMap = new WeakMap<Element, Set<string>>()
 // Tracks elements that currently have dynamic innerHTML applied
 const renderedInnerHTMLMap = new WeakSet<Element>()
 
+function restoreAttribute(
+  component: Component,
+  el: Element,
+  attrName: string,
+): void {
+  if (attrName === 'class') {
+    const classes = (component.getClasses ? component.getClasses() : []) as (string | { get?: (k: string) => unknown; name?: string })[]
+    const classList = classes
+      .map(c => (typeof c === 'string' ? c : (c?.get ? String(c.get('name')) : c?.name) || String(c)))
+      .filter(Boolean)
+    if (classList.length > 0) {
+      el.setAttribute('class', classList.join(' '))
+    } else {
+      const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
+      const baseVal = baseAttrs['class']
+      if (baseVal !== undefined && baseVal !== null && baseVal !== '') {
+        el.setAttribute('class', String(baseVal))
+      } else {
+        el.removeAttribute('class')
+      }
+    }
+    return
+  }
+
+  const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
+  const baseVal = baseAttrs[attrName]
+  if (baseVal !== undefined && baseVal !== null) {
+    if (typeof baseVal === 'boolean') {
+      if (baseVal) {
+        el.setAttribute(attrName, '')
+      } else {
+        el.removeAttribute(attrName)
+      }
+    } else {
+      el.setAttribute(attrName, String(baseVal))
+    }
+  } else {
+    el.removeAttribute(attrName)
+  }
+}
+
 function renderAttributes(
   component: Component,
 ): void {
@@ -400,21 +441,7 @@ function renderAttributes(
   // but are no longer present or evaluated to null/undefined
   prevAttributes.forEach(attrName => {
     if (!currentAttributes.has(attrName)) {
-      const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
-      const baseVal = baseAttrs[attrName]
-      if (baseVal !== undefined && baseVal !== null) {
-        if (typeof baseVal === 'boolean') {
-          if (baseVal) {
-            el.setAttribute(attrName, '')
-          } else {
-            el.removeAttribute(attrName)
-          }
-        } else {
-          el.setAttribute(attrName, String(baseVal))
-        }
-      } else {
-        el.removeAttribute(attrName)
-      }
+      restoreAttribute(component, el, attrName)
     }
   })
 
@@ -496,22 +523,8 @@ export function restoreOriginalRender(comp: Component) {
   if (view.el) {
     const prevAttrs = renderedAttributesMap.get(view.el)
     if (prevAttrs) {
-      const baseAttrs: Record<string, unknown> = (comp.getAttributes ? comp.getAttributes() : comp.get?.('attributes')) || {}
       prevAttrs.forEach(attrName => {
-        const baseVal = baseAttrs[attrName]
-        if (baseVal !== undefined && baseVal !== null) {
-          if (typeof baseVal === 'boolean') {
-            if (baseVal) {
-              view.el.setAttribute(attrName, '')
-            } else {
-              view.el.removeAttribute(attrName)
-            }
-          } else {
-            view.el.setAttribute(attrName, String(baseVal))
-          }
-        } else {
-          view.el.removeAttribute(attrName)
-        }
+        restoreAttribute(comp, view.el, attrName)
       })
       renderedAttributesMap.delete(view.el)
     }
@@ -770,7 +783,7 @@ function cleanupLoopClones(component: Component): void {
 }
 
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
-  const events = opts.previewRefreshEvents!.split(' ')
+  const events = opts.previewRefreshEvents ? opts.previewRefreshEvents.split(/\s+/).filter(Boolean) : []
   for(const eventName of events) {
     editor.on(eventName, () => {
       if (getPreviewActive()) {
