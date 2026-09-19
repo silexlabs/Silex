@@ -1,4 +1,4 @@
-import { createWriteStream, unlink } from 'fs'
+import { createWriteStream, readdirSync, statSync, unlink } from 'fs'
 import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
 import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors.js'
 import { tmpdir } from 'os'
@@ -15,6 +15,39 @@ type DownloadConnectorOptions = object
 
 const ZIP_ICON = '/assets/download.png'
 
+// websiteId + 13-digit Date.now() + alphanumeric random + .zip (see startPublishingInBackground)
+export const DOWNLOAD_ZIP_NAME_PATTERN = /-\d{13}-[a-z0-9]+\.zip$/
+export const STALE_DOWNLOAD_ZIP_MAX_AGE_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Remove never-downloaded publication zips left in os.tmpdir().
+ * Only names matching the generated pattern and files older than 24h (mtime) are deleted.
+ */
+export function sweepStaleDownloadZips(now = Date.now()): void {
+  const dir = tmpdir()
+  let names: string[]
+  try {
+    names = readdirSync(dir)
+  } catch (err) {
+    console.error('[DownloadConnector] Error while listing temporary zip files', err)
+    return
+  }
+  for (const name of names) {
+    if (!DOWNLOAD_ZIP_NAME_PATTERN.test(name)) continue
+    const path = join(dir, name)
+    try {
+      const stats = statSync(path)
+      if (!stats.isFile()) continue
+      if (now - stats.mtimeMs <= STALE_DOWNLOAD_ZIP_MAX_AGE_MS) continue
+      unlink(path, (unlinkErr) => {
+        if (unlinkErr) console.error('[DownloadConnector] Error while deleting stale zip file', unlinkErr)
+      })
+    } catch (err) {
+      console.error('[DownloadConnector] Error while inspecting temporary zip file', err)
+    }
+  }
+}
+
 export default class implements HostingConnector<DownloadConnectorSession> {
   connectorId = 'download-connector'
   displayName = 'Download zip file'
@@ -28,6 +61,10 @@ export default class implements HostingConnector<DownloadConnectorSession> {
   constructor(config: ServerConfig) {
     // Add a route to serve the zip file
     config.on(ServerEvent.STARTUP_END, ({app}) => {
+      // Leftovers that were never downloaded stay in tmpdir (#1725 unlinks after download).
+      sweepStaleDownloadZips()
+      setInterval(() => sweepStaleDownloadZips(), STALE_DOWNLOAD_ZIP_MAX_AGE_MS).unref()
+
       app.get('/download/:tmpZipFile', async (req: Request, res: Response) => {
         const tmpZipFile = req.params.tmpZipFile as string
         if (basename(tmpZipFile) !== tmpZipFile) {
