@@ -1,6 +1,46 @@
+// MCP helpers used by the Rust side (eval_js) and unit-tested from Node.
+// Tool names here must match the capability ids after ':' → '_' (mcp.rs).
+function getSelectionState(editor) {
+  const dev = editor.Devices.getSelected();
+  const page = editor.Pages.getSelected();
+  const sel = editor.getSelected();
+  const rule = editor.StyleManager?.getSelected?.();
+
+  // components_list / components_select use getId() (HTML id, else ccid).
+  // Reporting ccid broke select when the element had an id attribute.
+  const componentId = (() => {
+    if (!sel) return null;
+    if (typeof sel.getId === 'function') {
+      const id = sel.getId();
+      if (id) return id;
+    }
+    return sel.ccid ?? null;
+  })();
+
+  const state = {
+    breakpoint: dev?.get('name') ?? dev?.id ?? 'Desktop',
+    page: page?.get('name') ?? page?.id ?? null,
+    component: componentId,
+    selector: rule?.selectorsToString?.() ?? null
+  };
+
+  // Add hierarchy warnings so SLMs know what is missing
+  const warnings = [];
+  if (!state.page) warnings.push("No page selected — use pages_select first");
+  if (!state.component) warnings.push("No element selected — use components_select before selector/style/symbol operations");
+  if (!state.selector) warnings.push("No selector active — use selector_set before styles_set");
+  if (warnings.length > 0) state.warnings = warnings;
+
+  return state;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { getSelectionState };
+}
+
 (() => {
-  // Only activate in Tauri context
-  if (!window.__TAURI__) return;
+  // Only activate in Tauri context (skip when required from Node tests)
+  if (typeof window === 'undefined' || !window.__TAURI__) return;
 
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
@@ -47,28 +87,7 @@
   // Nothing else belongs here: a capability's own logic lives in its plugin.
   window.__silexMcp = {
     // Context joined to every dynamic tool response, so the agent knows what is selected.
-    getSelectionState(editor) {
-      const dev = editor.Devices.getSelected();
-      const page = editor.Pages.getSelected();
-      const sel = editor.getSelected();
-      const rule = editor.StyleManager?.getSelected?.();
-
-      const state = {
-        breakpoint: dev?.get('name') ?? dev?.id ?? 'Desktop',
-        page: page?.get('name') ?? page?.id ?? null,
-        component: sel?.ccid ?? null,
-        selector: rule?.selectorsToString?.() ?? null
-      };
-
-      // Add hierarchy warnings so SLMs know what is missing
-      const warnings = [];
-      if (!state.page) warnings.push("No page selected — use page(action:'select') first");
-      if (!state.component) warnings.push("No element selected — use component(action:'select') before selector/style/symbol operations");
-      if (!state.selector) warnings.push("No selector active — use selector(action:'select') before style(action:'set')");
-      if (warnings.length > 0) state.warnings = warnings;
-
-      return state;
-    },
+    getSelectionState,
 
     // Capabilities the current page exposes, turned into MCP tools by the Rust side.
     getCapabilities() {
