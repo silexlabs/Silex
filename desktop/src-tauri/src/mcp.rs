@@ -338,8 +338,9 @@ impl SilexMcp {
                         cmd = cmd_js
                     );
 
-                    mcp.require_project()
-                        .map_err(|e| McpError::internal_error(e, None))?;
+                    if let Err(e) = mcp.require_project() {
+                        return Ok(tool_error(e));
+                    }
                     match mcp.eval_js_internal(&js, 10).await {
                         Ok(result) => {
                             let text = result.unwrap_or_else(|| "null".into());
@@ -382,6 +383,35 @@ fn tool_error(msg: impl Into<String>) -> CallToolResult {
         is_error: Some(true),
         meta: None,
     }
+}
+
+/// Required string argument. Empty is treated as missing so clients see a tool
+/// error instead of an opaque `invalid_params` protocol error.
+fn required_field<'a>(value: &'a Option<String>, name: &str) -> Result<&'a str, String> {
+    match value {
+        Some(s) if !s.is_empty() => Ok(s.as_str()),
+        _ => Err(format!("{name} is required")),
+    }
+}
+
+/// Screenshot target: omit for `ui`. Anything else must be `ui` or `canvas`.
+fn screenshot_target(target: Option<&str>) -> Result<&str, String> {
+    let target = target.unwrap_or("ui");
+    match target {
+        "ui" | "canvas" => Ok(target),
+        other => Err(format!(
+            "Unknown screenshot target '{other}'. Valid targets: ui, canvas."
+        )),
+    }
+}
+
+/// Delete should leave the editor only when the deleted website is the open one.
+fn delete_closes_open_website(deleted_id: &str, open_id: Option<&str>) -> bool {
+    open_id == Some(deleted_id)
+}
+
+fn website_http_error(verb: &str, status: impl std::fmt::Display, body: &str) -> String {
+    format!("Error {verb} website ({status}): {body}")
 }
 
 // ==========================================================================
@@ -476,13 +506,19 @@ impl SilexMcp {
                                     // Load capabilities synchronously so they're available immediately
                                     match self.load_capabilities().await {
                                         Ok(n) => {
-                                            tracing::info!("Loaded {} capabilities after create", n)
+                                            tracing::info!(
+                                                "Loaded {} capabilities after create",
+                                                n
+                                            );
+                                            Ok(CallToolResult::success(vec![Content::text(
+                                                response_body,
+                                            )]))
                                         }
-                                        Err(e) => {
-                                            tracing::warn!("Failed to load capabilities: {}", e)
-                                        }
+                                        Err(e) => Ok(tool_error(format!(
+                                            "Website created but editor tools failed to load: {}",
+                                            e
+                                        ))),
                                     }
-                                    Ok(CallToolResult::success(vec![Content::text(response_body)]))
                                 } else {
                                     Ok(tool_error(format!(
                                         "Error creating website ({}): {}",
@@ -498,28 +534,35 @@ impl SilexMcp {
             }
 
             WebsiteAction::Delete => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match required_field(&params.website_id, "website_id") {
+                    Ok(id) => id,
+                    Err(msg) => return Ok(tool_error(msg)),
+                };
                 let url = format!(
                     "{}/api/website?websiteId={}&connectorId=fs-storage",
                     base_url, wid
                 );
                 match client.delete(&url).send().await {
                     Ok(resp) => {
-                        if resp.status().is_success() {
-                            let _ = self.navigate_to(&format!("{}/", base_url));
-                            // Clear dynamic tools since we're back on dashboard
-                            *self.dynamic_tools.write().await = ToolRouter::new();
-                            self.capabilities_loaded.store(false, Ordering::Release);
+                        let status = resp.status();
+                        if status.is_success() {
+                            let open_id = {
+                                let state = self.app_handle.state::<AppState>();
+                                held(&state.current_website_id).clone()
+                            };
+                            // Only leave the editor when the deleted site is the open one
+                            if delete_closes_open_website(wid, open_id.as_deref()) {
+                                let _ = self.navigate_to(&format!("{}/", base_url));
+                                *self.dynamic_tools.write().await = ToolRouter::new();
+                                self.capabilities_loaded.store(false, Ordering::Release);
+                            }
                             Ok(CallToolResult::success(vec![Content::text(format!(
                                 "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
                                 wid
                             ))]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
-                            Ok(tool_error(format!("Error deleting website: {}", body)))
+                            Ok(tool_error(website_http_error("deleting", status, &body)))
                         }
                     }
                     Err(e) => Ok(tool_error(format!("Error deleting website: {}", e))),
@@ -527,14 +570,14 @@ impl SilexMcp {
             }
 
             WebsiteAction::Rename => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
-                let name = params
-                    .name
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("name is required", None))?;
+                let wid = match required_field(&params.website_id, "website_id") {
+                    Ok(id) => id,
+                    Err(msg) => return Ok(tool_error(msg)),
+                };
+                let name = match required_field(&params.name, "name") {
+                    Ok(n) => n,
+                    Err(msg) => return Ok(tool_error(msg)),
+                };
                 let url = format!(
                     "{}/api/website/meta?websiteId={}&connectorId=fs-storage",
                     base_url, wid
@@ -548,14 +591,15 @@ impl SilexMcp {
                     .await
                 {
                     Ok(resp) => {
-                        if resp.status().is_success() {
+                        let status = resp.status();
+                        if status.is_success() {
                             Ok(CallToolResult::success(vec![Content::text(format!(
                                 "{{\"success\":true,\"message\":\"Renamed to '{}'\"}}",
                                 name
                             ))]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
-                            Ok(tool_error(format!("Error renaming website: {}", body)))
+                            Ok(tool_error(website_http_error("renaming", status, &body)))
                         }
                     }
                     Err(e) => Ok(tool_error(format!("Error renaming website: {}", e))),
@@ -563,22 +607,23 @@ impl SilexMcp {
             }
 
             WebsiteAction::Duplicate => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match required_field(&params.website_id, "website_id") {
+                    Ok(id) => id,
+                    Err(msg) => return Ok(tool_error(msg)),
+                };
                 let url = format!(
                     "{}/api/website/duplicate?websiteId={}&connectorId=fs-storage",
                     base_url, wid
                 );
                 match client.post(&url).send().await {
                     Ok(resp) => {
-                        if resp.status().is_success() {
+                        let status = resp.status();
+                        if status.is_success() {
                             let body = resp.text().await.unwrap_or_default();
                             Ok(CallToolResult::success(vec![Content::text(body)]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
-                            Ok(tool_error(format!("Error duplicating website: {}", body)))
+                            Ok(tool_error(website_http_error("duplicating", status, &body)))
                         }
                     }
                     Err(e) => Ok(tool_error(format!("Error duplicating website: {}", e))),
@@ -586,22 +631,47 @@ impl SilexMcp {
             }
 
             WebsiteAction::Open => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match required_field(&params.website_id, "website_id") {
+                    Ok(id) => id,
+                    Err(msg) => return Ok(tool_error(msg)),
+                };
+                // Fail before navigate so a missing id is not reported as opened
+                let meta_url = format!(
+                    "{}/api/website/meta?websiteId={}&connectorId=fs-storage",
+                    base_url, wid
+                );
+                match client.get(&meta_url).send().await {
+                    Ok(resp) => {
+                        let status = resp.status();
+                        if !status.is_success() {
+                            let body = resp.text().await.unwrap_or_default();
+                            return Ok(tool_error(format!(
+                                "Website '{}' not found ({}): {}",
+                                wid, status, body
+                            )));
+                        }
+                    }
+                    Err(e) => {
+                        return Ok(tool_error(format!(
+                            "Error checking website '{}': {}",
+                            wid, e
+                        )));
+                    }
+                }
                 let nav_url = format!("{}/?id={}", base_url, wid);
                 match self.navigate_to(&nav_url) {
-                    Ok(_) => {
-                        // Load capabilities synchronously so they're available immediately
-                        match self.load_capabilities().await {
-                            Ok(n) => tracing::info!("Loaded {} capabilities after open", n),
-                            Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
+                    Ok(_) => match self.load_capabilities().await {
+                        Ok(n) => {
+                            tracing::info!("Loaded {} capabilities after open", n);
+                            Ok(CallToolResult::success(vec![Content::text(
+                                "{\"success\":true,\"message\":\"Website opened in editor\"}",
+                            )]))
                         }
-                        Ok(CallToolResult::success(vec![Content::text(
-                            "{\"success\":true,\"message\":\"Website opened in editor\"}",
-                        )]))
-                    }
+                        Err(e) => Ok(tool_error(format!(
+                            "Website opened but editor tools failed to load: {}",
+                            e
+                        ))),
+                    },
                     Err(e) => Ok(tool_error(e)),
                 }
             }
@@ -631,9 +701,11 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let _tx =
-            Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
-        let target = params.target.as_deref().unwrap_or("ui");
+        let target = match screenshot_target(params.target.as_deref()) {
+            Ok(t) => t,
+            Err(msg) => return Ok(tool_error(msg)),
+        };
+        let _tx = Self::start_tool_transaction("screenshot", target);
 
         let screenshot_js = r#"
 (async function() {
@@ -684,11 +756,16 @@ impl SilexMcp {
         // Build response with inline image
         let mut content = vec![Content::image(base64_data.to_string(), "image/png")];
 
-        // Optionally save to file
+        // Optionally save to file — a write failure is the tool result, not a note on success
         if let Some(path) = params.output_file {
             match std::fs::write(&path, &png_bytes) {
                 Ok(_) => content.push(Content::text(format!("Screenshot also saved to {}", path))),
-                Err(e) => content.push(Content::text(format!("Failed to save file: {}", e))),
+                Err(e) => {
+                    return Ok(tool_error(format!(
+                        "Failed to save screenshot to {}: {}",
+                        path, e
+                    )));
+                }
             }
         }
 
@@ -834,13 +911,10 @@ RULES:
                 return dynamic.call(tool_ctx).await;
             }
 
-            Err(McpError::invalid_params(
-                format!(
-                    "Tool '{}' not found. Use list_tools to see available tools.",
-                    request.name
-                ),
-                None,
-            ))
+            Ok(tool_error(format!(
+                "Tool '{}' not found. Use list_tools to see available tools.",
+                request.name
+            )))
         }
     }
 
@@ -927,5 +1001,68 @@ pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: Pendin
         Err(e) => {
             tracing::warn!("MCP stdio not available (launched without stdin?): {}", e);
         }
+    }
+}
+
+#[cfg(test)]
+mod website_screenshot_errors {
+    use super::*;
+
+    #[test]
+    fn required_field_rejects_missing_and_empty() {
+        assert_eq!(
+            required_field(&None, "website_id").unwrap_err(),
+            "website_id is required"
+        );
+        assert_eq!(
+            required_field(&Some(String::new()), "name").unwrap_err(),
+            "name is required"
+        );
+        assert_eq!(
+            required_field(&Some("abc".into()), "website_id").unwrap(),
+            "abc"
+        );
+    }
+
+    #[test]
+    fn screenshot_target_defaults_to_ui_and_rejects_unknown() {
+        assert_eq!(screenshot_target(None).unwrap(), "ui");
+        assert_eq!(screenshot_target(Some("ui")).unwrap(), "ui");
+        assert_eq!(screenshot_target(Some("canvas")).unwrap(), "canvas");
+        let err = screenshot_target(Some("window")).unwrap_err();
+        assert!(err.contains("Unknown screenshot target 'window'"));
+        assert!(err.contains("ui, canvas"));
+        assert!(screenshot_target(Some("")).is_err());
+    }
+
+    #[test]
+    fn delete_only_closes_the_open_website() {
+        assert!(delete_closes_open_website("a", Some("a")));
+        assert!(!delete_closes_open_website("a", Some("b")));
+        assert!(!delete_closes_open_website("a", None));
+    }
+
+    #[test]
+    fn http_errors_include_status() {
+        assert_eq!(
+            website_http_error("deleting", 404, "not found"),
+            "Error deleting website (404): not found"
+        );
+        assert_eq!(
+            website_http_error("renaming", 500, "oops"),
+            "Error renaming website (500): oops"
+        );
+        assert_eq!(
+            website_http_error("duplicating", 400, "bad"),
+            "Error duplicating website (400): bad"
+        );
+    }
+
+    #[test]
+    fn tool_error_sets_is_error() {
+        let result = tool_error(
+            "No project open. Use website(action: 'open') or website(action: 'create') first.",
+        );
+        assert_eq!(result.is_error, Some(true));
     }
 }
