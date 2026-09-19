@@ -107,6 +107,40 @@ test('validation: tags, inputSchema, outputSchema types', () => {
     assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', outputSchema: [1] }), /outputSchema/)
 })
 
+test('validation: reject MCP-invalid inputSchema property names', () => {
+    const editor = setup()
+    assert.throws(
+        () => addCapability({
+            id: 'a',
+            command: 'x',
+            description: 'y',
+            inputSchema: { type: 'object', properties: { 'og:title': { type: 'string' } } },
+        }),
+        /og:title/
+    )
+    assert.throws(
+        () => addCapability({
+            id: 'b',
+            command: 'x',
+            description: 'y',
+            inputSchema: {
+                type: 'object',
+                properties: {
+                    nested: { type: 'object', properties: { 'og:image': { type: 'string' } } },
+                },
+            },
+        }),
+        /og:image/
+    )
+    const cap = addCapability({
+        id: 'c',
+        command: 'x',
+        description: 'y',
+        inputSchema: { type: 'object', properties: { og_title: { type: 'string' } } },
+    })
+    assert.ok(cap.inputSchema.properties.og_title)
+})
+
 test('prompt alias for description', () => {
     const editor = setup()
     const cap = addCapability({ id: 'p', command: 'core:canvas-clear', prompt: 'Do something' })
