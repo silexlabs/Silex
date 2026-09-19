@@ -47,7 +47,7 @@ These rules apply when your AI tool controls the Silex visual editor (e.g. via M
 
 - **CSS**: BEM class naming. Style via `CssComposer.addRules()`. No inline styles, no CSS Grid (use Flexbox).
 - **GrapesJS API**: Never modify DOM directly. Use the component/style APIs.
-- **Pages**: Homepage must be named `index`. Internal links start with `./`.
+- **Pages**: The main/first page is the homepage; publish writes it as `index.html` even if it has another display name. Internal links start with `./`.
 - **Symbols**: Use Symbols for shared header/footer across pages.
 - **Responsiveness**: Use DeviceManager breakpoints, never resize the browser window.
 

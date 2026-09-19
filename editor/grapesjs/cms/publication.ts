@@ -9,6 +9,7 @@ import { UNWRAP_ID } from './traits'
 import { EleventyDataSourceId } from './DataSource'
 import { ClientEvent } from '../../events'
 import { WebsiteSettings, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
+import { getPublishedHtmlPath, PagePublishInfo } from '~/common/page'
 
 const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
 
@@ -276,7 +277,11 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
   // Do nothing if there is no data source, just a static site
   if(!enable11ty()) return
 
-  editor.Pages.getAll().forEach(page => {
+  const publishPages: PagePublishInfo[] = editor.Pages.getAll().map(page => ({
+    name: page.get('name') as string | undefined,
+    type: page.get('type') as string | undefined,
+  }))
+  editor.Pages.getAll().forEach((page, index) => {
     // Get the page properties
     const slug = slugify(page.getName() || 'index')
     const settings = (page.get('settings') ?? {}) as Silex11tyPluginWebsiteSettings
@@ -291,9 +296,10 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
       }
     })
 
-    // Find the page in the published data
+    // Find the page in the published data (homepage may be /index.html
+    // even when the page display name slugifies to something else)
     if (!data.files) throw new Error('No files in publication data')
-    const path = transformPath(editor, `/${slug}.html`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions)
+    const path = transformPath(editor, getPublishedHtmlPath(publishPages[index], publishPages), ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions)
     const pageData = data.files.find(file => file.path === path) as ClientSideFileWithContent | undefined
     if (!pageData) throw new Error(`No file for path ${path}`)
     if (pageData.type !== ClientSideFileType.HTML) throw new Error(`File for path ${path} is not HTML`)

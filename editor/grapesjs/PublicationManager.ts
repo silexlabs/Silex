@@ -15,14 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { getPageSlug } from '~/common/page'
+import { getPageSlug, getPublishedHtmlPath, getHomepagePublishPage, hasIndexSlugPage, rewritePublishedPermalink, HOMEPAGE_SLUG, PagePublishInfo } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ConnectorOptions, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
 import { ClientEvent } from '../events'
-import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
+import { PublicationTransformer, resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
 import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
@@ -363,6 +363,8 @@ export class PublicationManager {
       const siteSettings = { ...this.editor.getModel().get('settings') as WebsiteSettings }
       // Check for missing SEO tags and warn user
       this.checkSeoTags(siteSettings)
+      // Warn when no page is named index; still publish the homepage as index.html
+      this.checkHomepageIndex()
       let preventDefaultStart = false
       this.editor.trigger(ClientEvent.PUBLISH_START, {projectData, siteSettings, preventDefault: () => preventDefaultStart = true, publicationManager: this })
       if(preventDefaultStart) {
@@ -583,8 +585,77 @@ export class PublicationManager {
     }
   }
 
+  /**
+   * Warn when no page slugifies to `index`. Static hosts serve `/` from
+   * `index.html`; Silex still publishes the main/homepage there.
+   */
+  checkHomepageIndex(): void {
+    const pages = this.pagePublishInfos()
+    if (hasIndexSlugPage(pages)) return
+    const homepage = getHomepagePublishPage(pages)
+    const homepageName = (homepage?.name || '').trim() || 'Untitled page'
+    const gjsPages = this.editor.Pages.getAll()
+    const gjsPage = gjsPages.find(page =>
+      page.get('name') === homepage?.name && page.get('type') === homepage?.type
+    ) ?? gjsPages[0]
+    this.editor.runCommand('notifications:add', {
+      id: 'publish-homepage-index',
+      type: 'warning',
+      message: `No page is named "index". Static hosts (GitLab Pages, GitHub Pages, \u2026) serve / from index.html. Silex will publish the homepage "${homepageName}" as /index.html so the published site root works.`,
+      componentId: gjsPage?.getMainComponent()?.getId(),
+      group: 'publication',
+    })
+  }
+
+  private pagePublishInfos(): PagePublishInfo[] {
+    return this.editor.Pages.getAll().map(page => ({
+      name: page.get('name') as string | undefined,
+      type: page.get('type') as string | undefined,
+    }))
+  }
+
+  /**
+   * Temporary transformer so in-site links to the homepage slug
+   * (e.g. ./accueil.html) become ./index.html when that page is the root.
+   */
+  private homepageIndexTransformer: PublicationTransformer | null = null
+
+  private installHomepageIndexTransformer() {
+    this.uninstallHomepageIndexTransformer()
+    const pages = this.pagePublishInfos()
+    const homepage = getHomepagePublishPage(pages)
+    if (!homepage || getPageSlug(homepage.name) === HOMEPAGE_SLUG) return
+    const transformer: PublicationTransformer = {
+      transformPermalink: (link, type) => {
+        if (type !== ClientSideFileType.HTML) return undefined
+        const rewritten = rewritePublishedPermalink(link, pages)
+        return rewritten === link ? undefined : rewritten
+      },
+      transformPath: (path, type) => {
+        if (type !== ClientSideFileType.HTML) return undefined
+        const rewritten = rewritePublishedPermalink(path, pages)
+        return rewritten === path ? undefined : rewritten
+      },
+    }
+    const config = this.editor.getModel().get('config')
+    config.publicationTransformers = [...(config.publicationTransformers || []), transformer]
+    this.homepageIndexTransformer = transformer
+  }
+
+  private uninstallHomepageIndexTransformer() {
+    if (!this.homepageIndexTransformer) return
+    const config = this.editor.getModel().get('config')
+    if (config?.publicationTransformers) {
+      config.publicationTransformers = config.publicationTransformers.filter(
+        (transformer: PublicationTransformer) => transformer !== this.homepageIndexTransformer
+      )
+    }
+    this.homepageIndexTransformer = null
+  }
+
   async *getHtmlFilesYield(siteSettings: WebsiteSettings, preventDefault): AsyncGenerator<WebsiteFile | undefined> {
-    for (const page of this.editor.Pages.getAll()) {
+    const publishPages = this.pagePublishInfos()
+    for (const [index, page] of this.editor.Pages.getAll().entries()) {
       // Clone the settings because plugins can change them
       const clonedSiteSettings = { ...siteSettings }
       const pageSettings = { ...page.get('settings') as WebsiteSettings }
@@ -601,10 +672,11 @@ export class PublicationManager {
       console.timeEnd(`getHtml ${page.getId()} ${page.get('name')}`)
       yield undefined // Yield control to avoid blocking the main thread
 
-      // Transform the file paths
+      // Transform the file paths. The homepage is always /index.html so
+      // static hosts serve `/`, even when the page is named Accueil / Home.
       const slug = getPageSlug(page.get('name'))
       const cssInitialPath = `/css/${slug}-${await hashString(cssContent)}.css`
-      const htmlInitialPath = `/${slug}.html`
+      const htmlInitialPath = getPublishedHtmlPath(publishPages[index], publishPages)
       const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS, Initiator.HTML)
       yield undefined // Yield control to avoid blocking the main thread
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
@@ -679,6 +751,7 @@ ${htmlContent}
   }
 
   private setPublicationTransformers() {
+    this.installHomepageIndexTransformer()
     renderComponents(this.editor)
     renderCssRules(this.editor)
   }
@@ -686,5 +759,6 @@ ${htmlContent}
   private resetPublicationTransformers() {
     resetRenderComponents(this.editor)
     resetRenderCssRules(this.editor)
+    this.uninstallHomepageIndexTransformer()
   }
 }
