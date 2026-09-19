@@ -10,7 +10,8 @@ import {
   FIXED_TOKEN_ID,
 } from './types'
 import { refreshDataSources } from './model/dataSourceManager'
-import { Editor, Component } from 'grapesjs'
+import { Editor } from 'grapesjs'
+import { requireExistingState } from './state-guards'
 import { doRender, restoreOriginalRender } from './view/canvas'
 import {
   getAllDataSources,
@@ -27,13 +28,7 @@ export const CMD_DS_LIST = 'data-source:list'
 export const CMD_DS_GET_STATES = 'data-source:get-states'
 export const CMD_DS_SET_STATE = 'data-source:set-state'
 export const CMD_DS_REMOVE_STATE = 'data-source:remove-state'
-
-export function requireExistingState(stateId: string, ids: string[]): void {
-  if (!ids.includes(stateId)) {
-    const list = ids.length ? ids.join(', ') : '(none)'
-    throw new Error(`State "${stateId}" is not on the selected element. Its states are: ${list}. Use data-source:get-states to list existing states.`)
-  }
-}
+export { requireExistingState } from './state-guards'
 
 /**
  * Validate an expression with explicit error messages.
