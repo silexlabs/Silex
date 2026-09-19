@@ -548,7 +548,8 @@ impl SilexMcp {
                         if status.is_success() {
                             let open_id = {
                                 let state = self.app_handle.state::<AppState>();
-                                held(&state.current_website_id).clone()
+                                let id = held(&state.current_website_id).clone();
+                                id
                             };
                             // Only leave the editor when the deleted site is the open one
                             if delete_closes_open_website(wid, open_id.as_deref()) {
