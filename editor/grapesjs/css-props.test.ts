@@ -238,10 +238,35 @@ describe('transition', () => {
     // Silex adds the filter property itself, so it has to be animatable
     expect(options).toContain('filter')
     expect(options).toEqual(expect.arrayContaining(['color', 'border-color', 'backdrop-filter', 'visibility']))
+    // Leftover from #1678 after #1838: box-model and position properties
+    expect(options).toEqual(expect.arrayContaining([
+      'padding', 'margin', 'top', 'bottom', 'left', 'right',
+    ]))
     // The grapesjs list is kept
     expect(options).toEqual(expect.arrayContaining([
       'all', 'width', 'height', 'background-color', 'transform', 'box-shadow', 'opacity',
     ]))
+  })
+
+  it('offers cubic-bezier timing-function presets with concrete values', () => {
+    const options = getProperty('extra', 'transition')
+      .getProperty('transition-timing-function-sub')
+      .getOptions()
+      .map((option: any) => option.id)
+    expect(options).toEqual(expect.arrayContaining([
+      'linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out',
+    ]))
+    const beziers = options.filter((id: string) => id.startsWith('cubic-bezier('))
+    expect(beziers.length).toBeGreaterThanOrEqual(1)
+    expect(beziers).toEqual(expect.arrayContaining([
+      'cubic-bezier(0.4, 0, 0.2, 1)',
+      'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+    ]))
+    // Select options must be applyable CSS, not a placeholder like cubic-bezier(n,n,n,n)
+    for (const value of beziers) {
+      expect(value).toMatch(/^cubic-bezier\(-?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?\)$/)
+    }
   })
 
   it('writes and reads back a transition on filter', () => {
@@ -260,4 +285,43 @@ describe('transition', () => {
       'transition-timing-function-sub': 'ease-in-out',
     }])
   })
+
+  it('writes and reads back padding with a cubic-bezier timing function', () => {
+    const bezier = 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+    const rule = selectNewRule()
+    getProperty('extra', 'transition').addLayer({
+      'transition-property-sub': 'padding',
+      'transition-duration-sub': '300ms',
+      'transition-timing-function-sub': bezier,
+    }, { at: 0 })
+    expect(rule.getStyle()).toEqual({ transition: `padding 300ms ${bezier}` })
+    expect(editor.getCss({ keepUnusedStyles: true })).toContain(`transition:padding 300ms ${bezier}`)
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
+      'transition-property-sub': 'padding',
+      'transition-duration-sub': '300ms',
+      'transition-timing-function-sub': bezier,
+    }])
+  })
+
+  it.each(['margin', 'top', 'bottom', 'left', 'right'] as const)(
+    'writes and reads back a transition on %s',
+    (property) => {
+      const rule = selectNewRule()
+      getProperty('extra', 'transition').addLayer({
+        'transition-property-sub': property,
+        'transition-duration-sub': '2s',
+        'transition-timing-function-sub': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      }, { at: 0 })
+      expect(rule.getStyle()).toEqual({
+        transition: `${property} 2s cubic-bezier(0.4, 0, 0.2, 1)`,
+      })
+      selectNewRule(rule.getStyle() as Record<string, string>)
+      expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
+        'transition-property-sub': property,
+        'transition-duration-sub': '2s',
+        'transition-timing-function-sub': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      }])
+    },
+  )
 })

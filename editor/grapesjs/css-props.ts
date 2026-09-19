@@ -734,6 +734,12 @@ export default (editor: Editor, opts) => {
           { id: 'all', value: 'all', name: 'all' },
           { id: 'width', value: 'width', name: 'width' },
           { id: 'height', value: 'height', name: 'height' },
+          { id: 'padding', value: 'padding', name: 'padding' },
+          { id: 'margin', value: 'margin', name: 'margin' },
+          { id: 'top', value: 'top', name: 'top' },
+          { id: 'bottom', value: 'bottom', name: 'bottom' },
+          { id: 'left', value: 'left', name: 'left' },
+          { id: 'right', value: 'right', name: 'right' },
           { id: 'color', value: 'color', name: 'color' },
           { id: 'background-color', value: 'background-color', name: 'background-color' },
           { id: 'border-color', value: 'border-color', name: 'border-color' },
@@ -759,12 +765,18 @@ export default (editor: Editor, opts) => {
         property: 'transition-timing-function',
         type: 'select',
         default: 'ease',
+        // GrapesJS select options need a concrete `value` string, so cubic-bezier
+        // is offered as named presets (smooth / overshoot / bounce). A free-form
+        // custom curve would need a different control type.
         options: [
           { id: 'linear', value: 'linear', name: 'linear' },
           { id: 'ease', value: 'ease', name: 'ease' },
           { id: 'ease-in', value: 'ease-in', name: 'ease-in' },
           { id: 'ease-out', value: 'ease-out', name: 'ease-out' },
           { id: 'ease-in-out', value: 'ease-in-out', name: 'ease-in-out' },
+          { id: 'cubic-bezier(0.4, 0, 0.2, 1)', value: 'cubic-bezier(0.4, 0, 0.2, 1)', name: 'cubic-bezier (smooth)' },
+          { id: 'cubic-bezier(0.34, 1.56, 0.64, 1)', value: 'cubic-bezier(0.34, 1.56, 0.64, 1)', name: 'cubic-bezier (ease-out back)' },
+          { id: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', value: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', name: 'cubic-bezier (bounce)' },
         ],
         info: 'The transition-timing-function CSS property sets how intermediate values are calculated for CSS properties being affected by a transition effect.',
       }],
