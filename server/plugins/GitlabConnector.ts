@@ -36,6 +36,8 @@ import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteD
 const MAX_BATCH_UPLOAD_SIZE = 100
 const MAX_BODY_SIZE_KB = 8 * 1000 * 1024 // 8MB (note that 10 MB PNG → becomes ~13.3 MB → ❌ often too big for Gitlab)
 const WEBSITE_DATA_FILE_FORMAT_VERSION = '1.0.0'
+// The templates are public projects on gitlab.com, whatever instance the user is connected to
+const TEMPLATES_DOMAIN = 'https://gitlab.com'
 
 export interface GitlabOptions {
   clientId: string
@@ -118,6 +120,13 @@ interface GitlabCreateTag {
 interface GitlabFetchCommits {
   ref_name: string
   since: string
+}
+
+interface GitlabCreateProject {
+  name: string
+  path?: string
+  visibility?: 'private' | 'internal' | 'public'
+  import_url?: string
 }
 
 
@@ -306,7 +315,7 @@ export default class GitlabConnector implements StorageConnector {
     session: GitlabSession,
     path: string,
     method?: 'POST' | 'GET' | 'PUT' | 'DELETE',
-    requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null,
+    requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | GitlabCreateProject | null,
     params?: any,
     responseHeaders?: any,
   }): Promise<any> {
@@ -934,6 +943,9 @@ export default class GitlabConnector implements StorageConnector {
 
   /**
    * Fork an external/public GitLab project (from any user/organization)
+   * The source project lives on gitlab.com, where the templates are. GitLab can only
+   * fork within one instance, so when the user is connected to another instance
+   * (e.g. framagit.org) the project is created from the source repository URL instead
    * @param session - The user session
    * @param gitlabUrl - The project path in the "username/repo" format
    * @returns The new website ID (project ID)
@@ -943,6 +955,11 @@ export default class GitlabConnector implements StorageConnector {
     const projectPath = gitlabUrl.trim()
     if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(projectPath)) {
       throw new ApiError('Invalid project path. Use the "username/repo" format.', 400)
+    }
+
+    // Forking only works on gitlab.com, where the source project is
+    if (!this.isUsingOfficialInstance()) {
+      return this.importWebsite(session, projectPath)
     }
 
     // URL-encode the project path for the API
@@ -982,30 +999,94 @@ export default class GitlabConnector implements StorageConnector {
     })
 
     // Wait for the fork to complete (GitLab forks asynchronously)
-    const forkedProjectId = forkedProject.id.toString()
+    return this.waitForImport(session, forkedProject.id.toString(), 'Fork failed')
+  }
+
+  /**
+   * Create a project from a public gitlab.com project, for users connected to another GitLab instance
+   * This is the "Repository by URL" import of the GitLab API, which the instance must have enabled
+   * @param session - The user session
+   * @param projectPath - The gitlab.com project path in the "username/repo" format
+   * @returns The new website ID (project ID)
+   */
+  private async importWebsite(session: GitlabSession, projectPath: string): Promise<string> {
+    // Get the source project info from gitlab.com to extract its name (public project, no token needed)
+    const sourceUrl = `${TEMPLATES_DOMAIN}/api/v4/projects/${encodeURIComponent(projectPath)}`
+    let sourceResponse: Response
+    try {
+      sourceResponse = await this.fetchWithRetry(sourceUrl)
+    } catch (e) {
+      throw new ApiError(`Could not reach gitlab.com to read the project ${projectPath}: ${e.message || e}`, 500)
+    }
+    if (sourceResponse.status === 404) {
+      throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists on gitlab.com and is public.`, 404)
+    }
+    if (!sourceResponse.ok) {
+      throw new ApiError(`Could not read the project ${projectPath} on gitlab.com: ${sourceResponse.statusText}`, sourceResponse.status)
+    }
+    const sourceProject = await sourceResponse.json() as any
+    const importUrl = sourceProject.http_url_to_repo || `${TEMPLATES_DOMAIN}/${projectPath}.git`
+
+    // Generate a unique name for the new project
+    const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
+    const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
+    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
+
+    // Create the project in the user's namespace, importing the source repository by URL
+    let project: any
+    try {
+      project = await this.callApi({
+        session,
+        path: 'api/v4/projects/',
+        method: 'POST',
+        requestBody: {
+          name: this.options.repoPrefix + forkName,
+          path: safePath,
+          visibility: 'private',
+          import_url: importUrl,
+        },
+      })
+    } catch (e) {
+      // When the "Repository by URL" import source is disabled on the instance, GitLab
+      // answers 403 (older versions: a validation error mentioning import_source_disabled)
+      if (e.httpStatusCode === 403 || /import.source.is.disabled|import_source_disabled/i.test(e.message)) {
+        throw new ApiError(`Could not import the project ${projectPath}: the "Repository by URL" import source is disabled on ${this.options.domain}. Ask the administrator of this GitLab instance to enable it (Admin area > Settings > General > Import and export settings), or connect with gitlab.com.`, 403)
+      }
+      throw e
+    }
+
+    // Wait for the import to complete (GitLab imports asynchronously)
+    return this.waitForImport(session, project.id.toString(), 'Import failed')
+  }
+
+  /**
+   * Wait for a fork or an import to complete (GitLab does both asynchronously)
+   * @returns The project ID, once the project is ready or after the timeout
+   */
+  private async waitForImport(session: GitlabSession, projectId: string, errorPrefix: string): Promise<string> {
     const maxAttempts = 30 // 30 attempts * 2 seconds = 60 seconds max
     const pollInterval = 2000 // 2 seconds
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const project = await this.callApi({
         session,
-        path: `api/v4/projects/${forkedProjectId}`,
+        path: `api/v4/projects/${projectId}`,
         method: 'GET',
       })
 
       if (project.import_status === 'finished' || project.import_status === 'none') {
-        return forkedProjectId
+        return projectId
       }
 
       if (project.import_status === 'failed') {
-        throw new ApiError(`Fork failed: ${project.import_error || 'Unknown error'}`, 500)
+        throw new ApiError(`${errorPrefix}: ${project.import_error || 'Unknown error'}`, 500)
       }
 
       // Status is 'scheduled' or 'started', wait and retry
       await new Promise(resolve => setTimeout(resolve, pollInterval))
     }
 
-    return forkedProjectId
+    return projectId
   }
 
 
