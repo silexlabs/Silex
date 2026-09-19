@@ -7,6 +7,16 @@ import { OperatorType } from './model/Operator'
 const PSEUDO_CLASS_NAMES = Object.values(PseudoClassType)
 const OPERATOR_NAMES = Object.values(OperatorType)
 
+export function formatValidValues(items: string[]): string {
+  return items.length ? items.join(', ') : '(none)'
+}
+
+export function requireStyleProperty(style: Record<string, unknown>, property: string): void {
+  if (!Object.prototype.hasOwnProperty.call(style, property)) {
+    throw new Error(`Property "${property}" is not set. Current properties: ${formatValidValues(Object.keys(style))}.`)
+  }
+}
+
 export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:get', {
     run() {
@@ -99,6 +109,7 @@ export default function registerCommands(editor: Editor) {
       const { property } = cmdOpts
       if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
       const style = rule.getStyle()
+      requireStyleProperty(style, property)
       delete style[property]
       rule.setStyle(style)
     },

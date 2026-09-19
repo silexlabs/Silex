@@ -119,6 +119,11 @@ export default (editor: Editor) => {
     if (!selected) throw new Error('No component selected. Use components:select first.')
     const { name } = options
     if (!name) throw new Error('Required: name (CSS class name). Use classes:list to see classes on the selected component.')
+    const classes = selected.getClasses() || []
+    if (!classes.includes(name)) {
+      const list = classes.length ? classes.join(', ') : '(none)'
+      throw new Error(`Class "${name}" is not on the selected element. Its classes are: ${list}.`)
+    }
     selected.removeClass(name)
   })
 
@@ -142,9 +147,15 @@ export default (editor: Editor) => {
 
   // History
   editor.Commands.add('history:undo', () => {
+    if (!editor.UndoManager.hasUndo()) {
+      throw new Error('Nothing to undo.')
+    }
     editor.UndoManager.undo()
   })
   editor.Commands.add('history:redo', () => {
+    if (!editor.UndoManager.hasRedo()) {
+      throw new Error('Nothing to redo.')
+    }
     editor.UndoManager.redo()
   })
 

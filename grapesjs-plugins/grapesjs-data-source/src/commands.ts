@@ -28,6 +28,13 @@ export const CMD_DS_GET_STATES = 'data-source:get-states'
 export const CMD_DS_SET_STATE = 'data-source:set-state'
 export const CMD_DS_REMOVE_STATE = 'data-source:remove-state'
 
+export function requireExistingState(stateId: string, ids: string[]): void {
+  if (!ids.includes(stateId)) {
+    const list = ids.length ? ids.join(', ') : '(none)'
+    throw new Error(`State "${stateId}" is not on the selected element. Its states are: ${list}. Use data-source:get-states to list existing states.`)
+  }
+}
+
 /**
  * Validate an expression with explicit error messages.
  * Checks both token structure and data source schema references.
@@ -261,6 +268,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use data-source:get-states to list existing states.')
 
       const isExported = exported !== false
+      requireExistingState(stateId, getStateIds(component, isExported))
       removeState(component, stateId, isExported)
 
       if (isPreviewActive) forceRender(editor)

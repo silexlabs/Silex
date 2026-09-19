@@ -20,7 +20,8 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "node test/font-family.test.js"
   },
   "keywords": [
     "silex",
