@@ -369,6 +369,14 @@ function restoreAttribute(
   attrName: string,
 ): void {
   if (attrName === 'class') {
+    // If GrapesJS view provides updateClasses, use it directly as it properly
+    // restores the model classes and re-applies runtime status classes (e.g. gjs-selected)
+    const view = component.view as (Component['view'] & { updateClasses?: () => void; updateStatus?: () => void }) | undefined
+    if (view?.updateClasses) {
+      view.updateClasses()
+      return
+    }
+
     const classes = (component.getClasses ? component.getClasses() : []) as (string | { get?: (k: string) => unknown; name?: string })[]
     const classList = classes
       .map(c => (typeof c === 'string' ? c : (c?.get ? String(c.get('name')) : c?.name) || String(c)))
@@ -384,6 +392,7 @@ function restoreAttribute(
         el.removeAttribute('class')
       }
     }
+    view?.updateStatus?.()
     return
   }
 
@@ -429,6 +438,10 @@ function renderAttributes(
         const value = evaluateExpression(state.expression, component, true)
         if (value !== null && value !== undefined) {
           el.setAttribute(attrName, String(value))
+          if (attrName === 'class') {
+            const view = component.view as (Component['view'] & { updateStatus?: () => void }) | undefined
+            view?.updateStatus?.()
+          }
           currentAttributes.add(attrName)
         }
       } catch (e) {
@@ -521,17 +534,11 @@ export function restoreOriginalRender(comp: Component) {
   }
 
   if (view.el) {
-    const prevAttrs = renderedAttributesMap.get(view.el)
-    if (prevAttrs) {
-      prevAttrs.forEach(attrName => {
-        restoreAttribute(comp, view.el, attrName)
-      })
-      renderedAttributesMap.delete(view.el)
-    }
+    renderedAttributesMap.delete(view.el)
     renderedInnerHTMLMap.delete(view.el)
   }
 
-  // Force standard GrapesJS render
+  // Force standard GrapesJS render - rebuilds all attributes and classes from the model
   view.render()
 
   // Recursively restore all children
@@ -709,7 +716,10 @@ export function renderPreview(comp: Component, deep = 0) {
   } else {
     const isVisible = isComponentVisible(comp)
 
-    if(isVisible) {
+    renderContent(comp, deep)
+    renderAttributes(comp)
+
+    if (isVisible) {
       // Make sure the element is visible (in case it was hidden before)
       if (el.style && el.style.display === 'none') {
         el.style.removeProperty('display')
@@ -718,8 +728,6 @@ export function renderPreview(comp: Component, deep = 0) {
           el.removeAttribute('style')
         }
       }
-      renderContent(comp, deep)
-      renderAttributes(comp)
     } else {
       // Don't remove the element, just hide it
       // This prevents breaking loop rendering where the same element

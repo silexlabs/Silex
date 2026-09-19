@@ -532,7 +532,13 @@ describe('Issue #1845 - Live canvas synchronization', () => {
     })
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    try {
+      editor.select(null)
+    } catch {
+      // Ignore if editor already destroyed or no selection
+    }
+    await new Promise(resolve => setTimeout(resolve, 250))
     editor.destroy()
     container.remove()
   })
@@ -823,6 +829,116 @@ describe('Issue #1845 - Live canvas synchronization', () => {
     // Expected: display: none is removed immediately
     expect(comp.view?.el.style.display).not.toBe('none')
   })
+
+  test('Selection: dynamic class addition and removal preserves gjs-selected outline on selected element', async () => {
+    const [comp] = editor.addComponents('<div id="comp-sel-class" class="orig-badge">Badge</div>')
+
+    // 1. Select the component
+    editor.select(comp)
+    expect(comp.view?.el.classList.contains('orig-badge')).toBe(true)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    // 2. Add dynamic class attribute with a fixed value
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('dynamic-badge')],
+    }, false)
+
+    doRender(editor)
+
+    // Dynamic class is active and gjs-selected is preserved
+    expect(comp.view?.el.classList.contains('dynamic-badge')).toBe(true)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    // 3. Remove the dynamic class attribute
+    removeState(comp, 'test-attr-class', false)
+
+    doRender(editor)
+
+    // Expected: original class restored AND gjs-selected preserved without clicking again
+    expect(comp.view?.el.classList.contains('orig-badge')).toBe(true)
+    expect(comp.view?.el.classList.contains('dynamic-badge')).toBe(false)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    // Allow any pending debounced editor UI events (e.g. ClassTagsView) to settle before tearDown
+    await new Promise(resolve => setTimeout(resolve, 100))
+  })
+
+  test('Hidden component: dynamic attribute removal is reconciled on live DOM while component remains hidden', () => {
+    const [comp] = editor.addComponents('<div id="comp-hidden-attr" title="base-title">Content</div>')
+
+    // Add dynamic attribute
+    setState(comp, 'test-attr-title', {
+      label: 'title',
+      expression: [getFixedToken('dynamic-title')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.getAttribute('title')).toBe('dynamic-title')
+
+    // Hide the component via condition
+    setState(comp, Properties.condition, {
+      expression: [getFixedToken('')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).toBe('none')
+    expect(comp.view?.el.getAttribute('title')).toBe('dynamic-title')
+
+    // Remove dynamic attribute WHILE hidden
+    removeState(comp, 'test-attr-title', false)
+
+    doRender(editor)
+
+    // Expected: live DOM title restored to base attribute even while remaining hidden
+    expect(comp.view?.el.style.display).toBe('none')
+    expect(comp.view?.el.getAttribute('title')).toBe('base-title')
+
+    // Re-show component
+    removeState(comp, Properties.condition, false)
+    doRender(editor)
+    expect(comp.view?.el.style.display).not.toBe('none')
+    expect(comp.view?.el.getAttribute('title')).toBe('base-title')
+  })
+
+  test('Hidden component: dynamic HTML removal is reconciled on live DOM while component remains hidden', () => {
+    const [comp] = editor.addComponents('<div id="comp-hidden-html"><p class="orig-p">Original Paragraph</p></div>')
+
+    // Set dynamic HTML content
+    setState(comp, Properties.innerHTML, {
+      expression: [getFixedToken('<span class="dyn-span">Dynamic Span</span>')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.querySelector('.dyn-span')).not.toBeNull()
+
+    // Hide the component via condition
+    setState(comp, Properties.condition, {
+      expression: [getFixedToken('')],
+    }, false)
+
+    doRender(editor)
+    expect(comp.view?.el.style.display).toBe('none')
+    expect(comp.view?.el.querySelector('.dyn-span')).not.toBeNull()
+
+    // Clear dynamic HTML WHILE hidden
+    setState(comp, Properties.innerHTML, {
+      expression: [],
+    }, false)
+
+    doRender(editor)
+
+    // Expected: original HTML content restored immediately on live DOM while hidden
+    expect(comp.view?.el.style.display).toBe('none')
+    expect(comp.view?.el.querySelector('.orig-p')).not.toBeNull()
+    expect(comp.view?.el.querySelector('.dyn-span')).toBeNull()
+
+    // Re-show component
+    removeState(comp, Properties.condition, false)
+    doRender(editor)
+    expect(comp.view?.el.style.display).not.toBe('none')
+    expect(comp.view?.el.querySelector('.orig-p')).not.toBeNull()
+  })
 })
 
 describe('Issue #1845 - Live canvas synchronization (event-driven production flow)', () => {
@@ -868,7 +984,13 @@ describe('Issue #1845 - Live canvas synchronization (event-driven production flo
     })
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    try {
+      editor.select(null)
+    } catch {
+      // Ignore if editor already destroyed or no selection
+    }
+    await new Promise(resolve => setTimeout(resolve, 250))
     editor.destroy()
     container.remove()
   })
@@ -929,6 +1051,43 @@ describe('Issue #1845 - Live canvas synchronization (event-driven production flo
     await waitFor(() => comp.view?.el.getAttribute('class') === 'base-badge')
     expect(stateChangeEvents.length).toBeGreaterThan(eventCountBeforeRemoval)
     expect(comp.view?.el.getAttribute('class')).toBe('base-badge')
+  })
+
+  test('Event-driven: selected element preserves gjs-selected outline when dynamic class is added and removed via COMPONENT_STATE_CHANGED without manual doRender', async () => {
+    const [comp] = editor.addComponents('<div id="comp-event-sel-class" class="badge-base">Test</div>')
+
+    // 1. Select the component
+    editor.select(comp)
+    expect(comp.view?.el.classList.contains('badge-base')).toBe(true)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    const stateChangeEvents: unknown[] = []
+    editor.on(COMPONENT_STATE_CHANGED, (data) => {
+      stateChangeEvents.push(data)
+    })
+
+    // 2. Add dynamic class via state mutation
+    setState(comp, 'test-attr-class', {
+      label: 'class',
+      expression: [getFixedToken('badge-dynamic')],
+    }, false)
+
+    await waitFor(() => comp.view?.el.classList.contains('badge-dynamic') && comp.view?.el.classList.contains('gjs-selected'))
+    expect(stateChangeEvents.length).toBeGreaterThanOrEqual(1)
+    expect(comp.view?.el.classList.contains('badge-dynamic')).toBe(true)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    // 3. Remove dynamic class via state mutation
+    const eventCountBeforeRemoval = stateChangeEvents.length
+    removeState(comp, 'test-attr-class', false)
+
+    await waitFor(() => comp.view?.el.classList.contains('badge-base') && comp.view?.el.classList.contains('gjs-selected'))
+    expect(stateChangeEvents.length).toBeGreaterThan(eventCountBeforeRemoval)
+    expect(comp.view?.el.classList.contains('badge-base')).toBe(true)
+    expect(comp.view?.el.classList.contains('badge-dynamic')).toBe(false)
+    expect(comp.view?.el.classList.contains('gjs-selected')).toBe(true)
+
+    await new Promise(resolve => setTimeout(resolve, 100))
   })
 })
 
