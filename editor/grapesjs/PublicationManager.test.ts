@@ -7,8 +7,13 @@ import grapesjs, { Editor } from 'grapesjs'
 import { WebsiteSettings } from '~/common/types'
 import { PublicationManager } from './PublicationManager'
 
-// Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
+// Prevent lit-html / CMS plugin ESM from being imported (they break the tests)
 jest.mock('lit-html', () => ({}))
+jest.mock('lit-html/directives/unsafe-html.js', () => ({ unsafeHTML: () => undefined }))
+jest.mock('lit-html/directives/live.js', () => ({ live: () => undefined }))
+jest.mock('@silexlabs/grapesjs-data-source', () => ({
+  getAllDataSources: () => [],
+}))
 
 describe('PublicationManager html output', () => {
   let editor: Editor
