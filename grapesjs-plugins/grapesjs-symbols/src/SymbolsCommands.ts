@@ -2,25 +2,28 @@ import { Editor, Component } from 'grapesjs'
 import { html, render } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 
-import { allowDrop, createSymbol, deleteSymbol, getSymbols, unbindSymbolInstance } from './utils'
+import { allowDrop, createSymbol, deleteSymbol, unbindSymbolInstance } from './utils'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
 export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
+export const cmdCreateInstance = 'symbols:create-instance'
 export const cmdList = 'symbols:list'
 
 // Same signature as a grapesjs plugin
 export default function(editor: Editor) {
   editor.Commands.add(cmdList, {
     run() {
-      return getSymbols(editor)
+      return listSymbols(editor)
     },
   })
   editor.Commands.add(cmdAdd, _addSymbol)
   editor.Commands.add(cmdRemove, _removeSymbol)
   editor.Commands.add(cmdUnlink, _unlinkSymbolInstance)
   editor.Commands.add(cmdCreate, _createSymbolInstance)
+  // MCP-facing: JSON can send symbolId, not the GrapesJS objects symbols:create expects
+  editor.Commands.add(cmdCreateInstance, _createSymbolInstanceFromId)
 }
 
 // Symbol management functions
@@ -94,6 +97,59 @@ export function _unlinkSymbolInstance(
     throw new Error('Can not unlink the component: missing param component')
   }
   unbindSymbolInstance(editor, component)
+}
+
+/**
+ * Serializable symbol list for MCP (ids, not full GrapesJS component objects).
+ */
+export function listSymbols(editor: Editor) {
+  return editor.Components.getSymbols().map(symbol => {
+    const info = editor.Components.getSymbolInfo(symbol)
+    return {
+      id: symbol.getId(),
+      name: info?.main?.getName() ?? symbol.getName(),
+      instances: Array.isArray(info?.instances) ? info.instances.length : 0,
+    }
+  })
+}
+
+/**
+ * MCP entry point for symbols:create: take a symbolId, insert under the
+ * selected element (or the body), and select the new instance.
+ */
+export function _createSymbolInstanceFromId(
+  editor: Editor,
+  _: any,
+  { symbolId }: { symbolId?: string },
+): { id: string } | null {
+  if (!symbolId) {
+    throw new Error('Required: symbolId. Use symbols:list to see available symbols.')
+  }
+  const symbol = editor.Components.getSymbols()
+    .find(s => s.getId() === symbolId)
+  if (!symbol) {
+    throw new Error(`Symbol "${symbolId}" not found. Use symbols:list to see available symbols.`)
+  }
+  const target = editor.getSelected() || editor.getWrapper()
+  if (!target) {
+    throw new Error('No container to add the instance to. Use components:select first.')
+  }
+  if (typeof editor.Components.canMove === 'function') {
+    const check = editor.Components.canMove(target, symbol)
+    if (!check.result) {
+      throw new Error(`Cannot add symbol instance (canMove reason ${check.reason})`)
+    }
+  }
+  const instance = _createSymbolInstance(editor, _, {
+    symbol,
+    pos: { placement: 'after', index: 0 },
+    target,
+  })
+  if (instance) {
+    editor.select(instance)
+    return { id: instance.getId() }
+  }
+  return null
 }
 
 /**

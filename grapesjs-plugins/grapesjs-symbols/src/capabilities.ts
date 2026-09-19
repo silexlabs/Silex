@@ -1,10 +1,10 @@
-import { cmdList, cmdAdd, cmdRemove, cmdUnlink, cmdCreate } from './SymbolsCommands'
+import { cmdList, cmdAdd, cmdRemove, cmdUnlink, cmdCreate, cmdCreateInstance } from './SymbolsCommands'
 
 export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
   addCapability({
     id: cmdList,
     command: cmdList,
-    description: 'List all symbols',
+    description: 'List all symbols. Returns the id, name, and instance count of each symbol.',
     readOnly: true,
     tags: ['symbols'],
   })
@@ -43,8 +43,15 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   })
   addCapability({
     id: cmdCreate,
-    command: cmdCreate,
-    description: 'Create symbol instance',
+    command: cmdCreateInstance,
+    description: 'Create a symbol instance from symbolId inside the selected element (or the body if nothing is selected). The new instance becomes the selection.',
+    inputSchema: {
+      type: 'object',
+      required: ['symbolId'],
+      properties: {
+        symbolId: { type: 'string', description: 'Symbol id from symbols:list. The new instance is selected.' },
+      },
+    },
     tags: ['symbols'],
   })
 }

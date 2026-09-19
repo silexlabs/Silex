@@ -29,6 +29,30 @@ function findComponentById(editor: Editor, id: string) {
   return all.find(c => c.getId() === id)
 }
 
+/**
+ * GrapesJS canMove().reason: 0 invalid source, 1 source rejects dest, 2 target rejects source
+ * (including moving a parent into one of its children).
+ */
+function assertCanMove(editor: Editor, target: any, source: any, index?: number) {
+  const check = editor.Components.canMove(target, source, index)
+  if (check.result) return
+  const reason = check.reason
+  const detail = reason === 1
+    ? 'source does not accept this destination'
+    : reason === 2
+      ? 'target does not accept this source (cannot have children, or the target is inside the source)'
+      : 'invalid source'
+  throw new Error(`${detail} (canMove reason ${reason})`)
+}
+
+function parseMovePosition(position: unknown): number | undefined {
+  if (position === undefined || position === null) return undefined
+  if (typeof position !== 'number' || !Number.isFinite(position)) {
+    throw new Error('position must be a number (index in the target\'s children).')
+  }
+  return position
+}
+
 export default (editor: Editor) => {
   // Blocks
   editor.Commands.add('blocks:list', () => {
@@ -44,7 +68,15 @@ export default (editor: Editor) => {
     const block = editor.BlockManager.get(blockId)
     if (!block) throw new Error(`Block "${blockId}" not found. Use blocks:list to see available blocks.`)
     const selected = editor.getSelected() || editor.getWrapper()
-    return selected.append(block.getContent())?.[0]?.toHTML()
+    const content = block.getContent()
+    const sources = Array.isArray(content) ? content : [content]
+    for (const source of sources) {
+      assertCanMove(editor, selected, source)
+    }
+    const added = selected.append(content)?.[0]
+    if (!added) throw new Error(`Failed to insert block "${blockId}".`)
+    editor.select(added)
+    return added.toHTML()
   })
 
   // Components
@@ -83,9 +115,10 @@ export default (editor: Editor) => {
     if (!comp) throw new Error(`Component "${id}" not found. Use components:list to see all component ids.`)
     const target = findComponentById(editor, targetId)
     if (!target) throw new Error(`Target "${targetId}" not found. Use components:list to see all component ids.`)
-    const idx = typeof position === 'number' ? position : undefined
-    target.append(comp.clone(), { at: idx })
-    comp.remove()
+    const idx = parseMovePosition(position)
+    assertCanMove(editor, target, comp, idx)
+    comp.move(target, idx === undefined ? {} : { at: idx })
+    editor.select(comp)
   })
   editor.Commands.add('components:update', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
@@ -160,12 +193,12 @@ export default (editor: Editor) => {
     addCapability({
       id: 'blocks:add',
       command: 'blocks:add',
-      description: 'Insert a block into selected element',
+      description: 'Insert a block into the selected element (or the body if nothing is selected). The new element becomes the selection. Errors if the selected element cannot have children (canMove reason).',
       inputSchema: {
         type: 'object',
         required: ['blockId'],
         properties: {
-          blockId: { type: 'string' },
+          blockId: { type: 'string', description: 'Block id from blocks:list. The inserted element is selected.' },
         },
       },
       tags: ['blocks'],
@@ -206,14 +239,14 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:move',
       command: 'components:move',
-      description: 'Move an element into another parent',
+      description: 'Move an element into another parent, keeping its id. The moved element becomes the selection. Errors if the move is illegal (canMove reason), including moving into a descendant.',
       inputSchema: {
         type: 'object',
         required: ['id', 'targetId'],
         properties: {
-          id: { type: 'string' },
-          targetId: { type: 'string' },
-          position: { type: 'number', description: 'Index in target children' },
+          id: { type: 'string', description: 'Element to move. Its id is unchanged after the move.' },
+          targetId: { type: 'string', description: 'Parent to move into.' },
+          position: { type: 'number', description: 'Index in the target\'s children. Must be a number; omitted appends at the end.' },
         },
       },
       tags: ['components'],

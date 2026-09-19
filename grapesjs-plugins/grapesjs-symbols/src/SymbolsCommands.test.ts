@@ -4,6 +4,8 @@ import {
   _removeSymbol,
   _unlinkSymbolInstance,
   _createSymbolInstance,
+  _createSymbolInstanceFromId,
+  listSymbols,
   displayError
 } from './SymbolsCommands'
 
@@ -40,9 +42,15 @@ describe('SymbolsCommands', () => {
     }
     editor = {
       getSelected: jest.fn(() => component),
+      getWrapper: jest.fn(() => component),
       Components: {
         getSymbols: jest.fn(() => [symbol]),
+        getSymbolInfo: jest.fn(() => ({
+          main: { getName: () => 'Header' },
+          instances: [{}, {}],
+        })),
         allById: jest.fn(() => ({ parentId: symbol })),
+        canMove: jest.fn(() => ({ result: true, reason: 0 })),
       },
       Modal: {
         open: jest.fn(),
@@ -141,6 +149,43 @@ describe('SymbolsCommands', () => {
     it('throws if parent not found', () => {
       editor.Components.allById.mockReturnValue({})
       expect(() => _createSymbolInstance(editor, null, { symbol, pos: {}, target: { getAttribute: () => 'parentId' } as any as HTMLElement })).toThrow()
+    })
+  })
+
+  describe('listSymbols', () => {
+    it('returns id, name, and instance count instead of full components', () => {
+      expect(listSymbols(editor)).toEqual([
+        { id: 'symbolId', name: 'Header', instances: 2 },
+      ])
+    })
+  })
+
+  describe('_createSymbolInstanceFromId', () => {
+    it('adds the instance under the selection and selects it', async () => {
+      const instance = { getId: jest.fn(() => 'new-inst') }
+      const { createSymbol } = await import('./utils')
+      ;(createSymbol as jest.Mock).mockReturnValue({ instances: [symbol, instance] })
+      component.append.mockReturnValue([instance])
+
+      const result = _createSymbolInstanceFromId(editor, null, { symbolId: 'symbolId' })
+      expect(result).toEqual({ id: 'new-inst' })
+      expect(editor.select).toHaveBeenCalledWith(instance)
+      expect(component.append).toHaveBeenCalled()
+    })
+
+    it('throws if missing symbolId', () => {
+      expect(() => _createSymbolInstanceFromId(editor, null, {})).toThrow(/symbolId/)
+    })
+
+    it('throws if symbol is not found', () => {
+      editor.Components.getSymbols.mockReturnValue([])
+      expect(() => _createSymbolInstanceFromId(editor, null, { symbolId: 'missing' })).toThrow(/not found/)
+    })
+
+    it('throws canMove reason when the parent cannot receive the instance', () => {
+      editor.Components.canMove.mockReturnValue({ result: false, reason: 2 })
+      expect(() => _createSymbolInstanceFromId(editor, null, { symbolId: 'symbolId' }))
+        .toThrow(/canMove reason 2/)
     })
   })
 

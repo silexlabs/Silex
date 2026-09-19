@@ -37,20 +37,26 @@ export const cmdRenamePage = 'pages:rename'
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
 }
-function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }) {
+
+function uniquePageName(editor: Editor, newPageName: string) {
   const pages = editor.Pages.getAll()
-  // Get a name
   let idx = 1
-  const newPageName = config.newPageName || 'New page'
   let pageName = newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
-  // Add page
-  const page = editor.Pages.add({ name: pageName })
-  // Select the new page
+  return pageName
+}
+
+function createAndSelectPage(editor: Editor, newPageName: string) {
+  const page = editor.Pages.add({ name: uniquePageName(editor, newPageName) })
   editor.Pages.select(page)
-  // Open page settings to edit the name
+  return page
+}
+
+function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }) {
+  const page = createAndSelectPage(editor, config.newPageName || 'New page')
+  // Open page settings to edit the name (editor button / keymap only)
   editor.runCommand(config.cmdOpenNewPageDialog, {page})
 }
 
@@ -315,7 +321,17 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     // document.addEventListener('mousedown', close)
 
     // add useful commands
-    editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
+    editor.Commands.add(cmdAddPage, (_editor: Editor, _sender: any, options: any = {}) => {
+      // MCP: { name } creates the page and selects it, without the new-page dialog.
+      // The editor button / keymap still call this with no name and keep the dialog.
+      if (Object.prototype.hasOwnProperty.call(options, 'name')) {
+        const name = typeof options.name === 'string' ? options.name.trim() : ''
+        if (!name) throw new Error('Required: name (the new page name).')
+        const page = createAndSelectPage(editor, name)
+        return { id: page.id, name: page.getName() }
+      }
+      addPage(editor, opts)
+    })
     editor.Commands.add(cmdRemovePage, () => removePageWithConfirm(editor, editor.Pages.getSelected()))
     editor.Commands.add(cmdClonePage, () => clonePage(editor, editor.Pages.getSelected()))
     editor.Commands.add(cmdSelectNextPage, () => selectNextPage(editor))
@@ -382,7 +398,14 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
       addCapability({
         id: cmdAddPage,
         command: cmdAddPage,
-        description: 'Create a new page',
+        description: 'Create a new page by name without opening the new-page dialog. The new page becomes the selected page.',
+        inputSchema: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', description: 'Name of the new page. The new page is selected after creation.' },
+          },
+        },
         tags: ['pages'],
       })
       addCapability({
