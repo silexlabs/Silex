@@ -5,6 +5,7 @@ import {
   renameVariable,
 } from './variables.js'
 import { VARIABLE_TYPES, TYPE_FONT_FAMILY } from './types.js'
+import { requireCompatibleType, requireExistingVariable, requireRenameTarget } from './var-guards.js'
 
 // Aliases that LLMs might guess instead of the canonical type names
 const TYPE_ALIASES = {
@@ -41,10 +42,10 @@ export function registerCommands(editor) {
       if (!canonical) {
         throw new Error(`Invalid type "${type}". Must be one of: color, size, typo (aliases: font, font-family, typography)`)
       }
-      setVariable(editor, { name, value })
-      // Track type in cssVarOrder
       const order = editor.getModel().get('cssVarOrder') || []
-      if (!order.some(o => o.name === name)) {
+      const existing = requireCompatibleType(name, canonical, order)
+      setVariable(editor, { name, value })
+      if (!existing) {
         order.push({ type: canonical, name })
         editor.getModel().set('cssVarOrder', [...order])
       }
@@ -57,9 +58,9 @@ export function registerCommands(editor) {
       if (!name) {
         throw new Error('Required: name. Example: {name: "primary"}. Use css-var:list to see existing variables.')
       }
-      removeVariable(editor, { name })
-      // Remove from cssVarOrder
       const order = editor.getModel().get('cssVarOrder') || []
+      requireExistingVariable(name, order)
+      removeVariable(editor, { name })
       const newOrder = order.filter(o => o.name !== name)
       editor.getModel().set('cssVarOrder', [...newOrder])
     },
@@ -71,6 +72,8 @@ export function registerCommands(editor) {
       if (!oldName || !newName) {
         throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var:list to see existing variables.')
       }
+      const order = editor.getModel().get('cssVarOrder') || []
+      requireRenameTarget(oldName, newName, order)
       renameVariable(editor, { oldName, newName })
     },
   })

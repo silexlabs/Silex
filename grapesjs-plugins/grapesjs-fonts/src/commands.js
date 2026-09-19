@@ -1,4 +1,5 @@
 import { getHtml, refresh, getAvailableFonts, getApiUrl, loadFontList } from './fonts'
+import { findFontIndex, removeInstalledFont, sameFontFamily } from './font-family'
 
 export const cmdGetCss = 'get-fonts-css'
 export const cmdGetHtml = 'get-fonts-html'
@@ -61,12 +62,12 @@ export default function (editor, opts) {
     if (!family) throw new Error('Required: family (e.g. "Roboto", "Open Sans"). Use fonts:available to search.')
 
     const fonts = editor.getModel().get('fonts') || []
-    if (fonts.find(f => f.family.toLowerCase() === family.toLowerCase())) {
+    if (findFontIndex(fonts, family) !== -1) {
       throw new Error(`Font "${family}" already installed. Use fonts:installed to list installed fonts.`)
     }
 
     const available = getAvailableFonts() || []
-    const fontData = available.find(f => f.family.toLowerCase() === family.toLowerCase())
+    const fontData = available.find(f => sameFontFamily(f.family, family))
     if (!fontData) {
       throw new Error(`Font "${family}" not found in available fonts. Run fonts:available to load the font list first, then retry.`)
     }
@@ -90,11 +91,9 @@ export default function (editor, opts) {
     if (!family) throw new Error('Required: family (e.g. "Roboto"). Use fonts:installed to list installed fonts.')
 
     const fonts = editor.getModel().get('fonts') || []
-    const idx = fonts.findIndex(f => f.family === family)
-    if (idx === -1) throw new Error(`Font "${family}" not installed. Use fonts:installed to list installed fonts.`)
-
-    fonts.splice(idx, 1)
-    editor.getModel().set('fonts', [...fonts])
+    const { fonts: next, removed } = removeInstalledFont(fonts, family)
+    editor.getModel().set('fonts', next)
     refresh(editor, opts)
+    return { family: removed.family, category: removed.category, variants: removed.variants || [] }
   })
 }
