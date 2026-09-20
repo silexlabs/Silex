@@ -17,26 +17,9 @@
 
 import { expect, jest, describe, it, beforeEach } from '@jest/globals'
 import grapesjs, { Editor } from 'grapesjs'
-import { ApiError, ConnectorType, ConnectorUser, WebsiteData } from '~/common/types'
+import { ConnectorType, ConnectorUser, WebsiteData } from '~/common/types'
 import { ClientEvent } from '../events'
 import { PublicationStatus } from './PublicationManager'
-
-const websiteSave = jest.fn(async () => undefined)
-
-jest.mock('../api', () => ({
-  websiteSave: (...args: unknown[]) => websiteSave(...args),
-  websiteLoad: jest.fn(),
-}))
-
-jest.mock('lit-html', () => ({
-  html: (...args: unknown[]) => args,
-  render: jest.fn(),
-}))
-
-jest.mock('lit-html/directives/unsafe-html.js', () => ({
-  unsafeHTML: (value: unknown) => value,
-}))
-
 import { storagePlugin } from './storage'
 
 const user: ConnectorUser = {
@@ -61,12 +44,22 @@ type ConnectorStore = {
   store: (data: WebsiteData, options: { id: string, connectorId: string }) => Promise<unknown>
 }
 
+function jsonResponse(status: number, body: unknown) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 401 ? 'Unauthorized' : 'OK',
+    json: async () => body,
+  } as Response
+}
+
 describe('storagePlugin doStore', () => {
   let editor: Editor
+  let fetchMock: jest.Mock<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>
 
   beforeEach(() => {
-    websiteSave.mockReset()
-    websiteSave.mockImplementation(async () => undefined)
+    fetchMock = jest.fn(async () => jsonResponse(200, { message: 'ok' }))
+    globalThis.fetch = fetchMock as unknown as typeof fetch
     /* @ts-ignore */
     editor = grapesjs.init({
       headless: true,
@@ -84,32 +77,30 @@ describe('storagePlugin doStore', () => {
     await getConnector().store(projectData, storeOptions)
   }
 
+  function writeCalls() {
+    return fetchMock.mock.calls.filter(([, init]) => (init?.method || 'GET').toUpperCase() === 'POST')
+  }
+
   it('saves again after a store while logged out once a user is present', async () => {
     editor.getModel().set('user', null)
     await store()
-    expect(websiteSave).not.toHaveBeenCalled()
+    expect(writeCalls()).toHaveLength(0)
 
     editor.getModel().set('user', user)
     await store()
-    expect(websiteSave).toHaveBeenCalledTimes(1)
-    expect(websiteSave).toHaveBeenCalledWith({
-      websiteId: 'site-1',
-      connectorId: 'fs',
-      data: expect.objectContaining({
-        assets: [],
-        styles: [],
-      }),
-    })
+    expect(writeCalls()).toHaveLength(1)
+    expect(String(writeCalls()[0][0])).toContain('websiteId=site-1')
+    expect(String(writeCalls()[0][0])).toContain('connectorId=fs')
   })
 
   it('resets isSaving after a 401 so a later store can run', async () => {
     editor.getModel().set('user', user)
-    websiteSave.mockRejectedValueOnce(new ApiError('Unauthorized', 401))
+    fetchMock.mockResolvedValueOnce(jsonResponse(401, { message: 'Unauthorized' }))
     await store()
-    expect(websiteSave).toHaveBeenCalledTimes(1)
+    expect(writeCalls()).toHaveLength(1)
 
     await store()
-    expect(websiteSave).toHaveBeenCalledTimes(2)
+    expect(writeCalls()).toHaveLength(2)
   })
 
   it('delays store while publication is pending and saves after publish end', async () => {
@@ -120,13 +111,13 @@ describe('storagePlugin doStore', () => {
 
     const pending = store()
     await new Promise(resolve => setTimeout(resolve, 0))
-    expect(websiteSave).not.toHaveBeenCalled()
+    expect(writeCalls()).toHaveLength(0)
 
     Object.assign((editor as Editor & { PublicationManager: { status: PublicationStatus } }).PublicationManager, {
       status: PublicationStatus.STATUS_SUCCESS,
     })
     editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: '' })
     await pending
-    expect(websiteSave).toHaveBeenCalledTimes(1)
+    expect(writeCalls()).toHaveLength(1)
   })
 })
