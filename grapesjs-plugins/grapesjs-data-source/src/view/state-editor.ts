@@ -175,8 +175,7 @@ export class StateEditor extends LitElement {
   get data(): Token[] {
     const input = this.expressionInputRef.value
     if(!this._selected || !this.editor) {
-      console.error('selected and editor are required', this._selected, this.editor)
-      //throw new Error('selected and editor are required')
+      // Empty selection / editor not wired is a normal state (e.g. Pages panel).
       return []
     }
     if(!input || input.value.length === 0) return []
@@ -249,9 +248,8 @@ export class StateEditor extends LitElement {
     super.render()
     if(!this.name) throw new Error('name is required on state-editor')
     if(!this.editor || !this.selected) {
-      console.error('editor and selected are required', this.editor, this.selected)
-      return html`<div class="ds-section
-        ds-section--error">Error rendering state-editor component: editor and selected are required</div>`
+      this.redrawing = false
+      return html``
     }
 
     const selected = this.selected
