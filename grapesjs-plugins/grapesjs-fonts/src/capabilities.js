@@ -18,7 +18,7 @@ export function registerCapabilities(addCapability) {
   addCapability({
     id: cmdFontsAvailable,
     command: cmdFontsAvailable,
-    description: 'List available Google Fonts',
+    description: 'List available Google Fonts (at most 20). The response includes how many remain; use search to narrow the list.',
     readOnly: true,
     openWorld: true,
     inputSchema: {

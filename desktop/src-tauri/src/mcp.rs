@@ -331,33 +331,23 @@ impl SilexMcp {
                     let cmd_js = serde_json::to_string(cmd.as_str()).unwrap();
                     let params_js_escaped = serde_json::to_string(&params_json).unwrap();
 
-                    // Build JS that runs the command via editor.runCommand() and wraps with selection state
-                    let js = format!(
-                        r#"(function(){{var e=window.silex.getEditor();var params=JSON.parse({params});var __result__;try{{__result__=e.runCommand({cmd},params)}}catch(ex){{return JSON.stringify({{error:ex.message||String(ex)}})}}var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='undefined'||__result__===null)__result__={{}};if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__))__result__={{result:__result__}};if(typeof __result__!=='object'||__result__===null)__result__={{result:__result__}};__result__.selection=__sel__;return JSON.stringify(__result__)}})()"#,
-                        params = params_js_escaped,
-                        cmd = cmd_js
-                    );
+                    // Await Promise results from runCommand so async commands
+                    // (fonts:available, publish) return their real result/error.
+                    let js = dynamic_command_js(&cmd_js, &params_js_escaped);
+                    let timeout_secs = if cmd.as_str() == "fonts:available" {
+                        30
+                    } else {
+                        10
+                    };
 
                     mcp.require_project()
                         .map_err(|e| McpError::internal_error(e, None))?;
-                    match mcp.eval_js_internal(&js, 10).await {
-                        Ok(result) => {
-                            let text = result.unwrap_or_else(|| "null".into());
-                            let is_error = serde_json::from_str::<serde_json::Value>(&text)
-                                .ok()
-                                .map(|v| {
-                                    v.get("error").map_or(false, |e| !e.is_null())
-                                        || v.get("success").map_or(false, |s| s == false)
-                                })
-                                .unwrap_or(false);
-                            Ok(CallToolResult {
-                                content: vec![Content::text(text)],
-                                structured_content: None,
-                                is_error: if is_error { Some(true) } else { None },
-                                meta: None,
-                            })
-                        }
-                        Err(e) => Ok(tool_error(e)),
+                    match mcp.eval_js_internal(&js, timeout_secs).await {
+                        Ok(result) => Ok(finish_dynamic_tool(
+                            cmd.as_str(),
+                            result.unwrap_or_else(|| "null".into()),
+                        )),
+                        Err(e) => Ok(mcp.dynamic_tool_eval_error(e).await),
                     }
                 })
             });
@@ -372,12 +362,147 @@ impl SilexMcp {
         tracing::info!("Loaded {} dynamic capabilities as MCP tools", count);
         Ok(count)
     }
+
+    /// A failed eval still tries to attach the current selection.
+    async fn dynamic_tool_eval_error(&self, error: String) -> CallToolResult {
+        let selection = match self
+            .eval_js_internal(
+                "JSON.stringify(window.__silexMcp&&window.silex?window.__silexMcp.getSelectionState(window.silex.getEditor()):null)",
+                3,
+            )
+            .await
+        {
+            Ok(Some(raw)) => serde_json::from_str(&raw).ok(),
+            _ => None,
+        };
+        finish_dynamic_error(error, selection)
+    }
 }
 
 /// Create an error CallToolResult (is_error = true).
 fn tool_error(msg: impl Into<String>) -> CallToolResult {
     CallToolResult {
         content: vec![Content::text(msg.into())],
+        structured_content: None,
+        is_error: Some(true),
+        meta: None,
+    }
+}
+
+const FONTS_PAGE_SIZE: usize = 20;
+
+/// JS that runs a dynamic editor command and waits for a Promise result.
+fn dynamic_command_js(cmd_js: &str, params_js: &str) -> String {
+    format!(
+        r#"(async function(){{var e=window.silex.getEditor();var params=JSON.parse({params});var cmd={cmd};var mcp=window.__silexMcp;var __result__;var __err__;try{{if(cmd==="publish"&&mcp&&typeof mcp.runPublish==="function"){{__result__=mcp.runPublish(e,params)}}else{{__result__=e.runCommand(cmd,params)}}if(__result__&&typeof __result__.then==="function")__result__=await __result__}}catch(ex){{__err__=ex.message||String(ex)}}var __sel__=mcp&&mcp.getSelectionState?mcp.getSelectionState(e):null;if(__err__)return JSON.stringify({{error:__err__,selection:__sel__}});if(typeof __result__==="undefined"||__result__===null)__result__={{}};if(typeof __result__==="string"){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__))__result__={{result:__result__}};if(typeof __result__!=="object"||__result__===null)__result__={{result:__result__}};if(cmd==="fonts:available"&&window.__silexMcpDynamic)__result__=window.__silexMcpDynamic.pageFontsAvailable(__result__);__result__.selection=__sel__;return JSON.stringify(__result__)}})()"#,
+        params = params_js,
+        cmd = cmd_js
+    )
+}
+
+fn command_is_error(value: &serde_json::Value) -> bool {
+    value
+        .get("error")
+        .map_or(false, |e| !e.is_null() && e.as_str() != Some(""))
+        || value.get("success").map_or(false, |s| s == false)
+        || value.get("status").map_or(false, |s| s == "error")
+}
+
+fn page_fonts_available(mut value: serde_json::Value) -> serde_json::Value {
+    if value.get("fonts").and_then(|v| v.as_array()).is_some()
+        && value.get("remaining").and_then(|v| v.as_u64()).is_some()
+    {
+        return value;
+    }
+
+    let list = if let Some(arr) = value.get("result").and_then(|v| v.as_array()).cloned() {
+        value.as_object_mut().map(|obj| obj.remove("result"));
+        arr
+    } else if let Some(arr) = value.get("fonts").and_then(|v| v.as_array()).cloned() {
+        arr
+    } else if let Some(arr) = value.as_array().cloned() {
+        value = serde_json::json!({});
+        arr
+    } else {
+        return value;
+    };
+
+    let remaining = list.len().saturating_sub(FONTS_PAGE_SIZE);
+    let fonts: Vec<serde_json::Value> = list.into_iter().take(FONTS_PAGE_SIZE).collect();
+    if !value.is_object() {
+        value = serde_json::json!({});
+    }
+    let obj = value.as_object_mut().unwrap();
+    obj.insert("fonts".into(), serde_json::Value::Array(fonts));
+    obj.insert("remaining".into(), serde_json::json!(remaining));
+    if remaining > 0 {
+        obj.insert(
+            "hint".into(),
+            serde_json::json!(format!(
+                "{} more fonts available. Use search to narrow the list.",
+                remaining
+            )),
+        );
+    } else {
+        obj.remove("hint");
+    }
+    value
+}
+
+/// Always keep `selection`. `warnings` stay only when the tool failed.
+fn normalize_tool_payload(mut value: serde_json::Value, is_error: bool) -> serde_json::Value {
+    if !value.is_object() {
+        value = serde_json::json!({ "result": value });
+    }
+    if !is_error {
+        if let Some(sel) = value.get_mut("selection").and_then(|s| s.as_object_mut()) {
+            sel.remove("warnings");
+        }
+        value.as_object_mut().unwrap().remove("warnings");
+    }
+    value
+}
+
+fn dynamic_tool_payload(command: &str, text: String) -> (serde_json::Value, bool) {
+    let mut value = serde_json::from_str::<serde_json::Value>(&text)
+        .unwrap_or_else(|_| serde_json::json!({ "raw": text }));
+    if command == "fonts:available" {
+        value = page_fonts_available(value);
+    }
+    let is_error = command_is_error(&value);
+    (normalize_tool_payload(value, is_error), is_error)
+}
+
+fn finish_dynamic_tool(command: &str, text: String) -> CallToolResult {
+    let (value, is_error) = dynamic_tool_payload(command, text);
+    CallToolResult {
+        content: vec![Content::text(value.to_string())],
+        structured_content: None,
+        is_error: if is_error { Some(true) } else { None },
+        meta: None,
+    }
+}
+
+fn dynamic_error_payload(
+    error: impl Into<String>,
+    selection: Option<serde_json::Value>,
+) -> serde_json::Value {
+    let mut value = serde_json::json!({ "error": error.into() });
+    if let Some(sel) = selection {
+        if !sel.is_null() {
+            value["selection"] = sel;
+        }
+    }
+    normalize_tool_payload(value, true)
+}
+
+fn finish_dynamic_error(
+    error: impl Into<String>,
+    selection: Option<serde_json::Value>,
+) -> CallToolResult {
+    let value = dynamic_error_payload(error, selection);
+    CallToolResult {
+        content: vec![Content::text(value.to_string())],
         structured_content: None,
         is_error: Some(true),
         meta: None,
@@ -731,8 +856,8 @@ GETTING STARTED:
 
 HIERARCHY (select each level before operating on deeper levels):
   Website → Breakpoint → Page → Component → Selector
-  Every tool response includes a 'selection' object showing the current state.
-  Check 'warnings' in the selection to see what needs to be selected next.
+  Every tool response includes a 'selection' object showing the current state, including when the tool fails.
+  'warnings' appear only on failed answers, to say what needs to be selected next.
 
 RULES:
 - Use BEM class names. No inline styles. No CSS Grid (use Flexbox).
@@ -927,5 +1052,108 @@ pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: Pendin
         Err(e) => {
             tracing::warn!("MCP stdio not available (launched without stdin?): {}", e);
         }
+    }
+}
+
+#[cfg(test)]
+mod dynamic_tool_answers {
+    use super::*;
+
+    #[test]
+    fn dynamic_command_js_awaits_run_command_promises() {
+        let js = dynamic_command_js("\"fonts:available\"", "\"{}\"");
+        assert!(js.contains("await __result__"));
+        assert!(js.contains("runCommand"));
+        assert!(js.contains("runPublish"));
+        assert!(js.contains("fonts:available"));
+    }
+
+    #[test]
+    fn fonts_available_caps_at_20_and_says_how_many_remain() {
+        let fonts: Vec<serde_json::Value> = (0..25)
+            .map(|i| serde_json::json!({ "family": format!("Font{i}") }))
+            .collect();
+        let paged = page_fonts_available(serde_json::json!({ "result": fonts, "selection": {} }));
+        assert_eq!(paged["fonts"].as_array().unwrap().len(), 20);
+        assert_eq!(paged["remaining"], 5);
+        assert!(paged["hint"]
+            .as_str()
+            .unwrap()
+            .contains("5 more fonts available"));
+        assert!(paged.get("result").is_none());
+        assert!(paged.get("selection").is_some());
+    }
+
+    #[test]
+    fn fonts_available_has_no_remaining_hint_when_the_page_is_full() {
+        let fonts = vec![
+            serde_json::json!({ "family": "Roboto" }),
+            serde_json::json!({ "family": "Inter" }),
+        ];
+        let paged = page_fonts_available(serde_json::json!({ "result": fonts }));
+        assert_eq!(paged["remaining"], 0);
+        assert!(paged.get("hint").is_none());
+    }
+
+    #[test]
+    fn finish_dynamic_tool_pages_fonts_and_strips_success_warnings() {
+        let fonts: Vec<serde_json::Value> = (0..21)
+            .map(|i| serde_json::json!({ "family": format!("F{i}") }))
+            .collect();
+        let (body, is_error) = dynamic_tool_payload(
+            "fonts:available",
+            serde_json::json!({
+                "result": fonts,
+                "selection": { "page": "index", "warnings": ["No element selected"] }
+            })
+            .to_string(),
+        );
+        assert!(!is_error);
+        assert_eq!(body["fonts"].as_array().unwrap().len(), 20);
+        assert_eq!(body["remaining"], 1);
+        assert!(body["selection"].get("warnings").is_none());
+    }
+
+    #[test]
+    fn failures_keep_selection_and_warnings() {
+        let (body, is_error) = dynamic_tool_payload(
+            "styles:set",
+            serde_json::json!({
+                "error": "Required: property",
+                "selection": { "page": "index", "warnings": ["No element selected"] }
+            })
+            .to_string(),
+        );
+        assert!(is_error);
+        assert_eq!(body["error"], "Required: property");
+        assert_eq!(body["selection"]["page"], "index");
+        assert_eq!(body["selection"]["warnings"][0], "No element selected");
+    }
+
+    #[test]
+    fn eval_errors_still_include_selection() {
+        let body = dynamic_error_payload(
+            "Timeout waiting for JS result (10s)",
+            Some(serde_json::json!({ "page": "index" })),
+        );
+        assert!(body["error"].as_str().unwrap().contains("Timeout"));
+        assert_eq!(body["selection"]["page"], "index");
+        assert_eq!(finish_dynamic_error("x", None).is_error, Some(true));
+    }
+
+    #[test]
+    fn publish_pending_and_success_are_not_tool_errors() {
+        assert!(!command_is_error(&serde_json::json!({
+            "status": "pending",
+            "message": "Publication started. Call publish with action status to follow it."
+        })));
+        assert!(!command_is_error(&serde_json::json!({
+            "status": "success",
+            "url": "https://example.com"
+        })));
+        assert!(command_is_error(&serde_json::json!({
+            "status": "error",
+            "message": "No hosting is set for this website. Ask the user to choose where to publish in the Publish dialog, then retry."
+        })));
     }
 }

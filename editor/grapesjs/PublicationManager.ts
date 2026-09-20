@@ -159,9 +159,19 @@ export class PublicationManager {
       addCapability({
         id: cmdPublicationStart,
         command: cmdPublicationStart,
-        description: 'Publish the website',
+        description: 'Publish the website. action=start begins publication and returns immediately. action=status follows it: pending, success with the URL, or error with what to do, job errors, and the last log lines. While it is running, call status again. Do not tell the user it is done until status is success.',
         openWorld: true,
         tags: ['publication'],
+        inputSchema: {
+          type: 'object',
+          properties: {
+            action: {
+              type: 'string',
+              enum: ['start', 'status'],
+              description: 'start begins publication; status follows the current one. There is only one publication at a time.',
+            },
+          },
+        },
       })
     })
     // Add the publication dialog to the editor

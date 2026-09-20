@@ -1,6 +1,193 @@
+// Pure MCP helpers. Required by desktop-bridge.test.js (Node) and used in the webview.
+var __silexMcpDynamic = (function () {
+  var FONTS_PAGE_SIZE = 20;
+  var PUBLISH_STARTED = 'Publication started. Call publish with action status to follow it.';
+  var PUBLISH_STILL = 'Still publishing. Call publish with action status again. Do not tell the user it is done.';
+  var NO_HOSTING = 'No hosting is set for this website. Ask the user to choose where to publish in the Publish dialog, then retry.';
+  var NO_PUBLICATION = 'No publication is in progress. Call publish with action start first.';
+
+  function lastLogLines(groups, n) {
+    n = n || 20;
+    var lines = [];
+    if (!groups) return lines;
+    for (var i = 0; i < groups.length; i++) {
+      var group = groups[i];
+      if (Array.isArray(group)) {
+        for (var j = 0; j < group.length; j++) {
+          if (group[j]) lines.push(String(group[j]));
+        }
+      } else if (group) {
+        lines.push(String(group));
+      }
+    }
+    return lines.slice(-n);
+  }
+
+  function hostingHint(message, status) {
+    var m = message == null ? '' : String(message);
+    if (
+      status === 'STATUS_AUTH_ERROR' ||
+      /please login/i.test(m) ||
+      /not logged in to a hosting/i.test(m) ||
+      /hosting connector/i.test(m) ||
+      /no hosting/i.test(m)
+    ) {
+      return NO_HOSTING;
+    }
+    if (/not logged in to a storage/i.test(m)) {
+      return 'Not signed in to storage. Ask the user to sign in, then retry.';
+    }
+    return m || 'Publication failed.';
+  }
+
+  function pageFontsAvailable(result) {
+    var list = null;
+    if (Array.isArray(result)) list = result;
+    else if (result && Array.isArray(result.result)) list = result.result;
+    else if (result && Array.isArray(result.fonts) && typeof result.remaining === 'number') return result;
+    else if (result && Array.isArray(result.fonts)) list = result.fonts;
+    if (!list) return result;
+    var remaining = Math.max(0, list.length - FONTS_PAGE_SIZE);
+    var paged = {
+      fonts: list.slice(0, FONTS_PAGE_SIZE),
+      remaining: remaining,
+    };
+    if (remaining > 0) {
+      paged.hint = remaining + ' more fonts available. Use search to narrow the list.';
+    }
+    if (result && typeof result === 'object' && !Array.isArray(result)) {
+      Object.keys(result).forEach(function (key) {
+        if (key !== 'result' && key !== 'fonts' && key !== 'remaining' && key !== 'hint') {
+          paged[key] = result[key];
+        }
+      });
+    }
+    return paged;
+  }
+
+  function publishStartAnswer() {
+    return { status: 'pending', message: PUBLISH_STARTED };
+  }
+
+  function beginPublication(runCommand, onError) {
+    try {
+      var result = runCommand('publish');
+      if (result && typeof result.then === 'function') {
+        result.catch(function (ex) {
+          if (onError) onError(ex);
+        });
+      }
+    } catch (ex) {
+      if (onError) onError(ex);
+      return {
+        status: 'error',
+        message: hostingHint(ex && ex.message),
+        errors: [String((ex && ex.message) || ex)],
+        logs: [],
+      };
+    }
+    return publishStartAnswer();
+  }
+
+  function publishStatusAnswer(snapshot) {
+    snapshot = snapshot || {};
+    var logs = lastLogLines(snapshot.logs);
+    var errors = lastLogLines(snapshot.errors);
+    var st = snapshot.managerStatus;
+    var jobStatus = snapshot.jobStatus;
+    var url = snapshot.url || null;
+    if (st === 'STATUS_PENDING') {
+      return { status: 'pending', message: PUBLISH_STILL, errors: errors, logs: logs };
+    }
+    if (st === 'STATUS_SUCCESS') {
+      return {
+        status: 'success',
+        message: snapshot.message || 'Publication succeeded.',
+        url: url,
+        errors: errors,
+        logs: logs,
+      };
+    }
+    if (st === 'STATUS_ERROR' || st === 'STATUS_AUTH_ERROR') {
+      return {
+        status: 'error',
+        message: hostingHint(snapshot.message, st),
+        errors: errors,
+        logs: logs,
+      };
+    }
+    if (jobStatus === 'pending') {
+      return { status: 'pending', message: PUBLISH_STILL, errors: errors, logs: logs };
+    }
+    if (jobStatus === 'success') {
+      return {
+        status: 'success',
+        message: snapshot.message || 'Publication succeeded.',
+        url: url,
+        errors: errors,
+        logs: logs,
+      };
+    }
+    if (jobStatus === 'error') {
+      return {
+        status: 'error',
+        message: hostingHint(snapshot.message, st),
+        errors: errors,
+        logs: logs,
+      };
+    }
+    return { status: 'error', message: NO_PUBLICATION, errors: errors, logs: logs };
+  }
+
+  function wrapDynamicResult(result, selection, isError) {
+    var payload;
+    if (typeof result === 'undefined' || result === null) payload = {};
+    else if (typeof result === 'string') {
+      try { payload = JSON.parse(result); } catch (e) { payload = { raw: result }; }
+    } else if (Array.isArray(result)) payload = { result: result };
+    else if (typeof result === 'object') payload = Object.assign({}, result);
+    else payload = { result: result };
+    var sel = selection && typeof selection === 'object' ? Object.assign({}, selection) : selection;
+    if (sel && typeof sel === 'object' && !isError && sel.warnings) {
+      delete sel.warnings;
+    }
+    payload.selection = sel;
+    if (!isError && payload.warnings) delete payload.warnings;
+    return payload;
+  }
+
+  function isCommandError(payload) {
+    if (!payload || typeof payload !== 'object') return false;
+    if (payload.error != null) return true;
+    if (payload.success === false) return true;
+    if (payload.status === 'error') return true;
+    return false;
+  }
+
+  return {
+    FONTS_PAGE_SIZE: FONTS_PAGE_SIZE,
+    PUBLISH_STARTED: PUBLISH_STARTED,
+    PUBLISH_STILL: PUBLISH_STILL,
+    NO_HOSTING: NO_HOSTING,
+    NO_PUBLICATION: NO_PUBLICATION,
+    lastLogLines: lastLogLines,
+    hostingHint: hostingHint,
+    pageFontsAvailable: pageFontsAvailable,
+    publishStartAnswer: publishStartAnswer,
+    beginPublication: beginPublication,
+    publishStatusAnswer: publishStatusAnswer,
+    wrapDynamicResult: wrapDynamicResult,
+    isCommandError: isCommandError,
+  };
+})();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = __silexMcpDynamic;
+}
+
 (() => {
   // Only activate in Tauri context
-  if (!window.__TAURI__) return;
+  if (typeof window === 'undefined' || !window.__TAURI__) return;
 
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
@@ -46,6 +233,8 @@
   // MCP helpers, called by the Rust side through eval_js.
   // Nothing else belongs here: a capability's own logic lives in its plugin.
   window.__silexMcp = {
+    publishJob: { status: 'idle', message: null, url: null, errors: [], logs: [] },
+
     // Context joined to every dynamic tool response, so the agent knows what is selected.
     getSelectionState(editor) {
       const dev = editor.Devices.getSelected();
@@ -74,7 +263,114 @@
     getCapabilities() {
       const caps = window.grapesjsAiCapabilities;
       if (!caps?.getAllCapabilities) return [];
-      return caps.getAllCapabilities();
+      return caps.getAllCapabilities().map((cap) => this.enrichCapability(cap));
+    },
+
+    enrichCapability(cap) {
+      if (cap.id === 'fonts:available') {
+        return Object.assign({}, cap, {
+          description: 'List available Google Fonts (at most 20). The response includes how many remain; use search to narrow the list.',
+        });
+      }
+      if (cap.id === 'publish') {
+        return Object.assign({}, cap, {
+          description: 'Publish the website. action=start begins publication and returns immediately. action=status follows it: pending, success with the URL, or error with what to do, job errors, and the last log lines. While it is running, call status again. Do not tell the user it is done until status is success.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              action: {
+                type: 'string',
+                enum: ['start', 'status'],
+                description: 'start begins publication; status follows the current one. There is only one publication at a time.',
+              },
+            },
+          },
+        });
+      }
+      return cap;
+    },
+
+    watchPublish(editor) {
+      const helpers = window.__silexMcpDynamic;
+      const refreshFromManager = (patch) => {
+        const pm = editor.PublicationManager;
+        const job = pm && pm.job;
+        this.publishJob = Object.assign({}, this.publishJob, {
+          url: (pm && pm.settings && pm.settings.options && pm.settings.options.websiteUrl) || this.publishJob.url,
+          errors: helpers.lastLogLines(job && job.errors),
+          logs: helpers.lastLogLines(job && job.logs),
+        }, patch);
+      };
+      editor.on('silex:publish:start', () => {
+        refreshFromManager({ status: 'pending', message: helpers.PUBLISH_STILL });
+      });
+      editor.on('silex:publish:end', (result) => {
+        const success = !!(result && result.success);
+        refreshFromManager({
+          status: success ? 'success' : 'error',
+          message: success
+            ? ((result && result.message) || 'Publication succeeded.')
+            : helpers.hostingHint(result && result.message),
+        });
+      });
+      editor.on('silex:publish:error', (result) => {
+        refreshFromManager({
+          status: 'error',
+          message: helpers.hostingHint(result && result.message),
+        });
+      });
+    },
+
+    runPublish(editor, params) {
+      const action = (params && params.action) || 'start';
+      if (action === 'start') return this.startPublish(editor);
+      if (action === 'status') return this.publishStatus(editor);
+      return {
+        status: 'error',
+        error: 'Unknown publish action. Use action start or action status.',
+        message: 'Unknown publish action. Use action start or action status.',
+      };
+    },
+
+    startPublish(editor) {
+      const helpers = window.__silexMcpDynamic;
+      this.publishJob = { status: 'pending', message: helpers.PUBLISH_STARTED, url: null, errors: [], logs: [] };
+      const started = helpers.beginPublication(
+        (name) => editor.runCommand(name),
+        (ex) => {
+          this.publishJob = {
+            status: 'error',
+            message: helpers.hostingHint(ex && ex.message),
+            url: null,
+            errors: [String((ex && ex.message) || ex)],
+            logs: [],
+          };
+        },
+      );
+      if (started.status === 'error') {
+        this.publishJob = {
+          status: 'error',
+          message: started.message,
+          url: null,
+          errors: started.errors,
+          logs: [],
+        };
+      }
+      return started;
+    },
+
+    publishStatus(editor) {
+      const helpers = window.__silexMcpDynamic;
+      const pm = editor.PublicationManager;
+      const job = pm && pm.job;
+      return helpers.publishStatusAnswer({
+        managerStatus: pm && pm.status,
+        jobStatus: this.publishJob.status,
+        message: (job && job.message) || this.publishJob.message,
+        url: (pm && pm.settings && pm.settings.options && pm.settings.options.websiteUrl) || this.publishJob.url,
+        errors: (job && job.errors) || this.publishJob.errors,
+        logs: (job && job.logs) || this.publishJob.logs,
+      });
     },
   };
 
@@ -165,6 +461,8 @@
     editor.on('storage:error:store', () => {
       if (editor.__saveSpan) { editor.__saveSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__saveSpan.end(); editor.__saveSpan = null; }
     });
+
+    window.__silexMcp.watchPublish(editor);
 
     // Track project_publish
     editor.on('silex:publish:start', () => {
