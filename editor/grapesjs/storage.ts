@@ -191,16 +191,18 @@ export const storagePlugin = (editor: PublishableEditor) => {
           if (lastPendingSaving === data) {
             lastPendingSaving = null
             isSaving = true
-            const user = await getCurrentUser(editor)
-            if (user) {
-              data.assets = removeTempDataFromAssetUrl(data.assets)
-              data.styles = removeTempDataFromStyles(data.styles)
-              data.pagesFolder = editor.getModel().get('pagesFolder')
-              await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
+            try {
+              const user = await getCurrentUser(editor)
+              if (user) {
+                data.assets = removeTempDataFromAssetUrl(data.assets)
+                data.styles = removeTempDataFromStyles(data.styles)
+                data.pagesFolder = editor.getModel().get('pagesFolder')
+                await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
+              }
+            } finally {
+              // Always clear the guard, including the no-user path. Leaving
+              // isSaving true makes later stores wait forever for storage:end:store.
               isSaving = false
-            } else {
-              // This should never happen,
-              // because the user canot save when they never logged in before
             }
           } else {
             // Canceled saving
