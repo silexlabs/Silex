@@ -27,13 +27,23 @@
         release: ctx.release,
         environment: ctx.environment,
         tracesSampleRate: 1.0,
-        integrations: [window.Sentry.browserTracingIntegration()],
+        // The native side owns the session: counted here too, every launch would count twice
+        integrations: (defaults) => [
+          ...defaults.filter((integration) => integration.name !== 'BrowserSession'),
+          window.Sentry.browserTracingIntegration(),
+        ],
         beforeSend: withoutQuery,
         beforeSendTransaction: withoutQuery,
+        // A console line often prints the website being edited
+        beforeBreadcrumb: (breadcrumb) => {
+          if (breadcrumb.category === 'console') delete breadcrumb.data;
+          return breadcrumb;
+        },
       });
       window.Sentry.setUser({ id: ctx.user_id });
       window.Sentry.setTag('os', ctx.os);
       window.Sentry.setTag('arch', ctx.arch);
+      window.Sentry.setTag('package', ctx.package);
       window.Sentry.setTag('context', 'webview');
     };
     document.head.appendChild(script);

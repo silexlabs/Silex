@@ -139,6 +139,43 @@ fn glitchtip_dsn(resource_dir: Option<PathBuf>) -> Option<String> {
     }
 }
 
+/// How this copy of Silex was installed, which is what a bug report leaves out
+fn package_kind() -> &'static str {
+    if cfg!(debug_assertions) {
+        return "dev";
+    }
+    for (variable, kind) in [
+        ("APPIMAGE", "appimage"),
+        ("FLATPAK_ID", "flatpak"),
+        ("SNAP", "snap"),
+    ] {
+        if std::env::var_os(variable).is_some() {
+            return kind;
+        }
+    }
+    let Ok(program) = std::env::current_exe() else {
+        return "unknown";
+    };
+    if cfg!(target_os = "macos") {
+        return "app";
+    }
+    if cfg!(target_os = "windows") {
+        return "exe";
+    }
+    if !program.starts_with("/usr") {
+        return "portable";
+    }
+    // deb and rpm install the same files in the same places, so what tells them
+    // apart is which package manager the machine keeps
+    if PathBuf::from("/var/lib/dpkg/status").exists() {
+        "deb"
+    } else if PathBuf::from("/var/lib/rpm").exists() {
+        "rpm"
+    } else {
+        "linux-package"
+    }
+}
+
 /// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
 fn telemetry_environment(version: &str) -> &'static str {
     if cfg!(debug_assertions) {
@@ -178,6 +215,7 @@ struct TelemetryContext {
     user_id: String,
     os: String,
     arch: String,
+    package: String,
 }
 
 #[tauri::command]
@@ -192,6 +230,7 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
         user_id: get_or_create_install_id(&data_dir),
         os: std::env::consts::OS.to_string(),
         arch: std::env::consts::ARCH.to_string(),
+        package: package_kind().to_string(),
     })
 }
 
@@ -508,7 +547,14 @@ fn main() {
     let mut options = sentry::ClientOptions::new()
         .release(app_version.clone())
         .environment(telemetry_environment(&app_version))
-        .traces_sample_rate(1.0)
+        // The editor asks for the status of a publication every second
+        .traces_sampler(|ctx| {
+            if ctx.name().contains("/publication/status") {
+                0.0
+            } else {
+                1.0
+            }
+        })
         // Named rather than left out: unset, sentry puts the hostname of the
         // machine in every event, which names the user
         .server_name("desktop")
@@ -546,6 +592,10 @@ fn main() {
     sentry::configure_scope(|scope| {
         scope.set_tag("os", std::env::consts::OS);
         scope.set_tag("arch", std::env::consts::ARCH);
+        scope.set_tag("package", package_kind());
+        if let Ok(webview) = tauri::webview_version() {
+            scope.set_tag("webview", webview);
+        }
         // Anonymous install id → distinguishes distinct installs from repeat crashes.
         scope.set_user(Some(sentry::protocol::User {
             id: Some(install_id.clone()),
