@@ -155,11 +155,11 @@ async fn update_website(
     };
 
     if let Some(why) = why {
-        tracing::warn!("Could not version website {}: {}", query.website_id, why);
         // Said rather than logged: the history quietly stops being written
         // otherwise. The words put the saving first, because the files are on
         // the disk.
         if worth_saying(&state, query.website_id.as_str(), &why) {
+            tracing::error!("Could not version website {}: {}", query.website_id, why);
             return Err(Error::Told(format!(
                 "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
                 why

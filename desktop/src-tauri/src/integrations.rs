@@ -124,21 +124,27 @@ impl Integrations {
         let Some((provider, cli, urls)) = self.resolve_deploy(site, options)? else {
             return Err(NOBODY_TO_PUBLISH_WITH.to_string());
         };
-
-        say(format!("Getting your website ready for {}", host));
-        let prepared = provider.deploy(&cli, site, options)?;
-        say(format!("Sending your website to {}", host));
-        {
-            let sending = one_at_a_time(site);
-            let _sending = held(&sending);
-            push(site, prepared.tag.as_deref())?;
-        }
-        Ok(Publishing {
-            provider,
-            cli,
-            prepared,
-            urls,
-        })
+        // Scoped rather than set: this runs on a pool thread that the next
+        // website to sync inherits
+        sentry::with_scope(
+            |scope| scope.set_tag("forge", provider.program()),
+            || {
+                say(format!("Getting your website ready for {}", host));
+                let prepared = provider.deploy(&cli, site, options)?;
+                say(format!("Sending your website to {}", host));
+                {
+                    let sending = one_at_a_time(site);
+                    let _sending = held(&sending);
+                    push(site, prepared.tag.as_deref())?;
+                }
+                Ok(Publishing {
+                    provider,
+                    cli,
+                    prepared,
+                    urls,
+                })
+            },
+        )
     }
 
     /// Take in what was pushed to this website from somewhere else
@@ -172,6 +178,14 @@ impl Integrations {
         let sending = one_at_a_time(site);
         let _sending = held(&sending);
         push(site, None)
+    }
+
+    /// The programs Silex can use here, and what version each answered
+    pub fn at_hand(&self) -> impl Iterator<Item = (&str, Option<&str>)> {
+        self.known
+            .iter()
+            .filter(|(_, state)| state.enabled && state.path.is_some())
+            .map(|(id, state)| (id.as_str(), state.version.as_deref()))
     }
 
     fn program(&self, id: &str) -> Option<PathBuf> {
@@ -455,7 +469,7 @@ fn read(data_dir: &Path) -> Integrations {
             // the file they had is kept to be read and put back by hand
             let kept = file.with_extension("json.unreadable");
             let _ = std::fs::rename(&file, &kept);
-            tracing::warn!(
+            tracing::error!(
                 "Could not read {}: {}. Kept it as {}, and looking for the programs again: anything that was turned off there is turned back on",
                 file.display(),
                 e,

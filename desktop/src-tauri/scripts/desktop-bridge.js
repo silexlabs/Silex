@@ -8,10 +8,17 @@
   // Frontend error tracking (GlitchTip / Sentry-compatible).
   // Real version, channel, anonymous install id and OS/arch come from Rust so the
   // webview reports the same identity as the native side (not a hardcoded 0.1.0).
+
+  // The query names the website being edited
+  const withoutQuery = (event) => {
+    if (event.request?.url) event.request.url = event.request.url.split('?')[0];
+    if (event.request?.headers) delete event.request.headers.Referer;
+    return event;
+  };
   invoke('get_telemetry_context').then((ctx) => {
     if (!ctx?.dsn) return;
     const script = document.createElement('script');
-    script.src = 'https://browser.sentry-cdn.com/8.46.0/bundle.tracing.min.js';
+    script.src = 'https://browser.sentry-cdn.com/10.74.0/bundle.tracing.min.js';
     script.crossOrigin = 'anonymous';
     script.onload = () => {
       if (!window.Sentry) return;
@@ -21,6 +28,8 @@
         environment: ctx.environment,
         tracesSampleRate: 1.0,
         integrations: [window.Sentry.browserTracingIntegration()],
+        beforeSend: withoutQuery,
+        beforeSendTransaction: withoutQuery,
       });
       window.Sentry.setUser({ id: ctx.user_id });
       window.Sentry.setTag('os', ctx.os);
@@ -35,7 +44,9 @@
   const safeListen = (event, handler) => {
     window.Sentry?.addBreadcrumb?.({ category: 'tauri', message: `listen ${event}`, level: 'info' });
     return listen(event, handler).catch((err) => {
-      window.Sentry?.captureException?.(err, { tags: { tauri_command: `plugin:event|listen:${event}` } });
+      // Tauri rejects with a string, which GlitchTip titles <unknown>
+      const failure = err instanceof Error ? err : new Error(`tauri listen ${event}: ${String(err)}`);
+      window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
     });
   };
 
@@ -169,6 +180,14 @@
     // Track project_publish
     editor.on('silex:publish:start', () => {
       editor.__publishSpan = window.Sentry?.startInactiveSpan?.({ name: 'project_publish', op: 'lifecycle', forceTransaction: true });
+    });
+    editor.on('silex:publish:data', ({ data }) => {
+      const files = data?.files ?? [];
+      editor.__publishSpan?.setAttributes({
+        files: files.length,
+        pages: data?.pages?.length ?? 0,
+        bytes: files.reduce((n, f) => n + (typeof f.content === 'string' ? f.content.length : 0), 0),
+      });
     });
     editor.on('silex:publish:end', () => {
       editor.__publishSpan?.end();

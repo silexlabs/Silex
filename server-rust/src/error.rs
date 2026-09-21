@@ -82,9 +82,10 @@ impl IntoResponse for Error {
         let status = self.status_code();
         let message = self.to_string();
 
-        // Log server errors for debugging
         if status.is_server_error() {
             tracing::error!("Server error: {}", message);
+        } else if status.is_client_error() {
+            tracing::warn!("Refused a request with {}: {}", status.as_u16(), message);
         }
 
         let body = Json(json!({
