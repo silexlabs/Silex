@@ -195,7 +195,7 @@ export const semanticPlugin = (editor, opts) => {
       onEvent({ component, event }) {
         const value = (event.target as HTMLInputElement).value
         if (component.getAttributes()[attrName] !== value) {
-          component.setAttributes({ [attrName]: value })
+          component.addAttributes({ [attrName]: value })
         }
       },
       onUpdate({ elInput, component }) {
