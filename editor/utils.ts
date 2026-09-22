@@ -61,8 +61,7 @@ export function selectBody(editor: Editor): void {
  * Checks if an element is a text or input field.
  * @param element The element to check.
  */
-export function isTextOrInputField(element: HTMLElement | null | undefined): boolean {
-  if(!element || typeof element.getAttribute !== 'function') return false
+export function isTextOrInputField(element: HTMLElement): boolean {
   if(element.getAttribute('type') === 'submit') return false
   const isInput: boolean = element.tagName === 'INPUT'
   const isOtherFormElement: boolean = ['TEXTAREA', 'OPTION', 'OPTGROUP', 'SELECT', 'BUTTON'].includes(element.tagName)
