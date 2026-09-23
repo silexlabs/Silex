@@ -957,136 +957,95 @@ export default class GitlabConnector implements StorageConnector {
       throw new ApiError('Invalid project path. Use the "username/repo" format.', 400)
     }
 
-    // Forking only works on gitlab.com, where the source project is
-    if (!this.isUsingOfficialInstance()) {
-      return this.importWebsite(session, projectPath)
-    }
-
     // URL-encode the project path for the API
     const encodedPath = encodeURIComponent(projectPath)
+    const canFork = this.isUsingOfficialInstance()
 
     // First, get the source project info to extract its name
-    let sourceProject: any
-    try {
-      sourceProject = await this.callApi({
-        session,
-        path: `api/v4/projects/${encodedPath}`,
-        method: 'GET',
-      })
-    } catch (e) {
-      if (e.httpStatusCode === 404) {
-        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
-      }
-      throw e
-    }
+    const sourceProject = await this.getSourceProject(session, projectPath, canFork)
 
     // Generate a unique name for the fork
     const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
     const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
-    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
+    const newProject: GitlabCreateProject = {
+      name: this.options.repoPrefix + forkName,
+      path: sanitizeGitlabPath(this.options.repoPrefix + forkName),
+      visibility: 'private',
+    }
 
-    // Fork the project to the user's namespace
-    const forkedProject = await this.callApi({
-      session,
-      path: `api/v4/projects/${encodedPath}/fork`,
-      method: 'POST',
-      requestBody: {
-        name: this.options.repoPrefix + forkName,
-        /* @ts-ignore */
-        path: safePath,
-        visibility: 'private',
-      },
-    })
-
-    // Wait for the fork to complete (GitLab forks asynchronously)
-    return this.waitForImport(session, forkedProject.id.toString(), 'Fork failed')
-  }
-
-  /**
-   * Create a project from a public gitlab.com project, for users connected to another GitLab instance
-   * This is the "Repository by URL" import of the GitLab API, which the instance must have enabled
-   * @param session - The user session
-   * @param projectPath - The gitlab.com project path in the "username/repo" format
-   * @returns The new website ID (project ID)
-   */
-  private async importWebsite(session: GitlabSession, projectPath: string): Promise<string> {
-    // Get the source project info from gitlab.com to extract its name (public project, no token needed)
-    const sourceUrl = `${TEMPLATES_DOMAIN}/api/v4/projects/${encodeURIComponent(projectPath)}`
-    let sourceResponse: Response
+    // Fork the project to the user's namespace, or import it by URL on another instance
+    let forkedProject: any
     try {
-      sourceResponse = await this.fetchWithRetry(sourceUrl)
-    } catch (e) {
-      throw new ApiError(`Could not reach gitlab.com to read the project ${projectPath}: ${e.message || e}`, 500)
-    }
-    if (sourceResponse.status === 404) {
-      throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists on gitlab.com and is public.`, 404)
-    }
-    if (!sourceResponse.ok) {
-      throw new ApiError(`Could not read the project ${projectPath} on gitlab.com: ${sourceResponse.statusText}`, sourceResponse.status)
-    }
-    const sourceProject = await sourceResponse.json() as any
-    const importUrl = sourceProject.http_url_to_repo || `${TEMPLATES_DOMAIN}/${projectPath}.git`
-
-    // Generate a unique name for the new project
-    const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
-    const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
-    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
-
-    // Create the project in the user's namespace, importing the source repository by URL
-    let project: any
-    try {
-      project = await this.callApi({
+      forkedProject = await this.callApi(canFork ? {
+        session,
+        path: `api/v4/projects/${encodedPath}/fork`,
+        method: 'POST',
+        requestBody: newProject,
+      } : {
         session,
         path: 'api/v4/projects/',
         method: 'POST',
-        requestBody: {
-          name: this.options.repoPrefix + forkName,
-          path: safePath,
-          visibility: 'private',
-          import_url: importUrl,
-        },
+        requestBody: { ...newProject, import_url: sourceProject.http_url_to_repo },
       })
     } catch (e) {
-      // When the "Repository by URL" import source is disabled on the instance, GitLab
-      // answers 403 (older versions: a validation error mentioning import_source_disabled)
-      if (e.httpStatusCode === 403 || /import.source.is.disabled|import_source_disabled/i.test(e.message)) {
+      // GitLab answers 403 when the "Repository by URL" import source is disabled on the instance
+      if (!canFork && e.httpStatusCode === 403) {
         throw new ApiError(`Could not import the project ${projectPath}: the "Repository by URL" import source is disabled on ${this.options.domain}. Ask the administrator of this GitLab instance to enable it (Admin area > Settings > General > Import and export settings), or connect with gitlab.com.`, 403)
       }
       throw e
     }
 
-    // Wait for the import to complete (GitLab imports asynchronously)
-    return this.waitForImport(session, project.id.toString(), 'Import failed')
-  }
-
-  /**
-   * Wait for a fork or an import to complete (GitLab does both asynchronously)
-   * @returns The project ID, once the project is ready or after the timeout
-   */
-  private async waitForImport(session: GitlabSession, projectId: string, errorPrefix: string): Promise<string> {
+    // Wait for the fork to complete (GitLab forks and imports asynchronously)
+    const forkedProjectId = forkedProject.id.toString()
     const maxAttempts = 30 // 30 attempts * 2 seconds = 60 seconds max
     const pollInterval = 2000 // 2 seconds
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const project = await this.callApi({
         session,
-        path: `api/v4/projects/${projectId}`,
+        path: `api/v4/projects/${forkedProjectId}`,
         method: 'GET',
       })
 
       if (project.import_status === 'finished' || project.import_status === 'none') {
-        return projectId
+        return forkedProjectId
       }
 
       if (project.import_status === 'failed') {
-        throw new ApiError(`${errorPrefix}: ${project.import_error || 'Unknown error'}`, 500)
+        throw new ApiError(`Fork failed: ${project.import_error || 'Unknown error'}`, 500)
       }
 
       // Status is 'scheduled' or 'started', wait and retry
       await new Promise(resolve => setTimeout(resolve, pollInterval))
     }
 
-    return projectId
+    return forkedProjectId
+  }
+
+  /**
+   * Read the project to fork: with the user's token on gitlab.com, or anonymously from
+   * gitlab.com when the user is on another instance, so their token never leaves it
+   */
+  private async getSourceProject(session: GitlabSession, projectPath: string, canFork: boolean): Promise<any> {
+    try {
+      if (canFork) {
+        return await this.callApi({
+          session,
+          path: `api/v4/projects/${encodeURIComponent(projectPath)}`,
+          method: 'GET',
+        })
+      }
+      const response = await this.fetchWithRetry(`${TEMPLATES_DOMAIN}/api/v4/projects/${encodeURIComponent(projectPath)}`)
+      if (!response.ok) {
+        throw new ApiError(response.statusText, response.status)
+      }
+      return await response.json()
+    } catch (e) {
+      if (e.httpStatusCode === 404) {
+        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
+      }
+      throw e
+    }
   }
 
 

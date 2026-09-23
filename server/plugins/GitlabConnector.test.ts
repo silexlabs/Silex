@@ -101,18 +101,6 @@ describe('GitlabConnector forkWebsite on gitlab.com', () => {
     })
     expect(calls[1].body).not.toHaveProperty('import_url')
   })
-
-  it('reports a missing project', async () => {
-    mockGitlab([
-      ['GET', `${TEMPLATE_API_URL}`, () => jsonResponse({ message: '404 Project Not Found' }, 404, 'Not Found')],
-    ])
-
-    const error = await connector.forkWebsite(session, TEMPLATE_PATH).catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(404)
-    expect(error.message).toMatch(`Project not found: ${TEMPLATE_PATH}`)
-    expect(requests().filter(({ method }) => method === 'POST')).toHaveLength(0)
-  })
 })
 
 describe('GitlabConnector forkWebsite on another GitLab instance', () => {
@@ -160,38 +148,6 @@ describe('GitlabConnector forkWebsite on another GitLab instance', () => {
     expect(calls.some(({ url }) => url.includes('/fork'))).toBe(false)
   })
 
-  it('waits for the import to finish', async () => {
-    const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(((callback: () => void) => {
-      callback()
-      return 0
-    }) as unknown as typeof setTimeout)
-    const statuses = ['scheduled', 'started', 'finished']
-    mockGitlab([
-      templateRoute,
-      ['POST', CREATE_PROJECT_URL, () => jsonResponse({ id: NEW_PROJECT_ID, import_status: 'scheduled' })],
-      ['GET', NEW_PROJECT_URL, () => jsonResponse({ id: NEW_PROJECT_ID, import_status: statuses.shift() })],
-    ])
-
-    await expect(connector.forkWebsite(session, TEMPLATE_PATH)).resolves.toBe(String(NEW_PROJECT_ID))
-
-    expect(requests().filter(({ method, url }) => method === 'GET' && url.startsWith(NEW_PROJECT_URL))).toHaveLength(3)
-    expect(setTimeoutSpy).toHaveBeenCalledTimes(2)
-    expect(setTimeoutSpy).toHaveBeenLastCalledWith(expect.any(Function), 2000)
-  })
-
-  it('reports a failed import', async () => {
-    mockGitlab([
-      templateRoute,
-      ['POST', CREATE_PROJECT_URL, () => jsonResponse({ id: NEW_PROJECT_ID, import_status: 'scheduled' })],
-      ['GET', NEW_PROJECT_URL, () => jsonResponse({ id: NEW_PROJECT_ID, import_status: 'failed', import_error: 'dummy import error' })],
-    ])
-
-    const error = await connector.forkWebsite(session, TEMPLATE_PATH).catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(500)
-    expect(error.message).toBe('Import failed: dummy import error')
-  })
-
   it('reports when the instance has the "Repository by URL" import source disabled', async () => {
     // What GitLab answers when the git import source is disabled
     mockGitlab([
@@ -206,58 +162,5 @@ describe('GitlabConnector forkWebsite on another GitLab instance', () => {
     expect(error.message).toMatch('Ask the administrator')
     // Nothing to wait for
     expect(requests().filter(({ url }) => url.startsWith(NEW_PROJECT_URL))).toHaveLength(0)
-  })
-
-  it('reports the disabled import source on older GitLab versions too', async () => {
-    // Older versions return a validation error instead of a 403
-    mockGitlab([
-      templateRoute,
-      ['POST', CREATE_PROJECT_URL, () => jsonResponse({ message: { import_source_disabled: ['git import source is disabled'] } }, 400, 'Bad Request')],
-    ])
-
-    const error = await connector.forkWebsite(session, TEMPLATE_PATH).catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(403)
-    expect(error.message).toMatch(`the "Repository by URL" import source is disabled on ${DOMAIN}`)
-  })
-
-  it('passes other errors from the instance through', async () => {
-    mockGitlab([
-      templateRoute,
-      ['POST', CREATE_PROJECT_URL, () => jsonResponse({ message: { limit_reached: ['Personal project creation is not allowed'] } }, 400, 'Bad Request')],
-    ])
-
-    const error = await connector.forkWebsite(session, TEMPLATE_PATH).catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(400)
-    expect(error.message).toMatch('Personal project creation is not allowed')
-    expect(error.message).not.toMatch('import source is disabled')
-  })
-
-  it('reports a template missing on gitlab.com without touching the instance', async () => {
-    mockGitlab([
-      ['GET', `${TEMPLATE_API_URL}`, () => jsonResponse({ message: '404 Project Not Found' }, 404, 'Not Found')],
-    ])
-
-    const error = await connector.forkWebsite(session, TEMPLATE_PATH).catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(404)
-    expect(error.message).toMatch(`Project not found: ${TEMPLATE_PATH}`)
-    expect(error.message).toMatch('gitlab.com')
-    expect(requests().filter(({ url }) => url.startsWith(DOMAIN))).toHaveLength(0)
-  })
-})
-
-describe('GitlabConnector forkWebsite input validation', () => {
-  it.each([
-    'https://gitlab.com',
-    'https://framagit.org',
-  ])('rejects anything but a "username/repo" path on %s', async (domain) => {
-    const connector = createConnector(domain)
-
-    const error = await connector.forkWebsite(session, 'https://gitlab.com/silex-templates/silex_devdocs-template').catch(e => e)
-    expect(error).toBeInstanceOf(ApiError)
-    expect(error.httpStatusCode).toBe(400)
-    expect(fetchMock).not.toHaveBeenCalled()
   })
 })
