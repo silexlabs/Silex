@@ -36,6 +36,8 @@ import { stringify, split, merge, getPagesFolder } from '~/server/utils/websiteD
 const MAX_BATCH_UPLOAD_SIZE = 100
 const MAX_BODY_SIZE_KB = 8 * 1000 * 1024 // 8MB (note that 10 MB PNG → becomes ~13.3 MB → ❌ often too big for Gitlab)
 const WEBSITE_DATA_FILE_FORMAT_VERSION = '1.0.0'
+// The templates are public projects on gitlab.com, whatever instance the user is connected to
+const TEMPLATES_DOMAIN = 'https://gitlab.com'
 
 export interface GitlabOptions {
   clientId: string
@@ -118,6 +120,13 @@ interface GitlabCreateTag {
 interface GitlabFetchCommits {
   ref_name: string
   since: string
+}
+
+interface GitlabCreateProject {
+  name: string
+  path?: string
+  visibility?: 'private' | 'internal' | 'public'
+  import_url?: string
 }
 
 
@@ -306,7 +315,7 @@ export default class GitlabConnector implements StorageConnector {
     session: GitlabSession,
     path: string,
     method?: 'POST' | 'GET' | 'PUT' | 'DELETE',
-    requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null,
+    requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | GitlabCreateProject | null,
     params?: any,
     responseHeaders?: any,
   }): Promise<any> {
@@ -934,6 +943,9 @@ export default class GitlabConnector implements StorageConnector {
 
   /**
    * Fork an external/public GitLab project (from any user/organization)
+   * The source project lives on gitlab.com, where the templates are. GitLab can only
+   * fork within one instance, so when the user is connected to another instance
+   * (e.g. framagit.org) the project is created from the source repository URL instead
    * @param session - The user session
    * @param gitlabUrl - The project path in the "username/repo" format
    * @returns The new website ID (project ID)
@@ -947,41 +959,43 @@ export default class GitlabConnector implements StorageConnector {
 
     // URL-encode the project path for the API
     const encodedPath = encodeURIComponent(projectPath)
+    const canFork = this.isUsingOfficialInstance()
 
     // First, get the source project info to extract its name
-    let sourceProject: any
-    try {
-      sourceProject = await this.callApi({
-        session,
-        path: `api/v4/projects/${encodedPath}`,
-        method: 'GET',
-      })
-    } catch (e) {
-      if (e.httpStatusCode === 404) {
-        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
-      }
-      throw e
-    }
+    const sourceProject = await this.getSourceProject(session, projectPath, canFork)
 
     // Generate a unique name for the fork
     const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
     const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
-    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
+    const newProject: GitlabCreateProject = {
+      name: this.options.repoPrefix + forkName,
+      path: sanitizeGitlabPath(this.options.repoPrefix + forkName),
+      visibility: 'private',
+    }
 
-    // Fork the project to the user's namespace
-    const forkedProject = await this.callApi({
-      session,
-      path: `api/v4/projects/${encodedPath}/fork`,
-      method: 'POST',
-      requestBody: {
-        name: this.options.repoPrefix + forkName,
-        /* @ts-ignore */
-        path: safePath,
-        visibility: 'private',
-      },
-    })
+    // Fork the project to the user's namespace, or import it by URL on another instance
+    let forkedProject: any
+    try {
+      forkedProject = await this.callApi(canFork ? {
+        session,
+        path: `api/v4/projects/${encodedPath}/fork`,
+        method: 'POST',
+        requestBody: newProject,
+      } : {
+        session,
+        path: 'api/v4/projects/',
+        method: 'POST',
+        requestBody: { ...newProject, import_url: sourceProject.http_url_to_repo },
+      })
+    } catch (e) {
+      // GitLab answers 403 when the "Repository by URL" import source is disabled on the instance
+      if (!canFork && e.httpStatusCode === 403) {
+        throw new ApiError(`Could not import the project ${projectPath}: the "Repository by URL" import source is disabled on ${this.options.domain}. Ask the administrator of this GitLab instance to enable it (Admin area > Settings > General > Import and export settings), or connect with gitlab.com.`, 403)
+      }
+      throw e
+    }
 
-    // Wait for the fork to complete (GitLab forks asynchronously)
+    // Wait for the fork to complete (GitLab forks and imports asynchronously)
     const forkedProjectId = forkedProject.id.toString()
     const maxAttempts = 30 // 30 attempts * 2 seconds = 60 seconds max
     const pollInterval = 2000 // 2 seconds
@@ -1006,6 +1020,32 @@ export default class GitlabConnector implements StorageConnector {
     }
 
     return forkedProjectId
+  }
+
+  /**
+   * Read the project to fork: with the user's token on gitlab.com, or anonymously from
+   * gitlab.com when the user is on another instance, so their token never leaves it
+   */
+  private async getSourceProject(session: GitlabSession, projectPath: string, canFork: boolean): Promise<any> {
+    try {
+      if (canFork) {
+        return await this.callApi({
+          session,
+          path: `api/v4/projects/${encodeURIComponent(projectPath)}`,
+          method: 'GET',
+        })
+      }
+      const response = await this.fetchWithRetry(`${TEMPLATES_DOMAIN}/api/v4/projects/${encodeURIComponent(projectPath)}`)
+      if (!response.ok) {
+        throw new ApiError(response.statusText, response.status)
+      }
+      return await response.json()
+    } catch (e) {
+      if (e.httpStatusCode === 404) {
+        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
+      }
+      throw e
+    }
   }
 
 
