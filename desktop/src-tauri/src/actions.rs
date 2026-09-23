@@ -297,8 +297,12 @@ impl Syncer {
                     (State::Sent, Cleared, None)
                 }
                 Err(why) => {
-                    tracing::warn!("Could not send website {}: {}", website_id, why);
                     let retrying = git::worth_another_try(&why);
+                    if retrying {
+                        tracing::warn!("Could not send website {}: {}", website_id, why);
+                    } else {
+                        tracing::error!("Could not send website {}: {}", website_id, why);
+                    }
                     let after = retrying.then(|| {
                         let after = self.tried_again_after
                             [broke_down.min(self.tried_again_after.len() - 1)];
@@ -415,7 +419,7 @@ impl silex_server::Actions for SilexActions {
             return;
         };
         if let Err(e) = self.integrations.sync_pull(&site) {
-            tracing::warn!("Could not pull website {}: {}", website_id, e);
+            tracing::error!("Could not pull website {}: {}", website_id, e);
         }
     }
 
@@ -429,7 +433,7 @@ impl silex_server::Actions for SilexActions {
     /// has answered.
     fn deploy(&self, website_id: &str, options: &silex_server::PublicationOptions, job: &Job) {
         let Some(site) = self.site_path(website_id) else {
-            tracing::warn!(
+            tracing::error!(
                 "Asked to publish a website that is not there: {}",
                 website_id
             );
@@ -482,7 +486,7 @@ impl silex_server::Actions for SilexActions {
 
         match sent {
             Err(failure) => {
-                tracing::warn!("Could not publish website {}: {}", website_id, failure);
+                tracing::error!("Could not publish website {}: {}", website_id, failure);
                 // What the program answered, and nothing read into it: those
                 // words change with the version of git, the host and the
                 // language of the machine

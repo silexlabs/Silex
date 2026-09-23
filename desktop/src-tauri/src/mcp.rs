@@ -388,6 +388,34 @@ fn tool_error(msg: impl Into<String>) -> CallToolResult {
 // Static tool implementations
 // ==========================================================================
 
+/// Sentry puts no Drop on its own spans, and one that is never finished is
+/// never sent
+struct ToolSpan(Option<sentry::TransactionOrSpan>);
+
+impl ToolSpan {
+    /// The failure travels in the result, and reaches the span from nowhere else
+    fn answers(self, result: Result<CallToolResult, McpError>) -> Result<CallToolResult, McpError> {
+        let failed = match &result {
+            Ok(call) => call.is_error == Some(true),
+            Err(_) => true,
+        };
+        if failed {
+            if let Some(span) = &self.0 {
+                span.set_status(sentry::protocol::SpanStatus::InternalError);
+            }
+        }
+        result
+    }
+}
+
+impl Drop for ToolSpan {
+    fn drop(&mut self) {
+        if let Some(span) = self.0.take() {
+            span.finish();
+        }
+    }
+}
+
 #[tool_router]
 impl SilexMcp {
     pub fn new(
@@ -408,11 +436,11 @@ impl SilexMcp {
     }
 
     /// Start a Sentry transaction for an MCP tool call.
-    fn start_tool_transaction(tool_name: &str, action: &str) -> sentry::TransactionOrSpan {
+    fn start_tool_transaction(tool_name: &str, action: &str) -> ToolSpan {
         let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool_name), "mcp.tool");
         let transaction = sentry::start_transaction(tx_ctx);
         transaction.set_data("action", serde_json::Value::String(action.to_string()));
-        transaction.into()
+        ToolSpan(Some(transaction.into()))
     }
 
     // ----------------------------------------------------------------------
@@ -426,7 +454,11 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<WebsiteParams>,
     ) -> Result<CallToolResult, McpError> {
-        let _tx = Self::start_tool_transaction("website", &format!("{:?}", params.action));
+        let span = Self::start_tool_transaction("website", &format!("{:?}", params.action));
+        span.answers(self.website_call(params).await)
+    }
+
+    async fn website_call(&self, params: WebsiteParams) -> Result<CallToolResult, McpError> {
         let base_url = self.get_base_url();
         let client = reqwest::Client::new();
 
@@ -631,8 +663,12 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let _tx =
+        let span =
             Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
+        span.answers(self.screenshot_call(params).await)
+    }
+
+    async fn screenshot_call(&self, params: ScreenshotParams) -> Result<CallToolResult, McpError> {
         let target = params.target.as_deref().unwrap_or("ui");
 
         let screenshot_js = r#"

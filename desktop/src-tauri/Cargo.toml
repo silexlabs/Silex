@@ -22,6 +22,7 @@ serde_json = "1"
 base64 = "0.22"
 tokio = { version = "1", features = ["full"] }
 axum = "0.8"
+tower = { version = "0.5", features = ["make", "util"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
@@ -45,7 +46,7 @@ uuid = { version = "1", features = ["v4"] }
 which = "8"
 
 # Error tracking / telemetry (GlitchTip / Sentry-compatible)
-sentry = { version = "0.35", features = ["tracing"] }
+sentry = { version = "0.49", features = ["tracing", "tower-axum-matched-path"] }
 
 # What a program writes to be read in a terminal, made readable anywhere else:
 # a real parser rather than a guess at where an escape sequence ends

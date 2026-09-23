@@ -149,7 +149,7 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
     }
 
     // What was run is not in the error a user reads, so it has to be here
-    tracing::debug!(
+    tracing::info!(
         program = %program.display(),
         args = %redact(&args.join(" ")),
         "running"
