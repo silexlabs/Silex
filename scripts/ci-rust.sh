@@ -26,8 +26,8 @@ if [ ! -f dist/client/index.html ]; then
   echo "  dist/client is missing — run: pnpm install --frozen-lockfile --filter @silexlabs/silex && pnpm build"
   missing=1
 fi
-if [ ! -f silex-dashboard-2026/public/index.html ]; then
-  echo "  the dashboard submodule is missing — run: git submodule update --init"
+if [ ! -f desktop/dashboard/dist/index.html ]; then
+  echo "  desktop/dashboard/dist is missing — run: pnpm install --frozen-lockfile --filter @silexlabs/silex-desktop-dashboard && pnpm --filter @silexlabs/silex-desktop-dashboard build"
   missing=1
 fi
 [ "$missing" -eq 0 ] && echo "  both are there"

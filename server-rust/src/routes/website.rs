@@ -14,7 +14,7 @@
 //! - POST /api/website/?websiteId=X - Update website
 //! - PUT /api/website/ - Create website
 //! - DELETE /api/website/?websiteId=X - Delete website
-//! - POST /api/website/duplicate?websiteId=X - Duplicate website
+//! - POST /api/website/duplicate?websiteId=X&name=Y - Duplicate website, `name` optional
 //! - GET /api/website/meta?websiteId=X - Read metadata
 //! - POST /api/website/meta?websiteId=X - Write metadata
 //! - GET /api/website/assets/:path?websiteId=X - Read asset
@@ -67,6 +67,14 @@ pub struct WebsiteReadQuery {
 #[serde(rename_all = "camelCase")]
 pub struct WebsiteQuery {
     pub website_id: WebsiteId,
+}
+
+/// `name` is sent by the desktop app, which names the copy in the language of the user
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DuplicateQuery {
+    pub website_id: WebsiteId,
+    pub name: Option<String>,
 }
 
 // ==================
@@ -219,9 +227,9 @@ async fn delete_website(
 /// Duplicate a website
 async fn duplicate_website(
     State(state): State<AppState>,
-    Query(query): Query<WebsiteQuery>,
+    Query(query): Query<DuplicateQuery>,
 ) -> Result<Json<MessageResponse>> {
-    storage::duplicate_website(&state.data_path, &query.website_id).await?;
+    storage::duplicate_website(&state.data_path, &query.website_id, query.name).await?;
 
     Ok(Json(MessageResponse {
         message: "Website duplicated",

@@ -13,10 +13,10 @@ use std::path::Path;
 
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
+use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::remote::Remote;
+use super::common::run::run;
 use super::deploy::{silex_tag, Deploy, Prepared, Urls};
-use super::pipeline::{ensure_build_files, ensure_pipeline_file};
-use super::remote::Remote;
-use super::run::run;
 
 pub struct Hut;
 
@@ -77,7 +77,7 @@ impl Deploy for Hut {
             return Err(e);
         }
 
-        let remote = Remote::of(site).ok_or(super::git::NOWHERE_TO_SEND_IT)?;
+        let remote = Remote::of(site).ok_or(super::common::git::NOWHERE_TO_SEND_IT)?;
 
         Ok(Some(Urls {
             // Only what the user named: a site hut lists is one of theirs,
@@ -95,7 +95,7 @@ impl Deploy for Hut {
         site: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        let remote = Remote::of(site).ok_or(super::git::NOWHERE_TO_SEND_IT)?;
+        let remote = Remote::of(site).ok_or(super::common::git::NOWHERE_TO_SEND_IT)?;
         // `hut pages publish` is given a domain, where the user named an
         // address: what stands before the first slash is the site
         let site_host = options

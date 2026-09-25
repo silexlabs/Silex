@@ -47,7 +47,7 @@
       window.Sentry.setTag('context', 'webview');
     };
     document.head.appendChild(script);
-  }).catch(() => { /* no consent / DSN not set — telemetry disabled */ });
+  }).catch(() => {});
 
   // Wrap listen() so a rejected Tauri IPC (plugin:event|listen) becomes a breadcrumb +
   // handled capture with a culprit, instead of an UnhandledRejection with an empty one.
@@ -59,10 +59,6 @@
       window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
     });
   };
-
-  // Expose debug logging for silex-lib client code
-  window.__silexDebug = (msg) => invoke('log_debug', { message: msg });
-  invoke('log_debug', { message: '[bridge] desktop-bridge loaded, page=' + window.location.href });
 
   // MCP helpers, called by the Rust side through eval_js.
   // Nothing else belongs here: a capability's own logic lives in its plugin.
@@ -119,18 +115,18 @@
     const link = e.target.closest('a');
     if (!link) return;
     // Prefer getAttribute (raw, unencoded) over .href (browser-resolved,
-    // percent-encodes spaces) so that file:// paths reach open_folder intact.
+    // percent-encodes spaces) so that file:// paths reach open_link intact.
     const url = link.getAttribute('href') || link.href || '';
     if (url.startsWith('file://')) {
       e.preventDefault();
-      invoke('open_folder', { path: url });
+      invoke('open_link', { url });
     } else if (url.startsWith('http://') || url.startsWith('https://')) {
       // External URLs open in OS default browser; same-origin URLs stay in webview
       try {
         const parsed = new URL(url);
         if (parsed.origin !== window.location.origin) {
           e.preventDefault();
-          invoke('open_folder', { path: url });
+          invoke('open_link', { url });
         }
       } catch { /* malformed URL, let browser handle */ }
     }
@@ -172,8 +168,8 @@
         });
       });
 
-    // Track unsaved changes
-    editor.on('change:changesCount', () => invoke('mark_unsaved'));
+    // GrapesJS counts changes up while editing and resets the count after a save
+    editor.on('change:changesCount storage:end:store', () => invoke('set_unsaved', { unsaved: editor.getDirtyCount() > 0 }));
 
     // Track project_save
     editor.on('storage:start:store', () => {

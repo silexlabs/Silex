@@ -32,7 +32,7 @@ jobs:
       # own heavy devDeps (grapesjs-cli, playwright), not needed to build/lint/test
       # the Silex app. They get their own job below. Matches the Dockerfile.
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter @silexlabs/silex
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop-dashboard
 
       - name: Build (single package)
         run: pnpm build
@@ -59,25 +59,41 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Build the desktop dashboard
+        run: pnpm --filter @silexlabs/silex-desktop-dashboard build
+
+      - name: Lint the desktop dashboard
+        run: pnpm --filter @silexlabs/silex-desktop-dashboard lint
+
+      - name: Keep the dashboard for the rust job
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard
+          path: desktop/dashboard/dist
+          retention-days: 1
+
   # ── Rust: server-rust library + desktop app ──────────────────────
   rust:
     name: rust (server-rust + desktop)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # silex-desktop compiles the editor and the dashboard into the binary, so
-    # this job needs both: the dashboard is a submodule, the editor is built by
-    # the job above.
+    # this job needs both, built by the job above.
     needs: js
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
 
       - name: Take the editor built above
         uses: actions/download-artifact@v4
         with:
           name: editor
           path: dist/client
+
+      - name: Take the dashboard built above
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard
+          path: desktop/dashboard/dist
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable

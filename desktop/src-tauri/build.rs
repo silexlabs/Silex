@@ -1,10 +1,11 @@
 const COMMANDS: &[&str] = &[
     "set_current_project",
     "clear_current_project",
-    "mark_unsaved",
-    "open_folder",
-    "log_debug",
-    "get_sending",
+    "set_unsaved",
+    "open_link",
+    "show_website_folder",
+    "trash_website",
+    "create_website_from_template",
     "saved_everything",
     "get_telemetry_context",
 ];

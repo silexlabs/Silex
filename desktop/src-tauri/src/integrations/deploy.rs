@@ -11,7 +11,7 @@ use std::path::Path;
 
 use silex_server::{OptionsForm, PublicationOptions};
 
-use super::remote::Remote;
+use super::common::remote::Remote;
 
 #[derive(Default)]
 pub struct Urls {

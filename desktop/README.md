@@ -8,7 +8,6 @@ Desktop application for [Silex](https://www.silex.me), the free/libre no-code we
 - **Rust** — via [rustup](https://rustup.rs/). The version is pinned by `rust-toolchain.toml` at the repo root; rustup picks it up on its own, don't install a toolchain by hand.
 - **Node.js** — the version in `.nvmrc` at the repo root (`nvm use`).
 - **pnpm** — the version pinned in the root `package.json` (`packageManager` field); `corepack enable` is enough.
-- **Submodules** — clone with `--recurse-submodules` (or run `git submodule update --init`). The server embeds `silex-dashboard-2026/public` at compile time and won't build without it.
 
 ## Development
 
@@ -17,6 +16,7 @@ The app embeds the editor frontend built by the JS side, so build that first, fr
 ```bash
 pnpm install
 pnpm run build     # produces dist/client, embedded into the Rust server
+pnpm --filter @silexlabs/silex-desktop-dashboard build   # produces desktop/dashboard/dist, embedded into the app
 ```
 
 Then run the app:
@@ -28,6 +28,11 @@ pnpm run dev       # = tauri dev
 
 Set `SILEX_DATA_PATH` to keep the websites of your development runs away from the ones of the
 installed app.
+
+### Working on the dashboard
+
+The dashboard (`dashboard/`) is a Vue app: see [its README](dashboard/README.md) to work on it with hot
+reload.
 
 ## Build
 
@@ -48,7 +53,7 @@ The app embeds `silex-server` as a library. On startup it:
 2. Opens a WebView pointing to `/` (dashboard)
 3. Starts an MCP server on port `6807` for AI-assisted editing
 
-The dashboard shows the user's websites. Clicking a site navigates to `/?id=<website_id>` which loads the GrapesJS editor.
+The dashboard (`dashboard/`, Vue) shows the user's websites. Clicking a site navigates to `/?id=<website_id>` which loads the GrapesJS editor.
 
 ### Key files
 

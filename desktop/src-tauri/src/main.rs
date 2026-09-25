@@ -10,7 +10,6 @@
 // Prevents an extra console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::collections::BTreeMap;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -21,7 +20,7 @@ use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::held::held;
-use silex_server::Config;
+use silex_server::{Config, WebsiteId};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
@@ -49,6 +48,15 @@ impl Default for AppState {
             current_website_name: Mutex::new(None),
             has_unsaved_changes: Mutex::new(false),
         }
+    }
+}
+
+struct WebsitesFolder(PathBuf);
+
+impl WebsitesFolder {
+    fn website(&self, website_id: &WebsiteId) -> Result<PathBuf, String> {
+        actions::site_path(&self.0, website_id.as_str())
+            .ok_or_else(|| format!("Silex cannot find the folder of the website {website_id}"))
     }
 }
 
@@ -84,37 +92,165 @@ fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState
 }
 
 #[tauri::command]
-fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *held(&state.has_unsaved_changes) = true;
+fn set_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>, unsaved: bool) {
+    *held(&state.has_unsaved_changes) = unsaved;
 
     if let Some(name) = held(&state.current_website_name).as_ref() {
         if let Some(window) = app.get_webview_window("main") {
-            let _ = window.set_title(&format!("\u{2022} {} \u{2014} Silex", name));
+            let mark = if unsaved { "\u{2022} " } else { "" };
+            let _ = window.set_title(&format!("{mark}{name} \u{2014} Silex"));
         }
     }
 }
 
+/// Any other path could be a program, which the system would run
 #[tauri::command]
-fn open_folder(path: String) {
-    // Strip file:// prefix if present
-    let path = path.strip_prefix("file://").unwrap_or(&path);
-    let _ = open::that(path);
+async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Result<(), String> {
+    let target = match url.strip_prefix("file://") {
+        Some(path) => {
+            let path = std::fs::canonicalize(path).map_err(|e| e.to_string())?;
+            let websites = std::fs::canonicalize(&folder.0).map_err(|e| e.to_string())?;
+            if !path.starts_with(websites) {
+                return Err(format!("{} is not in a website", path.display()));
+            }
+            path.into_os_string()
+        }
+        None if url.starts_with("https://") || url.starts_with("http://") => url.into(),
+        None => return Err(format!("Silex does not open {url}")),
+    };
+    open::that_detached(target).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn log_debug(message: String) {
-    tracing::debug!("[webview] {message}");
+async fn show_website_folder(
+    folder: tauri::State<'_, WebsitesFolder>,
+    website_id: WebsiteId,
+) -> Result<(), String> {
+    open::that_detached(folder.website(&website_id)?).map_err(|e| e.to_string())
 }
 
-/// Where every website is on its way to the repository it is kept in
-///
-/// What the dashboard asks for when it opens. Every change after that comes
-/// through the `sending-changed` event.
+/// Unlike the DELETE route, which the hosted server shares, the user can get the website back
 #[tauri::command]
-fn get_sending(
+async fn trash_website(
+    folder: tauri::State<'_, WebsitesFolder>,
     sendings: tauri::State<'_, actions::Sendings>,
-) -> BTreeMap<String, actions::Sending> {
-    sendings.borrow().clone()
+    website_id: WebsiteId,
+) -> Result<(), String> {
+    // git holds its files while it sends them, and the send would then fail on a website that is gone
+    if sendings
+        .borrow()
+        .get(website_id.as_str())
+        .is_some_and(actions::Sending::on_its_way)
+    {
+        return Err(
+            "Silex is sending this website to its repository. Try again in a few seconds.".into(),
+        );
+    }
+    to_trash(folder.website(&website_id)?).map_err(|e| e.to_string())
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TemplateNotUsed {
+    /// The network failed, so checking the connection is worth saying
+    unreachable: bool,
+    message: String,
+}
+
+impl TemplateNotUsed {
+    fn told(message: String) -> Self {
+        Self {
+            unreachable: false,
+            message,
+        }
+    }
+}
+
+/// Only the Silex group: any page served on localhost can call this command
+const TEMPLATES_GROUP: &str = "https://gitlab.com/silex-templates/";
+
+/// The largest template is under 2 MB, and gitlab.com does not say the size ahead
+const MAX_ARCHIVE_BYTES: usize = 50 * 1024 * 1024;
+
+fn archive_of(repo_url: &str) -> Option<String> {
+    let project = repo_url
+        .strip_prefix(TEMPLATES_GROUP)?
+        .trim_end_matches('/')
+        .trim_end_matches(".git");
+    // `..` or a `/` would lead the URL out of the group
+    let one_project = !project.is_empty()
+        && !project.starts_with('.')
+        && project
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "-_.".contains(c));
+    one_project.then(|| format!("{TEMPLATES_GROUP}{project}/-/archive/HEAD/archive.tar.gz"))
+}
+
+/// Desktop only: the hosted Silex does not make websites from templates this way
+#[tauri::command]
+async fn create_website_from_template(
+    folder: tauri::State<'_, WebsitesFolder>,
+    name: String,
+    repo_url: String,
+) -> Result<WebsiteId, TemplateNotUsed> {
+    let archive = archive_of(&repo_url).ok_or_else(|| {
+        TemplateNotUsed::told(format!(
+            "Silex only takes templates from {TEMPLATES_GROUP}, not from {repo_url}"
+        ))
+    })?;
+    let not_downloaded = |e: reqwest::Error| TemplateNotUsed {
+        unreachable: e.is_connect() || e.is_timeout(),
+        message: format!("Silex could not download the template from {archive}. {e}"),
+    };
+    let client = reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(10))
+        .timeout(Duration::from_secs(120))
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if attempt.url().scheme() == "https"
+                && attempt.url().host_str() == Some("gitlab.com")
+                && attempt.previous().len() < 10
+            {
+                attempt.follow()
+            } else {
+                attempt.error("the template is not on gitlab.com")
+            }
+        }))
+        .build()
+        .map_err(not_downloaded)?;
+    let mut response = client
+        .get(&archive)
+        .send()
+        .await
+        .and_then(reqwest::Response::error_for_status)
+        .map_err(not_downloaded)?;
+    let mut files = Vec::new();
+    while let Some(chunk) = response.chunk().await.map_err(not_downloaded)? {
+        files.extend_from_slice(&chunk);
+        if files.len() > MAX_ARCHIVE_BYTES {
+            return Err(TemplateNotUsed::told(format!(
+                "This template is larger than {} MB, which Silex does not copy.",
+                MAX_ARCHIVE_BYTES / 1024 / 1024
+            )));
+        }
+    }
+
+    silex_server::create_website_from_template(&folder.0, name, files, repo_url)
+        .await
+        .map_err(|e| TemplateNotUsed::told(e.to_string()))
+}
+
+/// Through Finder, the default, macOS asks the user to let Silex control Finder
+#[cfg(target_os = "macos")]
+fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
+    use trash::macos::{DeleteMethod, TrashContextExtMacos};
+    let mut context = trash::TrashContext::default();
+    context.set_delete_method(DeleteMethod::NsFileManager);
+    context.delete(path)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
+    trash::delete(path)
 }
 
 /// Told by the editor once it has finished saving
@@ -469,12 +605,8 @@ async fn start_server(
     data_path: std::path::PathBuf,
     app_data_dir: PathBuf,
     current_website_id: actions::CurrentWebsiteId,
-) -> (u16, actions::Sendings) {
-    // SILEX_DATA_PATH lets the user store the websites somewhere else
-    let data_path = std::env::var("SILEX_DATA_PATH")
-        .map(std::path::PathBuf::from)
-        .unwrap_or(data_path);
-
+    dashboard_in_development: bool,
+) -> Result<(u16, actions::Sendings), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load(&app_data_dir);
 
@@ -514,6 +646,12 @@ async fn start_server(
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = match TcpListener::bind(addr).await {
         Ok(l) => l,
+        Err(e) if dashboard_in_development => {
+            return Err(format!(
+                "Silex cannot listen on port {port}, where the dashboard in development sends its requests: {e}"
+            )
+            .into());
+        }
         Err(_) => {
             // The port belongs to another program on this machine
             let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
@@ -538,17 +676,34 @@ async fn start_server(
             .unwrap();
     });
 
-    (port, sendings)
+    Ok((port, sendings))
 }
 
-/// Tell the frontend of every change, so it never has to keep asking
-fn tell_of_sending(app: tauri::AppHandle, mut sendings: actions::Sendings) {
-    tauri::async_runtime::spawn(async move {
-        while sendings.changed().await.is_ok() {
-            let websites = sendings.borrow_and_update().clone();
-            let _ = app.emit("sending-changed", websites);
-        }
-    });
+/// Only debug builds read it: a leftover variable cannot redirect a release
+fn dashboard_in_development() -> Option<String> {
+    if cfg!(debug_assertions) {
+        std::env::var("SILEX_DASHBOARD_URL").ok()
+    } else {
+        None
+    }
+}
+
+/// On a laptop with two graphics cards, the one the screen starts on draws
+/// unless the user asks for the NVIDIA one
+#[cfg(target_os = "linux")]
+fn renders_on_nvidia() -> bool {
+    let asked = std::env::var("__NV_PRIME_RENDER_OFFLOAD").is_ok_and(|v| v == "1")
+        || std::env::var("__GLX_VENDOR_LIBRARY_NAME").is_ok_and(|v| v == "nvidia");
+    asked
+        || std::fs::read_dir("/sys/class/drm")
+            .into_iter()
+            .flatten()
+            .flatten()
+            .any(|card| {
+                let device = card.path().join("device");
+                let read = |file| std::fs::read_to_string(device.join(file)).unwrap_or_default();
+                read("boot_vga").trim() == "1" && read("vendor").trim() == "0x10de"
+            })
 }
 
 // ==================
@@ -556,17 +711,19 @@ fn tell_of_sending(app: tauri::AppHandle, mut sendings: actions::Sendings) {
 // ==================
 
 fn main() {
-    // Fix EGL crash on Linux with certain GPU/Wayland configurations
-    // (especially NVIDIA + recent WebKitGTK). Must be set before any
-    // WebKit/GTK initialization. See: https://github.com/tauri-apps/tauri/issues/11988
+    // WebKitGTK crashes with NVIDIA under Wayland (Gdk Error 71), and turning
+    // the renderer off draws everything on the CPU, which makes the editor
+    // crawl: only pay for it where it crashes. Must be set before any WebKit/GTK
+    // initialization. See: https://github.com/tauri-apps/tauri/issues/11988
     #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none()
+        && std::env::var_os("WAYLAND_DISPLAY").is_some()
+        && renders_on_nvidia()
     {
-        if std::env::var("WEBKIT_DISABLE_DMABUF_RENDERER").is_err() {
-            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-        }
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     }
 
-    // Resolve the app data dir early so we can check telemetry consent before Tauri starts.
+    // Resolved before Tauri starts, for the install id of the telemetry.
     // This mirrors the path Tauri uses: ~/.local/share/org.silex.desktop (Linux),
     // ~/Library/Application Support/org.silex.desktop (macOS),
     // %APPDATA%/org.silex.desktop (Windows).
@@ -681,10 +838,11 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             set_current_project,
             clear_current_project,
-            mark_unsaved,
-            open_folder,
-            log_debug,
-            get_sending,
+            set_unsaved,
+            open_link,
+            show_website_folder,
+            trash_website,
+            create_website_from_template,
             saved_everything,
             get_telemetry_context,
         ])
@@ -702,6 +860,12 @@ fn main() {
                 .app_data_dir()
                 .expect("failed to resolve app data dir")
                 .join("websites");
+            // SILEX_DATA_PATH lets the user store the websites somewhere else
+            let data_path = std::env::var_os("SILEX_DATA_PATH")
+                .filter(|v| !v.is_empty())
+                .map(PathBuf::from)
+                .unwrap_or(data_path);
+            app.manage(WebsitesFolder(data_path.clone()));
 
             // Show splash screen while the app loads
             let _splash =
@@ -715,6 +879,7 @@ fn main() {
                     .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
+            let dashboard = dashboard_in_development();
             let (port, sendings) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
@@ -722,7 +887,8 @@ fn main() {
                     .app_data_dir()
                     .expect("failed to resolve app data dir"),
                 app.state::<AppState>().current_website_id.clone(),
-            ));
+                dashboard.is_some(),
+            ))?;
             // After the server, which is what puts the integrations on the scope:
             // the one event every launch produces is where they are worth having
             sentry::capture_event(sentry::protocol::Event {
@@ -731,28 +897,36 @@ fn main() {
                 ..Default::default()
             });
 
-            app.manage(sendings.clone());
+            app.manage(sendings);
             app.manage(actions::Saves::new(0));
-            tell_of_sending(app.handle().clone(), sendings);
 
-            let url = format!("http://localhost:{}/", port);
+            let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));
             let app_handle_for_splash = app.handle().clone();
-            let window =
-                WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse().unwrap()))
-                    .title("Silex")
-                    .maximized(true)
-                    .initialization_script(include_str!("../scripts/desktop-bridge.js"))
-                    .on_page_load(move |webview, payload| {
-                        if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-                            // Close splash — main window is already maximized behind it
-                            if let Some(splash) = app_handle_for_splash.get_webview_window("splash")
-                            {
-                                let _ = splash.close();
-                            }
-                            let _ = webview.set_focus();
+            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
+                .title("Silex")
+                .maximized(true)
+                .initialization_script(include_str!("../scripts/desktop-bridge.js"))
+                .on_page_load(move |webview, payload| {
+                    if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                        // Close splash — main window is already maximized behind it
+                        if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
+                            let _ = splash.close();
                         }
-                    })
-                    .build()?;
+                        let _ = webview.set_focus();
+                    }
+                })
+                .build()?;
+
+            // Editor and dashboard reach each other through `location.href`, so
+            // WebKit kept the previous editor pages alive for a back button the
+            // app does not have, about 130 MB each
+            #[cfg(target_os = "linux")]
+            window.with_webview(|webview| {
+                use webkit2gtk::{SettingsExt, WebViewExt};
+                if let Some(settings) = webview.inner().settings() {
+                    settings.set_enable_page_cache(false);
+                }
+            })?;
 
             // MCP transport: --stdio for agent-managed launch, HTTP otherwise
             if std::env::args().any(|a| a == "--stdio") {

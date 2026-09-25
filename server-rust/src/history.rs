@@ -102,6 +102,14 @@ pub fn drop_the_remotes(site: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// The remote is named `upstream`, not `origin`: publishing sends the website to `origin`,
+/// and must never send it over the template.
+pub fn start_from_template(site: &Path, template_repo: &str) -> Result<(), String> {
+    let repo = open_or_start(site).map_err(words_of)?;
+    repo.remote("upstream", template_repo).map_err(words_of)?;
+    Ok(())
+}
+
 /// Take back a name given to a version nobody else ever saw
 pub fn untag(site: &Path, tag: &str) {
     if let Ok(repo) = open(site) {

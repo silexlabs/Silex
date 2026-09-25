@@ -11,7 +11,8 @@
 //!
 //! The hosted Silex has a dashboard of its own, so the server crate knows
 //! nothing about this one: `/` is the dashboard, `/?id=<website id>` the
-//! editor.
+//! editor. `/silex.js`, the client config the editor loads, is the desktop's
+//! too, built with the dashboard.
 
 use std::collections::HashMap;
 
@@ -20,31 +21,60 @@ use axum::routing::get;
 use axum::Router;
 
 use rust_embed::Embed;
-use silex_server::frontend::{serve, try_serve, EditorAssets};
+use silex_server::frontend::{if_none_match, serve, try_serve, EditorAssets};
 
 /// Path relative to this crate's Cargo.toml
 #[derive(Embed)]
-#[folder = "../../silex-dashboard-2026/public/"]
+#[folder = "../dashboard/dist/"]
 struct DashboardAssets;
 
 /// Serve the dashboard, leaving the editor everything it does not hold
 pub fn configure(app: Router) -> Router {
     app.route(
         "/",
-        get(|Query(params): Query<HashMap<String, String>>| async move {
-            if params.contains_key("id") {
-                serve::<EditorAssets>("index.html")
-            } else {
-                serve::<DashboardAssets>("index.html")
-            }
-        }),
+        get(
+            |Query(params): Query<HashMap<String, String>>, req: Request| async move {
+                let if_none_match = if_none_match(&req);
+                if params.contains_key("id") {
+                    serve::<EditorAssets>("index.html", if_none_match)
+                } else {
+                    serve::<DashboardAssets>("index.html", if_none_match)
+                }
+            },
+        ),
+    )
+    .route(
+        "/silex.js",
+        get(
+            |req: Request| async move { serve::<DashboardAssets>("silex.js", if_none_match(&req)) },
+        ),
     )
     // Dashboard assets take priority, the editor serves everything else
     .fallback(|req: Request| async move {
         let path = req.uri().path().trim_start_matches('/');
-        match try_serve::<DashboardAssets>(path) {
+        let if_none_match = if_none_match(&req);
+        match try_serve::<DashboardAssets>(path, if_none_match) {
             Some(response) => response,
-            None => serve::<EditorAssets>(path),
+            None => serve::<EditorAssets>(path, if_none_match),
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_dashboard_hides_no_file_of_the_editor() {
+        let hidden: Vec<_> = DashboardAssets::iter()
+            .filter(|path| {
+                !["index.html", "silex.js"].contains(&path.as_ref())
+                    && EditorAssets::get(path).is_some()
+            })
+            .collect();
+        assert!(
+            hidden.is_empty(),
+            "served instead of the editor's: {hidden:?}"
+        );
+    }
 }

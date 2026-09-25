@@ -104,6 +104,8 @@ module.exports = {
     filename: 'js/[name].[contenthash:8].js',
     path: path.resolve(__dirname, 'dist/client'),
     library: 'silex',
+    // The watch reruns this build alone: the files of build:public would not come back
+    clean: { keep: (file) => !/^js\/|^css\/admin\./.test(file) },
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -121,7 +123,7 @@ module.exports = {
       filename: 'index.html',
       inject: false,
     }),
-    // The dashboards (silex-dashboard submodules) load the editor at /js/main.js:
+    // The dashboard of the hosted Silex (silex-dashboard submodule) loads the editor at /js/main.js:
     // also emit the bundle under its stable name
     {
       apply(compiler) {

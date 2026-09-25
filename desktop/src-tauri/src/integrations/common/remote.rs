@@ -90,7 +90,7 @@ impl Remote {
     }
 
     /// A host without the ssh port it was given
-    pub(super) fn without_port(authority: &str) -> &str {
+    pub(in crate::integrations) fn without_port(authority: &str) -> &str {
         match authority.rsplit_once(':') {
             Some((host, port))
                 if !host.is_empty()
@@ -266,7 +266,7 @@ mod tests {
 
     #[test]
     fn a_remote_added_from_a_terminal_is_seen() {
-        if crate::integrations::git::Git::found().is_none() {
+        if crate::integrations::common::git::Git::found().is_none() {
             return;
         }
 
