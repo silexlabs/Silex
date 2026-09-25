@@ -68,7 +68,7 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "AGPL-3.0",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@apollo/client": "^4.2.3",
     "@silexlabs/expression-input": "workspace:*",
