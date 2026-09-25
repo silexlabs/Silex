@@ -671,4 +671,4 @@ const resultType = getExpressionResultType(expression, component)
 
 ## License
 
-MIT
+AGPL-3.0-or-later
