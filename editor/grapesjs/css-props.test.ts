@@ -92,7 +92,14 @@ describe('text-underline-offset', () => {
     // Reload: the values are still in the panel
     selectNewRule(rule.getStyle() as Record<string, string>)
     expect(getProperty('typography', 'text-underline-offset').__getFullValue()).toBe('10px')
-    expect(getProperty('typography', 'text-decoration').__getFullValue()).toBe('underline wavy red 3px')
+    // Detached, so the shorthand has no single value anymore. What matters is that its
+    // tokens still land in the right fields
+    expect(getProperty('typography', 'text-decoration').getValues()).toEqual({
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': 'red',
+      'text-decoration-thickness': '3px',
+    })
   })
 })
 
@@ -259,5 +266,75 @@ describe('transition', () => {
       'transition-duration-sub': '2s',
       'transition-timing-function-sub': 'ease-in-out',
     }])
+  })
+})
+
+describe('composites whose sub properties are real longhands', () => {
+  // Grapesjs joins the sub values with a space, drops the empty ones, and splits them back
+  // by position when the rule is read again. A composite where only some parts are filled
+  // writes a shorthand with fewer tokens than it has sub properties, so on the next load
+  // those tokens land in the wrong sub properties. Detached, each sub property is written
+  // as its own declaration and never goes through the positional split
+  it.each([
+    ['typography', 'text-decoration'],
+    ['decorations', 'outline'],
+    ['decorations', 'border-radius'],
+    ['dimension', 'margin'],
+    ['dimension', 'padding'],
+    ['general', 'overflow'],
+  ])('%s/%s is detached, so it writes its sub properties as their own declarations', (sector, id) => {
+    expect(getProperty(sector, id).isDetached()).toBe(true)
+  })
+
+  it('keeps a text decoration colour set on its own out of the line', () => {
+    const rule = selectNewRule()
+    getProperty('typography', 'text-decoration').getProperty('text-decoration-color').upValue('red')
+    expect(rule.getStyle()).toEqual({ 'text-decoration-color': 'red' })
+    // Reload: `red` is the colour, it did not land in the line
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    expect(getProperty('typography', 'text-decoration').getValues()).toEqual({
+      'text-decoration-line': '',
+      'text-decoration-style': '',
+      'text-decoration-color': 'red',
+      'text-decoration-thickness': '',
+    })
+  })
+
+  it('keeps an outline colour set on its own visible in the panel', () => {
+    const rule = selectNewRule()
+    getProperty('decorations', 'outline').getProperty('outline-color').upValue('red')
+    expect(rule.getStyle()).toEqual({ 'outline-color': 'red' })
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    expect(getProperty('decorations', 'outline').getValues()).toEqual({
+      'outline-width': '',
+      'outline-style': '',
+      'outline-color': 'red',
+    })
+  })
+
+  // `Property.initialize` derives the name from the label when there is no `property` key,
+  // so these two were literally named `Overflow-X` and `Overflow-Y`, which is not css
+  it('names the overflow sub properties after the longhands they write', () => {
+    const prop = getProperty('general', 'overflow')
+    expect(prop.getProperties().map((sub: any) => sub.getName())).toEqual(['overflow-x', 'overflow-y'])
+  })
+
+  it('keeps a value set on overflow Y out of X', () => {
+    const rule = selectNewRule()
+    getProperty('general', 'overflow').getProperty('overflow-y').upValue('scroll')
+    expect(rule.getStyle()).toEqual({ 'overflow-y': 'scroll' })
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    expect(getProperty('general', 'overflow').getValues()).toEqual({
+      'overflow-x': '',
+      'overflow-y': 'scroll',
+    })
+  })
+
+  // A css wide keyword is the value of a whole declaration. Joined into the shorthand it
+  // gives `margin: inherit 0 0 0`, which is invalid and dropped by the browser entirely
+  it.each(['inherit', 'initial'])('writes `%s` on a margin side on its own', (keyword) => {
+    const rule = selectNewRule()
+    getProperty('dimension', 'margin').getProperty('margin-top').upValue(keyword)
+    expect(rule.getStyle()).toEqual({ 'margin-top': keyword })
   })
 })
