@@ -424,6 +424,46 @@ async fn trace_without_query(
     next.run(request).await
 }
 
+fn is_local_authority(authority: &str) -> bool {
+    axum::http::uri::Authority::try_from(authority).is_ok_and(|a| {
+        let host = a.host().trim_start_matches('[').trim_end_matches(']');
+        ["localhost", "127.0.0.1", "::1"]
+            .iter()
+            .any(|local| host.eq_ignore_ascii_case(local))
+    })
+}
+
+// A web page can point its own domain at 127.0.0.1 (DNS rebinding) and then
+// call this API as same-origin; only the Host header gives it away.
+// A plain cross-site form POST keeps a local Host, but not a local Origin
+async fn reject_foreign_host(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::http::{header, Method};
+    use axum::response::IntoResponse;
+
+    let headers = request.headers();
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("");
+    let safe_method = matches!(*request.method(), Method::GET | Method::HEAD);
+    let same_origin = match headers.get(header::ORIGIN) {
+        None => true,
+        Some(origin) => origin
+            .to_str()
+            .ok()
+            .and_then(|o| o.strip_prefix("http://"))
+            .is_some_and(|o| o.eq_ignore_ascii_case(host)),
+    };
+    if is_local_authority(host) && (safe_method || same_origin) {
+        next.run(request).await
+    } else {
+        axum::http::StatusCode::FORBIDDEN.into_response()
+    }
+}
+
 async fn start_server(
     pending_evals: mcp::PendingEvals,
     data_path: std::path::PathBuf,
@@ -466,6 +506,7 @@ async fn start_server(
 
     let app = app
         .layer(axum::middleware::from_fn(trace_without_query))
+        .layer(axum::middleware::from_fn(reject_foreign_host))
         .layer(sentry::integrations::tower::SentryHttpLayer::new().enable_transaction());
 
     let app = frontend::configure(app);
