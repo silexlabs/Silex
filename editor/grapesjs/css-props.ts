@@ -263,7 +263,12 @@ export default (editor: Editor, opts) => {
       name: 'Overflow',
       property: 'overflow',
       type: 'composite',
+      // The sub properties are real css longhands, so each one is written as its own
+      // declaration instead of being joined into `overflow` and split back by position
+      // on the next load, which would move a value set on Y into X
+      detached: true,
       properties: [{
+        property: 'overflow-x',
         name: 'Overflow X',
         type: 'select',
         defaults: '',
@@ -278,6 +283,7 @@ export default (editor: Editor, opts) => {
           { id: 'unset', value: 'unset', name: 'unset' },
         ],
       }, {
+        property: 'overflow-y',
         name: 'Overflow Y',
         type: 'select',
         defaults: '',
@@ -300,6 +306,10 @@ export default (editor: Editor, opts) => {
       name: 'Margin',
       property: 'margin',
       type: 'composite',
+      // A css wide keyword on a single side, eg `inherit`, is only valid as the value of
+      // a whole declaration: joined it would give `margin: inherit 0 0 0`, which the
+      // browser drops entirely. Detached, each side is its own valid longhand
+      detached: true,
       defaults: '',
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
@@ -338,6 +348,8 @@ export default (editor: Editor, opts) => {
       name: 'Padding',
       property: 'padding',
       type: 'composite',
+      // Same as margin, see the comment there
+      detached: true,
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
@@ -496,6 +508,10 @@ export default (editor: Editor, opts) => {
       name: 'Text decoration',
       property: 'text-decoration',
       type: 'composite',
+      // Setting the colour on its own used to write `text-decoration: red`, and the next
+      // load split that single token back by position, so it came back as the line
+      // instead of the colour
+      detached: true,
       properties: [{
         name: 'Text decoration line',
         property: 'text-decoration-line',
@@ -606,6 +622,8 @@ export default (editor: Editor, opts) => {
       name: 'Border radius',
       property: 'border-radius',
       type: 'composite',
+      // Same as margin, a css wide keyword on a single corner is only valid on its own
+      detached: true,
       defaults: '',
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
@@ -644,6 +662,10 @@ export default (editor: Editor, opts) => {
       name: 'Outline',
       property: 'outline',
       type: 'composite',
+      // `outline: red` used to be written when only the colour was set, and read back
+      // as three empty fields, so the value was invisible in the panel and lost as soon
+      // as any outline field was touched
+      detached: true,
       properties: [{
         name: 'Outline width',
         property: 'outline-width',
