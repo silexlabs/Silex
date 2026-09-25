@@ -42,8 +42,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -94,15 +92,14 @@ jobs:
       # silex-desktop needs its deps (@tauri-apps/cli) installed for the Tauri build.
       - name: Install JS dependencies and build frontend
         shell: bash
-        run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop && pnpm run build
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop --filter @silexlabs/silex-desktop-dashboard && pnpm run build && pnpm --filter @silexlabs/silex-desktop-dashboard build
 
       - name: Verify frontend was built
         shell: bash
         run: |
-          if [ ! -f dist/client/index.html ]; then
-            echo "::error::Frontend build failed — dist/client/index.html not found"
-            exit 1
-          fi
+          for f in dist/client/index.html desktop/dashboard/dist/index.html; do
+            [ -f "$f" ] || { echo "::error::Frontend build failed — $f not found"; exit 1; }
+          done
 
       # Reproducible Linux build: pin timestamps/paths and normalize the mtimes
       # rust-embed bakes into the binary, so the bundle is verifiable against source.
@@ -117,7 +114,7 @@ jobs:
           echo "TZ=UTC" >> "$GITHUB_ENV"
           echo "LC_ALL=C.UTF-8" >> "$GITHUB_ENV"
           echo "RUSTFLAGS=--remap-path-prefix=$HOME/.cargo=/cargo --remap-path-prefix=$GITHUB_WORKSPACE=/build" >> "$GITHUB_ENV"
-          for dir in dist/client silex-dashboard-2026/public; do
+          for dir in dist/client desktop/dashboard/dist; do
             [ -d "$dir" ] && find "$dir" -exec touch -h -d "@$EPOCH" {} +
           done
 

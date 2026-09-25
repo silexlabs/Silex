@@ -183,10 +183,10 @@
           "markdownDescription": "Enables the clear_current_project command without any pre-configured scope."
         },
         {
-          "description": "Enables the get_sending command without any pre-configured scope.",
+          "description": "Enables the create_website_from_template command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-get-sending",
-          "markdownDescription": "Enables the get_sending command without any pre-configured scope."
+          "const": "allow-create-website-from-template",
+          "markdownDescription": "Enables the create_website_from_template command without any pre-configured scope."
         },
         {
           "description": "Enables the get_telemetry_context command without any pre-configured scope.",
@@ -195,22 +195,10 @@
           "markdownDescription": "Enables the get_telemetry_context command without any pre-configured scope."
         },
         {
-          "description": "Enables the log_debug command without any pre-configured scope.",
+          "description": "Enables the open_link command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-log-debug",
-          "markdownDescription": "Enables the log_debug command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the mark_unsaved command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-mark-unsaved",
-          "markdownDescription": "Enables the mark_unsaved command without any pre-configured scope."
-        },
-        {
-          "description": "Enables the open_folder command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-open-folder",
-          "markdownDescription": "Enables the open_folder command without any pre-configured scope."
+          "const": "allow-open-link",
+          "markdownDescription": "Enables the open_link command without any pre-configured scope."
         },
         {
           "description": "Enables the saved_everything command without any pre-configured scope.",
@@ -225,16 +213,34 @@
           "markdownDescription": "Enables the set_current_project command without any pre-configured scope."
         },
         {
+          "description": "Enables the set_unsaved command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-set-unsaved",
+          "markdownDescription": "Enables the set_unsaved command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the show_website_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-show-website-folder",
+          "markdownDescription": "Enables the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the trash_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-trash-website",
+          "markdownDescription": "Enables the trash_website command without any pre-configured scope."
+        },
+        {
           "description": "Denies the clear_current_project command without any pre-configured scope.",
           "type": "string",
           "const": "deny-clear-current-project",
           "markdownDescription": "Denies the clear_current_project command without any pre-configured scope."
         },
         {
-          "description": "Denies the get_sending command without any pre-configured scope.",
+          "description": "Denies the create_website_from_template command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-get-sending",
-          "markdownDescription": "Denies the get_sending command without any pre-configured scope."
+          "const": "deny-create-website-from-template",
+          "markdownDescription": "Denies the create_website_from_template command without any pre-configured scope."
         },
         {
           "description": "Denies the get_telemetry_context command without any pre-configured scope.",
@@ -243,22 +249,10 @@
           "markdownDescription": "Denies the get_telemetry_context command without any pre-configured scope."
         },
         {
-          "description": "Denies the log_debug command without any pre-configured scope.",
+          "description": "Denies the open_link command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-log-debug",
-          "markdownDescription": "Denies the log_debug command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the mark_unsaved command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-mark-unsaved",
-          "markdownDescription": "Denies the mark_unsaved command without any pre-configured scope."
-        },
-        {
-          "description": "Denies the open_folder command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-open-folder",
-          "markdownDescription": "Denies the open_folder command without any pre-configured scope."
+          "const": "deny-open-link",
+          "markdownDescription": "Denies the open_link command without any pre-configured scope."
         },
         {
           "description": "Denies the saved_everything command without any pre-configured scope.",
@@ -271,6 +265,24 @@
           "type": "string",
           "const": "deny-set-current-project",
           "markdownDescription": "Denies the set_current_project command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the set_unsaved command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-set-unsaved",
+          "markdownDescription": "Denies the set_unsaved command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the show_website_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-show-website-folder",
+          "markdownDescription": "Denies the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the trash_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-trash-website",
+          "markdownDescription": "Denies the trash_website command without any pre-configured scope."
         },
         {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",

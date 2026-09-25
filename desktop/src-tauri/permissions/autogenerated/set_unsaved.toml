@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-set-unsaved"
+description = "Enables the set_unsaved command without any pre-configured scope."
+commands.allow = ["set_unsaved"]
+
+[[permission]]
+identifier = "deny-set-unsaved"
+description = "Denies the set_unsaved command without any pre-configured scope."
+commands.deny = ["set_unsaved"]

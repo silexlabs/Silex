@@ -17,6 +17,7 @@
 
 import type { Editor } from 'grapesjs'
 import { WebsiteMeta } from '~/common/types.js'
+import { storedToDisplayed } from '../assetUrl'
 
 // GrapesJS plugin: shows the website name + current page in the top bar.
 // Added to the editor plugin list in ./index.ts. The Silex config (api, ids) is read
@@ -44,8 +45,10 @@ export default function websiteInfoPlugin(editor: Editor) {
       return c
     })()
     const currentPage = editor.Pages?.getSelected()
+    const config = getConfig()
+    const imageUrl = websiteMeta?.imageUrl && storedToDisplayed(websiteMeta.imageUrl, config.websiteId, config.storageId)
     container.innerHTML = `
-        ${websiteMeta?.imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${websiteMeta?.imageUrl});"></div>` : ''}
+        ${imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${imageUrl});"></div>` : ''}
         <div class="gjs-website-meta-name">${websiteMeta?.name ?? 'Unknown'} | ${currentPage?.get('name') ?? currentPage?.get('type')}</div>
       `
   }

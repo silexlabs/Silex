@@ -1,0 +1,111 @@
+[
+  {
+    "name": "Open Source Docs",
+    "repo": "https://gitlab.com/silex-templates/silex_openforge-cli",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/open-source-docs-screenshot-768x2261.png",
+    "en": {
+      "description": "Open Source Docs is a documentation-first template for open source projects. It provides structured sections for installation, usage, roadmap, and community. Marketing is intentionally minimal, technical clarity is central. Designed as a reusable documentation layout system for developers who prioritize clear technical communication and community engagement over promotional content.",
+      "preview": "https://silex-openforge-cli-d85c9d.gitlab.io/"
+    },
+    "fr": {
+      "description": "Open Source Docs fournit documentation pour projets open source. Pour mainteneurs et contributeurs nécessitant hub documentation. Inclut guides démarrage, références et guides contribution. Construit avec Silex pour communautés open source.",
+      "preview": "https://silex-openforge-cli-d85c9d.gitlab.io/"
+    }
+  },
+  {
+    "name": "Docs First",
+    "repo": "https://gitlab.com/silex-templates/silex_devdocs-template",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/docs-first-screenshot-768x943.png",
+    "en": {
+      "description": "Docs First is dedicated to documentation-heavy platforms and technical products. It includes reusable sections for guides, API references, FAQs, and details blocks. Navigation and readability are core constraints. Best suited for technical products where documentation is part of the product experience, ensuring developers can quickly find and understand complex information through clear structure and logical organization.",
+      "preview": "https://silex-devdocs-template-a60bc2.gitlab.io/"
+    },
+    "fr": {
+      "description": "Docs First priorise documentation et ressources développeur. Pour projets open source et produits tech nécessitant docs claires. Inclut guides, références API et tutoriels. Construit avec Silex pour clarté et accessibilité.",
+      "preview": "https://silex-devdocs-template-a60bc2.gitlab.io/"
+    }
+  },
+  {
+    "name": "Bold Folio",
+    "repo": "https://gitlab.com/silex-templates/silex_bold-folio",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/02/Accueil-Bold-Folio-768x2974.jpg",
+    "en": {
+      "description": "Bold Folio is a contemporary portfolio solution designed for freelancers, featuring creative style, strong visuals, and modern typography. It includes sections for projects, services, testimonials, and about information. The layout is dark mode enabled and mobile-friendly with subtle animations. Built using Silex with no external frameworks, enabling rapid customization for different creative disciplines while maintaining strong visual impact and brand consistency.",
+      "preview": "https://silex-bold-folio-bba920.gitlab.io/"
+    },
+    "fr": {
+      "description": "Bold Folio met en avant travail créatif avec présentation forte. Pour designers et créateurs voulant portfolio percutant. Inclut grid projets, études de cas et coordonnées. Construit avec Silex pour faire bonne impression.",
+      "preview": "https://silex-bold-folio-bba920.gitlab.io/"
+    }
+  },
+  {
+    "name": "Local commerce",
+    "repo": "https://gitlab.com/silex-templates/silex_la-table-dor-restaurant",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-la-table-dor-restaurant-1-768x3166.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "description": "Local commerce is designed for restaurants and hospitality businesses. It includes sections for menus, booking, atmosphere, reviews, and practical information. The structure prioritizes quick understanding and reservation flow. Sections can be reused across different hospitality projects, making it ideal for restaurant groups and hospitality professionals managing multiple venues with consistent branding.",
+      "preview": "https://silex-la-table-dor-restaurant-f2c61e.gitlab.io/"
+    },
+    "fr": {
+      "description": "Local commerce est pour hôtels, restaurants et services hospitalité. Met en avant ambiance, services et réservations. Inclut menu/chambres, galerie et booking. Construit avec Silex pour expérience invités.",
+      "preview": "https://silex-la-table-dor-restaurant-f2c61e.gitlab.io/"
+    }
+  },
+  {
+    "name": "Pro services local",
+    "repo": "https://gitlab.com/silex-templates/silex_pro-services-local",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-pro-services-local-83a21b-gitlab-io--768x2621.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "description": "Pro services local targets local and regional businesses where trust and accessibility are critical. It includes sections for services, geographic coverage, reviews, opening hours, and direct contact. The layout is simple but section-rich, allowing fast reuse for different local professions. Designed with local visibility and SEO constraints in mind.",
+      "preview": "https://silex-pro-services-local-83a21b.gitlab.io/"
+    },
+    "fr": {
+      "description": "Pro services local aide petites entreprises établir présence web. Pour commerces locaux et prestataires services. Inclut services, localisation et coordonnées. Construit avec Silex pour visibilité locale.",
+      "preview": "https://silex-pro-services-local-83a21b.gitlab.io/"
+    }
+  },
+  {
+    "name": "Privacy First",
+    "repo": "https://gitlab.com/silex-templates/silex_privacy-guard",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/Privacy-Guard-Ethical-Privacy-First-Technology-768x2990.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "description": "Privacy First targets privacy-focused and ethical technology products. It includes sections for threat models, transparency, audits, and data handling. The design avoids dark patterns and aggressive persuasion. Best suited for products where trust and explanation are essential, emphasizing responsible data practices and user empowerment through clear privacy communication and transparent security measures.",
+      "preview": "https://silex-privacy-guard-82f0e8.gitlab.io/"
+    },
+    "fr": {
+      "description": "Privacy First met en avant vie privée et protection données. Pour services et produits valorisant vie privée utilisateur. Inclut fonctionnalités sécurité, politique et engagement transparence. Construit avec Silex pour confiance.",
+      "preview": "https://silex-privacy-guard-82f0e8.gitlab.io/"
+    }
+  },
+  {
+    "name": "Apex Consulting",
+    "repo": "https://gitlab.com/silex-templates/silex_apex-consulting",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-apex-consulting-opt-768x3283.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "description": "Apex Consulting targets premium consulting services and executive advisory firms. It features sophisticated layouts, detailed service descriptions, industry expertise sections, and executive team profiles. The design conveys authority, expertise, and high-value positioning for firms serving enterprise clients and C-suite decision makers.",
+      "preview": "https://silex-apex-consulting-7253c5.gitlab.io/"
+    },
+    "fr": {
+      "description": "Apex Consulting présente services conseil haut de gamme. Pour cabinets conseil établis et consultants premium. Inclut expertise, méthodologie et études de cas clients. Construit avec Silex pour crédibilité professionnelle.",
+      "preview": "https://silex-apex-consulting-7253c5.gitlab.io/"
+    }
+  },
+  {
+    "name": "Startup Tech",
+    "repo": "https://gitlab.com/silex-templates/startup-tech-template",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/02/startup-tech-template-20283d-gitlab-io--768x3318.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "description": "Startup Tech is a modern, conversion-focused template for tech startups and SaaS products. It features bold hero sections, clean feature layouts, pricing tables, and testimonials. The design is minimal yet striking, with accent colors and spacious typography. Built in Silex without external frameworks, it’s optimized for speed and easy customization, perfect for launching MVPs or product landing pages.",
+      "preview": "https://startup-tech-template-bfa05b.gitlab.io/"
+    },
+    "fr": {
+      "description": "Startup Tech met en avant innovation et croissance rapide. Pour startups tech voulant montrer vision et capacités. Inclut fonctionnalités produit, équipe et pricing. Construit avec Silex pour lancement rapide et itération.",
+      "preview": "https://startup-tech-template-bfa05b.gitlab.io/"
+    }
+  }
+]

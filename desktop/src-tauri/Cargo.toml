@@ -35,6 +35,9 @@ schemars = "1"
 # Open files/folders in the OS default application
 open = "5"
 
+# Deleting a website moves it to the trash of this computer
+trash = "5"
+
 # Platform-specific directories (for telemetry consent before Tauri init)
 dirs = "7"
 
@@ -63,3 +66,6 @@ rust-embed = "8"
 # the ssh it started behind
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2"

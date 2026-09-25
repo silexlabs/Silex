@@ -1,0 +1,37 @@
+{
+  "name": "@silexlabs/silex-desktop-dashboard",
+  "version": "0.0.0-dev",
+  "private": true,
+  "description": "Silex website builder - the dashboard of the desktop app",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "lint": "eslint . && stylelint \"src/**/*.{css,vue}\"",
+    "templates": "node ../../scripts/update-desktop-templates.mjs"
+  },
+  "dependencies": {
+    "@fontsource/ubuntu": "^5.2.8",
+    "@tauri-apps/api": "~2.11.0",
+    "html2canvas": "^1.4.1",
+    "reka-ui": "^2.10.5",
+    "vue": "^3.5.43",
+    "vue-i18n": "^11.4.12",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@intlify/unplugin-vue-i18n": "^11.2.5",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "eslint": "^10.6.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "eslint-plugin-vuejs-accessibility": "^2.6.0",
+    "grapesjs": "^0.23.2",
+    "stylelint": "^17.15.0",
+    "stylelint-config-standard-vue": "^2.0.0",
+    "typescript": "6.0.3",
+    "vite": "^8.3.1",
+    "vue-tsc": "^3.3.11"
+  }
+}

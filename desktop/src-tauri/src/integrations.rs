@@ -23,17 +23,14 @@ use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
 
 use crate::held::held;
+use common::programs::found;
+use common::{git, programs, run};
 use deploy::Deploy;
-use programs::found;
 
+pub mod common;
 pub mod deploy;
-pub mod git;
 mod glab;
 mod hut;
-pub mod pipeline;
-pub mod programs;
-pub mod remote;
-mod run;
 mod tea;
 
 /// What is known of one integration
@@ -84,8 +81,8 @@ pub struct Publishing {
     pub provider: &'static dyn Deploy,
     pub cli: PathBuf,
     pub prepared: deploy::Prepared,
-    /// None when nobody is signed in to the host
-    pub urls: Option<deploy::Urls>,
+    /// None when nobody is signed in to the host, and why when it could not be asked
+    pub urls: Result<Option<deploy::Urls>, String>,
 }
 
 impl Integrations {
@@ -121,9 +118,12 @@ impl Integrations {
         // Finding out who answers means asking every program that could, and
         // that is the longest silence of a publication
         say("Looking for where your website is kept".to_string());
-        let Some((provider, cli, urls)) = self.resolve_deploy(site, options)? else {
+        let Some((provider, cli)) = self.answering_for(site) else {
             return Err(NOBODY_TO_PUBLISH_WITH.to_string());
         };
+        // git pushes with what the user set it up with, which does not need
+        // the host to answer
+        let urls = provider.urls(&cli, site, options);
         // Scoped rather than set: this runs on a pool thread that the next
         // website to sync inherits
         sentry::with_scope(
@@ -270,12 +270,12 @@ mod tests {
     fn keeps_what_a_version_that_knows_more_wrote() {
         // Downgrading once would otherwise lose those settings for good
         let written = r#"{
-            "git": { "enabled": true, "path": "/usr/bin/git", "version": "git version 2.51.0" },
+            "glab": { "enabled": true, "path": "/usr/bin/glab", "version": "glab 1.114.0" },
             "rclone": { "enabled": true, "instance": "my-bucket" }
         }"#;
 
         let integrations: Integrations = serde_json::from_str(written).unwrap();
-        assert!(integrations.known.contains_key("git"));
+        assert!(integrations.known.contains_key("glab"));
         assert!(
             integrations.known.contains_key("rclone"),
             "an integration this version never heard of keeps its entry"
@@ -284,27 +284,27 @@ mod tests {
         let read_back: serde_json::Value =
             serde_json::from_str(&serde_json::to_string(&integrations).unwrap()).unwrap();
         assert_eq!(read_back["rclone"]["instance"], "my-bucket");
-        assert_eq!(read_back["git"]["path"], "/usr/bin/git");
+        assert_eq!(read_back["glab"]["path"], "/usr/bin/glab");
     }
 
     #[test]
     fn an_entry_a_version_that_knows_more_wrote_keeps_both_halves() {
         // An integration this version knows, with a field it does not
         let written = r#"{
-            "git": { "enabled": true, "path": "/usr/bin/git", "signing_key": "ABC123" }
+            "glab": { "enabled": true, "path": "/usr/bin/glab", "signing_key": "ABC123" }
         }"#;
         let integrations: Integrations = serde_json::from_str(written).unwrap();
 
         assert_eq!(
-            integrations.known["git"].path.as_deref(),
-            Some(std::path::Path::new("/usr/bin/git")),
+            integrations.known["glab"].path.as_deref(),
+            Some(std::path::Path::new("/usr/bin/glab")),
             "the fields this version knows are still read"
         );
 
         let read_back: serde_json::Value =
             serde_json::from_str(&serde_json::to_string(&integrations).unwrap()).unwrap();
-        assert_eq!(read_back["git"]["signing_key"], "ABC123");
-        assert_eq!(read_back["git"]["path"], "/usr/bin/git");
+        assert_eq!(read_back["glab"]["signing_key"], "ABC123");
+        assert_eq!(read_back["glab"]["path"], "/usr/bin/glab");
     }
 
     #[test]
@@ -352,6 +352,55 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
     }
 
+    /// glab signed in with an account that cannot open the repository, while
+    /// the ssh key of git can push to it
+    #[cfg(unix)]
+    #[test]
+    fn a_glab_that_cannot_see_the_repository_does_not_stop_the_push() {
+        use std::os::unix::fs::PermissionsExt;
+        let Some(git) = programs::found("git") else {
+            return;
+        };
+        let dir = std::env::temp_dir().join(format!("silex-unseen-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let (site, bare) = (dir.join("site"), dir.join("bare.git"));
+        std::fs::create_dir_all(&site).unwrap();
+        let git_in = |at: &Path, args: &[&str]| run::run(&git, at, args).unwrap();
+        git_in(&dir, &["init", "-q", "--bare", bare.to_str().unwrap()]);
+        git_in(&site, &["init", "-q", "-b", "main"]);
+        git_in(
+            &site,
+            &["remote", "add", "origin", "git@gitlab.com:a/b.git"],
+        );
+        let local = format!("url.file://{}.insteadOf", bare.display());
+        git_in(&site, &["config", &local, "git@gitlab.com:a/b.git"]);
+
+        let glab = dir.join("glab");
+        std::fs::write(
+            &glab,
+            "#!/bin/sh\necho '   ERROR' >&2\necho '  404 Not Found.' >&2\nexit 1\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&glab, std::fs::Permissions::from_mode(0o755)).unwrap();
+        std::fs::write(
+            dir.join("config.yml"),
+            "hosts:\n    gitlab.com:\n        token: glpat-x\n",
+        )
+        .unwrap();
+        glab::CONFIG_DIR.set(Some(dir.clone()));
+
+        let integrations: Integrations = serde_json::from_value(serde_json::json!({
+            "glab": { "enabled": true, "path": glab }
+        }))
+        .unwrap();
+        let published = integrations.publish(&site, "gitlab.com", &Default::default(), &|_| {});
+
+        let published = published.expect("git could push");
+        assert!(matches!(published.urls, Err(why) if why.contains("cannot open this repository")));
+        assert!(!git_in(&bare, &["log", "--oneline", "main"]).is_empty());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
     #[test]
     fn a_program_the_user_turned_off_is_not_used() {
         let written = r#"{ "glab": { "enabled": false, "path": "/usr/bin/glab" } }"#;
@@ -369,7 +418,8 @@ mod tests {
 pub fn load(data_dir: &Path) -> Integrations {
     let known_integrations = integrations();
     let mut integrations = read(data_dir);
-    let mut changed = false;
+    // Written by 3.10.0-canary.2, when git was listed with the integrations
+    let mut changed = integrations.known.remove("git").is_some();
 
     for provider in known_integrations {
         let id = provider.program();
