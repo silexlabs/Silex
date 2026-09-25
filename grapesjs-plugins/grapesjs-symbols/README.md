@@ -224,5 +224,5 @@ $ npm run build
 
 ## License
 
-AGPL-v3
+AGPL-3.0-or-later
 
