@@ -300,8 +300,12 @@ impl SilexMcp {
             annotations.open_world_hint = cap.open_world;
 
             // ':' in capability ids is not allowed in tool names (clients require ^[a-zA-Z0-9_-]+$)
-            let tool = Tool::new(cap.id.replace(':', "_"), cap.description, schema_obj)
-                .with_annotations(annotations);
+            let tool = Tool::new(
+                cap.id.replace(':', "_"),
+                cap.description,
+                Arc::new(schema_obj),
+            )
+            .with_annotations(annotations);
 
             let cap_command = Arc::new(cap.command);
 
@@ -339,14 +343,15 @@ impl SilexMcp {
                                         || v.get("success").map_or(false, |s| s == false)
                                 })
                                 .unwrap_or(false);
-                            let content = vec![Content::text(text)];
+                            let content = vec![ContentBlock::text(text)];
                             Ok(if is_error {
                                 CallToolResult::error(content)
                             } else {
                                 CallToolResult::success(content)
-                            })
+                            }
+                            .into())
                         }
-                        Err(e) => Ok(tool_error(e)),
+                        Err(e) => Ok(tool_error(e).into()),
                     }
                 })
             });
@@ -365,7 +370,7 @@ impl SilexMcp {
 
 /// Create an error CallToolResult (is_error = true).
 fn tool_error(msg: impl Into<String>) -> CallToolResult {
-    CallToolResult::error(vec![Content::text(msg.into())])
+    CallToolResult::error(vec![ContentBlock::text(msg.into())])
 }
 
 // ==========================================================================
@@ -451,7 +456,7 @@ impl SilexMcp {
                 let url = format!("{}/api/website", base_url);
                 match reqwest::get(&url).await {
                     Ok(resp) => match resp.text().await {
-                        Ok(body) => Ok(CallToolResult::success(vec![Content::text(body)])),
+                        Ok(body) => Ok(CallToolResult::success(vec![ContentBlock::text(body)])),
                         Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                     },
                     Err(e) => Ok(tool_error(format!("Error fetching websites: {}", e))),
@@ -498,7 +503,9 @@ impl SilexMcp {
                                             tracing::warn!("Failed to load capabilities: {}", e)
                                         }
                                     }
-                                    Ok(CallToolResult::success(vec![Content::text(response_body)]))
+                                    Ok(CallToolResult::success(vec![ContentBlock::text(
+                                        response_body,
+                                    )]))
                                 } else {
                                     Ok(tool_error(format!(
                                         "Error creating website ({}): {}",
@@ -529,7 +536,7 @@ impl SilexMcp {
                             // Clear dynamic tools since we're back on dashboard
                             *self.dynamic_tools.write().await = ToolRouter::new();
                             self.capabilities_loaded.store(false, Ordering::Release);
-                            Ok(CallToolResult::success(vec![Content::text(format!(
+                            Ok(CallToolResult::success(vec![ContentBlock::text(format!(
                                 "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
                                 wid
                             ))]))
@@ -565,7 +572,7 @@ impl SilexMcp {
                 {
                     Ok(resp) => {
                         if resp.status().is_success() {
-                            Ok(CallToolResult::success(vec![Content::text(format!(
+                            Ok(CallToolResult::success(vec![ContentBlock::text(format!(
                                 "{{\"success\":true,\"message\":\"Renamed to '{}'\"}}",
                                 name
                             ))]))
@@ -591,7 +598,7 @@ impl SilexMcp {
                     Ok(resp) => {
                         if resp.status().is_success() {
                             let body = resp.text().await.unwrap_or_default();
-                            Ok(CallToolResult::success(vec![Content::text(body)]))
+                            Ok(CallToolResult::success(vec![ContentBlock::text(body)]))
                         } else {
                             let body = resp.text().await.unwrap_or_default();
                             Ok(tool_error(format!("Error duplicating website: {}", body)))
@@ -614,7 +621,7 @@ impl SilexMcp {
                             Ok(n) => tracing::info!("Loaded {} capabilities after open", n),
                             Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
                         }
-                        Ok(CallToolResult::success(vec![Content::text(
+                        Ok(CallToolResult::success(vec![ContentBlock::text(
                             "{\"success\":true,\"message\":\"Website opened in editor\"}",
                         )]))
                     }
@@ -627,7 +634,7 @@ impl SilexMcp {
                 *self.dynamic_tools.write().await = ToolRouter::new();
                 self.capabilities_loaded.store(false, Ordering::Release);
                 match self.navigate_to(&format!("{}/", base_url)) {
-                    Ok(_) => Ok(CallToolResult::success(vec![Content::text(
+                    Ok(_) => Ok(CallToolResult::success(vec![ContentBlock::text(
                         "{\"success\":true,\"message\":\"Navigated to dashboard\"}",
                     )])),
                     Err(e) => Ok(tool_error(e)),
@@ -702,13 +709,16 @@ impl SilexMcp {
         };
 
         // Build response with inline image
-        let mut content = vec![Content::image(base64_data.to_string(), "image/png")];
+        let mut content = vec![ContentBlock::image(base64_data.to_string(), "image/png")];
 
         // Optionally save to file
         if let Some(path) = params.output_file {
             match std::fs::write(&path, &png_bytes) {
-                Ok(_) => content.push(Content::text(format!("Screenshot also saved to {}", path))),
-                Err(e) => content.push(Content::text(format!("Failed to save file: {}", e))),
+                Ok(_) => content.push(ContentBlock::text(format!(
+                    "Screenshot also saved to {}",
+                    path
+                ))),
+                Err(e) => content.push(ContentBlock::text(format!("Failed to save file: {}", e))),
             }
         }
 
@@ -736,10 +746,9 @@ pub async fn eval_callback(
 // ==========================================================================
 
 impl ServerHandler for SilexMcp {
-    fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
+    fn get_info(&self) -> ServerConfig {
+        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
             .with_protocol_version(ProtocolVersion::V_2024_11_05)
-            .with_server_info(Implementation::from_build_env())
             .with_instructions(
                 r#"Silex Desktop MCP — controls the Silex no-code visual website builder.
 
@@ -802,11 +811,7 @@ RULES:
                 dynamic_count,
                 tool_names
             );
-            Ok(ListToolsResult {
-                tools,
-                next_cursor: None,
-                meta: None,
-            })
+            Ok(ListToolsResult::with_all_items(tools))
         }
     }
 
@@ -814,7 +819,7 @@ RULES:
         &self,
         request: CallToolRequestParams,
         context: RequestContext<RoleServer>,
-    ) -> impl std::future::Future<Output = Result<CallToolResult, McpError>> + Send + '_ {
+    ) -> impl std::future::Future<Output = Result<CallToolResponse, McpError>> + Send + '_ {
         async move {
             // Check which router owns this tool before consuming request
             if self.tool_router.get(&request.name).is_some() {
