@@ -194,6 +194,23 @@ export function resolveStateExpression(
 }
 
 /**
+ * Resolve a filter option which holds an empty expression
+ *
+ * The option forms of the string filters submit the string "[]" when the option is left
+ * unset (`value=${options.value || '[]'}`), and `isExpression([])` is vacuously true, so
+ * `toExpression` hands back an empty expression rather than null. Evaluating an empty
+ * expression returns null, which the string filters then interpolate as the literal text
+ * "null" - eg `append` on "/uploads/" gives "/uploads/null". An empty expression is
+ * therefore treated as "option not set" and falls back to the default the filter declares.
+ */
+function resolveEmptyOption(filter: Filter, key: string, value: unknown): unknown {
+  if (Object.prototype.hasOwnProperty.call(filter.options, key)) {
+    return filter.options[key]
+  }
+  return value
+}
+
+/**
  * Evaluate a filter token (Liquid filter)
  */
 export function evaluateFilterToken(
@@ -211,12 +228,18 @@ export function evaluateFilterToken(
     // If value is a primitive (number, string, boolean), use it directly
     // Only evaluate as expression if it's an actual expression object/array
     const expression = toExpression(value)
+    // An empty expression is not a value, see resolveEmptyOption
+    const isEmptyExpression = expression !== null && expression.length === 0
     if (filter.itemKeys?.includes(key)) {
       // Per-item option (e.g. where/find/map "key"): always expose a resolver that
       // evaluates the expression against each item at apply time. This makes it work
       // for full expressions (e.g. continent.code), not just root field names — and
       // lets the filters just call options.key(item) without re-checking the type.
-      acc[key] = (item: unknown) => expression ? evaluateExpressionTokens(expression, context, item) : undefined
+      acc[key] = expression !== null && !isEmptyExpression
+        ? evaluateExpressionTokens(expression, context, item)
+        : undefined
+    } else if (isEmptyExpression) {
+      acc[key] = resolveEmptyOption(filter, key, value)
     } else {
       acc[key] = expression ? evaluateExpressionTokens(expression, context, null) : value
     }

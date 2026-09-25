@@ -5,6 +5,8 @@
 import { jest } from '@jest/globals'
 import { testFields } from '../test-data'
 import { isDate, isString } from './liquid'
+import { evaluateFilterToken, EvaluationContext } from '../model/expressionEvaluator'
+import { Filter, FIXED_TOKEN_ID } from '../types'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -61,5 +63,91 @@ describe('array filters: per-item key resolver + null guard', () => {
     const map = byId('map') as ApplyFilter
     expect(map.apply([{ name: 'a' }, { name: 'b' }], { key: (i: { name: string }) => i.name })).toEqual(['a', 'b'])
     expect(map.apply(null, { key: () => 1 })).toBeNull()
+  })
+})
+
+// The option forms of the string filters submit the string "[]" when their option is left
+// unset (`value=${options.value || '[]'}` in liquid.ts), and `isExpression([])` is
+// vacuously true. An unset option was therefore evaluated as an expression, which returns
+// null, and a string filter interpolates that as the literal text "null".
+// See https://github.com/silexlabs/Silex/issues/1672
+describe('string filters: option values', () => {
+  const DS = 'ds1'
+
+  // Run a filter through the real evaluator, the way the editor does
+  function runFilter(id: string, input: unknown, optionValue: unknown, previewData: Record<string, unknown> = {}) {
+    const filters = getFilters()
+    const token = {
+      type: 'filter',
+      id,
+      label: id,
+      options: { value: optionValue },
+    } as unknown as Filter
+    const context = {
+      dataSources: [],
+      filters,
+      previewData,
+      component: {},
+      resolvePreviewIndex: false,
+    } as unknown as EvaluationContext
+    return evaluateFilterToken(token, [], context, input)
+  }
+
+  // An option value is stored as the JSON of an expression. A "fixed value" is what the
+  // option form stores when the user typed a plain text
+  const fixedOption = (value: string) => JSON.stringify([{
+    type: 'property',
+    propType: 'field',
+    fieldId: FIXED_TOKEN_ID,
+    label: 'Fixed value',
+    kind: 'scalar',
+    typeIds: ['String'],
+    options: { value },
+  }])
+
+  // ...and this is what it stores when the user picked a data field instead
+  const fieldOption = (fieldId: string) => JSON.stringify([{
+    type: 'property',
+    propType: 'field',
+    dataSourceId: DS,
+    fieldId,
+    label: fieldId,
+    typeIds: ['String'],
+    kind: 'scalar',
+  }])
+
+  test('append puts the option value after the input', () => {
+    expect(runFilter('append', '/uploads/', fixedOption('test.pdf'))).toBe('/uploads/test.pdf')
+  })
+
+  test('prepend puts the option value before the input', () => {
+    expect(runFilter('prepend', 'test.pdf', fixedOption('/uploads/'))).toBe('/uploads/test.pdf')
+  })
+
+  test('append resolves an option value which is a data field', () => {
+    expect(runFilter('append', '/uploads/', fieldOption('name'), { [DS]: { name: 'test.pdf' } })).toBe('/uploads/test.pdf')
+  })
+
+  test('prepend resolves an option value which is a data field', () => {
+    expect(runFilter('prepend', 'test.pdf', fieldOption('dir'), { [DS]: { dir: '/uploads/' } })).toBe('/uploads/test.pdf')
+  })
+
+  // The regression: the option is unset, so the value must not become the text "null"
+  test('append does not append the text "null" when its option is unset', () => {
+    expect(runFilter('append', '/uploads/', '[]')).toBe('/uploads/')
+  })
+
+  test('prepend does not prepend the text "null" when its option is unset', () => {
+    expect(runFilter('prepend', 'test.pdf', '[]')).toBe('test.pdf')
+  })
+
+  test('an unset option leaves an empty input empty', () => {
+    expect(runFilter('append', '', '[]')).toBe('')
+  })
+
+  // An option which is a plain string is not an expression and must be used as is
+  test('a plain string option value is used as is', () => {
+    expect(runFilter('append', '/uploads/', 'test.pdf')).toBe('/uploads/test.pdf')
+    expect(runFilter('prepend', 'test.pdf', '/uploads/')).toBe('/uploads/test.pdf')
   })
 })
