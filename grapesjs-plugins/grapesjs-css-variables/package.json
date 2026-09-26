@@ -19,7 +19,8 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "node --conditions=browser --test test/*.test.js"
   },
   "keywords": [
     "silex",
@@ -32,7 +33,8 @@
   ],
   "devDependencies": {
     "eslint": "^10.6.0",
-    "grapesjs-cli": "^4.1.3"
+    "grapesjs-cli": "^4.1.3",
+    "jsdom": "^24.1.3"
   },
   "peerDependencies": {
     "grapesjs": ">=0.19.0 <0.23.0",
