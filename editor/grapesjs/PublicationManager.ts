@@ -67,15 +67,11 @@ export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
 }
 
-/**
- * The publication options of a website, once the connector has had its say
- *
- * What a connector answers is a starting point. What the user filled in is
- * saved with the website and wins, or publishing would move a site away from
- * the domain somebody chose for it.
- */
+// What the user filled in wins, anything else comes from the host, which knows better than an old copy
 export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
-  return { ...connector.options, ...settings.options }
+  const asked = new Set(connector.optionsForm?.fields.map(field => field.name))
+  const filledIn = Object.fromEntries(Object.entries(settings.options ?? {}).filter(([name]) => asked.has(name)))
+  return { ...settings.options, ...connector.options, ...filledIn }
 }
 
 function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
