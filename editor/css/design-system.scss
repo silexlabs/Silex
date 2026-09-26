@@ -24,6 +24,9 @@
 @use "variables" as silex-vars;
 
 :root {
+  // Without it WebKitGTK paints native controls light, ignoring their dark background
+  color-scheme: dark;
+
   // ============================================================
   // BASE COLORS - Modern Dark 2025
   // ============================================================
