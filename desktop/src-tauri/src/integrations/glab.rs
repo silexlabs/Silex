@@ -49,15 +49,12 @@ impl Deploy for Glab {
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
-        // The address the user named rather than the one GitLab would answer:
-        // that request costs a round trip, and before a first publication
-        // there is nothing to ask for anyway
-        let site_url = match options.named(WEBSITE_URL) {
-            Some(url) => Some(url.to_string()),
-            None => run(cli, site, &["api", "projects/:fullpath/pages"])
-                .ok()
-                .and_then(|pages| json_string(&pages, "url")),
-        };
+        // Nobody names the address under glab: the one saved with the website
+        // is an old answer of GitLab, stale once its domain changes
+        let site_url = run(cli, site, &["api", "projects/:fullpath/pages"])
+            .ok()
+            .and_then(|pages| json_string(&pages, "url"))
+            .or_else(|| options.named(WEBSITE_URL).map(String::from));
 
         Ok(Some(Urls {
             site: site_url,
