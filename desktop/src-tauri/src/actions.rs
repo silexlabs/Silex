@@ -23,9 +23,9 @@ use tokio::sync::watch;
 
 use silex_server::{Hosting, Job, PublicationOptions};
 
+use crate::integrations::common::git;
+use crate::integrations::common::remote::{without_secret, Remote};
 use crate::integrations::deploy::{Build, Deploy, Prepared};
-use crate::integrations::git;
-use crate::integrations::remote::{without_secret, Remote};
 use crate::integrations::Integrations;
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
@@ -210,16 +210,17 @@ impl SilexActions {
     }
 }
 
-/// The folder of a website, refusing anything that leads out of the data path
+/// The folder of a website, refusing anything but a folder right in the data path
 ///
 /// A website id comes from a request, and `Path::join` on an absolute path
 /// forgets the folder it was joined to: an id could then name any repository
-/// on the machine and have git run in it.
-fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
+/// on the machine and have git run in it. An empty id or `a/..` names the data
+/// path itself, and putting that in the trash takes every website with it.
+pub(crate) fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     let site = data_path.join(website_id);
     let data_path = data_path.canonicalize().ok()?;
     let canonical = site.canonicalize().ok()?;
-    canonical.starts_with(&data_path).then_some(canonical)
+    (canonical.parent() == Some(data_path.as_path())).then_some(canonical)
 }
 
 struct Syncer {
@@ -407,7 +408,8 @@ struct Sent {
     site_url: Option<String>,
     settings_url: Option<String>,
     build_url: Option<String>,
-    signed_in: bool,
+    /// Or why the host could not be asked
+    signed_in: Result<bool, String>,
     warning: Option<String>,
 }
 
@@ -469,8 +471,12 @@ impl silex_server::Actions for SilexActions {
             .integrations
             .publish(&site, &host, options, &|step| job.step(step))
             .map(|published| {
-                let signed_in = published.urls.is_some();
-                let urls = published.urls.unwrap_or_default();
+                let signed_in = published
+                    .urls
+                    .as_ref()
+                    .map(Option::is_some)
+                    .map_err(Clone::clone);
+                let urls = published.urls.ok().flatten().unwrap_or_default();
                 Sent {
                     build_url: published.provider.watch(&urls, &published.prepared),
                     site_url: urls.site,
@@ -497,9 +503,17 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ));
             }
+            Ok(Sent {
+                signed_in: Err(why),
+                ..
+            }) => job.succeeded(message::explained(
+                &format!("Your website is sent to {}.", remote),
+                &format!("Silex cannot tell whether {} built it. {}", host, why),
+                &[on_this_computer()],
+            )),
             // The website is taken but nobody is signed in, so there is no way
             // to ask what its build did
-            Ok(sent) if !sent.signed_in => {
+            Ok(sent) if sent.signed_in == Ok(false) => {
                 let program = sent.provider.program();
                 job.succeeded(message::explained(
                     &format!("Your website is sent to {}.", remote),
@@ -1045,7 +1059,7 @@ mod publications {
             site_url: Some("https://alex.codeberg.page/site/".to_string()),
             settings_url: Some("https://codeberg.org/alex/site/settings".to_string()),
             build_url: Some("https://codeberg.org/alex/site/actions".to_string()),
-            signed_in: true,
+            signed_in: Ok(true),
         }
     }
 

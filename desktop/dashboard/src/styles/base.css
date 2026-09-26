@@ -1,0 +1,205 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-primary);
+  font-family: var(--silex-font-family);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 500;
+}
+
+h1 {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+:focus-visible {
+  outline: 2px solid var(--silex-focus-outline);
+  outline-offset: 2px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--silex-space-2);
+  min-width: 88px;
+  height: 36px;
+  padding: 0 var(--silex-space-4);
+  border: none;
+  border-radius: var(--silex-radius-sm);
+  background: color-mix(in srgb, var(--silex-text-primary) 8%, transparent);
+  color: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--silex-transition-fast) ease;
+}
+
+.button:hover {
+  background: color-mix(in srgb, var(--silex-text-primary) 12%, transparent);
+}
+
+.button--primary {
+  background: var(--silex-accent-strong);
+  color: var(--silex-text-inverse);
+}
+
+.button--primary:hover {
+  background: var(--silex-accent-strong-hover);
+}
+
+.button--danger {
+  background: var(--silex-danger);
+  color: var(--silex-text-inverse);
+}
+
+.button--danger:hover {
+  background: var(--silex-danger-hover);
+}
+
+/* WebKitGTK draws a native select with the colours of the system theme.
+   The chevron is --silex-text-secondary written out: a data URI cannot read a variable */
+.select {
+  height: 36px;
+  padding: 0 var(--silex-space-8) 0 var(--silex-space-3);
+  border: 1px solid var(--silex-input-border);
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-bg-main)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23a8a8a8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E")
+    no-repeat right 10px center / 12px;
+  appearance: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.page__lead {
+  /* The width of two cards of .card-grid, so the text ends on a column edge */
+  max-width: calc(2 * 280px + var(--silex-space-4));
+  text-wrap: pretty;
+  margin: var(--silex-space-1) 0 0;
+  color: var(--silex-text-secondary);
+}
+
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+.page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--silex-space-4);
+  margin-bottom: var(--silex-space-6);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--silex-space-6) var(--silex-space-4);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.card__thumb {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--silex-border-color);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-bg-darker);
+}
+
+.card:hover .card__thumb {
+  border-color: var(--silex-border-color-visible);
+}
+
+.card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.card__name {
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* The menus are rendered at the end of the body, out of reach of scoped styles */
+.menu {
+  z-index: 5;
+  min-width: 220px;
+  padding: var(--silex-space-1);
+  border: 1px solid var(--silex-border-color-visible);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-button-bg);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+}
+
+.menu__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--silex-space-6);
+  padding: var(--silex-space-2) var(--silex-space-3);
+  border-radius: var(--silex-radius-sm);
+  cursor: pointer;
+  outline: none;
+}
+
+.menu__item[data-highlighted] {
+  background: var(--silex-button-hover-bg);
+}
+
+.menu__item--danger {
+  color: var(--silex-status-error);
+}
+
+.menu__keys {
+  color: var(--silex-text-secondary);
+}
+
+.menu__separator {
+  margin: var(--silex-space-1) 0;
+  border-top: 1px solid var(--silex-border-color);
+}

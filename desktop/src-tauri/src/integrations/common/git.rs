@@ -73,16 +73,17 @@ fn remotes(site: &Path) -> Vec<(String, String)> {
 }
 
 /// The remote a website is published to: `origin` when there is one, the first
-/// the user configured otherwise
+/// the user configured otherwise, never `upstream`
 ///
 /// A repository set up by hand does not always call it `origin`, and reading
-/// that name alone leaves those websites publishing nothing at all.
+/// that name alone leaves those websites publishing nothing at all. `upstream`
+/// is the template a website was made from, which publishing must not replace.
 fn published_to(site: &Path) -> Option<(String, String)> {
     let remotes = remotes(site);
     remotes
         .iter()
         .find(|(name, _)| name == "origin")
-        .or_else(|| remotes.first())
+        .or_else(|| remotes.iter().find(|(name, _)| name != "upstream"))
         .cloned()
 }
 
@@ -303,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn the_remote_is_origin_or_the_first_one_configured() {
+    fn the_remote_is_origin_or_the_first_other_than_upstream() {
         if Git::found().is_none() {
             return;
         }
@@ -323,7 +324,7 @@ mod tests {
         // A repository set up by hand does not always call it origin
         let site = a_website(
             "named",
-            "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
+            "[remote \"upstream\"]\n\turl = https://gitlab.com/silex-templates/a.git\n[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
         );
         assert_eq!(remote_name(&site).as_deref(), Some("backup"));
         assert_eq!(

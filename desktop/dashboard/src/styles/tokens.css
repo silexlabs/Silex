@@ -1,0 +1,48 @@
+:root {
+  color-scheme: dark;
+
+  --silex-bg-main: #1a1a1a;
+  --silex-bg-darker: #111111;
+
+  --silex-text-primary: #e5e5e5;
+  --silex-text-secondary: #a8a8a8;
+  --silex-text-inverse: #ffffff;
+
+  --silex-border-color: rgba(255, 255, 255, 0.08);
+  --silex-border-color-strong: #262626;
+  --silex-border-color-visible: rgba(255, 255, 255, 0.16);
+
+  --silex-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --silex-backdrop: rgba(0, 0, 0, 0.6);
+
+  --silex-hover-bg: #222222;
+  --silex-focus-outline: #8873fe;
+
+  --silex-accent-primary: #8873fe;
+  /* White text is not readable enough on the editor's accent */
+  --silex-accent-strong: #6a55d9;
+  --silex-accent-strong-hover: #5a45c8;
+  --silex-danger: #c93c3c;
+  --silex-danger-hover: #b53333;
+
+  --silex-status-info: #6b8aff;
+  --silex-status-success: #5fd68f;
+  --silex-status-error: #ff6b6b;
+
+  --silex-button-bg: #252525;
+  --silex-button-hover-bg: #2d2d2d;
+  --silex-input-bg: #141414;
+  --silex-input-border: #666666;
+
+  --silex-transition-fast: 0.15s;
+  --silex-font-family: 'Ubuntu', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --silex-space-1: 4px;
+  --silex-space-2: 8px;
+  --silex-space-3: 12px;
+  --silex-space-4: 16px;
+  --silex-space-6: 24px;
+  --silex-space-8: 32px;
+  --silex-radius-sm: 6px;
+  --silex-radius-md: 8px;
+}

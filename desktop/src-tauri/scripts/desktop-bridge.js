@@ -5,6 +5,19 @@
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
 
+  // Not Tauri's zoom hotkeys: they count from 100% on every page, but WebKit keeps the zoom
+  // when the dashboard opens the editor, so the first key would jump the wrong way
+  const zoomSteps = { '-': -0.2, '=': 0.2, '+': 0.2, '0': 0 };
+  window.addEventListener('keydown', (event) => {
+    // By code too: on an AZERTY keyboard, the 0 key types à
+    const step = zoomSteps[event.key] ?? (event.code === 'Digit0' ? 0 : undefined);
+    if (step === undefined || !(navigator.userAgent.includes('Mac') ? event.metaKey : event.ctrlKey)) return;
+    event.preventDefault();
+    const zoom = step ? Math.min(Math.max((Number(sessionStorage.getItem('silex-zoom')) || 1) + step, 0.4), 3) : 1;
+    sessionStorage.setItem('silex-zoom', String(zoom));
+    invoke('plugin:webview|set_webview_zoom', { value: zoom });
+  });
+
   // Frontend error tracking (GlitchTip / Sentry-compatible).
   // Real version, channel, anonymous install id and OS/arch come from Rust so the
   // webview reports the same identity as the native side (not a hardcoded 0.1.0).
@@ -47,7 +60,7 @@
       window.Sentry.setTag('context', 'webview');
     };
     document.head.appendChild(script);
-  }).catch(() => { /* no consent / DSN not set — telemetry disabled */ });
+  }).catch(() => {});
 
   // Wrap listen() so a rejected Tauri IPC (plugin:event|listen) becomes a breadcrumb +
   // handled capture with a culprit, instead of an UnhandledRejection with an empty one.
@@ -59,10 +72,6 @@
       window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
     });
   };
-
-  // Expose debug logging for silex-lib client code
-  window.__silexDebug = (msg) => invoke('log_debug', { message: msg });
-  invoke('log_debug', { message: '[bridge] desktop-bridge loaded, page=' + window.location.href });
 
   // MCP helpers, called by the Rust side through eval_js.
   // Nothing else belongs here: a capability's own logic lives in its plugin.
@@ -119,18 +128,18 @@
     const link = e.target.closest('a');
     if (!link) return;
     // Prefer getAttribute (raw, unencoded) over .href (browser-resolved,
-    // percent-encodes spaces) so that file:// paths reach open_folder intact.
+    // percent-encodes spaces) so that file:// paths reach open_link intact.
     const url = link.getAttribute('href') || link.href || '';
     if (url.startsWith('file://')) {
       e.preventDefault();
-      invoke('open_folder', { path: url });
+      invoke('open_link', { url });
     } else if (url.startsWith('http://') || url.startsWith('https://')) {
       // External URLs open in OS default browser; same-origin URLs stay in webview
       try {
         const parsed = new URL(url);
         if (parsed.origin !== window.location.origin) {
           e.preventDefault();
-          invoke('open_folder', { path: url });
+          invoke('open_link', { url });
         }
       } catch { /* malformed URL, let browser handle */ }
     }
@@ -172,8 +181,8 @@
         });
       });
 
-    // Track unsaved changes
-    editor.on('change:changesCount', () => invoke('mark_unsaved'));
+    // GrapesJS counts changes up while editing and resets the count after a save
+    editor.on('change:changesCount storage:end:store', () => invoke('set_unsaved', { unsaved: editor.getDirtyCount() > 0 }));
 
     // Track project_save
     editor.on('storage:start:store', () => {

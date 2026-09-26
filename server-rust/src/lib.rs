@@ -34,7 +34,7 @@ pub use config::{Config, PORT};
 pub use history::{tag, untag, version, Versioned};
 pub use jobs::{Job, JobData, JobStatus, Jobs};
 pub use models::WebsiteId;
-pub use storage::published_files_url;
+pub use storage::{create_website_from_template, published_files_url};
 
 /// Build the application router, ready to be served
 pub async fn build_app(config: Config) -> (Router, u16) {
