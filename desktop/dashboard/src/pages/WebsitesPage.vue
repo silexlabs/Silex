@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import WebsiteCard from '../components/WebsiteCard.vue'
+import AppTooltip from '../components/AppTooltip.vue'
+import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
 import { confirm, prompt, showError } from '../components/AppDialogs.vue'
 import { toast } from '../components/AppToasts.vue'
 import {
@@ -127,6 +129,13 @@ async function remove(website: Website) {
   }
 }
 
+const search = useTemplateRef<HTMLInputElement>('search')
+
+useShortcuts({
+  'Mod+N': create,
+  'Mod+F': () => search.value?.focus(),
+})
+
 async function showFolder(website: Website) {
   try {
     await showWebsiteFolder(website.websiteId)
@@ -149,19 +158,24 @@ async function showFolder(website: Website) {
         {{ $t('Choose a website to edit.') }}
       </p>
     </div>
-    <button
+    <AppTooltip
       v-if="websites?.length !== 0"
-      type="button"
-      class="button button--primary"
-      @click="create"
+      :text="keyLabel('Mod+N')"
     >
-      <svg
-        class="websites__icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      ><path d="M12 5v14M5 12h14" /></svg>
-      {{ $t('New website…') }}
-    </button>
+      <button
+        type="button"
+        class="button button--primary"
+        :aria-keyshortcuts="ariaKeys('Mod+N')"
+        @click="create"
+      >
+        <svg
+          class="websites__icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        ><path d="M12 5v14M5 12h14" /></svg>
+        {{ $t('New website…') }}
+      </button>
+    </AppTooltip>
   </div>
 
   <div
@@ -229,28 +243,40 @@ async function showFolder(website: Website) {
       class="websites__tools"
     >
       <input
+        ref="search"
         v-model="query"
+        :aria-keyshortcuts="ariaKeys('Mod+F')"
         type="search"
         class="websites__search"
         :aria-label="$t('Search websites by name')"
         :placeholder="$t('Search by name')"
       >
-      <label class="websites__order">
-        {{ $t('Sort by') }}
-        <select
-          v-model="order"
-          class="select"
-        >
-          <option value="edited">{{ $t('Last edited') }}</option>
-          <option value="name">{{ $t('Name') }}</option>
-        </select>
-      </label>
+      <select
+        v-model="order"
+        class="select"
+        :aria-label="$t('Sort by')"
+      >
+        <option value="edited">
+          {{ $t('Last edited') }}
+        </option>
+        <option value="name">
+          {{ $t('Name') }}
+        </option>
+      </select>
     </div>
     <p
       v-if="!shown.length"
       class="page__lead"
     >
       {{ $t('No website has “{query}” in its name.', { query: query.trim() }) }}
+    </p>
+    <p
+      class="visually-hidden"
+      role="status"
+    >
+      <template v-if="query.trim()">
+        {{ shown.length ? $t('1 website | {count} websites', shown.length) : $t('No website has “{query}” in its name.', { query: query.trim() }) }}
+      </template>
     </p>
     <div class="card-grid">
       <WebsiteCard
@@ -344,11 +370,5 @@ async function showFolder(website: Website) {
   background: var(--silex-input-bg);
   flex: 1;
   max-width: 320px;
-}
-
-.websites__order {
-  display: flex;
-  align-items: center;
-  gap: var(--silex-space-2);
 }
 </style>

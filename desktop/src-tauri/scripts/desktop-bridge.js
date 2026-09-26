@@ -5,6 +5,19 @@
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
 
+  // Not Tauri's zoom hotkeys: they count from 100% on every page, but WebKit keeps the zoom
+  // when the dashboard opens the editor, so the first key would jump the wrong way
+  const zoomSteps = { '-': -0.2, '=': 0.2, '+': 0.2, '0': 0 };
+  window.addEventListener('keydown', (event) => {
+    // By code too: on an AZERTY keyboard, the 0 key types à
+    const step = zoomSteps[event.key] ?? (event.code === 'Digit0' ? 0 : undefined);
+    if (step === undefined || !(navigator.userAgent.includes('Mac') ? event.metaKey : event.ctrlKey)) return;
+    event.preventDefault();
+    const zoom = step ? Math.min(Math.max((Number(sessionStorage.getItem('silex-zoom')) || 1) + step, 0.4), 3) : 1;
+    sessionStorage.setItem('silex-zoom', String(zoom));
+    invoke('plugin:webview|set_webview_zoom', { value: zoom });
+  });
+
   // Frontend error tracking (GlitchTip / Sentry-compatible).
   // Real version, channel, anonymous install id and OS/arch come from Rust so the
   // webview reports the same identity as the native side (not a hardcoded 0.1.0).

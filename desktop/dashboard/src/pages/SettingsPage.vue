@@ -1,14 +1,35 @@
 <script setup lang="ts">
-import { ref, useId, watch } from 'vue'
+import { computed, ref, useId } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { getVersion } from '@tauri-apps/api/app'
-import { savedLanguage, setLanguage, systemLanguage } from '../i18n'
+import {
+  SelectContent,
+  SelectItem,
+  SelectItemIndicator,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+} from 'reka-ui'
+import { type Language, savedLanguage, setLanguage, systemLanguage } from '../i18n'
 
+const { t } = useI18n()
 const languageNames = { en: 'English', fr: 'Français' }
+const options = computed(() => ({
+  system: t('Same as this computer ({language})', { language: languageNames[systemLanguage] }),
+  ...languageNames,
+}))
 const languageId = useId()
 const helpId = useId()
 const aboutId = useId()
-const language = ref(savedLanguage())
-watch(language, setLanguage)
+// Reka refuses an empty value on an item
+const language = ref<Language | 'system'>(savedLanguage() ?? 'system')
+
+function choose(value: Language | 'system') {
+  language.value = value
+  setLanguage(value === 'system' ? null : value)
+}
 
 const version = ref('')
 // Outside the app window there is no Tauri to ask
@@ -24,24 +45,38 @@ getVersion().then((value) => { version.value = value }, () => {})
       class="settings__label"
       :for="languageId"
     >{{ $t('Language') }}</label>
-    <select
-      :id="languageId"
-      v-model="language"
-      class="select settings__select"
-      :aria-describedby="helpId"
+    <SelectRoot
+      :model-value="language"
+      @update:model-value="choose"
     >
-      <option :value="null">
-        {{ $t('Same as this computer ({language})', { language: languageNames[systemLanguage] }) }}
-      </option>
-      <option
-        v-for="(languageName, code) in languageNames"
-        :key="code"
-        :value="code"
-        :lang="code"
+      <SelectTrigger
+        :id="languageId"
+        class="select settings__select"
+        :aria-describedby="helpId"
       >
-        {{ languageName }}
-      </option>
-    </select>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectPortal>
+        <SelectContent
+          class="menu settings__options"
+          position="popper"
+          :side-offset="4"
+        >
+          <SelectItem
+            v-for="(languageName, code) in options"
+            :key="code"
+            :value="code"
+            :lang="code === 'system' ? undefined : code"
+            class="menu__item"
+          >
+            <SelectItemText>{{ languageName }}</SelectItemText>
+            <SelectItemIndicator aria-hidden="true">
+              ✓
+            </SelectItemIndicator>
+          </SelectItem>
+        </SelectContent>
+      </SelectPortal>
+    </SelectRoot>
     <p
       :id="helpId"
       class="settings__help"
@@ -86,6 +121,12 @@ getVersion().then((value) => { version.value = value }, () => {})
 
 .settings__select {
   max-width: 320px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings__select[data-state='open'] {
+  border-color: var(--silex-focus-outline);
 }
 
 .settings__help {
@@ -107,5 +148,11 @@ getVersion().then((value) => { version.value = value }, () => {})
 
 .settings__link {
   color: var(--silex-text-primary);
+}
+</style>
+
+<style>
+.settings__options {
+  min-width: var(--reka-select-trigger-width);
 }
 </style>

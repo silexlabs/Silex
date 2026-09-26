@@ -87,10 +87,10 @@ async function use(template: Template) {
           :id="`${id}-pack-${g}`"
           class="template-pack__title"
         >
-          {{ $t('Template pack, being funded') }}
+          {{ $t('Templates being funded') }}
         </h2>
         <p class="page__lead">
-          {{ $t('Suggested: 25 €. Donors get these templates in Silex now, everyone does once the pack is funded.') }}
+          {{ $t('Your donations fund new Creative Commons templates. Donors get these templates by email right away. When donations reach €2,000, these templates are added to Silex for everyone.') }}
         </p>
       </div>
     </div>
@@ -177,7 +177,7 @@ async function use(template: Template) {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto 1fr;
   gap: var(--silex-space-2);
-  padding: var(--silex-space-3) var(--silex-space-4) var(--silex-space-4);
+  padding-top: var(--silex-space-2);
 }
 
 .template__description {
@@ -245,7 +245,6 @@ async function use(template: Template) {
 }
 
 .card:hover .template__use:is(a, :enabled) {
-  border-color: transparent;
   background: var(--silex-accent-strong);
   color: var(--silex-text-inverse);
 }
