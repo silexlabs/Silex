@@ -97,7 +97,7 @@ Silex is the work of contributors from all over the world. This project is maint
 
 <!-- Auto generated contributors -->
 
-**2026** — [Alex Hoyau](https://github.com/lexoyo), [Aysajan Eziz](https://github.com/AysajanE), [JE4NVRG](https://github.com/JE4NVRG), [KozakLordOfMatrix](https://github.com/MatrixNeoKozak), [pupuking723](https://github.com/pupuking723), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Wassim Triki](https://github.com/wassim-triki)
+**2026** — [Alex Hoyau](https://github.com/lexoyo), [mikemikimike](https://github.com/mikemikimike), [Sparshm786](https://github.com/Sparshm786), [Sparsh Maurya](https://github.com/SparshM07), [ZhangXiao](https://github.com/XiaoZ-0218), [Musfiqur Rahman Saimon](https://github.com/britsync07-prog), [mdsaimon1232](https://github.com/mdsaimon1), [Ayush Dubey](https://github.com/ayush2115), Peter Bouda, [Aysajan Eziz](https://github.com/AysajanE), [JE4NVRG](https://github.com/JE4NVRG), [KozakLordOfMatrix](https://github.com/MatrixNeoKozak), [pupuking723](https://github.com/pupuking723), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Wassim Triki](https://github.com/wassim-triki)
 
 **2025** — [Alex Hoyau](https://github.com/lexoyo), [Mazen Kamal](https://github.com/Mazen050), Piotr Golebiewski, [ioleo](https://github.com/ioleo), [oliviermgx](https://github.com/oliviermgx)
 
@@ -123,7 +123,7 @@ Silex is the work of contributors from all over the world. This project is maint
 
 **2014** — [Alex Hoyau](https://github.com/lexoyo), [Camille Gérard-Hirne](https://github.com/camcrock), [neocorp64](https://github.com/NeoCorp), Michele Martone, [peoslaap](https://github.com/peoslaap)
 
-**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, [TheCause](https://github.com/TheCause), [yanhick](https://github.com/yanhick), Alexandre Hoyau, [Thomas Fetiveau](https://github.com/zabojad)
+**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, [TheCause](https://github.com/TheCause), [yanhick](https://github.com/yanhick), [Thomas Fetiveau](https://github.com/zabojad)
 
 
 

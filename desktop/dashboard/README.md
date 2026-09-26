@@ -31,6 +31,8 @@ pnpm lint    # ESLint and Stylelint
 
 Run `pnpm templates` to refresh the template list from silex.me before a release, then commit
 `src/templates.json`.
+Run `pnpm run licenses` too, to refresh the licenses of the packages the app includes (offline, from
+`node_modules` and the Cargo registry), then commit `src/licenses.json`.
 
 ## Conventions
 
