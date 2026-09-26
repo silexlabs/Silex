@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import { type Website, hostOf, thumbnailOf } from '../api'
+import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
 
 const props = defineProps<{ website: Website }>()
 const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
@@ -52,6 +53,22 @@ const initials = computed(() =>
 // Keyed on the id so that renaming a website keeps its color
 const hue = computed(() => [...props.website.websiteId].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 360, 0))
 
+const menuOpen = ref(false)
+
+function onKeydown(event: KeyboardEvent) {
+  // WebKitGTK does not turn these keys into a contextmenu event
+  if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+    event.preventDefault()
+    menuOpen.value = true
+    return
+  }
+  handleShortcut(event, {
+    F2: () => emit('rename'),
+    Delete: () => emit('delete'),
+    'Mod+D': () => emit('duplicate'),
+  })
+}
+
 let chosen: (() => void) | null = null
 
 function choose(action: () => void) {
@@ -85,7 +102,7 @@ function afterClose(event: Event) {
       <div
         v-else
         class="card__placeholder"
-        :style="{ backgroundColor: `hsl(${hue} 45% 32%)` }"
+        :style="{ backgroundColor: `hsl(${hue} 25% 24%)` }"
         aria-hidden="true"
       >
         {{ initials }}
@@ -99,6 +116,8 @@ function afterClose(event: Event) {
             type="button"
             class="card__open"
             @click="emit('open')"
+            @keydown="onKeydown"
+            @contextmenu.prevent="menuOpen = true"
           >
             {{ website.name }}
           </button>
@@ -109,11 +128,13 @@ function afterClose(event: Event) {
           </template>{{ host }}
         </p>
       </div>
-      <DropdownMenuRoot>
+      <DropdownMenuRoot v-model:open="menuOpen">
         <DropdownMenuTrigger
           ref="more"
           class="card__more"
           :aria-label="$t('More actions for {name}', { name: website.name })"
+          @keydown="onKeydown"
+          @contextmenu.prevent="menuOpen = true"
         >
           <span aria-hidden="true">⋯</span>
         </DropdownMenuTrigger>
@@ -139,22 +160,37 @@ function afterClose(event: Event) {
             </DropdownMenuItem>
             <DropdownMenuItem
               class="menu__item"
+              :aria-keyshortcuts="ariaKeys('F2')"
               @select="choose(() => emit('rename'))"
             >
               {{ $t('Rename…') }}
+              <span
+                class="menu__keys"
+                aria-hidden="true"
+              >{{ keyLabel('F2') }}</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               class="menu__item"
+              :aria-keyshortcuts="ariaKeys('Mod+D')"
               @select="choose(() => emit('duplicate'))"
             >
               {{ $t('Duplicate') }}
+              <span
+                class="menu__keys"
+                aria-hidden="true"
+              >{{ keyLabel('Mod+D') }}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator class="menu__separator" />
             <DropdownMenuItem
               class="menu__item menu__item--danger"
+              :aria-keyshortcuts="ariaKeys('Delete')"
               @select="choose(() => emit('delete'))"
             >
               {{ $t('Delete…') }}
+              <span
+                class="menu__keys"
+                aria-hidden="true"
+              >{{ keyLabel('Delete') }}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
@@ -169,9 +205,9 @@ function afterClose(event: Event) {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--silex-text-inverse);
-  font-size: 40px;
-  font-weight: 600;
+  color: rgb(255 255 255 / 85%);
+  font-size: 28px;
+  font-weight: 500;
 }
 
 .card__body {
@@ -179,7 +215,7 @@ function afterClose(event: Event) {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--silex-space-2);
-  padding: var(--silex-space-3) var(--silex-space-4);
+  padding-top: var(--silex-space-2);
 }
 
 .card__info {
@@ -228,9 +264,9 @@ function afterClose(event: Event) {
   flex: none;
   width: 30px;
   height: 30px;
-  margin: calc(-1 * var(--silex-space-1)) calc(-1 * var(--silex-space-2)) 0 0;
+  margin-top: calc(-1 * var(--silex-space-1));
   border: none;
-  border-radius: 6px;
+  border-radius: var(--silex-radius-sm);
   background: none;
   color: var(--silex-text-secondary);
   font-size: 18px;
@@ -244,35 +280,3 @@ function afterClose(event: Event) {
 }
 </style>
 
-<style>
-/* Not scoped: the menu is rendered at the end of the body */
-.menu {
-  z-index: 5;
-  min-width: 220px;
-  padding: var(--silex-space-1);
-  border: 1px solid var(--silex-border-color-visible);
-  border-radius: var(--silex-radius-md);
-  background: var(--silex-button-bg);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
-}
-
-.menu__item {
-  padding: var(--silex-space-2) var(--silex-space-3);
-  border-radius: var(--silex-radius-sm);
-  cursor: pointer;
-  outline: none;
-}
-
-.menu__item[data-highlighted] {
-  background: var(--silex-button-hover-bg);
-}
-
-.menu__item--danger {
-  color: var(--silex-status-error);
-}
-
-.menu__separator {
-  margin: var(--silex-space-1) 0;
-  border-top: 1px solid var(--silex-border-color);
-}
-</style>

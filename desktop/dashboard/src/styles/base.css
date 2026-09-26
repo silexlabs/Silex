@@ -45,9 +45,9 @@ select {
   min-width: 88px;
   height: 36px;
   padding: 0 var(--silex-space-4);
-  border: 1px solid var(--silex-border-color-visible);
+  border: none;
   border-radius: var(--silex-radius-sm);
-  background: var(--silex-button-bg);
+  background: color-mix(in srgb, var(--silex-text-primary) 8%, transparent);
   color: inherit;
   font-weight: 500;
   text-decoration: none;
@@ -57,11 +57,10 @@ select {
 }
 
 .button:hover {
-  background: var(--silex-button-hover-bg);
+  background: color-mix(in srgb, var(--silex-text-primary) 12%, transparent);
 }
 
 .button--primary {
-  border-color: transparent;
   background: var(--silex-accent-strong);
   color: var(--silex-text-inverse);
 }
@@ -71,7 +70,6 @@ select {
 }
 
 .button--danger {
-  border-color: transparent;
   background: var(--silex-danger);
   color: var(--silex-text-inverse);
 }
@@ -103,7 +101,9 @@ select {
 }
 
 .page__lead {
-  max-width: 60ch;
+  /* The width of two cards of .card-grid, so the text ends on a column edge */
+  max-width: calc(2 * 280px + var(--silex-space-4));
+  text-wrap: pretty;
   margin: var(--silex-space-1) 0 0;
   color: var(--silex-text-secondary);
 }
@@ -124,28 +124,25 @@ select {
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--silex-space-4);
+  gap: var(--silex-space-6) var(--silex-space-4);
 }
 
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--silex-border-color);
-  border-radius: var(--silex-radius-md);
-  background: var(--silex-bg-main);
-}
-
-.card:hover {
-  border-color: var(--silex-border-color-visible);
 }
 
 .card__thumb {
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border-bottom: 1px solid var(--silex-border-color);
-  border-radius: var(--silex-radius-md) var(--silex-radius-md) 0 0;
+  border: 1px solid var(--silex-border-color);
+  border-radius: var(--silex-radius-md);
   background: var(--silex-bg-darker);
+}
+
+.card:hover .card__thumb {
+  border-color: var(--silex-border-color-visible);
 }
 
 .card__image {
@@ -167,4 +164,42 @@ select {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* The menus are rendered at the end of the body, out of reach of scoped styles */
+.menu {
+  z-index: 5;
+  min-width: 220px;
+  padding: var(--silex-space-1);
+  border: 1px solid var(--silex-border-color-visible);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-button-bg);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+}
+
+.menu__item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--silex-space-6);
+  padding: var(--silex-space-2) var(--silex-space-3);
+  border-radius: var(--silex-radius-sm);
+  cursor: pointer;
+  outline: none;
+}
+
+.menu__item[data-highlighted] {
+  background: var(--silex-button-hover-bg);
+}
+
+.menu__item--danger {
+  color: var(--silex-status-error);
+}
+
+.menu__keys {
+  color: var(--silex-text-secondary);
+}
+
+.menu__separator {
+  margin: var(--silex-space-1) 0;
+  border-top: 1px solid var(--silex-border-color);
 }
