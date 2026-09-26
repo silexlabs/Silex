@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from 'reka-ui'
 import { type Language, savedLanguage, setLanguage, systemLanguage } from '../i18n'
+import contributors from '../contributors.json'
 
 const { t } = useI18n()
 const languageNames = { en: 'English', fr: 'Français' }
@@ -23,6 +24,18 @@ const options = computed(() => ({
 const languageId = useId()
 const helpId = useId()
 const aboutId = useId()
+const author = 'Alex Hoyau'
+const credits = contributors
+  .map(({ year, people }) => ({ year, people: people.filter(({ name }) => name !== author) }))
+  .filter(({ people }) => people.length)
+const others = new Set(credits.flatMap(({ people }) => people.map(({ name }) => name)))
+const upstream = [
+  { name: 'GrapesJS', href: 'https://github.com/GrapesJS/grapesjs' },
+  { name: 'Tauri', href: 'https://tauri.app/' },
+  { name: 'Vue', href: 'https://vuejs.org/' },
+  { name: 'Axum', href: 'https://github.com/tokio-rs/axum' },
+  { name: 'Eleventy', href: 'https://www.11ty.dev/' },
+]
 // Reka refuses an empty value on an item
 const language = ref<Language | 'system'>(savedLanguage() ?? 'system')
 
@@ -94,14 +107,62 @@ getVersion().then((value) => { version.value = value }, () => {})
     >
       {{ $t('About') }}
     </h2>
+    <p class="settings__name">
+      Silex Desktop {{ version }}
+    </p>
     <p class="settings__help">
-      Silex Desktop {{ version }} · {{ $t('free software under the AGPL') }} ·
+      {{ $t('Free software under the AGPL.') }}
       <a
         class="settings__link"
-        href="https://www.silex.me/"
+        href="https://short.silex.me/code"
         target="_blank"
         rel="noopener"
-      >silex.me <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+      >{{ $t('Source code') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+    </p>
+    <details class="settings__credits">
+      <summary class="settings__help">
+        {{ $t('Created by Alex Hoyau and {count} contributors', { count: others.size }) }}
+      </summary>
+      <p
+        v-for="{ year, people } in credits"
+        :key="year"
+        class="settings__help"
+      >
+        <strong>{{ year }}</strong>&ensp;<template
+          v-for="(person, index) in people"
+          :key="person.name"
+        >
+          <a
+            v-if="person.url"
+            class="settings__link"
+            :href="person.url"
+            target="_blank"
+            rel="noopener"
+          >{{ person.name }}<span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a><template v-else>
+            {{ person.name }}
+          </template>{{ index < people.length - 1 ? ', ' : '' }}
+        </template>
+      </p>
+    </details>
+    <p class="settings__help">
+      {{ $t('Silex is built on free software, first of all') }}
+      <template
+        v-for="(project, index) in upstream"
+        :key="project.name"
+      >
+        <a
+          class="settings__link"
+          :href="project.href"
+          target="_blank"
+          rel="noopener"
+        >{{ project.name }}<span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>{{ index < upstream.length - 2 ? ', ' : index === upstream.length - 2 ? $t(' and ') : '. ' }}
+      </template>
+      <RouterLink
+        class="settings__link"
+        to="/settings/licenses"
+      >
+        {{ $t('All licenses') }}
+      </RouterLink>
     </p>
   </section>
 </template>
@@ -143,12 +204,33 @@ getVersion().then((value) => { version.value = value }, () => {})
 }
 
 .settings__title {
-  font-size: 14px;
+  margin: 0 0 var(--silex-space-1);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings__name {
+  margin: 0;
+  font-weight: 500;
+}
+
+.settings__credits summary {
+  width: fit-content;
+  cursor: pointer;
+}
+
+.settings__credits[open] summary {
+  margin-bottom: var(--silex-space-1);
+}
+
+.settings__credits p {
+  padding-left: var(--silex-space-3);
 }
 
 .settings__link {
   color: var(--silex-text-primary);
 }
+
 </style>
 
 <style>

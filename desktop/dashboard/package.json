@@ -9,7 +9,9 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "lint": "eslint . && stylelint \"src/**/*.{css,vue}\"",
-    "templates": "node ../../scripts/update-desktop-templates.mjs"
+    "templates": "node ../../scripts/update-desktop-templates.mjs",
+    "licenses": "node ../../scripts/update-desktop-licenses.mjs",
+    "contributors": "node ../../scripts/update-desktop-contributors.mjs"
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.2.8",

@@ -254,12 +254,12 @@ const links = computed(() => [
   outline-offset: -2px;
 }
 
-.sidebar__item[aria-current='page'] {
+.sidebar__item.router-link-active {
   background: color-mix(in srgb, var(--silex-accent-primary) 18%, transparent);
   color: var(--silex-text-primary);
 }
 
-.sidebar__item[aria-current='page']:hover {
+.sidebar__item.router-link-active:hover {
   background: color-mix(in srgb, var(--silex-accent-primary) 24%, transparent);
 }
 
@@ -274,7 +274,7 @@ const links = computed(() => [
   stroke-linejoin: round;
 }
 
-.sidebar__item[aria-current='page'] .sidebar__icon {
+.sidebar__item.router-link-active .sidebar__icon {
   color: var(--silex-accent-primary);
 }
 

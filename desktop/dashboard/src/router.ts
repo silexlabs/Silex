@@ -19,7 +19,18 @@ export const router = createRouter({
     { path: '/', component: WebsitesPage, meta: { title: () => i18n.global.t('Your websites') } },
     { path: '/templates', component: TemplatesPage, meta: { title: () => i18n.global.t('Templates') } },
     { path: '/integrations', component: IntegrationsPage, meta: { title: () => i18n.global.t('Integrations') } },
-    { path: '/settings', component: SettingsPage, meta: { title: () => i18n.global.t('Settings') } },
+    {
+      // Nested, so that the Settings link of the sidebar stays active on the licenses
+      path: '/settings',
+      children: [
+        { path: '', component: SettingsPage, meta: { title: () => i18n.global.t('Settings') } },
+        {
+          path: 'licenses',
+          component: () => import('./pages/LicensesPage.vue'),
+          meta: { title: () => i18n.global.t('Open source licenses') },
+        },
+      ],
+    },
   ],
 })
 
