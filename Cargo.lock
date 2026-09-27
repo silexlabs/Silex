@@ -4639,6 +4639,7 @@ dependencies = [
  "axum",
  "base64 0.23.1",
  "dirs 7.0.0",
+ "git2",
  "libc",
  "open",
  "reqwest",
