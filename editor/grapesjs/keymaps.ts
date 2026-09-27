@@ -28,7 +28,7 @@ function resetPanel(editor: Editor): void {
 }
 
 /**
- * Escapes the current context in this order : modal, Publish dialog, left panel.
+ * Escapes the current context in this order : preview mode, modal, Publish dialog, left panel.
  * If none of these are open, it selects the body.
  * @param editor The editor.
  */
@@ -36,7 +36,9 @@ function escapeContext(editor: Editor): void {
   const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
   const projectBarPanel = editor.Panels.getPanel('project-bar-panel')
 
-  if (editor.Modal.isOpen()) {
+  if (editor.Commands.isActive('preview')) {
+    editor.stopCommand('preview')
+  } else if (editor.Modal.isOpen()) {
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
