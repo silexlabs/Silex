@@ -5,6 +5,7 @@ import type { Language } from '../i18n'
 import { createWebsiteFromTemplate, explain, openEditor } from '../api'
 import { prompt, showError } from '../components/AppDialogs.vue'
 import { dismiss, toast } from '../components/AppToasts.vue'
+import ExternalLink from '../components/ExternalLink.vue'
 import list from '../templates.json'
 
 type Localized = { description: string; preview: string }
@@ -57,12 +58,12 @@ async function use(template: Template) {
       </h1>
       <p class="page__lead">
         {{ $t('Websites made with Silex by the community. Start a new website from one of them.') }}
-        <a
+        <ExternalLink
           class="template__more"
           href="https://www.silex.me/templates/"
-          target="_blank"
-          rel="noopener"
-        >{{ $t('More templates on silex.me') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+          :name="$t('More templates on silex.me')"
+          arrow
+        />
       </p>
     </div>
   </div>
@@ -121,33 +122,33 @@ async function use(template: Template) {
           <p class="template__description">
             {{ localized(template).description }}
           </p>
-          <a
+          <ExternalLink
             class="template__preview"
             :href="localized(template).preview"
-            target="_blank"
-            rel="noopener"
-            :aria-label="`${$t('Live demo of {name}', { name: template.name })} ${$t('(opens in your browser)')}`"
-          >{{ $t('Live demo') }} <span aria-hidden="true">↗</span></a>
+            :name="$t('Live demo of {name}', { name: template.name })"
+          >
+            {{ $t('Live demo') }} <span aria-hidden="true">↗</span>
+          </ExternalLink>
           <div
             v-if="group.link"
             class="template__donate"
           >
-            <a
+            <ExternalLink
               class="button"
               :href="donateByCard"
-              target="_blank"
-              rel="noopener"
+              :name="$t('Pay what you want')"
+              arrow
               :aria-describedby="`${id}-${g}-${index}`"
-            >{{ $t('Pay what you want') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
-            <a
+            />
+            <ExternalLink
               v-if="locale === 'fr'"
               class="button"
               :href="donateTaxDeductible"
-              target="_blank"
-              rel="noopener"
+              :name="$t('Tax-deductible')"
+              arrow
               :title="$t('Tax-deductible donation in France, through HelloAsso')"
               :aria-describedby="`${id}-${g}-${index}`"
-            >{{ $t('Tax-deductible') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+            />
           </div>
           <button
             v-if="!group.link"

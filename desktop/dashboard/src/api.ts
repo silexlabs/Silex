@@ -22,7 +22,7 @@ export type Website = Pick<WebsiteMeta, 'websiteId' | 'name' | 'imageUrl' | 'upd
 export class Said extends Error {
   constructor(
     readonly sentence?: string,
-    readonly params: Record<string, string> = {},
+    readonly params: Record<string, string | number> = {},
     readonly detail = '',
   ) {
     super(detail || sentence)
@@ -68,7 +68,13 @@ const call = <T>(command: string, args: Record<string, unknown>) =>
 export function explain(error: unknown): { message?: string; detail?: string } {
   const said = error instanceof Said ? error : new Said(undefined, {}, String((error as Error)?.message ?? error))
   const detail = said.detail || undefined
-  if (said.sentence) return { message: i18n.global.t(said.sentence, said.params), detail }
+  if (said.sentence) {
+    const { n, t } = i18n.global
+    const params = Object.fromEntries(
+      Object.entries(said.params).map(([name, value]) => [name, typeof value === 'number' ? n(value) : value]),
+    )
+    return { message: t(said.sentence, params), detail }
+  }
   // What the system said alone gives the person nothing to do
   return { message: detail && i18n.global.t('Try again. If the problem goes on, report it with this detail.'), detail }
 }

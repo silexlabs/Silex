@@ -43,5 +43,5 @@ router.afterEach(async (_, from) => {
 
 watchEffect(() => {
   const { title } = router.currentRoute.value.meta
-  document.title = title ? `${title()} – Silex` : 'Silex'
+  document.title = title ? `${title()} — Silex` : 'Silex'
 })

@@ -508,7 +508,7 @@ impl silex_server::Actions for SilexActions {
                 ..
             }) => job.succeeded(message::explained(
                 &format!("Your website is sent to {}.", remote),
-                &format!("Silex cannot tell whether {} built it. {}", host, why),
+                &format!("Silex cannot tell whether {} built it: {}", host, why),
                 &[on_this_computer()],
             )),
             // The website is taken but nobody is signed in, so there is no way

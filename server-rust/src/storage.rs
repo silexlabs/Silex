@@ -270,8 +270,8 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
     let too_large = || {
         Error::Said(
             Said::new(said::TEMPLATE_TOO_LARGE)
-                .with("mb", MAX_TEMPLATE_BYTES / 1024 / 1024)
-                .with("files", MAX_TEMPLATE_ENTRIES),
+                .with_number("mb", MAX_TEMPLATE_BYTES / 1024 / 1024)
+                .with_number("files", MAX_TEMPLATE_ENTRIES),
         )
     };
 

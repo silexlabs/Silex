@@ -98,12 +98,14 @@ const icons: Record<ToastKind, string> = {
       </svg>
       <p class="toast__message">
         <span class="visually-hidden">{{ kinds[item.kind] }}</span>
-        {{ item.message }}
+        <span aria-hidden="true">{{ item.message }}</span>
+        <span class="visually-hidden">{{ $t('{message} | {message} ({count} times)', { message: item.message }, item.count) }}</span>
       </p>
       <span
         v-if="item.count > 1"
         class="toast__count"
-      ><span aria-hidden="true">×{{ item.count }}</span><span class="visually-hidden">{{ $t('({count} times)', { count: item.count }) }}</span></span>
+        aria-hidden="true"
+      >×{{ item.count }}</span>
       <button
         type="button"
         class="toast__close"

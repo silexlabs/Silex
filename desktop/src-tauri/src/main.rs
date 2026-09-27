@@ -220,9 +220,8 @@ async fn create_website_from_template(
     while let Some(chunk) = response.chunk().await.map_err(not_downloaded)? {
         files.extend_from_slice(&chunk);
         if files.len() > MAX_ARCHIVE_BYTES {
-            return Err(
-                Said::new(said::ARCHIVE_TOO_LARGE).with("mb", MAX_ARCHIVE_BYTES / 1024 / 1024)
-            );
+            return Err(Said::new(said::ARCHIVE_TOO_LARGE)
+                .with_number("mb", MAX_ARCHIVE_BYTES / 1024 / 1024));
         }
     }
 

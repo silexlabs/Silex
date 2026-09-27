@@ -18,11 +18,22 @@ export function savedLanguage(): Language | null {
   }
 }
 
+const categories: Intl.LDMLPluralRule[] = ['zero', 'one', 'two', 'few', 'many', 'other']
+
+// A message gives the plural forms of its language in the CLDR order, and the
+// last one it gives also stands for those it leaves out, like the "many" of French
+function pluralRule(language: Language) {
+  const rules = new Intl.PluralRules(language)
+  const forms = categories.filter((form) => rules.resolvedOptions().pluralCategories.includes(form))
+  return (choice: number, choicesLength: number) => Math.min(forms.indexOf(rules.select(choice)), choicesLength - 1)
+}
+
 export const i18n = createI18n({
   legacy: false,
   locale: savedLanguage() ?? systemLanguage,
   fallbackLocale: 'en',
   messages: { en, fr },
+  pluralRules: { en: pluralRule('en'), fr: pluralRule('fr') },
 })
 
 watchEffect(() => {

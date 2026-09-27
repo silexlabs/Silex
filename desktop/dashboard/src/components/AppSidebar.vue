@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
 import AppTooltip from './AppTooltip.vue'
+import ExternalLink from './ExternalLink.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
 import logo from '~/public/assets/logo-silex-small.png'
 
@@ -42,19 +43,18 @@ const links = computed(() => [
 
 <template>
   <div class="sidebar">
-    <a
+    <ExternalLink
       class="sidebar__brand"
       :href="home"
-      target="_blank"
-      rel="noopener"
+      name="Silex"
     >
       <img
         class="sidebar__mark"
         :src="logo"
         alt=""
       >
-      Silex<span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span>
-    </a>
+      Silex
+    </ExternalLink>
     <nav
       class="sidebar__nav"
       :aria-label="$t('Main')"
@@ -177,15 +177,16 @@ const links = computed(() => [
           v-for="link in links"
           :key="link.text"
         >
-          <a
+          <ExternalLink
             class="sidebar__link"
             :href="link.href"
-            target="_blank"
-            rel="noopener"
-          >{{ link.text }} <span
-            class="sidebar__arrow"
-            aria-hidden="true"
-          >↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+            :name="link.text"
+          >
+            {{ link.text }} <span
+              class="sidebar__arrow"
+              aria-hidden="true"
+            >↗</span>
+          </ExternalLink>
         </li>
       </ul>
     </nav>

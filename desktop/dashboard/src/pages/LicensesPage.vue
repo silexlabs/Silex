@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type Licenses from '../licenses.json'
 // A file next to the app, not a module: parsed only on this page, and out of the bundle
 import licensesUrl from '../licenses.json?url'
+import ExternalLink from '../components/ExternalLink.vue'
 
 const { locale } = useI18n()
 const licenses = ref<typeof Licenses>({ packages: [], texts: [] })
@@ -30,7 +31,7 @@ const shown = computed(() => {
     v-if="licenses.packages.length"
     class="page__lead"
   >
-    {{ $t('Silex Desktop includes these {count} free software packages, each under its own license.', { count: licenses.packages.length }) }}
+    {{ $t('Silex Desktop includes this free software package, under its own license. | Silex Desktop includes these {count} free software packages, each under its own license.', { count: $n(licenses.packages.length) }, licenses.packages.length) }}
   </p>
   <input
     v-model="query"
@@ -56,13 +57,13 @@ const shown = computed(() => {
           <span class="licenses__meta">{{ pkg.version }}</span>
           <span class="licenses__meta licenses__license">{{ pkg.license }}</span>
         </summary>
-        <a
+        <ExternalLink
           v-if="pkg.repository"
           class="licenses__link"
           :href="pkg.repository"
-          target="_blank"
-          rel="noopener"
-        >{{ $t('Source code') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+          :name="$t('Source code')"
+          arrow
+        />
         <pre
           v-for="text in pkg.texts"
           :key="text"

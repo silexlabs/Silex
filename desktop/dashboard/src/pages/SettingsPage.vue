@@ -14,6 +14,8 @@ import {
 } from 'reka-ui'
 import { type Language, savedLanguage, setLanguage, systemLanguage } from '../i18n'
 import contributors from '../contributors.json'
+import ExternalLink from '../components/ExternalLink.vue'
+import LocalizedList from '../components/LocalizedList.vue'
 
 const { t } = useI18n()
 const languageNames = { en: 'English', fr: 'Français' }
@@ -112,52 +114,52 @@ getVersion().then((value) => { version.value = value }, () => {})
     </p>
     <p class="settings__help">
       {{ $t('Free software under the AGPL.') }}
-      <a
+      <ExternalLink
         class="settings__link"
         href="https://short.silex.me/code"
-        target="_blank"
-        rel="noopener"
-      >{{ $t('Source code') }} <span aria-hidden="true">↗</span><span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>
+        :name="$t('Source code')"
+        arrow
+      />
     </p>
     <details class="settings__credits">
       <summary class="settings__help">
-        {{ $t('Created by Alex Hoyau and {count} contributors', { count: others.size }) }}
+        {{ $t('Created by Alex Hoyau and one contributor | Created by Alex Hoyau and {count} contributors', others.size) }}
       </summary>
       <p
         v-for="{ year, people } in credits"
         :key="year"
         class="settings__help"
       >
-        <strong>{{ year }}</strong>&ensp;<template
-          v-for="(person, index) in people"
-          :key="person.name"
+        <strong>{{ year }}</strong>&ensp;<LocalizedList
+          v-slot="{ item: person }"
+          :items="people"
         >
-          <a
+          <ExternalLink
             v-if="person.url"
             class="settings__link"
             :href="person.url"
-            target="_blank"
-            rel="noopener"
-          >{{ person.name }}<span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a><template v-else>
+            :name="person.name"
+          /><template v-else>
             {{ person.name }}
-          </template>{{ index < people.length - 1 ? ', ' : '' }}
-        </template>
+          </template>
+        </LocalizedList>
       </p>
     </details>
     <p class="settings__help">
-      {{ $t('Silex is built on free software, first of all') }}
-      <template
-        v-for="(project, index) in upstream"
-        :key="project.name"
-      >
-        <a
-          class="settings__link"
-          :href="project.href"
-          target="_blank"
-          rel="noopener"
-        >{{ project.name }}<span class="visually-hidden"> {{ $t('(opens in your browser)') }}</span></a>{{ index < upstream.length - 2 ? ', ' : index === upstream.length - 2 ? $t(' and ') : '. ' }}
-      </template>
-      <RouterLink
+      <i18n-t keypath="Silex is built on free software, first of all {projects}.">
+        <template #projects>
+          <LocalizedList
+            v-slot="{ item: project }"
+            :items="upstream"
+          >
+            <ExternalLink
+              class="settings__link"
+              :href="project.href"
+              :name="project.name"
+            />
+          </LocalizedList>
+        </template>
+      </i18n-t> <RouterLink
         class="settings__link"
         to="/settings/licenses"
       >
