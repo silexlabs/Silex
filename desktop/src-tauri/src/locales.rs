@@ -9,9 +9,9 @@
 
 //! The locales of the dashboard, the one catalog of the app
 //!
-//! Rust reads them for the windows it opens itself: the native dialogs and the
-//! splash screen. These follow the language of this computer, since the one
-//! picked in the dashboard is kept in the webview.
+//! Rust reads them for the native dialogs it opens itself. These follow the
+//! language of this computer, since the one picked in the dashboard is kept in
+//! the webview.
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -27,7 +27,6 @@ pub const SAVE_AND_QUIT: &str = "Save & Quit";
 pub const QUIT: &str = "Quit";
 pub const SAVING: &str = "Saving your work";
 pub const NOT_SENT_YET: &str = "Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open it.";
-pub const STARTING: &str = "Starting your workspace…";
 
 #[cfg(test)]
 const ALL: &[&str] = &[
@@ -40,7 +39,6 @@ const ALL: &[&str] = &[
     QUIT,
     SAVING,
     NOT_SENT_YET,
-    STARTING,
 ];
 
 pub fn in_french() -> bool {

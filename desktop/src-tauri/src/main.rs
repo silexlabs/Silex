@@ -13,7 +13,7 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
@@ -306,7 +306,7 @@ fn package_kind() -> &'static str {
 
 /// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
 fn telemetry_environment(version: &str) -> &'static str {
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) || version == "0.0.0-dev" {
         "development"
     } else if version.contains("canary") {
         "canary"
@@ -595,20 +595,29 @@ async fn start_server(
     app_data_dir: PathBuf,
     current_website_id: actions::CurrentWebsiteId,
     dashboard_in_development: bool,
+    asking_integrations: sentry::Span,
 ) -> Result<(u16, actions::Sendings), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
-    let integrations = integrations::load(&app_data_dir);
-
-    // Names as a tag, versions beside them: a version string as a tag would make
-    // an indexed value of its own out of every machine
-    sentry::configure_scope(|scope| {
-        let names: Vec<&str> = integrations.at_hand().map(|(id, _)| id).collect();
-        scope.set_tag("integrations", names.join(","));
-        let versions = integrations
-            .at_hand()
-            .filter_map(|(id, version)| Some((id.to_string(), version?.into())))
-            .collect();
-        scope.set_context("integrations", sentry::protocol::Context::Other(versions));
+    let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
+        asking_integrations.finish();
+        // Names as a tag, versions beside them: a version string as a tag would
+        // make an indexed value of its own out of every machine
+        sentry::Hub::main().configure_scope(|scope| {
+            let names: Vec<&str> = integrations.at_hand().map(|(id, _)| id).collect();
+            scope.set_tag("integrations", names.join(","));
+            let versions = integrations
+                .at_hand()
+                .filter_map(|(id, version)| Some((id.to_string(), version?.into())))
+                .collect();
+            scope.set_context("integrations", sentry::protocol::Context::Other(versions));
+        });
+        // The one event every launch produces is where the integrations are
+        // worth having
+        sentry::Hub::main().capture_event(sentry::protocol::Event {
+            message: Some("app_started".into()),
+            level: sentry::Level::Info,
+            ..Default::default()
+        });
     });
     let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
     let sendings = actions.sending();
@@ -652,11 +661,16 @@ async fn start_server(
     tracing::info!("Silex server listening on http://{}", addr);
 
     // A hub per request, or the layer above stacks an event processor on the one
-    // shared scope at every request and never takes one off
+    // shared scope at every request and never takes one off. Made from the main
+    // hub: the integrations reach its scope after a worker has taken its copy
     let served = tower::ServiceBuilder::new()
-        .layer(sentry::integrations::tower::NewSentryLayer::<
+        .layer(sentry::integrations::tower::SentryLayer::<
+            _,
+            _,
             axum::extract::Request,
-        >::new_from_top())
+        >::new(|_: &axum::extract::Request| {
+            Arc::new(sentry::Hub::new_from_top(sentry::Hub::main()))
+        }))
         .service(app);
 
     tokio::spawn(async move {
@@ -699,7 +713,17 @@ fn renders_on_nvidia() -> bool {
 // Main
 // ==================
 
+/// A step of the start that is over already
+fn took(startup: &sentry::Transaction, step: &str, from: SystemTime, to: SystemTime) {
+    startup
+        .start_child_with_details("app.start", step, Default::default(), from)
+        .finish_with_timestamp(to);
+}
+
 fn main() {
+    // What the user waits for starts here, not once telemetry can measure it
+    let launched = SystemTime::now();
+
     // WebKitGTK crashes with NVIDIA under Wayland (Gdk Error 71), and turning
     // the renderer off draws everything on the CPU, which makes the editor
     // crawl: only pay for it where it crashes. Must be set before any WebKit/GTK
@@ -775,6 +799,7 @@ fn main() {
             Some(breadcrumb)
         });
     options.dsn = dsn.as_deref().and_then(|s| s.parse().ok());
+    let configured = SystemTime::now();
     let _sentry_guard = sentry::init(options);
     sentry::configure_scope(|scope| {
         scope.set_tag("os", std::env::consts::OS);
@@ -790,6 +815,15 @@ fn main() {
         }));
     });
     sentry::start_session();
+    // Until the dashboard has loaded: a launch is over for the user when there
+    // is something to click
+    let startup = sentry::start_transaction_with_timestamp(
+        sentry::TransactionContext::new("app_startup", "app.start"),
+        launched,
+    );
+    let telemetry_ready = SystemTime::now();
+    took(&startup, "before telemetry", launched, configured);
+    took(&startup, "telemetry", configured, telemetry_ready);
 
     tracing_subscriber::registry()
         .with(
@@ -836,9 +870,9 @@ fn main() {
             get_telemetry_context,
         ])
         .setup(move |app| {
-            // Start a performance transaction for app startup
-            let tx_ctx = sentry::TransactionContext::new("app_startup", "lifecycle");
-            let transaction = sentry::start_transaction(tx_ctx);
+            let set_up = SystemTime::now();
+            took(&startup, "tauri start", telemetry_ready, set_up);
+            let setup = startup.start_child("app.start", "setup");
 
             // Silex website data lives under app_data_dir/"websites".
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
@@ -856,24 +890,9 @@ fn main() {
                 .unwrap_or(data_path);
             app.manage(WebsitesFolder(data_path.clone()));
 
-            // Show splash screen while the app loads
-            let _splash =
-                WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("splash.html".into()))
-                    .title("Silex")
-                    .inner_size(400.0, 300.0)
-                    .resizable(false)
-                    .decorations(false)
-                    .center()
-                    .always_on_top(true)
-                    .initialization_script(format!(
-                        "document.addEventListener('DOMContentLoaded', () => {{ document.documentElement.lang = {}; document.querySelector('p').textContent = {} }})",
-                        serde_json::json!(if locales::in_french() { "fr" } else { "en" }),
-                        serde_json::json!(tr(locales::STARTING)),
-                    ))
-                    .build()?;
-
             let pending_evals = mcp::PendingEvals::default();
             let dashboard = dashboard_in_development();
+            let server = setup.start_child("app.start", "server");
             let (port, sendings) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
@@ -882,34 +901,43 @@ fn main() {
                     .expect("failed to resolve app data dir"),
                 app.state::<AppState>().current_website_id.clone(),
                 dashboard.is_some(),
+                startup.start_child("app.start", "integrations"),
             ))?;
-            // After the server, which is what puts the integrations on the scope:
-            // the one event every launch produces is where they are worth having
-            sentry::capture_event(sentry::protocol::Event {
-                message: Some("app_started".into()),
-                level: sentry::Level::Info,
-                ..Default::default()
-            });
-
+            server.finish();
             app.manage(sendings);
             app.manage(actions::Saves::new(0));
 
             let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));
-            let app_handle_for_splash = app.handle().clone();
+            let creating_window = setup.start_child("app.start", "window");
+            let loading: Arc<Mutex<Option<(sentry::Transaction, sentry::Span)>>> =
+                Default::default();
+            let loaded = loading.clone();
+            let shown: Arc<Mutex<Option<SystemTime>>> = Default::default();
+            let was_shown = shown.clone();
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
                 .title("Silex")
                 .maximized(true)
+                // The dashboard's background, from the first frame on, before the page paints
+                .background_color(tauri::window::Color(0x1a, 0x1a, 0x1a, 0xff))
                 .initialization_script(include_str!("../scripts/desktop-bridge.js"))
                 .on_page_load(move |webview, payload| {
                     if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-                        // Close splash — main window is already maximized behind it
-                        if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
-                            let _ = splash.close();
-                        }
                         let _ = webview.set_focus();
+                        if let Some((startup, page)) = held(&loaded).take() {
+                            page.finish();
+                            if let Some(shown) = *held(&was_shown) {
+                                took(&startup, "window open", launched, shown);
+                                let open = shown.duration_since(launched).unwrap_or_default();
+                                startup.set_data("window_open", (open.as_millis() as u64).into());
+                            }
+                            startup.finish();
+                        }
                     }
                 })
                 .build()?;
+            creating_window.finish();
+            // The page loads once setup has handed the main thread back
+            *held(&loading) = Some((startup.clone(), startup.start_child("app.start", "page")));
 
             // Editor and dashboard reach each other through `location.href`, so
             // WebKit kept the previous editor pages alive for a back button the
@@ -935,9 +963,6 @@ fn main() {
                 });
             }
 
-            // Finish the startup transaction (sends to GlitchTip Performance)
-            transaction.finish();
-
             // Check for updates in the background — release builds only.
             // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.1.0,
             // so the updater would otherwise prompt "update to <latest release>" on every launch.
@@ -945,9 +970,14 @@ fn main() {
                 check_for_updates(app.handle().clone());
             }
 
+            setup.finish();
+
             // Handle window close with unsaved changes
             let app_handle = app.handle().clone();
             window.on_window_event(move |event| {
+                // Tauri tells nothing when the window appears: its first event
+                // comes when the window system has placed it on the screen
+                held(&shown).get_or_insert_with(SystemTime::now);
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let state = app_handle.state::<AppState>();
                     let has_changes = *held(&state.has_unsaved_changes);

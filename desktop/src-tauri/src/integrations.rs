@@ -17,7 +17,7 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{mpsc, Arc, LazyLock, Mutex, OnceLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
@@ -505,6 +505,30 @@ pub fn load(data_dir: &Path) -> Integrations {
         write(data_dir, &integrations);
     }
     integrations
+}
+
+/// The integrations of `load`, waited for by whoever first needs them
+pub type Loading = LazyLock<Integrations, Box<dyn FnOnce() -> Integrations + Send>>;
+
+/// `load` without holding up the start of the app
+///
+/// Asking every program for its version takes as long as the rest of the
+/// start. `then` is told what was found before anyone else gets it.
+pub fn load_in_background(
+    data_dir: PathBuf,
+    then: impl FnOnce(&Integrations) + Send + 'static,
+) -> Loading {
+    let (found, waited_for) = mpsc::sync_channel(1);
+    let loaded_in = data_dir.clone();
+    std::thread::spawn(move || {
+        let integrations = load(&loaded_in);
+        then(&integrations);
+        let _ = found.send(integrations);
+    });
+    // Should the thread die, what the user set up last time still holds
+    LazyLock::new(Box::new(move || {
+        waited_for.recv().unwrap_or_else(|_| read(&data_dir))
+    }))
 }
 
 fn read(data_dir: &Path) -> Integrations {

@@ -26,7 +26,7 @@ use silex_server::{Hosting, Job, PublicationOptions};
 use crate::integrations::common::git;
 use crate::integrations::common::remote::{without_secret, Remote};
 use crate::integrations::deploy::{Build, Deploy, Prepared};
-use crate::integrations::Integrations;
+use crate::integrations::Loading;
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
 /// How long Silex waits on a host, and how often it asks
@@ -160,7 +160,7 @@ pub type Saved = watch::Receiver<u64>;
 pub struct SilexActions {
     /// Directory holding one sub directory per website
     data_path: PathBuf,
-    integrations: Arc<Integrations>,
+    integrations: Arc<Loading>,
     current_website_id: CurrentWebsiteId,
     syncer: Arc<Syncer>,
     /// What was last answered about who serves a website, and when
@@ -173,7 +173,7 @@ pub struct SilexActions {
 impl SilexActions {
     pub fn new(
         data_path: PathBuf,
-        integrations: Integrations,
+        integrations: Loading,
         current_website_id: CurrentWebsiteId,
     ) -> Self {
         let integrations = Arc::new(integrations);

@@ -38,8 +38,8 @@ open = "5"
 # Deleting a website moves it to the trash of this computer
 trash = "5"
 
-# The language of this computer, for the dialogs and the splash screen that
-# open before, or without, the dashboard
+# The language of this computer, for the dialogs that open before, or
+# without, the dashboard
 sys-locale = "0.3"
 
 # Platform-specific directories (for telemetry consent before Tauri init)
