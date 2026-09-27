@@ -39,6 +39,7 @@ use crate::models::{
     empty_website, names_one_folder, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, ASSETS_FOLDER,
     PUBLIC_FOLDER, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE,
 };
+use crate::said::{self, Said};
 
 // ==================
 // Paths
@@ -193,7 +194,7 @@ pub async fn read_website(data_path: &Path, website_id: &WebsiteId) -> Result<se
 
     let content = fs::read_to_string(&path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
-            Error::NotFound(format!("Website '{}' not found", website_id))
+            Error::NoWebsite(website_id.clone())
         } else {
             Error::Io(e)
         }
@@ -229,16 +230,15 @@ pub async fn create_website_from_template(
         let into = site.clone();
         tokio::task::spawn_blocking(move || unpack_template(&archive, &into))
             .await
-            .map_err(|e| Error::Told(e.to_string()))??;
+            .map_err(|e| Error::Said(Said::raw(e)))??;
 
         if !fs::metadata(site.join(WEBSITE_DATA_FILE))
             .await
             .is_ok_and(|m| m.is_file())
         {
-            return Err(Error::Told(format!(
-                "This template is not a Silex website: it has no {} at its root.",
-                WEBSITE_DATA_FILE
-            )));
+            return Err(Error::Said(
+                Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
+            ));
         }
         forget_where_the_original_is_published(&site).await?;
 
@@ -247,12 +247,8 @@ pub async fn create_website_from_template(
             image_url: None,
         };
         set_website_meta(data_path, &website_id, &meta).await?;
-        history::start_from_template(&site, &template_repo).map_err(|why| {
-            Error::Told(format!(
-                "Silex copied the template, but could not start the history of the website. {}",
-                why
-            ))
-        })
+        history::start_from_template(&site, &template_repo)
+            .map_err(|why| Error::Said(Said::raw(why)))
     }
     .await;
 
@@ -270,21 +266,15 @@ const MAX_TEMPLATE_ENTRIES: usize = 10_000;
 /// Only the content of the files is written: rights noted in the archive
 /// could leave the website read only.
 fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
-    let unreadable =
-        |e: std::io::Error| Error::Told(format!("Silex could not read the template. {}", e));
-    let unwritable = |e: std::io::Error| {
-        Error::Told(format!(
-            "Silex could not write the template in {}. {}",
-            site.display(),
-            e
-        ))
-    };
+    let unreadable = |e: std::io::Error| Error::Said(Said::raw(e));
+    let unwritable =
+        |e: std::io::Error| Error::Said(Said::raw(format!("{}: {}", site.display(), e)));
     let too_large = || {
-        Error::Told(format!(
-            "This template is larger than {} MB or {} files, which Silex does not copy.",
-            MAX_TEMPLATE_BYTES / 1024 / 1024,
-            MAX_TEMPLATE_ENTRIES
-        ))
+        Error::Said(
+            Said::new(said::TEMPLATE_TOO_LARGE)
+                .with("mb", MAX_TEMPLATE_BYTES / 1024 / 1024)
+                .with("files", MAX_TEMPLATE_ENTRIES),
+        )
     };
 
     let mut left = MAX_TEMPLATE_BYTES;
@@ -297,9 +287,7 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
         let kind = entry.header().entry_type();
         // A link could lead the next files out of the website folder
         if kind.is_symlink() || kind.is_hard_link() {
-            return Err(Error::Told(
-                "This template has links in it, which Silex does not copy.".to_string(),
-            ));
+            return Err(Error::Said(Said::new(said::TEMPLATE_LINKS)));
         }
         if !kind.is_file() {
             continue;
@@ -317,10 +305,9 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
             .components()
             .all(|c| matches!(c, Component::Normal(name) if writable_everywhere(name)))
         {
-            return Err(Error::Told(format!(
-                "This template has a file Silex does not copy: {}",
-                path.display()
-            )));
+            return Err(Error::Said(
+                Said::new(said::TEMPLATE_FILE).with("file", path.display()),
+            ));
         }
 
         let target = site.join(&path);
@@ -417,7 +404,7 @@ pub async fn delete_website(data_path: &Path, website_id: &WebsiteId) -> Result<
         .await
         .map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
-                Error::NotFound(format!("Website '{}' not found", website_id))
+                Error::NoWebsite(website_id.clone())
             } else {
                 Error::Io(e)
             }
@@ -434,10 +421,7 @@ pub async fn duplicate_website(
 
     let source_path = website_path(data_path, website_id);
     if fs::metadata(&source_path).await.is_err() {
-        return Err(Error::NotFound(format!(
-            "Website '{}' not found",
-            website_id
-        )));
+        return Err(Error::NoWebsite(website_id.clone()));
     }
 
     let copy_path = website_path(data_path, &new_website_id);
@@ -467,12 +451,8 @@ pub async fn duplicate_website(
 /// A duplicated website keeps its history but must not keep where it was sent,
 /// or publishing it would push over the website it was copied from.
 fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
-    history::drop_the_remotes(site).map_err(|why| {
-        Error::Told(format!(
-            "Silex copied your website, but could not take out of the copy where the first one is published. Publishing the copy would replace the first one. {}",
-            why
-        ))
-    })
+    history::drop_the_remotes(site)
+        .map_err(|why| Error::Said(Said::new(said::COPY_PUBLISHED_OVER).because(why)))
 }
 
 /// Take out of a copy the publication settings it inherited
@@ -553,7 +533,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
 
     let metadata = fs::metadata(&website_path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
-            Error::NotFound(format!("Website '{}' not found", website_id))
+            Error::NoWebsite(website_id.clone())
         } else {
             Error::Io(e)
         }
@@ -749,12 +729,13 @@ async fn merge_website_data(
 
 /// Parse one file of a website, naming it when it cannot be read
 fn parse_file<T: serde::de::DeserializeOwned>(path: &Path, content: &str) -> Result<T> {
-    serde_json::from_str(content).map_err(|e| {
-        Error::InvalidWebsite(format!(
-            "Could not read '{}'. This file of your website is damaged. {}",
-            path.display(),
-            e
-        ))
+    serde_json::from_str(content).map_err(|e| Error::Damaged {
+        file: path
+            .file_name()
+            .unwrap_or(path.as_os_str())
+            .to_string_lossy()
+            .into_owned(),
+        why: format!("{}: {}", path.display(), e),
     })
 }
 

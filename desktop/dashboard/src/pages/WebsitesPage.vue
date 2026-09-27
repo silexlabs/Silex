@@ -10,6 +10,7 @@ import {
   type Website,
   createWebsite,
   duplicateWebsite,
+  explain,
   hostOf,
   listWebsites,
   renameWebsite,
@@ -20,7 +21,7 @@ import {
 const { t, locale } = useI18n()
 
 const websites = ref<Website[] | null>(null)
-const failed = ref('')
+const failed = ref<ReturnType<typeof explain> | null>(null)
 const query = ref('')
 const order = ref<'edited' | 'name'>('edited')
 
@@ -39,11 +40,11 @@ const shown = computed(() => {
 })
 
 async function load() {
-  failed.value = ''
+  failed.value = null
   try {
     websites.value = await listWebsites()
   } catch (error) {
-    failed.value = (error as Error).message
+    failed.value = explain(error)
   }
 }
 
@@ -64,7 +65,7 @@ async function create() {
   try {
     edit({ websiteId: await createWebsite(name) })
   } catch (error) {
-    await showError({ title: t('Silex could not create the website'), message: (error as Error).message })
+    await showError({ title: t('Silex could not create the website'), ...explain(error) })
   }
 }
 
@@ -81,7 +82,7 @@ async function rename(website: Website) {
     website.name = name
     toast(t('Website renamed.'), 'success')
   } catch (error) {
-    await showError({ title: t('Silex could not rename the website'), message: (error as Error).message })
+    await showError({ title: t('Silex could not rename the website'), ...explain(error) })
   }
 }
 
@@ -100,7 +101,7 @@ async function duplicate(website: Website) {
     await nextTick()
     if (copy) document.querySelector<HTMLElement>(`[data-website-id="${CSS.escape(copy.websiteId)}"] button`)?.focus()
   } catch (error) {
-    await showError({ title: t('Silex could not duplicate the website'), message: (error as Error).message })
+    await showError({ title: t('Silex could not duplicate the website'), ...explain(error) })
   } finally {
     duplicating.delete(website.websiteId)
   }
@@ -125,7 +126,7 @@ async function remove(website: Website) {
     await nextTick()
     document.querySelector<HTMLElement>('main h1')?.focus()
   } catch (error) {
-    await showError({ title: t('Silex could not delete the website'), message: (error as Error).message })
+    await showError({ title: t('Silex could not delete the website'), ...explain(error) })
   }
 }
 
@@ -140,7 +141,7 @@ async function showFolder(website: Website) {
   try {
     await showWebsiteFolder(website.websiteId)
   } catch (error) {
-    await showError({ title: t('Silex could not open the folder'), message: (error as Error).message })
+    await showError({ title: t('Silex could not open the folder'), ...explain(error) })
   }
 }
 </script>
@@ -183,9 +184,15 @@ async function showFolder(website: Website) {
     class="websites__problem"
     role="alert"
   >
-    <p class="websites__message">
-      {{ $t('Silex could not load your websites.') }} {{ failed }}
-    </p>
+    <div class="websites__message">
+      <p class="websites__sentence">
+        {{ $t('Silex could not load your websites.') }} {{ failed.message }}
+      </p>
+      <pre
+        v-if="failed.detail"
+        class="websites__detail"
+      >{{ failed.detail }}</pre>
+    </div>
     <button
       type="button"
       class="button"
@@ -335,8 +342,22 @@ async function showFolder(website: Website) {
 }
 
 .websites__message {
-  margin: 0;
   max-width: 60ch;
+}
+
+.websites__sentence {
+  margin: 0;
+}
+
+.websites__detail {
+  margin: var(--silex-space-2) 0 0;
+  padding: var(--silex-space-2) var(--silex-space-3);
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-secondary);
+  font: 12px / 1.5 ui-monospace, 'Ubuntu Mono', Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .websites__empty {

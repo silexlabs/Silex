@@ -24,6 +24,7 @@ pub mod message;
 mod models;
 mod publish;
 mod routes;
+pub mod said;
 mod storage;
 
 use axum::Router;

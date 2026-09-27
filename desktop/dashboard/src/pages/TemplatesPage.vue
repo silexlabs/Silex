@@ -2,7 +2,7 @@
 import { reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
-import { type TemplateNotUsed, createWebsiteFromTemplate } from '../api'
+import { createWebsiteFromTemplate, explain } from '../api'
 import { prompt, showError } from '../components/AppDialogs.vue'
 import { dismiss, toast } from '../components/AppToasts.vue'
 import list from '../templates.json'
@@ -44,11 +44,7 @@ async function use(template: Template) {
     window.location.href = `/?id=${encodeURIComponent(websiteId)}&lang=${locale.value}`
   } catch (error) {
     dismiss(copyingToast)
-    const { unreachable, message } = error as TemplateNotUsed
-    await showError({
-      title: t('Silex could not copy the template'),
-      message: unreachable ? t('Check your internet connection, then try again.') : message,
-    })
+    await showError({ title: t('Silex could not copy the template'), ...explain(error) })
     copying.value = false
   }
 }

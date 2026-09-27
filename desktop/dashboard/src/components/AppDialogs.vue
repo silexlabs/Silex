@@ -17,7 +17,9 @@ interface ConfirmOptions {
 
 interface ErrorOptions {
   title: string
-  message: string
+  message?: string
+  /** What the system said, shown as it is */
+  detail?: string
 }
 
 type Request =
@@ -65,6 +67,7 @@ const name = ref('')
 const empty = ref(false)
 const titleId = useId()
 const messageId = useId()
+const detailId = useId()
 const problemId = useId()
 let focusedBefore: Element | null = null
 
@@ -84,6 +87,13 @@ watch(
   },
 )
 
+function described() {
+  const request = dialog.value
+  if (!request || request.kind === 'prompt') return undefined
+  const detail = request.kind === 'error' && request.detail ? detailId : ''
+  return [request.message ? messageId : '', detail].filter(Boolean).join(' ') || undefined
+}
+
 function submit() {
   const text = name.value.trim()
   empty.value = !text
@@ -99,7 +109,7 @@ function submit() {
     class="dialog"
     :class="{ 'dialog--alert': dialog.kind === 'error' }"
     :aria-labelledby="titleId"
-    :aria-describedby="dialog.kind === 'prompt' ? undefined : messageId"
+    :aria-describedby="described()"
     @close="answer(null)"
   >
     <h2
@@ -150,11 +160,17 @@ function submit() {
 
     <template v-else>
       <p
+        v-if="dialog.message"
         :id="messageId"
         class="dialog__message"
       >
         {{ dialog.message }}
       </p>
+      <pre
+        v-if="dialog.kind === 'error' && dialog.detail"
+        :id="detailId"
+        class="dialog__detail"
+      >{{ dialog.detail }}</pre>
       <div class="dialog__actions">
         <button
           v-if="dialog.kind === 'confirm'"
@@ -206,6 +222,24 @@ function submit() {
 .dialog__message {
   margin: 0;
   color: var(--silex-text-secondary);
+}
+
+.dialog__detail {
+  max-height: 240px;
+  margin: var(--silex-space-3) 0 0;
+  padding: var(--silex-space-2) var(--silex-space-3);
+  overflow: auto;
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-secondary);
+  font: 12px / 1.5 ui-monospace, 'Ubuntu Mono', Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.dialog__title + .dialog__detail {
+  margin-top: 0;
 }
 
 .dialog__actions {

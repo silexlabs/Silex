@@ -20,6 +20,8 @@ use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::held::held;
+use crate::locales::{button, tr};
+use silex_server::said::{self, Said};
 use silex_server::{Config, WebsiteId};
 use tauri_plugin_updater::UpdaterExt;
 
@@ -27,6 +29,7 @@ mod actions;
 mod frontend;
 mod held;
 mod integrations;
+mod locales;
 mod mcp;
 
 // ==================
@@ -54,9 +57,8 @@ impl Default for AppState {
 struct WebsitesFolder(PathBuf);
 
 impl WebsitesFolder {
-    fn website(&self, website_id: &WebsiteId) -> Result<PathBuf, String> {
-        actions::site_path(&self.0, website_id.as_str())
-            .ok_or_else(|| format!("Silex cannot find the folder of the website {website_id}"))
+    fn website(&self, website_id: &WebsiteId) -> Result<PathBuf, Said> {
+        actions::site_path(&self.0, website_id.as_str()).ok_or_else(|| Said::new(said::NO_WEBSITE))
     }
 }
 
@@ -125,8 +127,8 @@ async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Res
 async fn show_website_folder(
     folder: tauri::State<'_, WebsitesFolder>,
     website_id: WebsiteId,
-) -> Result<(), String> {
-    open::that_detached(folder.website(&website_id)?).map_err(|e| e.to_string())
+) -> Result<(), Said> {
+    open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
 }
 
 /// Unlike the DELETE route, which the hosted server shares, the user can get the website back
@@ -135,35 +137,16 @@ async fn trash_website(
     folder: tauri::State<'_, WebsitesFolder>,
     sendings: tauri::State<'_, actions::Sendings>,
     website_id: WebsiteId,
-) -> Result<(), String> {
+) -> Result<(), Said> {
     // git holds its files while it sends them, and the send would then fail on a website that is gone
     if sendings
         .borrow()
         .get(website_id.as_str())
         .is_some_and(actions::Sending::on_its_way)
     {
-        return Err(
-            "Silex is sending this website to its repository. Try again in a few seconds.".into(),
-        );
+        return Err(Said::new(said::SENDING));
     }
-    to_trash(folder.website(&website_id)?).map_err(|e| e.to_string())
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-struct TemplateNotUsed {
-    /// The network failed, so checking the connection is worth saying
-    unreachable: bool,
-    message: String,
-}
-
-impl TemplateNotUsed {
-    fn told(message: String) -> Self {
-        Self {
-            unreachable: false,
-            message,
-        }
-    }
+    to_trash(folder.website(&website_id)?).map_err(Said::raw)
 }
 
 /// Only the Silex group: any page served on localhost can call this command
@@ -192,15 +175,25 @@ async fn create_website_from_template(
     folder: tauri::State<'_, WebsitesFolder>,
     name: String,
     repo_url: String,
-) -> Result<WebsiteId, TemplateNotUsed> {
+) -> Result<WebsiteId, Said> {
     let archive = archive_of(&repo_url).ok_or_else(|| {
-        TemplateNotUsed::told(format!(
-            "Silex only takes templates from {TEMPLATES_GROUP}, not from {repo_url}"
-        ))
+        Said::new(said::TEMPLATE_ELSEWHERE)
+            .with("group", TEMPLATES_GROUP)
+            .with("url", &repo_url)
     })?;
-    let not_downloaded = |e: reqwest::Error| TemplateNotUsed {
-        unreachable: e.is_connect() || e.is_timeout(),
-        message: format!("Silex could not download the template from {archive}. {e}"),
+    let not_downloaded = |e: reqwest::Error| {
+        // reqwest says "error sending request", the reason is in its sources
+        let mut detail = e.to_string();
+        let mut source = std::error::Error::source(&e);
+        while let Some(cause) = source {
+            detail.push_str(&format!(": {cause}"));
+            source = cause.source();
+        }
+        if e.is_connect() || e.is_timeout() {
+            Said::new(said::CHECK_CONNECTION).because(detail)
+        } else {
+            Said::raw(detail)
+        }
     };
     let client = reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(10))
@@ -227,16 +220,15 @@ async fn create_website_from_template(
     while let Some(chunk) = response.chunk().await.map_err(not_downloaded)? {
         files.extend_from_slice(&chunk);
         if files.len() > MAX_ARCHIVE_BYTES {
-            return Err(TemplateNotUsed::told(format!(
-                "This template is larger than {} MB, which Silex does not copy.",
-                MAX_ARCHIVE_BYTES / 1024 / 1024
-            )));
+            return Err(
+                Said::new(said::ARCHIVE_TOO_LARGE).with("mb", MAX_ARCHIVE_BYTES / 1024 / 1024)
+            );
         }
     }
 
     silex_server::create_website_from_template(&folder.0, name, files, repo_url)
         .await
-        .map_err(|e| TemplateNotUsed::told(e.to_string()))
+        .map_err(Said::from)
 }
 
 /// Through Finder, the default, macOS asks the user to let Silex control Finder
@@ -417,7 +409,7 @@ fn says_what_is_left(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
     app.dialog()
-        .message("Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open it.")
+        .message(tr(locales::NOT_SENT_YET))
         .title("Silex")
         .kind(MessageDialogKind::Warning)
         .buttons(MessageDialogButtons::Ok)
@@ -429,12 +421,12 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
 
     let app_handle = app.clone();
     app.dialog()
-        .message("Do you want to save changes before quitting?")
+        .message(tr(locales::SAVE_BEFORE_QUITTING))
         .title("Silex")
         .kind(MessageDialogKind::Warning)
         .buttons(MessageDialogButtons::OkCancelCustom(
-            "Save & Quit".into(),
-            "Quit".into(),
+            button(locales::SAVE_AND_QUIT),
+            button(locales::QUIT),
         ))
         .show(move |result| {
             if result {
@@ -443,7 +435,7 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
                 let saved = app_handle.state::<actions::Saves>().subscribe();
                 let _ = app_handle.emit("menu-save", ());
                 if let Some(window) = app_handle.get_webview_window("main") {
-                    let _ = window.set_title("Saving your work \u{2014} Silex");
+                    let _ = window.set_title(&format!("{} \u{2014} Silex", tr(locales::SAVING)));
                 }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
@@ -478,15 +470,12 @@ fn check_for_updates(app: tauri::AppHandle) {
                 let app_clone = app.clone();
 
                 app.dialog()
-                    .message(format!(
-                        "Silex {} is available. Do you want to update now?",
-                        version
-                    ))
-                    .title("Update Available")
+                    .message(tr(locales::UPDATE_NOW).replace("{version}", &version))
+                    .title(tr(locales::UPDATE_AVAILABLE))
                     .kind(MessageDialogKind::Info)
                     .buttons(MessageDialogButtons::OkCancelCustom(
-                        "Update & Restart".into(),
-                        "Later".into(),
+                        button(locales::UPDATE_AND_RESTART),
+                        button(locales::LATER),
                     ))
                     .show(move |accepted| {
                         if accepted {
@@ -876,6 +865,11 @@ fn main() {
                     .decorations(false)
                     .center()
                     .always_on_top(true)
+                    .initialization_script(format!(
+                        "document.addEventListener('DOMContentLoaded', () => {{ document.documentElement.lang = {}; document.querySelector('p').textContent = {} }})",
+                        serde_json::json!(if locales::in_french() { "fr" } else { "en" }),
+                        serde_json::json!(tr(locales::STARTING)),
+                    ))
                     .build()?;
 
             let pending_evals = mcp::PendingEvals::default();
