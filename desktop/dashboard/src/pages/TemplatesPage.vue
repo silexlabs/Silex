@@ -235,8 +235,8 @@ async function use(template: Template) {
 }
 
 .template__use {
-  align-self: end;
-  width: 100%;
+  place-self: end start;
+  height: var(--silex-space-8);
   margin-top: var(--silex-space-2);
 }
 
