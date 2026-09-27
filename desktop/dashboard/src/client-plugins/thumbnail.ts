@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Editor, Page } from 'grapesjs'
+import type { Editor } from 'grapesjs'
 
 interface WebsiteMeta {
   name: string
@@ -34,17 +34,15 @@ declare global {
         websiteMetaRead(website: Website): Promise<WebsiteMeta>
         websiteMetaWrite(website: Website & { data: WebsiteMeta }): Promise<void>
       }
-      page: { getPageSlug(name?: string): string }
     }
   }
 }
 
-type Settings = { head?: string }
-
 const VIEWPORT_WIDTH = 1280
 const VIEWPORT_HEIGHT = 800
 const THUMBNAIL_WIDTH = 640
-const LOAD_TIMEOUT_MS = 10000
+// The outlines the editor draws on the canvas
+const EDITOR_CLASSES = ['gjs-dashed', 'gjs-selected', 'gjs-selected-parent', 'gjs-hovered']
 
 export default function thumbnailPlugin(editor: Editor) {
   editor.on('silex:publish:end', ({ success }: { success: boolean }) => {
@@ -58,7 +56,7 @@ async function updateThumbnail(editor: Editor) {
   const { websiteMetaRead, websiteMetaWrite } = window.silex.api
   const meta = await websiteMetaRead({ websiteId, connectorId: storageId })
   if (meta.imageUrl && !meta.imageUrl.startsWith('/assets/silex-thumbnail.')) return
-  const image = await capture(editor, homePage(editor))
+  const image = await capture(editor)
   const url = await upload(image, websiteId, storageId)
   if (meta.imageUrl === url) return
   await websiteMetaWrite({
@@ -68,54 +66,33 @@ async function updateThumbnail(editor: Editor) {
   })
 }
 
-function homePage(editor: Editor): Page {
-  const pages = editor.Pages.getAll()
-  return pages.find((page) => window.silex.page.getPageSlug(page.get('name')) === 'index') ?? pages[0]
-}
-
-async function capture(editor: Editor, page: Page): Promise<Blob> {
-  const body = page.getMainComponent()
-  const siteSettings: Settings = editor.getModel().get('settings') ?? {}
-  const pageSettings: Settings = page.get('settings') ?? {}
-  const iframe = document.createElement('iframe')
-  iframe.setAttribute('aria-hidden', 'true')
-  iframe.inert = true
-  iframe.style.cssText = `position: fixed; left: -${VIEWPORT_WIDTH * 2}px; top: 0; width: ${VIEWPORT_WIDTH}px; height: ${VIEWPORT_HEIGHT}px; border: 0;`
-  // Not a sandbox, which would also silence the load events html2canvas waits for: the
-  // analytics or custom code of the site must not run here
-  iframe.srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'none'; frame-src 'none'; object-src 'none'">
-${siteSettings.head ?? ''}
-${pageSettings.head ?? ''}
-<style>${editor.getCss({ component: body })}</style>
-</head>${editor.getHtml({ component: body })}</html>`
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('The home page took too long to load')), LOAD_TIMEOUT_MS)
-      iframe.onload = () => {
-        clearTimeout(timeout)
-        resolve()
-      }
-      document.body.appendChild(iframe)
-    })
-    const doc = iframe.contentDocument
-    if (!doc) throw new Error('The home page could not be rendered')
-    await doc.fonts.ready
-    const { default: html2canvas } = await import('html2canvas')
-    const canvas = await html2canvas(doc.documentElement, {
-      width: VIEWPORT_WIDTH,
-      height: VIEWPORT_HEIGHT,
-      windowWidth: VIEWPORT_WIDTH,
-      windowHeight: VIEWPORT_HEIGHT,
-      scale: THUMBNAIL_WIDTH / VIEWPORT_WIDTH,
-      logging: false,
-    })
-    const webp = await toBlob(canvas, 'image/webp')
-    // WebKit, hence the desktop app on Linux and macOS, cannot encode WebP and silently gives a PNG
-    return webp.type === 'image/webp' ? webp : toBlob(canvas, 'image/jpeg')
-  } finally {
-    iframe.remove()
-  }
+async function capture(editor: Editor): Promise<Blob> {
+  const doc = editor.Canvas.getDocument()
+  if (!doc) throw new Error('The canvas is not ready')
+  await doc.fonts.ready
+  const { default: html2canvas } = await import('html2canvas')
+  // html2canvas renders a copy of the page in a window of its own size, so the
+  // device and the scroll of the editor are not the ones captured
+  const canvas = await html2canvas(doc.documentElement, {
+    width: VIEWPORT_WIDTH,
+    height: VIEWPORT_HEIGHT,
+    windowWidth: VIEWPORT_WIDTH,
+    windowHeight: VIEWPORT_HEIGHT,
+    x: 0,
+    y: 0,
+    scrollX: 0,
+    scrollY: 0,
+    scale: THUMBNAIL_WIDTH / VIEWPORT_WIDTH,
+    useCORS: true,
+    logging: false,
+    onclone: (copy) => {
+      copy.querySelectorAll(EDITOR_CLASSES.map((name) => `.${name}`).join(','))
+        .forEach((element) => element.classList.remove(...EDITOR_CLASSES))
+    },
+  })
+  const webp = await toBlob(canvas, 'image/webp')
+  // WebKit, hence the desktop app on Linux and macOS, cannot encode WebP and silently gives a PNG
+  return webp.type === 'image/webp' ? webp : toBlob(canvas, 'image/jpeg')
 }
 
 function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
