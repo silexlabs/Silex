@@ -60,6 +60,12 @@ const kinds = computed<Record<ToastKind, string>>(() => ({
   error: t('Error:'),
 }))
 
+// Two live regions side by side: an alert nested in a polite region can be read twice
+const regions = computed(() => [
+  { role: 'status', items: toasts.value.filter((item) => item.kind !== 'error') },
+  { role: 'alert', items: toasts.value.filter((item) => item.kind === 'error') },
+])
+
 const icons: Record<ToastKind, string> = {
   success: 'M5 10.5l3.5 3.5L15 7',
   info: 'M10 9v5M10 6.5v.5',
@@ -68,52 +74,55 @@ const icons: Record<ToastKind, string> = {
 </script>
 
 <template>
-  <div
-    class="toasts"
-    aria-live="polite"
-  >
-    <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -- the pointer only holds the timer, the keyboard does the same through focus -->
+  <div class="toasts">
     <div
-      v-for="item in toasts"
-      :key="item.id"
-      class="toast"
-      :class="`toast--${item.kind}`"
-      :role="item.kind === 'error' ? 'alert' : undefined"
-      @mouseenter="hold(item.id)"
-      @mouseleave="release(item)"
-      @focusin="hold(item.id)"
-      @focusout="release(item)"
+      v-for="region in regions"
+      :key="region.role"
+      class="toasts__region"
+      :role="region.role"
     >
-      <svg
-        class="toast__icon"
-        viewBox="0 0 20 20"
-        aria-hidden="true"
+      <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -- the pointer only holds the timer, the keyboard does the same through focus -->
+      <div
+        v-for="item in region.items"
+        :key="item.id"
+        class="toast"
+        :class="`toast--${item.kind}`"
+        @mouseenter="hold(item.id)"
+        @mouseleave="release(item)"
+        @focusin="hold(item.id)"
+        @focusout="release(item)"
       >
-        <circle
-          cx="10"
-          cy="10"
-          r="8.5"
-        />
-        <path :d="icons[item.kind]" />
-      </svg>
-      <p class="toast__message">
-        <span class="visually-hidden">{{ kinds[item.kind] }}</span>
-        <span aria-hidden="true">{{ item.message }}</span>
-        <span class="visually-hidden">{{ $t('{message} | {message} ({count} times)', { message: item.message }, item.count) }}</span>
-      </p>
-      <span
-        v-if="item.count > 1"
-        class="toast__count"
-        aria-hidden="true"
-      >×{{ item.count }}</span>
-      <button
-        type="button"
-        class="toast__close"
-        :aria-label="$t('Dismiss this message')"
-        @click="dismiss(item.id)"
-      >
-        ×
-      </button>
+        <svg
+          class="toast__icon"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <circle
+            cx="10"
+            cy="10"
+            r="8.5"
+          />
+          <path :d="icons[item.kind]" />
+        </svg>
+        <p class="toast__message">
+          <span class="visually-hidden">{{ kinds[item.kind] }}</span>
+          <span aria-hidden="true">{{ item.message }}</span>
+          <span class="visually-hidden">{{ $t('{message} | {message} ({count} times)', { message: item.message }, item.count) }}</span>
+        </p>
+        <span
+          v-if="item.count > 1"
+          class="toast__count"
+          aria-hidden="true"
+        >×{{ item.count }}</span>
+        <button
+          type="button"
+          class="toast__close"
+          :aria-label="$t('Dismiss this message')"
+          @click="dismiss(item.id)"
+        >
+          ×
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -123,9 +132,6 @@ const icons: Record<ToastKind, string> = {
   position: fixed;
   right: var(--silex-space-6);
   bottom: var(--silex-space-6);
-  display: flex;
-  flex-direction: column;
-  gap: var(--silex-space-2);
   width: min(380px, calc(100vw - 2 * var(--silex-space-6)));
 }
 
@@ -133,6 +139,7 @@ const icons: Record<ToastKind, string> = {
   --toast-color: var(--silex-status-info);
 
   display: flex;
+  margin-top: var(--silex-space-2);
   align-items: center;
   gap: var(--silex-space-3);
   padding: var(--silex-space-2) var(--silex-space-2) var(--silex-space-2) var(--silex-space-4);

@@ -31,6 +31,7 @@ const copying = ref(false)
 const localized = (template: Template) => template[locale.value as Language] ?? template.en
 
 async function use(template: Template) {
+  if (copying.value) return
   const name = await prompt({
     title: t('New website from “{name}”', { name: template.name }),
     label: t('Name'),
@@ -154,7 +155,7 @@ async function use(template: Template) {
             v-if="!group.link"
             type="button"
             class="button template__use"
-            :disabled="copying"
+            :aria-disabled="copying"
             :aria-describedby="`${id}-${g}-${index}`"
             @click="use(template)"
           >
@@ -240,8 +241,14 @@ async function use(template: Template) {
   margin-top: var(--silex-space-2);
 }
 
-.card:hover .template__use:is(a, :enabled) {
+.card:hover .template__use:not([aria-disabled='true']) {
   background: var(--silex-accent-strong);
   color: var(--silex-text-inverse);
+}
+
+/* Not `disabled`, which would take the focus away from the keyboard */
+.template__use[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
 }
 </style>

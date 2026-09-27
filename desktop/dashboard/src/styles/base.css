@@ -187,8 +187,11 @@ select {
   outline: none;
 }
 
+/* The pointer and the arrows move the same highlight, the background alone does not reach 3:1 */
 .menu__item[data-highlighted] {
   background: var(--silex-button-hover-bg);
+  outline: 2px solid var(--silex-focus-outline);
+  outline-offset: -2px;
 }
 
 .menu__item--danger {

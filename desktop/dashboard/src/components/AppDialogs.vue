@@ -108,6 +108,7 @@ function submit() {
     ref="element"
     class="dialog"
     :class="{ 'dialog--alert': dialog.kind === 'error' }"
+    :role="dialog.kind === 'prompt' ? undefined : 'alertdialog'"
     :aria-labelledby="titleId"
     :aria-describedby="described()"
     @close="answer(null)"
@@ -170,6 +171,9 @@ function submit() {
         v-if="dialog.kind === 'error' && dialog.detail"
         :id="detailId"
         class="dialog__detail"
+        tabindex="0"
+        role="region"
+        :aria-label="$t('Error detail')"
       >{{ dialog.detail }}</pre>
       <div class="dialog__actions">
         <button

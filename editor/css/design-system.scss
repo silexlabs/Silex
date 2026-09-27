@@ -134,6 +134,15 @@ select,
   transition: all var(--silex-transition-fast) ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 // Modern focus states
 *:focus-visible {
   outline: 2px solid var(--silex-focus-outline);

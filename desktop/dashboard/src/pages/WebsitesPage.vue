@@ -25,6 +25,7 @@ const websites = ref<Website[] | null>(null)
 const failed = ref<ReturnType<typeof explain> | null>(null)
 const query = ref('')
 const order = ref<'edited' | 'name'>('edited')
+const status = ref('')
 
 const edited = (website: Website) => new Date(website.updatedAt ?? 0).getTime()
 
@@ -47,10 +48,13 @@ const shown = computed(() => {
 
 async function load() {
   failed.value = null
+  if (!websites.value) status.value = t('Loading your websites…')
   try {
     websites.value = await listWebsites()
+    status.value = ''
   } catch (error) {
     failed.value = explain(error)
+    status.value = ''
   }
 }
 
@@ -61,9 +65,11 @@ const refreshing = ref(false)
 async function refresh() {
   if (refreshing.value) return
   refreshing.value = true
+  status.value = ''
   // The list of this computer comes back in a few milliseconds, too fast to see that anything happened
   await Promise.all([load(), new Promise((resolve) => setTimeout(resolve, 600))])
   refreshing.value = false
+  if (!failed.value) status.value = t('List updated.')
 }
 
 async function create() {
@@ -209,6 +215,13 @@ async function showFolder(website: Website) {
     </div>
   </div>
 
+  <p
+    class="visually-hidden"
+    role="status"
+  >
+    {{ status }}
+  </p>
+
   <div
     v-if="failed"
     class="websites__problem"
@@ -236,9 +249,6 @@ async function showFolder(website: Website) {
     v-else-if="!websites"
     class="card-grid"
   >
-    <p class="visually-hidden">
-      {{ $t('Loading your websites…') }}
-    </p>
     <div
       v-for="index in 3"
       :key="index"
@@ -288,18 +298,20 @@ async function showFolder(website: Website) {
         :aria-label="$t('Search websites by name')"
         :placeholder="$t('Search by name')"
       >
-      <select
-        v-model="order"
-        class="select"
-        :aria-label="$t('Sort by')"
-      >
-        <option value="edited">
-          {{ $t('Last edited') }}
-        </option>
-        <option value="name">
-          {{ $t('Name') }}
-        </option>
-      </select>
+      <label class="websites__sort">
+        {{ $t('Sort by') }}
+        <select
+          v-model="order"
+          class="select"
+        >
+          <option value="edited">
+            {{ $t('Last edited') }}
+          </option>
+          <option value="name">
+            {{ $t('Name') }}
+          </option>
+        </select>
+      </label>
     </div>
     <p
       v-if="!shown.length"
@@ -452,6 +464,17 @@ async function showFolder(website: Website) {
   align-items: center;
   gap: var(--silex-space-4);
   margin-bottom: var(--silex-space-4);
+}
+
+.websites__sort {
+  display: flex;
+  align-items: center;
+  gap: var(--silex-space-2);
+  color: var(--silex-text-secondary);
+}
+
+.websites__sort .select {
+  color: var(--silex-text-primary);
 }
 
 .websites__search {

@@ -103,19 +103,21 @@ export class CurrentSelectorDisplay extends StylableElement {
     padding: 2px;
     margin: 0;
     border: none;
-    opacity: 0.35;
+    opacity: 0.5;
     display: inline-flex;
     align-items: center;
     transition: opacity 0.15s;
   }
   :host .selection aside button:hover,
-  :host .selection aside a:hover {
+  :host .selection aside a:hover,
+  :host .selection aside button:focus-visible,
+  :host .selection aside a:focus-visible {
     opacity: 1;
   }
   :host .selection aside .specificity {
-    font-size: 9px;
+    font-size: 11px;
     cursor: default;
-    opacity: 0.4;
+    opacity: 0.6;
   }
   :host .asm-display__help {
     text-decoration: none;

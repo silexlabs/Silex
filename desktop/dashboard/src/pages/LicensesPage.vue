@@ -46,6 +46,14 @@ const shown = computed(() => {
   >
     {{ $t('No package has “{query}” in its name.', { query }) }}
   </p>
+  <p
+    class="visually-hidden"
+    role="status"
+  >
+    <template v-if="query && !shown.length">
+      {{ $t('No package has “{query}” in its name.', { query }) }}
+    </template>
+  </p>
   <ul class="licenses__list">
     <li
       v-for="pkg in shown"
