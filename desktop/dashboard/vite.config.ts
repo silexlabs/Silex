@@ -9,10 +9,10 @@ const repository = (path: string) => fileURLToPath(new URL(`../../${path}`, impo
 // Built pages only: Vite in development injects styles and opens a websocket.
 // Images are https: a website's image can be any address the user gave.
 // ipc: and http://ipc.localhost are the Tauri bridge (Linux and macOS, Windows),
-// Sentry and GlitchTip the telemetry the desktop bridge loads once the user agreed.
+// GlitchTip the telemetry the desktop bridge sends to once the user agreed.
 const csp = [
   "default-src 'none'",
-  "script-src 'self' https://browser.sentry-cdn.com",
+  "script-src 'self'",
   "style-src 'self'",
   "font-src 'self'",
   "img-src 'self' data: https:",
@@ -50,10 +50,13 @@ export default defineConfig({
     assetsDir: '_dashboard',
     license: true,
     rollupOptions: {
-      // The client config of the editor, loaded from the same server as the dashboard
-      input: { index: 'index.html', silex: 'src/client-plugins/silex.ts' },
+      // The client config of the editor, loaded from the same server as the dashboard,
+      // and the telemetry the desktop bridge loads in both
+      input: { index: 'index.html', silex: 'src/client-plugins/silex.ts', telemetry: 'src/telemetry.ts' },
       output: {
-        entryFileNames: (entry) => (entry.name === 'silex' ? 'silex.js' : '_dashboard/[name]-[hash].js'),
+        // Asked for by these names
+        entryFileNames: (entry) =>
+          ({ silex: 'silex.js', telemetry: '_dashboard/telemetry.js' })[entry.name] ?? '_dashboard/[name]-[hash].js',
       },
       // The editor calls what silex.js exports
       preserveEntrySignatures: 'exports-only',
@@ -69,6 +72,7 @@ export default defineConfig({
       '/webfonts': silex,
       '/assets': silex,
       '/silex.js': silex,
+      '/_dashboard/telemetry.js': silex,
       '/eval-callback': silex,
     },
   },

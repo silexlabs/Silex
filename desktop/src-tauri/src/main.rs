@@ -105,20 +105,23 @@ fn set_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>, unsaved
     }
 }
 
-/// Any other path could be a program, which the system would run
+/// A file could be a program, which the system would run: only folders open
 #[tauri::command]
 async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Result<(), Said> {
-    let target = match url.strip_prefix("file://") {
-        Some(path) => {
+    let does_not_open = || Said::new(said::DOES_NOT_OPEN).with("url", &url);
+    let parsed = tauri::Url::parse(&url).map_err(|_| does_not_open())?;
+    let target = match parsed.scheme() {
+        "file" => {
+            let path = parsed.to_file_path().map_err(|()| does_not_open())?;
             let path = std::fs::canonicalize(path).map_err(Said::raw)?;
             let websites = std::fs::canonicalize(&folder.0).map_err(Said::raw)?;
-            if !path.starts_with(websites) {
+            if !path.is_dir() || !path.starts_with(websites) {
                 return Err(Said::new(said::NOT_IN_A_WEBSITE).with("path", path.display()));
             }
             path.into_os_string()
         }
-        None if url.starts_with("https://") || url.starts_with("http://") => url.into(),
-        None => return Err(Said::new(said::DOES_NOT_OPEN).with("url", url)),
+        "http" | "https" => parsed.as_str().into(),
+        _ => return Err(does_not_open()),
     };
     open::that_detached(target).map_err(Said::raw)
 }

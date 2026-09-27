@@ -47,9 +47,16 @@ export default function websiteInfoPlugin(editor: Editor) {
     const currentPage = editor.Pages?.getSelected()
     const config = getConfig()
     const imageUrl = websiteMeta?.imageUrl && storedToDisplayed(websiteMeta.imageUrl, config.websiteId, config.storageId)
-    container.innerHTML = `
-        ${imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${imageUrl});"></div>` : ''}
-        <div class="gjs-website-meta-name">${websiteMeta?.name ?? 'Unknown'} | ${currentPage?.get('name') ?? currentPage?.get('type')}</div>
-      `
+    const name = document.createElement('div')
+    name.className = 'gjs-website-meta-name'
+    name.textContent = `${websiteMeta?.name ?? 'Unknown'} | ${currentPage?.get('name') ?? currentPage?.get('type')}`
+    if (imageUrl) {
+      const image = document.createElement('div')
+      image.className = 'gjs-website-meta-image'
+      image.style.backgroundImage = `url("${CSS.escape(imageUrl)}")`
+      container.replaceChildren(image, name)
+    } else {
+      container.replaceChildren(name)
+    }
   }
 }

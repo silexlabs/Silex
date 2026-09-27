@@ -37,9 +37,9 @@ pub const TEMPLATE_FILE: &str = "This template has a file Silex does not copy: {
 pub const DAMAGED: &str = "Could not read “{file}”. This file of your website is damaged.";
 pub const COPY_PUBLISHED_OVER: &str =
     "The copy would have kept where the first website is published, and publishing it would have replaced the first one.";
-pub const NOT_IN_A_WEBSITE: &str = "Silex only opens the files of your websites, not {path}.";
+pub const NOT_IN_A_WEBSITE: &str = "Silex only opens the folders of your websites, not {path}.";
 pub const DOES_NOT_OPEN: &str =
-    "Silex only opens web addresses and the files of your websites, not {url}.";
+    "Silex only opens web addresses and the folders of your websites, not {url}.";
 
 /// Every sentence, for the test that finds each one in the locales
 pub const ALL: &[&str] = &[

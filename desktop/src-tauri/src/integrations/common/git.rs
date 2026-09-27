@@ -127,7 +127,15 @@ impl Git {
     /// the folder in a state its user has no terminal to get out of.
     fn push_branch(&self, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), String> {
         // Together, because two pushes mean two handshakes with the host
-        let mut sending = vec!["push", "--porcelain", "--set-upstream", remote, "HEAD"];
+        // The remote's name comes from .git/config: never read as an option
+        let mut sending = vec![
+            "push",
+            "--porcelain",
+            "--set-upstream",
+            "--end-of-options",
+            remote,
+            "HEAD",
+        ];
         sending.extend(tag);
         let ran = run_transfer_verbatim(&self.program, site, &sending)?;
         if !ran.failed {
@@ -153,7 +161,7 @@ impl Git {
         // Fetched then merged rather than pulled: only the fetch reaches a
         // network, and `pull` reads settings of the user that are not Silex's
         // business to inherit.
-        run_sync_pull(&self.program, site, &["fetch", &remote])?;
+        run_sync_pull(&self.program, site, &["fetch", "--end-of-options", &remote])?;
         // No upstream before the first publication sets one: nothing to take in
         let upstream = repository(site).is_ok_and(|repo| repo.revparse_single("@{u}").is_ok());
         if !upstream {

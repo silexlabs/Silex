@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.2.8",
+    "@sentry/browser": "^10.75.3",
     "@tauri-apps/api": "~2.11.0",
     "html2canvas": "^1.4.1",
     "reka-ui": "^2.10.5",

@@ -315,6 +315,12 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
         }
         left -= written;
     }
+    // HFS+ reads names that differ by an ignored character, as `.g\u{200c}it`, as `.git`
+    if site.join(".git").try_exists()? {
+        return Err(Error::Said(
+            Said::new(said::TEMPLATE_FILE).with("file", ".git"),
+        ));
+    }
     Ok(())
 }
 
@@ -1010,6 +1016,10 @@ mod tests {
             !written.permissions().readonly(),
             "the rights in the archive are not kept"
         );
+
+        // What HFS+ makes of `.g\u{200c}it`
+        std::fs::create_dir(site.join(".git")).unwrap();
+        assert!(unpack_template(&archive(b"root/index.html"), &site).is_err());
         let _ = std::fs::remove_dir_all(&data_path);
     }
 

@@ -31,8 +31,8 @@
   invoke('get_telemetry_context').then((ctx) => {
     if (!ctx?.dsn) return;
     const script = document.createElement('script');
-    script.src = 'https://browser.sentry-cdn.com/10.74.0/bundle.tracing.min.js';
-    script.crossOrigin = 'anonymous';
+    script.type = 'module';
+    script.src = '/_dashboard/telemetry.js';
     script.onload = () => {
       if (!window.Sentry) return;
       window.Sentry.init({
