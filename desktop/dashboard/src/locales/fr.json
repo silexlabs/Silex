@@ -57,6 +57,8 @@
   "Pay what you want": "Prix libre",
   "Publish your websites and back them up to your own accounts. Integrations are programs installed on this computer.": "Publiez vos sites et sauvegardez-les sur vos propres comptes. Les intégrations sont des programmes installés sur cet ordinateur.",
   "Quit": "Quitter",
+  "Refresh": "Actualiser",
+  "Refresh ({keys})": "Actualiser ({keys})",
   "Rename": "Renommer",
   "Rename “{name}”": "Renommer « {name} »",
   "Rename…": "Renommer…",

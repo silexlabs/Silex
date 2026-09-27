@@ -47,7 +47,13 @@ watch(() => props.website.imageUrl, () => {
 const thumbnail = computed(() => (broken.value ? '' : thumbnailOf(props.website)))
 
 const initials = computed(() =>
-  props.website.name.split(/\s+/).filter(Boolean).slice(0, 2).map((word) => [...word][0]).join('').toUpperCase(),
+  props.website.name
+    .split(/\s+/)
+    .map((word) => word.match(/[\p{L}\p{N}]/u)?.[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase(),
 )
 
 // Keyed on the id so that renaming a website keeps its color

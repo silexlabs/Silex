@@ -30,10 +30,15 @@ const edited = (website: Website) => new Date(website.updatedAt ?? 0).getTime()
 // The search field only shows from 8 websites: below that, what it holds would filter out of sight
 const searchable = computed(() => (websites.value?.length ?? 0) >= 8)
 
+// « ete » finds « Été »: people type names without their accents
+function folded(text: string) {
+  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase(locale.value)
+}
+
 const shown = computed(() => {
-  const words = searchable.value ? query.value.trim().toLocaleLowerCase(locale.value) : ''
+  const words = searchable.value ? folded(query.value.trim()) : ''
   return (websites.value ?? [])
-    .filter((website) => website.name.toLocaleLowerCase(locale.value).includes(words))
+    .filter((website) => folded(website.name).includes(words))
     .sort((a, b) =>
       order.value === 'name' ? a.name.localeCompare(b.name, locale.value) : edited(b) - edited(a),
     )
@@ -49,6 +54,16 @@ async function load() {
 }
 
 onMounted(load)
+
+const refreshing = ref(false)
+
+async function refresh() {
+  if (refreshing.value) return
+  refreshing.value = true
+  // The list of this computer comes back in a few milliseconds, too fast to see that anything happened
+  await Promise.all([load(), new Promise((resolve) => setTimeout(resolve, 600))])
+  refreshing.value = false
+}
 
 function edit(website: { websiteId: string }) {
   window.location.href = `/?id=${encodeURIComponent(website.websiteId)}&lang=${locale.value}`
@@ -135,6 +150,8 @@ const search = useTemplateRef<HTMLInputElement>('search')
 useShortcuts({
   'Mod+N': create,
   'Mod+F': () => search.value?.focus(),
+  F5: refresh,
+  'Mod+R': refresh,
 })
 
 async function showFolder(website: Website) {
@@ -159,24 +176,42 @@ async function showFolder(website: Website) {
         {{ $t('Choose a website to edit.') }}
       </p>
     </div>
-    <AppTooltip
-      v-if="websites?.length !== 0"
-      :text="keyLabel('Mod+N')"
-    >
-      <button
-        type="button"
-        class="button button--primary"
-        :aria-keyshortcuts="ariaKeys('Mod+N')"
-        @click="create"
+    <div class="websites__actions">
+      <AppTooltip :text="$t('Refresh ({keys})', { keys: keyLabel('F5') })">
+        <button
+          type="button"
+          class="websites__refresh"
+          :aria-label="$t('Refresh')"
+          :aria-keyshortcuts="`F5 ${ariaKeys('Mod+R')}`"
+          :aria-disabled="refreshing"
+          @click="refresh"
+        >
+          <svg
+            class="websites__icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          ><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5" /></svg>
+        </button>
+      </AppTooltip>
+      <AppTooltip
+        v-if="websites?.length !== 0"
+        :text="keyLabel('Mod+N')"
       >
-        <svg
-          class="websites__icon"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        ><path d="M12 5v14M5 12h14" /></svg>
-        {{ $t('New website…') }}
-      </button>
-    </AppTooltip>
+        <button
+          type="button"
+          class="button button--primary"
+          :aria-keyshortcuts="ariaKeys('Mod+N')"
+          @click="create"
+        >
+          <svg
+            class="websites__icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          ><path d="M12 5v14M5 12h14" /></svg>
+          {{ $t('New website…') }}
+        </button>
+      </AppTooltip>
+    </div>
   </div>
 
   <div
@@ -309,6 +344,46 @@ async function showFolder(website: Website) {
   stroke: currentcolor;
   stroke-width: 2;
   stroke-linecap: round;
+}
+
+.websites__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--silex-space-2);
+}
+
+.websites__refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--silex-radius-sm);
+  background: none;
+  color: var(--silex-text-secondary);
+  cursor: pointer;
+}
+
+.websites__refresh:hover {
+  background: var(--silex-hover-bg);
+  color: var(--silex-text-primary);
+}
+
+/* Not `disabled`, which would take the focus away from the keyboard */
+.websites__refresh[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.websites__refresh[aria-disabled='true'] .websites__icon {
+  animation: websites-turn 0.6s linear infinite;
+}
+
+@keyframes websites-turn {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .websites__skeleton {

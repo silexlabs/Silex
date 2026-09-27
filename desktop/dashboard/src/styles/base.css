@@ -102,7 +102,7 @@ select {
 
 .page__lead {
   /* The width of two cards of .card-grid, so the text ends on a column edge */
-  max-width: calc(2 * 280px + var(--silex-space-4));
+  max-width: calc(2 * 280px + var(--silex-space-6));
   text-wrap: pretty;
   margin: var(--silex-space-1) 0 0;
   color: var(--silex-text-secondary);
@@ -124,7 +124,7 @@ select {
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--silex-space-6) var(--silex-space-4);
+  gap: var(--silex-space-8) var(--silex-space-6);
 }
 
 .card {
