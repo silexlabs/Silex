@@ -17,18 +17,10 @@
 
 use std::path::{Path, PathBuf};
 
-use git2::{ConfigLevel, Repository, RepositoryOpenFlags};
+use git2::ConfigLevel;
+use silex_server::{repository, TEMPLATE_REMOTE};
 
 use super::run::{failure, run, run_sync_pull, run_transfer_verbatim, Ran};
-
-/// The repository in the website folder, read without starting a git
-///
-/// Only that one: searching upwards would answer for the repository the folder
-/// sits in.
-fn repository(site: &Path) -> Option<Repository> {
-    let nowhere = std::iter::empty::<&std::ffi::OsStr>();
-    Repository::open_ext(site, RepositoryOpenFlags::NO_SEARCH, nowhere).ok()
-}
 
 /// Every remote of the repository, with the URL it was given
 ///
@@ -36,6 +28,7 @@ fn repository(site: &Path) -> Option<Repository> {
 /// applies insteadOf rewrites: the host is told from what the user wrote.
 fn remotes(site: &Path) -> Vec<(String, String)> {
     let Some(config) = repository(site)
+        .ok()
         .and_then(|repo| repo.config().ok())
         .and_then(|config| config.open_level(ConfigLevel::Local).ok())
     else {
@@ -77,7 +70,7 @@ fn published_to(site: &Path) -> Option<(String, String)> {
     remotes
         .iter()
         .find(|(name, _)| name == "origin")
-        .or_else(|| remotes.iter().find(|(name, _)| name != "upstream"))
+        .or_else(|| remotes.iter().find(|(name, _)| name != TEMPLATE_REMOTE))
         .cloned()
 }
 
@@ -162,7 +155,7 @@ impl Git {
         // business to inherit.
         run_sync_pull(&self.program, site, &["fetch", &remote])?;
         // No upstream before the first publication sets one: nothing to take in
-        let upstream = repository(site).is_some_and(|repo| repo.revparse_single("@{u}").is_ok());
+        let upstream = repository(site).is_ok_and(|repo| repo.revparse_single("@{u}").is_ok());
         if !upstream {
             return Ok(());
         }

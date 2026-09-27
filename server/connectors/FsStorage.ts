@@ -165,8 +165,8 @@ export class FsStorage implements StorageConnector<FsSession> {
       name: meta.name,
       imageUrl: meta.imageUrl,
       connectorUserSettings: meta.connectorUserSettings,
-      createdAt: fileStat.birthtime,
-      updatedAt: fileStat.mtime,
+      createdAt: fileStat.birthtime.toISOString(),
+      updatedAt: fileStat.mtime.toISOString(),
     }
   }
 
@@ -252,7 +252,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     return fs.rm(path, { recursive: true, force: true })
   }
 
-  async duplicateWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
+  async duplicateWebsite(session: FsSession, websiteId: WebsiteId): Promise<WebsiteId> {
     const newWebsiteId = uuid()
     const from = join(this.options.path, websiteId)
     const to = join(this.options.path, newWebsiteId)
@@ -262,6 +262,7 @@ export class FsStorage implements StorageConnector<FsSession> {
       ...meta,
       name: `${meta.name} copy`,
     })
+    return newWebsiteId
   }
 
   async listWebsites(session: any): Promise<WebsiteMeta[]> {

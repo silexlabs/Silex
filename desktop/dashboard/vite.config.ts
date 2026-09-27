@@ -4,6 +4,7 @@ import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import { fileURLToPath } from 'node:url'
 
 const silex = 'http://localhost:6805'
+const repository = (path: string) => fileURLToPath(new URL(`../../${path}`, import.meta.url))
 
 // Built pages only: Vite in development injects styles and opens a websocket.
 // Images are https: a website's image can be any address the user gave.
@@ -38,6 +39,13 @@ export default defineConfig({
       dropMessageCompiler: true,
     }),
   ],
+  resolve: {
+    alias: {
+      '~/common': repository('common'),
+      '~/editor': repository('editor'),
+      '~/public': repository('public'),
+    },
+  },
   build: {
     assetsDir: '_dashboard',
     license: true,

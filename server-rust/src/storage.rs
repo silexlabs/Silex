@@ -230,7 +230,7 @@ pub async fn create_website_from_template(
         let into = site.clone();
         tokio::task::spawn_blocking(move || unpack_template(&archive, &into))
             .await
-            .map_err(|e| Error::Said(Said::raw(e)))??;
+            .map_err(std::io::Error::other)??;
 
         if !fs::metadata(site.join(WEBSITE_DATA_FILE))
             .await
@@ -247,8 +247,7 @@ pub async fn create_website_from_template(
             image_url: None,
         };
         set_website_meta(data_path, &website_id, &meta).await?;
-        history::start_from_template(&site, &template_repo)
-            .map_err(|why| Error::Said(Said::raw(why)))
+        history::start_from_template(&site, &template_repo).map_err(Error::Told)
     }
     .await;
 
@@ -266,9 +265,8 @@ const MAX_TEMPLATE_ENTRIES: usize = 10_000;
 /// Only the content of the files is written: rights noted in the archive
 /// could leave the website read only.
 fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
-    let unreadable = |e: std::io::Error| Error::Said(Said::raw(e));
     let unwritable =
-        |e: std::io::Error| Error::Said(Said::raw(format!("{}: {}", site.display(), e)));
+        |e: std::io::Error| std::io::Error::new(e.kind(), format!("{}: {}", site.display(), e));
     let too_large = || {
         Error::Said(
             Said::new(said::TEMPLATE_TOO_LARGE)
@@ -279,11 +277,11 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
 
     let mut left = MAX_TEMPLATE_BYTES;
     let mut archive = tar::Archive::new(flate2::read::GzDecoder::new(archive));
-    for (index, entry) in archive.entries().map_err(unreadable)?.enumerate() {
+    for (index, entry) in archive.entries()?.enumerate() {
         if index >= MAX_TEMPLATE_ENTRIES {
             return Err(too_large());
         }
-        let mut entry = entry.map_err(unreadable)?;
+        let mut entry = entry?;
         let kind = entry.header().entry_type();
         // A link could lead the next files out of the website folder
         if kind.is_symlink() || kind.is_hard_link() {
@@ -292,12 +290,7 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
         if !kind.is_file() {
             continue;
         }
-        let path: PathBuf = entry
-            .path()
-            .map_err(unreadable)?
-            .components()
-            .skip(1)
-            .collect();
+        let path: PathBuf = entry.path()?.components().skip(1).collect();
         if path.as_os_str().is_empty() {
             continue;
         }
@@ -316,8 +309,7 @@ fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
         }
         // `create_new` also stops two names that only differ by case on Windows and macOS
         let mut file = std::fs::File::create_new(&target).map_err(unwritable)?;
-        let written = std::io::copy(&mut std::io::Read::take(&mut entry, left + 1), &mut file)
-            .map_err(unreadable)?;
+        let written = std::io::copy(&mut std::io::Read::take(&mut entry, left + 1), &mut file)?;
         if written > left {
             return Err(too_large());
         }

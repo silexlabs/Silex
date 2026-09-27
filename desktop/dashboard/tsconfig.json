@@ -10,7 +10,18 @@
     "types": [
       "vite/client"
     ],
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "~/common/*": [
+        "../../common/*"
+      ],
+      "~/editor/*": [
+        "../../editor/*"
+      ],
+      "~/public/*": [
+        "../../public/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",

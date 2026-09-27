@@ -1,13 +1,22 @@
 import { invoke } from '@tauri-apps/api/core'
+import {
+  API_PATH,
+  API_WEBSITE_CREATE,
+  API_WEBSITE_DUPLICATE,
+  API_WEBSITE_LIST,
+  API_WEBSITE_META_WRITE,
+  API_WEBSITE_PATH,
+} from '~/common/constants'
+import type {
+  ApiWebsiteCreateResponse,
+  ApiWebsiteDuplicateResponse,
+  WebsiteId,
+  WebsiteMeta,
+} from '~/common/types'
+import { storedToDisplayed } from '~/editor/assetUrl'
 import { i18n } from './i18n'
 
-export interface Website {
-  websiteId: string
-  name: string
-  imageUrl?: string
-  updatedAt?: string
-  repoUrl?: string
-}
+export type Website = Pick<WebsiteMeta, 'websiteId' | 'name' | 'imageUrl' | 'updatedAt' | 'repoUrl'>
 
 /** A sentence of the locales, and what the system said, which is not translated */
 export class Said extends Error {
@@ -20,10 +29,16 @@ export class Said extends Error {
   }
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(
+  method: string,
+  route: string,
+  query: Record<string, string> = {},
+  body?: unknown,
+): Promise<T> {
+  const search = Object.keys(query).length ? `?${new URLSearchParams(query)}` : ''
   let response: Response
   try {
-    response = await fetch(`/api/website${path}`, {
+    response = await fetch(`${API_PATH}${API_WEBSITE_PATH}${route}${search}`, {
       method,
       headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -58,16 +73,17 @@ export function explain(error: unknown): { message?: string; detail?: string } {
   return { message: detail && i18n.global.t('Try again. If the problem goes on, report it with this detail.'), detail }
 }
 
-export const listWebsites = () => request<Website[]>('GET', '')
+export const listWebsites = () => request<Website[]>('GET', API_WEBSITE_LIST)
 
 export const createWebsite = (name: string) =>
-  request<{ websiteId: string }>('PUT', '', { name }).then(({ websiteId }) => websiteId)
+  request<ApiWebsiteCreateResponse>('PUT', API_WEBSITE_CREATE, {}, { name }).then(({ websiteId }) => websiteId)
 
 export const renameWebsite = (website: Website, name: string) =>
-  request('POST', `/meta?websiteId=${encodeURIComponent(website.websiteId)}`, { name, imageUrl: website.imageUrl })
+  request('POST', API_WEBSITE_META_WRITE, { websiteId: website.websiteId }, { name, imageUrl: website.imageUrl })
 
-export const duplicateWebsite = (websiteId: string, name: string) =>
-  request('POST', `/duplicate?websiteId=${encodeURIComponent(websiteId)}&name=${encodeURIComponent(name)}`)
+export const duplicateWebsite = (websiteId: WebsiteId, name: string) =>
+  request<ApiWebsiteDuplicateResponse>('POST', API_WEBSITE_DUPLICATE, { websiteId, name })
+    .then((copy) => copy.websiteId)
 
 export const createWebsiteFromTemplate = (name: string, repoUrl: string) =>
   call<string>('create_website_from_template', { name, repoUrl })
@@ -77,10 +93,13 @@ export const trashWebsite = (websiteId: string) => call<void>('trash_website', {
 export const showWebsiteFolder = (websiteId: string) => call<void>('show_website_folder', { websiteId })
 
 // The editor keeps the path of the file in the website, as it does for any image of the website
-export function thumbnailOf(website: Website) {
-  const { imageUrl, websiteId } = website
-  if (!imageUrl?.startsWith('/assets/')) return imageUrl ?? ''
-  return `/api/website${imageUrl}?websiteId=${encodeURIComponent(websiteId)}`
+export function thumbnailOf({ imageUrl, websiteId }: Website) {
+  return imageUrl ? storedToDisplayed(imageUrl, websiteId, '') : ''
+}
+
+export function openEditor(websiteId: WebsiteId) {
+  const query = new URLSearchParams({ id: websiteId, lang: i18n.global.locale.value })
+  window.location.href = `/?${query}`
 }
 
 // A website no integration looks after has a file:// link, which says nothing to the user

@@ -63,7 +63,7 @@ strip-ansi-escapes = "0.2"
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
 
 # Reading the remotes of a website at every save without starting a git
-git2 = { version = "0.21.0", default-features = false }
+git2.workspace = true
 
 # The dashboard, compiled into the binary. The one the hosted Silex serves is
 # not this one, so the server crate has no reason to carry it

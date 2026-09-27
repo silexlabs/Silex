@@ -22,6 +22,7 @@
  */
 
 @use "variables" as silex-vars;
+@use "tokens";
 
 // Without it WebKitGTK paints native selects light, ignoring their dark background.
 // Not on :root: iframes whose document has another color-scheme get an opaque white backdrop
@@ -74,57 +75,7 @@ select {
   --gjs-color-highlight: #8873FE;
   --gjs-color-warn: #FFA94D;
 
-  // ============================================================
-  // SILEX SEMANTIC TOKENS - Modern Theme
-  // ============================================================
-
-  // Backgrounds
-  --silex-bg-main: #1A1A1A;
-  --silex-bg-darker: #111111;
-  --silex-bg-lighter: #1D1D1D;
-  --silex-bg-surface: #1A1A1A;
-
-  // Text colors
-  --silex-text-primary: #E5E5E5;
-  --silex-text-secondary: #A8A8A8;
-  --silex-text-inverse: #FFFFFF;
-
-  // Borders (subtle, modern)
-  --silex-border-color: rgba(255, 255, 255, 0.08);
-  --silex-border-color-strong: #262626;
   --gjs-light-border: rgba(255, 255, 255, 0.08);
-
-  // Shadows (très douces)
-  --silex-shadow-color: rgba(0, 0, 0, 0.4);
-  --silex-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --silex-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --silex-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
-
-  // Interactive states (micro-interactions)
-  --silex-hover-bg: #222222;
-  --silex-active-bg: #252525;
-  --silex-focus-outline: #8873FE;
-
-  // Accents
-  --silex-accent-primary: #8873FE;
-  --silex-accent-secondary: #7461E3;
-
-  // Status colors
-  --silex-status-info: #6B8AFF;
-  --silex-status-success: #5FD68F;
-  --silex-status-warning: #FFA94D;
-  --silex-status-error: #FF6B6B;
-
-  // UI Components
-  --silex-button-bg: #252525;
-  --silex-button-hover-bg: #2D2D2D;
-  --silex-input-bg: #141414;
-  --silex-badge-bg: #2D2D2D;
-  --silex-badge-text: #E5E5E5;
-
-  // Transitions (150-200ms pour micro-interactions)
-  --silex-transition-fast: 0.15s;
-  --silex-transition-medium: 0.2s;
   --gjs-animation-duration: 0.18s;
 
   // ============================================================

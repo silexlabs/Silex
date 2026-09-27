@@ -27,7 +27,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 # Versioning websites, without a git program on the machine
-git2 = { version = "0.21.0", default-features = false }
+git2.workspace = true
 
 # Websites made from a template come as the .tar.gz archive of its repository
 flate2 = "1"

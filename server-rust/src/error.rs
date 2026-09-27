@@ -50,7 +50,7 @@ pub enum Error {
     InvalidWebsite(String),
 
     /// A file of a website is not the JSON Silex wrote (HTTP 500)
-    #[error("Invalid website data: Could not read '{file}'. This file of your website is damaged. {why}")]
+    #[error("Invalid website data: {}", Said::new(said::DAMAGED).with("file", .file).because(.why))]
     Damaged { file: String, why: String },
 
     /// Filesystem operation failed (HTTP 500)

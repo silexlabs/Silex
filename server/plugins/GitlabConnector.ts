@@ -910,7 +910,7 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   // Fork the repo (user's own project)
-  async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void> {
+  async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteId> {
     const meta = await this.getWebsiteMeta(session, websiteId)
 
     const forkName = `${meta.name} Copy ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
@@ -929,7 +929,7 @@ export default class GitlabConnector implements StorageConnector {
       },
     })
 
-    return forkedProject.id
+    return forkedProject.id.toString()
   }
 
   /**

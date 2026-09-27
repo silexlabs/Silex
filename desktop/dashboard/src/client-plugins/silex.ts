@@ -8,9 +8,9 @@
  */
 
 // The client config of the desktop app, which the editor loads from /silex.js
-import type { EditorConfig } from 'grapesjs'
-import thumbnail from './thumbnail'
+import type { Editor } from 'grapesjs'
+import thumbnail, { type EditorClientConfig } from './thumbnail'
 
-export default async function (config: { grapesJsConfig: EditorConfig }) {
-  config.grapesJsConfig.plugins?.push(thumbnail)
+export default async function (config: EditorClientConfig) {
+  config.grapesJsConfig.plugins?.push((editor: Editor) => thumbnail(editor, config))
 }

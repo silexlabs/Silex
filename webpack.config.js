@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+const fs = require('fs')
 const path = require('path');
 const webpack = require("webpack")
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -122,6 +123,8 @@ module.exports = {
       template: './editor/index.ejs',
       filename: 'index.html',
       inject: false,
+      // Inlined: the page is painted before the stylesheet arrives
+      templateParameters: { tokens: fs.readFileSync(path.resolve(__dirname, 'editor/css/tokens.css'), 'utf8') },
     }),
     // The dashboard of the hosted Silex (silex-dashboard submodule) loads the editor at /js/main.js:
     // also emit the bundle under its stable name

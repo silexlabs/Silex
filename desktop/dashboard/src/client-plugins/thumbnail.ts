@@ -15,27 +15,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Editor } from 'grapesjs'
+import type { Editor, EditorConfig } from 'grapesjs'
+import {
+  API_PATH,
+  API_WEBSITE_ASSETS_WRITE,
+  API_WEBSITE_META_READ,
+  API_WEBSITE_META_WRITE,
+  API_WEBSITE_PATH,
+} from '~/common/constants'
+import type {
+  ApiWebsiteMetaReadResponse,
+  ApiWebsiteMetaWriteBody,
+  ConnectorId,
+  WebsiteId,
+} from '~/common/types'
+import { ClientEvent } from '~/editor/events'
 
-interface WebsiteMeta {
-  name: string
-  imageUrl?: string
-  connectorUserSettings?: unknown
-}
-
-type Website = { websiteId: string; connectorId?: string }
-
-// What the editor exposes on `window.silex`, as far as this plugin uses it
-declare global {
-  interface Window {
-    silex: {
-      api: {
-        getServerUrl(): string
-        websiteMetaRead(website: Website): Promise<WebsiteMeta>
-        websiteMetaWrite(website: Website & { data: WebsiteMeta }): Promise<void>
-      }
-    }
-  }
+/**
+ * What this plugin reads of the editor's `ClientConfig`
+ *
+ * Importing `ClientConfig` would type-check the whole editor, which does not
+ * pass the dashboard's strict settings.
+ */
+export interface EditorClientConfig {
+  grapesJsConfig: EditorConfig
+  websiteId: WebsiteId
+  storageId?: ConnectorId | null
+  rootUrl: string
 }
 
 const VIEWPORT_WIDTH = 1280
@@ -44,26 +50,39 @@ const THUMBNAIL_WIDTH = 640
 // The outlines the editor draws on the canvas
 const EDITOR_CLASSES = ['gjs-dashed', 'gjs-selected', 'gjs-selected-parent', 'gjs-hovered']
 
-export default function thumbnailPlugin(editor: Editor) {
-  editor.on('silex:publish:end', ({ success }: { success: boolean }) => {
+export default function thumbnailPlugin(editor: Editor, config: EditorClientConfig) {
+  editor.on(ClientEvent.PUBLISH_END, ({ success }: { success: boolean }) => {
     if (!success) return
-    updateThumbnail(editor).catch((e) => console.warn('Could not update the website thumbnail', e))
+    updateThumbnail(editor, config).catch((e) => console.warn('Could not update the website thumbnail', e))
   })
 }
 
-async function updateThumbnail(editor: Editor) {
-  const { websiteId, storageId } = editor.getModel().get('config')
-  const { websiteMetaRead, websiteMetaWrite } = window.silex.api
-  const meta = await websiteMetaRead({ websiteId, connectorId: storageId })
+async function updateThumbnail(editor: Editor, config: EditorClientConfig) {
+  const meta = await request<ApiWebsiteMetaReadResponse>(config, API_WEBSITE_META_READ, { method: 'GET' })
   if (meta.imageUrl && !meta.imageUrl.startsWith('/assets/silex-thumbnail.')) return
   const image = await capture(editor)
-  const url = await upload(image, websiteId, storageId)
+  const url = await upload(image, config)
   if (meta.imageUrl === url) return
-  await websiteMetaWrite({
-    websiteId,
-    connectorId: storageId,
-    data: { name: meta.name, imageUrl: url, connectorUserSettings: meta.connectorUserSettings },
+  const data: ApiWebsiteMetaWriteBody = {
+    name: meta.name,
+    imageUrl: url,
+    connectorUserSettings: meta.connectorUserSettings,
+  }
+  await request(config, API_WEBSITE_META_WRITE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   })
+}
+
+async function request<T>({ rootUrl, websiteId, storageId }: EditorClientConfig, route: string, init: RequestInit): Promise<T> {
+  const query = new URLSearchParams({ websiteId, ...(storageId ? { connectorId: storageId } : {}) })
+  const response = await fetch(`${rootUrl}${API_PATH}${API_WEBSITE_PATH}${route}?${query}`, {
+    ...init,
+    credentials: 'include',
+  })
+  if (!response.ok) throw new Error(`${route}: ${response.status} ${response.statusText}`)
+  return response.json()
 }
 
 async function capture(editor: Editor): Promise<Blob> {
@@ -103,17 +122,11 @@ function toBlob(canvas: HTMLCanvasElement, type: string): Promise<Blob> {
   ))
 }
 
-async function upload(image: Blob, websiteId: string, storageId?: string): Promise<string> {
+async function upload(image: Blob, config: EditorClientConfig): Promise<string> {
   const name = `silex-thumbnail.${image.type === 'image/webp' ? 'webp' : 'jpg'}`
   const form = new FormData()
   form.append('files[]', image, name)
-  const query = new URLSearchParams({ websiteId, ...(storageId ? { connectorId: storageId } : {}) })
-  const response = await fetch(`${window.silex.api.getServerUrl()}/api/website/assets?${query}`, {
-    method: 'POST',
-    body: form,
-    credentials: 'include',
-  })
-  if (!response.ok) throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
+  await request(config, API_WEBSITE_ASSETS_WRITE, { method: 'POST', body: form })
   // The server keeps the name it is given, in the assets folder of the website
   return `/assets/${name}`
 }

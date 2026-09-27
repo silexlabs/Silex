@@ -107,20 +107,20 @@ fn set_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>, unsaved
 
 /// Any other path could be a program, which the system would run
 #[tauri::command]
-async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Result<(), String> {
+async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Result<(), Said> {
     let target = match url.strip_prefix("file://") {
         Some(path) => {
-            let path = std::fs::canonicalize(path).map_err(|e| e.to_string())?;
-            let websites = std::fs::canonicalize(&folder.0).map_err(|e| e.to_string())?;
+            let path = std::fs::canonicalize(path).map_err(Said::raw)?;
+            let websites = std::fs::canonicalize(&folder.0).map_err(Said::raw)?;
             if !path.starts_with(websites) {
-                return Err(format!("{} is not in a website", path.display()));
+                return Err(Said::new(said::NOT_IN_A_WEBSITE).with("path", path.display()));
             }
             path.into_os_string()
         }
         None if url.starts_with("https://") || url.starts_with("http://") => url.into(),
-        None => return Err(format!("Silex does not open {url}")),
+        None => return Err(Said::new(said::DOES_NOT_OPEN).with("url", url)),
     };
-    open::that_detached(target).map_err(|e| e.to_string())
+    open::that_detached(target).map_err(Said::raw)
 }
 
 #[tauri::command]
@@ -304,9 +304,12 @@ fn package_kind() -> &'static str {
     }
 }
 
+/// The version the repository carries, until `scripts/set-version.sh` stamps a release
+const UNRELEASED_VERSION: &str = "0.0.0-dev";
+
 /// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
 fn telemetry_environment(version: &str) -> &'static str {
-    if cfg!(debug_assertions) || version == "0.0.0-dev" {
+    if cfg!(debug_assertions) || version == UNRELEASED_VERSION {
         "development"
     } else if version.contains("canary") {
         "canary"
@@ -470,7 +473,10 @@ fn check_for_updates(app: tauri::AppHandle) {
                 let app_clone = app.clone();
 
                 app.dialog()
-                    .message(tr(locales::UPDATE_NOW).replace("{version}", &version))
+                    .message(said::fill(
+                        &tr(locales::UPDATE_NOW),
+                        [("version", version.as_str())],
+                    ))
                     .title(tr(locales::UPDATE_AVAILABLE))
                     .kind(MessageDialogKind::Info)
                     .buttons(MessageDialogButtons::OkCancelCustom(
@@ -918,7 +924,7 @@ fn main() {
                 .title("Silex")
                 .maximized(true)
                 // The dashboard's background, from the first frame on, before the page paints
-                .background_color(tauri::window::Color(0x1a, 0x1a, 0x1a, 0xff))
+                .background_color(include!(concat!(env!("OUT_DIR"), "/background.rs")))
                 .initialization_script(include_str!("../scripts/desktop-bridge.js"))
                 .on_page_load(move |webview, payload| {
                     if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {

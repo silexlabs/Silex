@@ -13,6 +13,7 @@ import {
   explain,
   hostOf,
   listWebsites,
+  openEditor,
   renameWebsite,
   showWebsiteFolder,
   trashWebsite,
@@ -65,10 +66,6 @@ async function refresh() {
   refreshing.value = false
 }
 
-function edit(website: { websiteId: string }) {
-  window.location.href = `/?id=${encodeURIComponent(website.websiteId)}&lang=${locale.value}`
-}
-
 async function create() {
   const name = await prompt({
     title: t('New website'),
@@ -78,7 +75,7 @@ async function create() {
   })
   if (!name) return
   try {
-    edit({ websiteId: await createWebsite(name) })
+    openEditor(await createWebsite(name))
   } catch (error) {
     await showError({ title: t('Silex could not create the website'), ...explain(error) })
   }
@@ -107,14 +104,12 @@ async function duplicate(website: Website) {
   if (duplicating.has(website.websiteId)) return
   duplicating.add(website.websiteId)
   const name = t('{name} (copy)', { name: website.name })
-  const before = new Set(websites.value?.map((other) => other.websiteId))
   try {
-    await duplicateWebsite(website.websiteId, name)
+    const copy = await duplicateWebsite(website.websiteId, name)
     await load()
     toast(t('“{name}” created. It stays on this computer until you publish it.', { name }), 'success')
-    const copy = websites.value?.find((other) => !before.has(other.websiteId))
     await nextTick()
-    if (copy) document.querySelector<HTMLElement>(`[data-website-id="${CSS.escape(copy.websiteId)}"] button`)?.focus()
+    document.querySelector<HTMLElement>(`[data-website-id="${CSS.escape(copy)}"] button`)?.focus()
   } catch (error) {
     await showError({ title: t('Silex could not duplicate the website'), ...explain(error) })
   } finally {
@@ -326,7 +321,7 @@ async function showFolder(website: Website) {
         :key="website.websiteId"
         :data-website-id="website.websiteId"
         :website="website"
-        @open="edit(website)"
+        @open="openEditor(website.websiteId)"
         @show-folder="showFolder(website)"
         @rename="rename(website)"
         @duplicate="duplicate(website)"

@@ -2,7 +2,7 @@
 import { reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
-import { createWebsiteFromTemplate, explain } from '../api'
+import { createWebsiteFromTemplate, explain, openEditor } from '../api'
 import { prompt, showError } from '../components/AppDialogs.vue'
 import { dismiss, toast } from '../components/AppToasts.vue'
 import list from '../templates.json'
@@ -40,8 +40,7 @@ async function use(template: Template) {
   copying.value = true
   const copyingToast = toast(t('Copying the template…'))
   try {
-    const websiteId = await createWebsiteFromTemplate(name, template.repo)
-    window.location.href = `/?id=${encodeURIComponent(websiteId)}&lang=${locale.value}`
+    openEditor(await createWebsiteFromTemplate(name, template.repo))
   } catch (error) {
     dismiss(copyingToast)
     await showError({ title: t('Silex could not copy the template'), ...explain(error) })

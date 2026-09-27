@@ -35,6 +35,9 @@ pub const TEMPLATE_FILE: &str = "This template has a file Silex does not copy: {
 pub const DAMAGED: &str = "Could not read '{file}'. This file of your website is damaged.";
 pub const COPY_PUBLISHED_OVER: &str =
     "The copy would have kept where the first website is published, and publishing it would have replaced the first one.";
+pub const NOT_IN_A_WEBSITE: &str = "Silex only opens the files of your websites, not {path}.";
+pub const DOES_NOT_OPEN: &str =
+    "Silex only opens web addresses and the files of your websites, not {url}.";
 
 /// Every sentence, for the test that finds each one in the locales
 pub const ALL: &[&str] = &[
@@ -49,6 +52,8 @@ pub const ALL: &[&str] = &[
     TEMPLATE_FILE,
     DAMAGED,
     COPY_PUBLISHED_OVER,
+    NOT_IN_A_WEBSITE,
+    DOES_NOT_OPEN,
 ];
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -88,13 +93,24 @@ impl Said {
     }
 }
 
+/// `sentence` with its `{name}` parameters put in, as the dashboard does
+pub fn fill<'a>(sentence: &str, params: impl IntoIterator<Item = (&'a str, &'a str)>) -> String {
+    params
+        .into_iter()
+        .fold(sentence.to_string(), |written, (name, value)| {
+            written.replace(&format!("{{{name}}}"), value)
+        })
+}
+
 /// In English, for the logs and for the editor, which does not translate
 impl fmt::Display for Said {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut written = self.sentence.unwrap_or_default().to_string();
-        for (name, value) in &self.params {
-            written = written.replace(&format!("{{{name}}}"), value);
-        }
+        let mut written = fill(
+            self.sentence.unwrap_or_default(),
+            self.params
+                .iter()
+                .map(|(name, value)| (*name, value.as_str())),
+        );
         if let Some(detail) = &self.detail {
             if !written.is_empty() {
                 written.push(' ');

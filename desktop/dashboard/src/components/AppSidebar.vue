@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
 import AppTooltip from './AppTooltip.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
-import logo from '../../../../public/assets/logo-silex-small.png'
+import logo from '~/public/assets/logo-silex-small.png'
 
 const { t, locale } = useI18n()
 
