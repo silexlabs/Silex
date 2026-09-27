@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, useId, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   DropdownMenuContent,
@@ -18,6 +18,9 @@ const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; 
 const { t, locale } = useI18n()
 const nameId = useId()
 const more = useTemplateRef<{ $el: HTMLElement }>('more')
+const openButton = useTemplateRef<HTMLButtonElement>('open')
+
+defineExpose({ websiteId: props.website.websiteId, focus: () => openButton.value?.focus() })
 
 const steps: [Intl.RelativeTimeFormatUnit, number][] = [
   ['year', 31536000],
@@ -28,9 +31,16 @@ const steps: [Intl.RelativeTimeFormatUnit, number][] = [
   ['minute', 60],
 ]
 
+// Date.now() is not reactive: without this, « 2 minutes ago » would stay so for good
+const now = ref(Date.now())
+const clock = setInterval(() => {
+  now.value = Date.now()
+}, 30000)
+onBeforeUnmount(() => clearInterval(clock))
+
 const edited = computed(() => {
   if (!props.website.updatedAt) return ''
-  const seconds = (new Date(props.website.updatedAt).getTime() - Date.now()) / 1000
+  const seconds = (new Date(props.website.updatedAt).getTime() - now.value) / 1000
   const step = steps.find(([, size]) => Math.abs(seconds) >= size)
   if (!step) return t('Edited just now')
   const [unit, size] = step
@@ -119,6 +129,7 @@ function afterClose(event: Event) {
         <h2 class="card__name">
           <button
             :id="nameId"
+            ref="open"
             type="button"
             class="card__open"
             @click="emit('open')"

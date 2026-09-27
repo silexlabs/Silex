@@ -47,7 +47,7 @@ impl Deploy for Glab {
 
         // GitLab answers 404 rather than 403 about a private repository
         let repo = run(cli, site, &["repo", "view", "-F", "json"]).map_err(|e| {
-            if e.contains("404") {
+            if not_found(&e) {
                 format!(
                     "glab is signed in to {} with an account that cannot open this repository.",
                     remote.host
@@ -149,6 +149,17 @@ impl Deploy for Glab {
 fn json_string(output: &str, key: &str) -> Option<String> {
     let value: serde_json::Value = serde_json::from_str(output).ok()?;
     value.get(key)?.as_str().map(String::from)
+}
+
+/// glab says it on a line of its own, `404 Not Found` or `404 Project Not Found`,
+/// and exits with 1 as for any other error
+fn not_found(error: &str) -> bool {
+    error.lines().any(|line| {
+        line.contains("Not Found")
+            && line
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|word| word == "404")
+    })
 }
 
 /// Read from what glab keeps rather than from `glab auth status`, which calls
@@ -300,6 +311,18 @@ hosts:
         token:
         use_keyring: "true"
 "#;
+
+    #[test]
+    fn tells_a_repository_it_cannot_open_from_other_errors() {
+        assert!(not_found("   ERROR\n  404 Not Found.\n"));
+        assert!(not_found(
+            "GET https://gitlab.com/api/v4/projects/a%2Fb: 404 {message: 404 Project Not Found}"
+        ));
+        assert!(!not_found(
+            "dial tcp: lookup gitlab.com: no such host (port 4043)"
+        ));
+        assert!(!not_found("error: 4040 items Not Found"));
+    }
 
     #[test]
     fn reads_which_hosts_glab_was_signed_in_to() {

@@ -468,7 +468,14 @@ fn check_for_updates(app: tauri::AppHandle) {
 
     tauri::async_runtime::spawn(async move {
         tracing::info!("Checking for updates...");
-        match app.updater().expect("updater not configured").check().await {
+        let updater = match app.updater() {
+            Ok(updater) => updater,
+            Err(error) => {
+                tracing::warn!("Cannot check for updates: {error}");
+                return;
+            }
+        };
+        match updater.check().await {
             Ok(Some(update)) => {
                 let version = update.version.clone();
                 tracing::info!("Update available: v{}", version);
@@ -661,10 +668,10 @@ async fn start_server(
         Err(_) => {
             // The port belongs to another program on this machine
             let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
-            TcpListener::bind(fallback).await.unwrap()
+            TcpListener::bind(fallback).await?
         }
     };
-    let addr = listener.local_addr().unwrap();
+    let addr = listener.local_addr()?;
     let port = addr.port();
     tracing::info!("Silex server listening on http://{}", addr);
 
@@ -682,9 +689,9 @@ async fn start_server(
         .service(app);
 
     tokio::spawn(async move {
-        axum::serve(listener, tower::make::Shared::new(served))
-            .await
-            .unwrap();
+        if let Err(error) = axum::serve(listener, tower::make::Shared::new(served)).await {
+            tracing::error!("Silex server stopped: {error}");
+        }
     });
 
     Ok((port, sendings))
@@ -886,11 +893,8 @@ fn main() {
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
             // localStorage/IndexedDB origins, and FsStorage would then scan those origin
             // dirs as if they were websites (→ metadata errors + "No such file or directory").
-            let data_path = app
-                .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir")
-                .join("websites");
+            let app_data_dir = app.path().app_data_dir()?;
+            let data_path = app_data_dir.join("websites");
             // SILEX_DATA_PATH lets the user store the websites somewhere else
             let data_path = std::env::var_os("SILEX_DATA_PATH")
                 .filter(|v| !v.is_empty())
@@ -904,9 +908,7 @@ fn main() {
             let (port, sendings) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
-                app.path()
-                    .app_data_dir()
-                    .expect("failed to resolve app data dir"),
+                app_data_dir,
                 app.state::<AppState>().current_website_id.clone(),
                 dashboard.is_some(),
                 startup.start_child("app.start", "integrations"),
@@ -972,7 +974,7 @@ fn main() {
             }
 
             // Check for updates in the background — release builds only.
-            // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.1.0,
+            // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.0.0-dev,
             // so the updater would otherwise prompt "update to <latest release>" on every launch.
             if !cfg!(debug_assertions) {
                 check_for_updates(app.handle().clone());

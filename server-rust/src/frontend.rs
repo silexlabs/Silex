@@ -71,7 +71,7 @@ pub fn try_serve<E: Embed>(path: &str, if_none_match: Option<&str>) -> Option<Re
             (header::ETAG, etag.clone()),
             (header::CACHE_CONTROL, "no-cache".to_string()),
         ];
-        if if_none_match == Some(etag.as_str()) {
+        if if_none_match.is_some_and(|tags| matches(tags, &etag)) {
             return (StatusCode::NOT_MODIFIED, cache).into_response();
         }
         let mime = mime_guess::from_path(path).first_or_octet_stream();
@@ -84,6 +84,15 @@ pub fn try_serve<E: Embed>(path: &str, if_none_match: Option<&str>) -> Option<Re
         };
         (cache, [(header::CONTENT_TYPE, content_type)], content.data).into_response()
     })
+}
+
+/// RFC 9110 §13.1.2: `*` or a list of tags, compared weakly, so `W/` does not count
+#[cfg(feature = "embed-frontend")]
+fn matches(if_none_match: &str, etag: &str) -> bool {
+    if_none_match.trim() == "*"
+        || if_none_match
+            .split(',')
+            .any(|tag| tag.trim().trim_start_matches("W/") == etag)
 }
 
 #[cfg(feature = "embed-frontend")]
@@ -101,4 +110,20 @@ pub fn if_none_match<B>(req: &axum::http::Request<B>) -> Option<&str> {
     req.headers()
         .get(header::IF_NONE_MATCH)
         .and_then(|value| value.to_str().ok())
+}
+
+#[cfg(all(test, feature = "embed-frontend"))]
+mod tests {
+    use super::matches;
+
+    #[test]
+    fn if_none_match_is_compared_weakly() {
+        let etag = "\"abc\"";
+        assert!(matches("\"abc\"", etag));
+        assert!(matches("*", etag));
+        assert!(matches("W/\"abc\"", etag));
+        assert!(matches("\"xyz\", W/\"abc\"", etag));
+        assert!(!matches("\"xyz\"", etag));
+        assert!(!matches("abc", etag));
+    }
 }

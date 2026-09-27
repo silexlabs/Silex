@@ -256,8 +256,8 @@ async fn get_meta(
 /// Left as it was when nobody knows better, so a website kept on this computer
 /// alone still answers where its files are.
 ///
-/// On a thread of its own: answering starts a program per website, and a
-/// listing of a dozen would hold the thread the server answers with.
+/// On a thread of its own: answering opens the git repository of each website
+/// on disk, and a listing of a dozen would hold the thread the server answers with.
 async fn where_they_are_kept(state: &AppState, websites: Vec<WebsiteMeta>) -> Vec<WebsiteMeta> {
     let Some(actions) = state.actions.clone() else {
         return websites;

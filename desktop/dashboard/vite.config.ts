@@ -48,7 +48,9 @@ export default defineConfig({
   },
   build: {
     assetsDir: '_dashboard',
-    rollupOptions: {
+    // The webviews of Tauri: WebView2 on Windows, WebKit on macOS and Linux, older than the browsers Vite aims at by default
+    target: ['chrome105', 'safari13'],
+    rolldownOptions: {
       // The client config of the editor, loaded from the same server as the dashboard,
       // and the telemetry the desktop bridge loads in both
       input: { index: 'index.html', silex: 'src/client-plugins/silex.ts', telemetry: 'src/telemetry.ts' },

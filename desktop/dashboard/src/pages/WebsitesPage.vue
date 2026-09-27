@@ -26,6 +26,8 @@ const failed = ref<ReturnType<typeof explain> | null>(null)
 const query = ref('')
 const order = ref<'edited' | 'name'>('edited')
 const status = ref('')
+const heading = useTemplateRef<HTMLHeadingElement>('heading')
+const cards = useTemplateRef<InstanceType<typeof WebsiteCard>[]>('cards')
 
 const edited = (website: Website) => new Date(website.updatedAt ?? 0).getTime()
 
@@ -115,7 +117,7 @@ async function duplicate(website: Website) {
     await load()
     toast(t('“{name}” created. It stays on this computer until you publish it.', { name }), 'success')
     await nextTick()
-    document.querySelector<HTMLElement>(`[data-website-id="${CSS.escape(copy)}"] button`)?.focus()
+    cards.value?.find((card) => card.websiteId === copy)?.focus()
   } catch (error) {
     await showError({ title: t('Silex could not duplicate the website'), ...explain(error) })
   } finally {
@@ -140,7 +142,7 @@ async function remove(website: Website) {
     toast(t('“{name}” is in the trash of this computer.', { name: website.name }), 'success')
     // Its menu button, where the focus would go back, is gone
     await nextTick()
-    document.querySelector<HTMLElement>('main h1')?.focus()
+    heading.value?.focus()
   } catch (error) {
     await showError({ title: t('Silex could not delete the website'), ...explain(error) })
   }
@@ -167,7 +169,10 @@ async function showFolder(website: Website) {
 <template>
   <div class="page__head">
     <div>
-      <h1 tabindex="-1">
+      <h1
+        ref="heading"
+        tabindex="-1"
+      >
         {{ $t('Your websites') }}
       </h1>
       <p
@@ -330,8 +335,8 @@ async function showFolder(website: Website) {
     <div class="card-grid">
       <WebsiteCard
         v-for="website in shown"
+        ref="cards"
         :key="website.websiteId"
-        :data-website-id="website.websiteId"
         :website="website"
         @open="openEditor(website.websiteId)"
         @show-folder="showFolder(website)"

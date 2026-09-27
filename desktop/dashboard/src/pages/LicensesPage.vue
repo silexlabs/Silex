@@ -8,7 +8,20 @@ import ExternalLink from '../components/ExternalLink.vue'
 
 const { locale } = useI18n()
 const licenses = ref<typeof Licenses>({ packages: [], texts: [] })
-fetch(licensesUrl).then(async (response) => { licenses.value = await response.json() })
+const failed = ref(false)
+
+async function load() {
+  failed.value = false
+  try {
+    const response = await fetch(licensesUrl)
+    if (!response.ok) throw new Error(response.statusText)
+    licenses.value = await response.json()
+  } catch {
+    failed.value = true
+  }
+}
+
+load()
 
 const query = ref('')
 const shown = computed(() => {
@@ -33,7 +46,24 @@ const shown = computed(() => {
   >
     {{ $t('Silex Desktop includes this free software package, under its own license. | Silex Desktop includes these {count} free software packages, each under its own license.', { count: $n(licenses.packages.length) }, licenses.packages.length) }}
   </p>
+  <div
+    v-if="failed"
+    class="licenses__problem"
+    role="alert"
+  >
+    <p class="page__lead">
+      {{ $t('Silex could not load the licenses.') }}
+    </p>
+    <button
+      type="button"
+      class="button"
+      @click="load"
+    >
+      {{ $t('Try again') }}
+    </button>
+  </div>
   <input
+    v-else
     v-model="query"
     type="search"
     class="licenses__search"
@@ -98,6 +128,14 @@ const shown = computed(() => {
 
 .licenses__back:hover {
   color: var(--silex-text-primary);
+}
+
+.licenses__problem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--silex-space-4);
+  margin: var(--silex-space-4) 0;
 }
 
 .licenses__search {
