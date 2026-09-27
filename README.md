@@ -54,7 +54,7 @@ cd Silex
 pnpm install && pnpm build && pnpm start
 ```
 
-Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me).
+Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me). To work on the desktop app, see [desktop/README.md](desktop/README.md).
 
 Useful links to get you contributing fast:
 

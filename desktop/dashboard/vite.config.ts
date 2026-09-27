@@ -48,7 +48,6 @@ export default defineConfig({
   },
   build: {
     assetsDir: '_dashboard',
-    license: true,
     rollupOptions: {
       // The client config of the editor, loaded from the same server as the dashboard,
       // and the telemetry the desktop bridge loads in both

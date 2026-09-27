@@ -25,7 +25,7 @@ Describe what you want to change and why. Wait for feedback from a maintainer be
    pnpm build         # build the editor + server
    pnpm start         # start the editor at http://localhost:6805
    ```
-   For the Rust side: `cargo check` (or `cargo build`) at the repo root builds `server-rust/` and `desktop/`.
+   For the desktop app and the Rust side (`server-rust/`, `desktop/`), see [desktop/README.md](desktop/README.md).
 2. Create a branch for your changes (`feat/...` or `fix/...`).
 
 New to the project? Look for issues labeled [good first issue](https://github.com/silexlabs/Silex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
@@ -48,9 +48,9 @@ Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`) — n
 
 Issues and pull requests all live in **this single repository**. A single branch can change several areas at once (e.g. the editor and one of its plugins).
 
-### Workspaces (the `grapesjs-plugins/`)
+### Workspaces (the plugins and the desktop app)
 
-We use a [pnpm workspace](https://pnpm.io/workspaces) (`pnpm-workspace.yaml`) for the plugins under `grapesjs-plugins/*`, the desktop app (`desktop`) and its dashboard (`desktop/dashboard`). For the plugins, it lets us install, lint, test and **publish them as independent packages**. Two things to understand:
+We use a [pnpm workspace](https://pnpm.io/workspaces) (`pnpm-workspace.yaml`) for the plugins under `grapesjs-plugins/*`, the desktop app (`desktop`) and its dashboard (`desktop/dashboard`). For the plugins, it lets us install, lint, test and **publish them as independent packages**. For the desktop app, it installs the Tauri CLI and the dashboard's own dependencies (Vue, Vite); `pnpm build:desktop` builds the app and the dashboard. For the plugins, two things to understand:
 
 - The Silex app build does *not* use the workspace. The editor compiles each plugin's *source* directly, resolved through webpack aliases + tsconfig `paths` (see `webpack.config.js`) — not through `node_modules` linking. So building/running Silex never depends on the plugins being installed as packages. The app's own install stays lean (`pnpm install --filter @silexlabs/silex`, as in `Dockerfile`).
 - The plugins are versioned and released independently. We deliberately do **not** use the `workspace:` protocol between them — a Silex release does not force a plugin release, and vice-versa. The **only** exception is `@silexlabs/expression-input`, a small internal lib used by `grapesjs-advanced-selector` and `grapesjs-data-source`: it is linked locally (`"@silexlabs/expression-input": "workspace:*"`) so those plugins always build and test against its current source.
@@ -86,7 +86,7 @@ The SaaS server serves the pre-built dashboard from `silex-dashboard/_site` (see
 4. Run the checks that match what you changed (CI runs all of them on the PR):
    - **App** (`editor/`, `server/`, `common/`): `pnpm build`, `pnpm lint`, `pnpm test`.
    - **A plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` — or scope to one: `pnpm --filter @silexlabs/grapesjs-<name> run test`.
-   - **Rust** (`server-rust/`, `desktop/`): `./scripts/ci-rust.sh` — runs what CI runs, in the same order, and says where CI would fail. It needs `dist/client` (from `pnpm build`) and `desktop/dashboard/dist` (from `pnpm --filter @silexlabs/silex-desktop-dashboard build`), which `silex-desktop` compiles into the binary.
+   - **Rust** (`server-rust/`, `desktop/`): `./scripts/ci-rust.sh` — runs what CI runs, in the same order, and says where CI would fail. It needs `dist/client` and `desktop/dashboard/dist`, which `silex-desktop` compiles into the binary: run `pnpm build:desktop` first.
 
    There is no pre-commit hook — CI on the PR is the gate, so run the relevant checks yourself before pushing.
 5. The PR is **squash-merged**, so its **title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`) — it becomes the changelog entry.

@@ -8,11 +8,6 @@ REPO_ROOT="$(git -C "$(dirname "$0")/.." rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 source scripts/repro-env.sh
-
-# rust-embed bakes file mtimes into the binary; pin them so a fresh checkout
-# (git sets mtime to checkout time) yields identical bytes.
-for dir in dist/client desktop/dashboard/dist; do
-  [ -d "$dir" ] && find "$dir" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-done
+pin_embedded_mtimes
 
 ( cd desktop && pnpm tauri build )

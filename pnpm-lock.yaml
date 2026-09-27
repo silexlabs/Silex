@@ -222,10 +222,6 @@ importers:
         version: 7.1.0(js-yaml@4.3.0)(json5@2.2.3)(webpack@5.108.2)
 
   desktop:
-    dependencies:
-      '@tauri-apps/api':
-        specifier: ~2.11.0
-        version: 2.11.1
     devDependencies:
       '@tauri-apps/cli':
         specifier: ~2.11.0

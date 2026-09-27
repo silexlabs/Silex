@@ -5,9 +5,9 @@ built with Vite and embedded in the desktop binary.
 
 ## Develop
 
-Once, from the repo root: `pnpm install`, `pnpm run build` (the editor, in `dist/client`), then
-`pnpm build` in this folder. The app needs both folders to compile, even with Vite. For Rust and
-the system libraries, see [the desktop README](../README.md#prerequisites).
+Once, from the repo root: `pnpm install`, then `pnpm build:desktop` (the editor in `dist/client`, and
+this app in `dist/`). The app needs both folders to compile, even with Vite. For Rust and the system
+libraries, see [the desktop README](../README.md#prerequisites).
 
 Then run each line in its own terminal:
 
@@ -31,8 +31,9 @@ pnpm lint    # ESLint and Stylelint
 
 Run `pnpm templates` to refresh the template list from silex.me before a release, then commit
 `src/templates.json`.
-Run `pnpm run licenses` too, to refresh the licenses of the packages the app includes (offline, from
-`node_modules` and the Cargo registry), then commit `src/licenses.json`.
+After a change of dependencies, JS or Rust, run `pnpm run licenses` and commit `src/licenses.json`: it
+lists the packages the app includes, from `pnpm-lock.yaml` and `Cargo.lock`. CI fails if it is not up
+to date.
 
 ## Conventions
 

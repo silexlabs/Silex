@@ -22,15 +22,14 @@ verdict() {
 # nothing about what is missing.
 step "what silex-desktop needs to compile"
 missing=0
-if [ ! -f dist/client/index.html ]; then
-  echo "  dist/client is missing — run: pnpm install --frozen-lockfile --filter @silexlabs/silex && pnpm build"
-  missing=1
+for f in dist/client/index.html desktop/dashboard/dist/index.html; do
+  [ -f "$f" ] || { echo "  $f is missing"; missing=1; }
+done
+if [ "$missing" -eq 0 ]; then
+  echo "  both are there"
+else
+  echo "  run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop-dashboard && pnpm build:desktop"
 fi
-if [ ! -f desktop/dashboard/dist/index.html ]; then
-  echo "  desktop/dashboard/dist is missing — run: pnpm install --frozen-lockfile --filter @silexlabs/silex-desktop-dashboard && pnpm --filter @silexlabs/silex-desktop-dashboard build"
-  missing=1
-fi
-[ "$missing" -eq 0 ] && echo "  both are there"
 verdict "$missing"
 if [ "$missing" -ne 0 ]; then
   echo

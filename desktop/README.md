@@ -11,13 +11,14 @@ Desktop application for [Silex](https://www.silex.me), the free/libre no-code we
 
 ## Development
 
-The app embeds the editor frontend built by the JS side, so build that first, from the **repo root**:
+The app embeds the editor (`dist/client`) and the dashboard (`desktop/dashboard/dist`), so build them first, from the **repo root**:
 
 ```bash
 pnpm install
-pnpm run build     # produces dist/client, embedded into the Rust server
-pnpm --filter @silexlabs/silex-desktop-dashboard build   # produces desktop/dashboard/dist, embedded into the app
+pnpm build:desktop
 ```
+
+Build them again after a change in the editor or the dashboard: the Rust build copies them into the binary.
 
 Then run the app:
 

@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { dirname, join } from 'node:path'
@@ -32,41 +32,68 @@ function add(pkg) {
   if (!packages.has(key)) packages.set(key, pkg)
 }
 
-// JavaScript: what the dashboard depends on, and what the sources of the editor import,
-// then the dependencies of these packages, found the way Node finds them
-function findPackage(name, from) {
-  for (let dir = from; ; dir = dirname(dir)) {
-    const candidate = join(dir, 'node_modules', name)
-    if (existsSync(join(candidate, 'package.json'))) return realpathSync(candidate)
-    if (dir === dirname(dir)) return null
+// JavaScript: the packages the dashboard depends on, and those the sources of the editor import,
+// with their dependencies as pnpm-lock.yaml resolves them. The texts are read from the install of
+// the desktop build.
+function lockedTree(filter) {
+  const [project] = JSON.parse(
+    execFileSync('pnpm', ['ls', '--lockfile-only', '--json', '--prod', '--no-optional', '--depth', 'Infinity', '--filter', filter], {
+      cwd: root,
+      maxBuffer: 1 << 28,
+    }),
+  )
+  return project.dependencies ?? {}
+}
+
+// pnpm lists the dependencies of a package once, where it first meets it
+const locked = new Map()
+function index(dependencies) {
+  for (const [name, node] of Object.entries(dependencies)) {
+    const key = `${name}@${node.version}`
+    if (!locked.has(key) || (node.dependencies && !locked.get(key).dependencies)) locked.set(key, { name, ...node })
+    index(node.dependencies ?? {})
   }
 }
 
-function addJs(name, from) {
-  const dir = findPackage(name, from)
-  if (!dir) return
-  const json = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
-  if (json.name.startsWith('@silexlabs/') || packages.has(`${json.name}@${json.version}`)) return
+function addJs(name, node) {
+  const key = `${name}@${node.version}`
+  if (name.startsWith('@silexlabs/') || packages.has(key)) return
+  if (!existsSync(join(node.path, 'package.json'))) {
+    throw new Error(`${key} is not installed, run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop-dashboard`)
+  }
+  const json = JSON.parse(readFileSync(join(node.path, 'package.json'), 'utf8'))
   add({
-    name: json.name,
-    version: json.version,
+    name,
+    version: node.version,
     license: json.license ?? json.licenses?.map((license) => license.type).join(' OR ') ?? '',
     repository: repositoryUrl(json.repository),
-    texts: licenseTexts(dir),
+    texts: licenseTexts(node.path),
   })
-  for (const dependency of Object.keys({ ...json.dependencies, ...json.optionalDependencies })) addJs(dependency, dir)
+  for (const [dependency, { version }] of Object.entries(locked.get(key).dependencies ?? {})) {
+    addJs(dependency, locked.get(`${dependency}@${version}`))
+  }
 }
 
-const dashboard = join(root, 'desktop/dashboard')
-for (const name of Object.keys(JSON.parse(readFileSync(join(dashboard, 'package.json'), 'utf8')).dependencies)) {
-  addJs(name, dashboard)
-}
+const dashboard = lockedTree('@silexlabs/silex-desktop-dashboard')
+const editor = lockedTree('@silexlabs/silex')
+index(dashboard)
+index(editor)
+for (const [name, node] of Object.entries(dashboard)) addJs(name, node)
 
 function sources(dir) {
   return readdirSync(dir, { withFileTypes: true, recursive: true })
     .filter((entry) => entry.isFile() && /\.(ts|js|scss|css)$/.test(entry.name) && !/(^|[._-])(test|spec)[._-]/.test(entry.name))
     .map((entry) => join(entry.parentPath, entry.name))
     .filter((file) => !/[/\\](test|tests|__tests__)[/\\]/.test(file))
+}
+
+// Webpack resolves every bare import of the editor from the root node_modules: a direct dependency
+// of the root package, or the only version of a package that one of them brings
+function editorPackage(name) {
+  if (editor[name]) return editor[name]
+  const versions = [...locked.values()].filter((node) => node.name === name)
+  if (versions.length > 1) throw new Error(`the editor imports ${name}, locked in several versions: add it to the root package.json`)
+  return versions[0]
 }
 
 const editorSources = [
@@ -77,21 +104,35 @@ const editorSources = [
     return existsSync(src) ? sources(src) : []
   }),
 ]
+const imports = [
+  /^\s*(?:import|export)\s+(?!type\b)[^'";]*?\bfrom\s*['"]([^'"]+)['"]/gm,
+  /^\s*import\s*['"]([^'"]+)['"]/gm,
+  /\bimport\(\s*['"]([^'"]+)['"]\s*\)/g,
+]
+// Sass also finds a partial of the same folder by a bare name
+const styleImports = /^\s*@(?:use|import)\s+['"]([^'"]+)['"]/gm
 const builtins = new Set(builtinModules)
 for (const file of editorSources) {
-  const imports = readFileSync(file, 'utf8').matchAll(/^\s*(?:import|export|@use|@import)\b(?!\s+type\b)[^'"]*['"]([^'"./~][^'"]*)['"]/gm)
-  for (const [, specifier] of imports) {
+  const code = readFileSync(file, 'utf8')
+  const specifiers = /\.s?css$/.test(file)
+    ? [...code.matchAll(styleImports)].map(([, specifier]) => [specifier, false])
+    : imports.flatMap((pattern) => [...code.matchAll(pattern)].map(([, specifier]) => [specifier, true]))
+  for (const [specifier, required] of specifiers) {
+    if (/^[./~]|^node:|^https?:/.test(specifier)) continue
     const name = specifier.match(/^(@[^/]+\/[^/]+|[^/]+)/)[1]
-    if (!builtins.has(name)) addJs(name, dirname(file))
+    if (builtins.has(name) || name.startsWith('@silexlabs/')) continue
+    const node = editorPackage(name)
+    if (node) addJs(name, node)
+    else if (required) throw new Error(`${file} imports ${name}, which the root package does not depend on`)
   }
 }
 // Copied as is next to the editor by scripts/copy-assets.mjs
-addJs('@fortawesome/fontawesome-free', root)
+addJs('@fortawesome/fontawesome-free', editor['@fortawesome/fontawesome-free'])
 
 // Rust: the crates linked into the desktop binary, on every platform. Proc macros and build
 // scripts run at compile time only.
 const metadata = JSON.parse(
-  execFileSync('cargo', ['metadata', '--locked', '--offline', '--format-version', '1'], { cwd: root, maxBuffer: 1 << 28 }),
+  execFileSync('cargo', ['metadata', '--locked', '--format-version', '1'], { cwd: root, maxBuffer: 1 << 28 }),
 )
 const crates = new Map(metadata.packages.map((crate) => [crate.id, crate]))
 const nodes = new Map(metadata.resolve.nodes.map((node) => [node.id, node]))

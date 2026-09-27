@@ -67,6 +67,7 @@
     "build:client": "webpack --config webpack.config.js",
     "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
     "build:public": "node scripts/copy-assets.mjs",
+    "build:desktop": "pnpm run build && pnpm --filter @silexlabs/silex-desktop-dashboard run build",
     "start": "node dist/server/server/",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
     "dev": "pnpm run build:server && pnpm run build:client && run-p watch start:debug",
