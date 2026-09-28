@@ -36,12 +36,6 @@ const localeMessages: Record<string, Record<string, string>> = {
 const SOURCE_LOCALE = 'en'
 
 /**
- * localStorage key used by the language switcher (settings-sections.ts) to
- * persist the user's chosen locale across sessions.
- */
-export const LOCALE_STORAGE_KEY = 'silex-locale'
-
-/**
  * Register every locale file found in editor/src/locales with GrapesJS I18n.
  */
 export function initI18n(editor: Editor): void {
