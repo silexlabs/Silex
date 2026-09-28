@@ -21,6 +21,12 @@ use crate::actions::Actions;
 /// Port the server listens on.
 pub const PORT: u16 = 6805;
 
+/// Largest request body the server accepts, in bytes.
+///
+/// The same 100mb the Node server takes (`SILEX_EXPRESS_JSON_LIMIT` in
+/// `.env.default`): a website that saves on one has to save on the other.
+pub const MAX_BODY_SIZE: usize = 100 * 1024 * 1024;
+
 /// Server configuration
 #[derive(Clone)]
 pub struct Config {
@@ -28,6 +34,8 @@ pub struct Config {
     pub data_path: PathBuf,
     /// Who performs the actions the server asks for, when somebody does.
     pub actions: Option<Arc<dyn Actions>>,
+    /// Largest request body accepted, in bytes.
+    pub body_limit: usize,
 }
 
 impl Config {
@@ -36,12 +44,19 @@ impl Config {
         Config {
             data_path,
             actions: None,
+            body_limit: MAX_BODY_SIZE,
         }
     }
 
     /// Give the server somebody to ask for what it cannot do itself.
     pub fn with_actions(mut self, actions: Arc<dyn Actions>) -> Self {
         self.actions = Some(actions);
+        self
+    }
+
+    /// Accept request bodies up to this many bytes.
+    pub fn with_body_limit(mut self, bytes: usize) -> Self {
+        self.body_limit = bytes;
         self
     }
 }

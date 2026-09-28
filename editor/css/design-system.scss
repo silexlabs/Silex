@@ -23,6 +23,12 @@
 
 @use "variables" as silex-vars;
 
+// Without it WebKitGTK paints native selects light, ignoring their dark background.
+// Not on :root: iframes whose document has another color-scheme get an opaque white backdrop
+select {
+  color-scheme: dark;
+}
+
 :root {
   // ============================================================
   // BASE COLORS - Modern Dark 2025

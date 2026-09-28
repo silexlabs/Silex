@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '~/common/page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ConnectorOptions, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -26,6 +26,8 @@ import { resetRenderComponents, resetRenderCssRules, transformPermalink, transfo
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
 import { t } from '../src/i18n'
+import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
+import { EleventyDataSourceId } from './cms/DataSource'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -64,6 +66,13 @@ export type PublicationManagerOptions = {
 // plugin init cod
 export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
+}
+
+// What the user filled in wins, anything else comes from the host, which knows better than an old copy
+export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
+  const asked = new Set(connector.optionsForm?.fields.map(field => field.name))
+  const filledIn = Object.fromEntries(Object.entries(settings.options ?? {}).filter(([name]) => asked.has(name)))
+  return { ...settings.options, ...connector.options, ...filledIn }
 }
 
 function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
@@ -173,8 +182,9 @@ export class PublicationManager {
     // Check if the user is already logged in
     if(connector.isLoggedIn) {
       this.settings = {
-        ...this.settings, // In case there are options
+        ...this.settings,
         connector,
+        options: withConnectorOptions(this.settings, connector),
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
@@ -239,6 +249,42 @@ export class PublicationManager {
     }
   }
 
+  /**
+   * The 11ty directory data file, published with every website
+   *
+   * Publishing runs 11ty on the whole site, whether or not it reads data. On a
+   * site that does not, 11ty would rename `about.html` to `about/index.html`,
+   * which breaks every link in the site, and read the pages as Liquid
+   * templates, which empties anything between double braces and fails the
+   * build on anything between brace and percent. This file tells it to keep
+   * the file names and to leave the pages alone.
+   *
+   * On a site that reads a data source, the front matter of each page says
+   * what to do, so this says nothing and lets them.
+   */
+  eleventyDirectoryData(): ClientSideFile {
+    const readsData = getAllDataSources()
+      .filter(dataSource => dataSource.id !== EleventyDataSourceId)
+      .length > 0
+    const content = readsData
+      ? 'export default {}\n'
+      : `export default {
+  // Keep the name and the place of every page: \`about.html\` stays
+  // \`about.html\`, so the links inside the site keep working
+  permalink: data => \`\${data.page.filePathStem}.html\`,
+  // The pages are already what they should be, not templates to render
+  templateEngineOverride: false,
+}
+`
+    return {
+      // Named after the folder it sits in, which is how 11ty reads a directory
+      // data file
+      path: '/public.11tydata.js',
+      content,
+      type: ClientSideFileType.OTHER,
+    } as ClientSideFile
+  }
+
   async getPublicationData(projectData, siteSettings, preventDefault: () => void): Promise<PublicationData> {
     // Data to publish
     // See assetUrl.ts which is a default transformer, always present
@@ -283,6 +329,7 @@ export class PublicationManager {
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
+    files.push(this.eleventyDirectoryData())
     // Create the data to send to the server
     const data: PublicationData = {
       ...projectData,
@@ -347,17 +394,11 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
-      if (job) {
-        this.job = job
-        this.status = jobStatusToPublicationStatus(this.job.status)
-        this.trackProgress()
-      } else {
-        // No job to poll: the publication was over before the server answered,
-        // which is how Silex Desktop publishes to a local folder
-        this.status = PublicationStatus.STATUS_SUCCESS
-        this.editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: 'Publication success' })
-        this.dialog && this.dialog.displayPending(this.job, this.status)
-      }
+      // The job is what says how the publication ended: pushing a website to
+      // a forge is not that forge having built and served it
+      this.job = job
+      this.status = jobStatusToPublicationStatus(this.job.status)
+      this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {

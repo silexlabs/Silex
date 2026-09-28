@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-saved-everything"
+description = "Enables the saved_everything command without any pre-configured scope."
+commands.allow = ["saved_everything"]
+
+[[permission]]
+identifier = "deny-saved-everything"
+description = "Denies the saved_everything command without any pre-configured scope."
+commands.deny = ["saved_everything"]

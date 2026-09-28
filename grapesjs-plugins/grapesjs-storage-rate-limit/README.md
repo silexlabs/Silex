@@ -116,4 +116,4 @@ $ npm start
 
 ## License
 
-[AGPL v3](LICENSE.md)
+[AGPL-3.0-or-later](LICENSE)

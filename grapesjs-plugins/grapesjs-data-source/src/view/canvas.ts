@@ -357,9 +357,73 @@ export function isComponentVisible(
   }
 }
 
+// Tracks attribute names that were dynamically applied by data-source to each live DOM element
+const renderedAttributesMap = new WeakMap<Element, Set<string>>()
+
+// Tracks elements that currently have dynamic innerHTML applied
+const renderedInnerHTMLMap = new WeakSet<Element>()
+
+function restoreAttribute(
+  component: Component,
+  el: Element,
+  attrName: string,
+): void {
+  if (attrName === 'class') {
+    // If GrapesJS view provides updateClasses, use it directly as it properly
+    // restores the model classes and re-applies runtime status classes (e.g. gjs-selected)
+    const view = component.view as (Component['view'] & { updateClasses?: () => void; updateStatus?: () => void }) | undefined
+    if (view?.updateClasses) {
+      view.updateClasses()
+      return
+    }
+
+    const classes = (component.getClasses ? component.getClasses() : []) as (string | { get?: (k: string) => unknown; name?: string })[]
+    const classList = classes
+      .map(c => (typeof c === 'string' ? c : (c?.get ? String(c.get('name')) : c?.name) || String(c)))
+      .filter(Boolean)
+    if (classList.length > 0) {
+      el.setAttribute('class', classList.join(' '))
+    } else {
+      const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
+      const baseVal = baseAttrs['class']
+      if (baseVal !== undefined && baseVal !== null && baseVal !== '') {
+        el.setAttribute('class', String(baseVal))
+      } else {
+        el.removeAttribute('class')
+      }
+    }
+    view?.updateStatus?.()
+    return
+  }
+
+  const baseAttrs: Record<string, unknown> = (component.getAttributes ? component.getAttributes() : component.get?.('attributes')) || {}
+  const baseVal = baseAttrs[attrName]
+  if (baseVal !== undefined && baseVal !== null) {
+    if (typeof baseVal === 'boolean') {
+      if (baseVal) {
+        el.setAttribute(attrName, '')
+      } else {
+        el.removeAttribute(attrName)
+      }
+    } else {
+      el.setAttribute(attrName, String(baseVal))
+    }
+  } else {
+    el.removeAttribute(attrName)
+  }
+}
+
 function renderAttributes(
   component: Component,
 ): void {
+  const el = component.view?.el
+  if (!el) {
+    return
+  }
+
+  const prevAttributes = renderedAttributesMap.get(el) || new Set<string>()
+  const currentAttributes = new Set<string>()
+
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
     // Skip condition states and internal data states - they should not become HTML attributes
@@ -369,16 +433,32 @@ function renderAttributes(
         state.id !== Properties.condition &&
         state.id !== Properties.condition2 &&
         state.expression) {
+      const attrName = state.label || state.id
       try {
         const value = evaluateExpression(state.expression, component, true)
         if (value !== null && value !== undefined) {
-          component.view?.el.setAttribute(state.label || state.id, String(value))
+          el.setAttribute(attrName, String(value))
+          if (attrName === 'class') {
+            const view = component.view as (Component['view'] & { updateStatus?: () => void }) | undefined
+            view?.updateStatus?.()
+          }
+          currentAttributes.add(attrName)
         }
       } catch (e) {
         console.warn(`Error evaluating attribute ${state.id}:`, e)
       }
     }
   })
+
+  // Clean up any attributes that were previously rendered by data-source
+  // but are no longer present or evaluated to null/undefined
+  prevAttributes.forEach(attrName => {
+    if (!currentAttributes.has(attrName)) {
+      restoreAttribute(component, el, attrName)
+    }
+  })
+
+  renderedAttributesMap.set(el, currentAttributes)
 }
 
 // // Helper to extend a component instance
@@ -409,10 +489,16 @@ function renderContent(comp: Component, deep: number) {
   const innerHtml = renderInnerHTML(comp)
 
   if (innerHtml === null) {
+    const el = comp.view?.el
+    if (el && renderedInnerHTMLMap.has(el)) {
+      renderedInnerHTMLMap.delete(el)
+      comp.view!.render()
+    }
     comp.components()
       .forEach(c => renderPreview(c, deep+1))
   } else {
     const el = comp.view!.el
+    renderedInnerHTMLMap.add(el)
 
     // Parse new HTML into a temporary container
     const temp = document.createElement('div')
@@ -447,7 +533,12 @@ export function restoreOriginalRender(comp: Component) {
     return
   }
 
-  // Force standard GrapesJS render
+  if (view.el) {
+    renderedAttributesMap.delete(view.el)
+    renderedInnerHTMLMap.delete(view.el)
+  }
+
+  // Force standard GrapesJS render - rebuilds all attributes and classes from the model
   view.render()
 
   // Recursively restore all children
@@ -616,6 +707,7 @@ export function renderPreview(comp: Component, deep = 0) {
         } else {
           // Just set innerHTML directly without diffing in the loop
           el.innerHTML = innerHtml
+          renderedInnerHTMLMap.add(el)
         }
         renderAttributes(comp)
       }
@@ -624,7 +716,10 @@ export function renderPreview(comp: Component, deep = 0) {
   } else {
     const isVisible = isComponentVisible(comp)
 
-    if(isVisible) {
+    renderContent(comp, deep)
+    renderAttributes(comp)
+
+    if (isVisible) {
       // Make sure the element is visible (in case it was hidden before)
       if (el.style && el.style.display === 'none') {
         el.style.removeProperty('display')
@@ -633,8 +728,6 @@ export function renderPreview(comp: Component, deep = 0) {
           el.removeAttribute('style')
         }
       }
-      renderContent(comp, deep)
-      renderAttributes(comp)
     } else {
       // Don't remove the element, just hide it
       // This prevents breaking loop rendering where the same element
@@ -698,7 +791,7 @@ function cleanupLoopClones(component: Component): void {
 }
 
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
-  const events = opts.previewRefreshEvents!.split(' ')
+  const events = opts.previewRefreshEvents ? opts.previewRefreshEvents.split(/\s+/).filter(Boolean) : []
   for(const eventName of events) {
     editor.on(eventName, () => {
       if (getPreviewActive()) {

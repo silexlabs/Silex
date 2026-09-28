@@ -126,4 +126,4 @@ npm i @silexlabs/grapesjs-ai-capabilities
 
 ## License
 
-GPL-3.0
+AGPL-3.0-or-later

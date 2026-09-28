@@ -37,7 +37,7 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "AGPL-3.0",
+  "license": "AGPL-3.0-or-later",
   "contributors": [
     "Alex Hoyau (https://github.com/lexoyo)"
   ],
