@@ -25,15 +25,13 @@
  */
 
 import { Editor } from 'grapesjs'
+import enUS from '../locales/en-US.json'
+import frFR from '../locales/fr-FR.json'
 
-const localesContext = require.context('../locales', false, /\.json$/)
-
-const localeMessages: Record<string, Record<string, string>> = localesContext.keys()
-  .reduce((acc: Record<string, Record<string, string>>, path: string) => {
-    const locale = path.replace(/^\.\//, '').replace(/\.json$/, '')
-    acc[locale] = localesContext(path)
-    return acc
-  }, {})
+const localeMessages: Record<string, Record<string, string>> = {
+  'en-US': enUS,
+  'fr-FR': frFR,
+}
 
 const SOURCE_LOCALE = 'en-US'
 
