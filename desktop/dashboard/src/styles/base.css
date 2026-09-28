@@ -174,7 +174,7 @@ select {
   border: 1px solid var(--silex-border-color-visible);
   border-radius: var(--silex-radius-md);
   background: var(--silex-button-bg);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+  box-shadow: var(--silex-shadow-lg);
 }
 
 .menu__item {

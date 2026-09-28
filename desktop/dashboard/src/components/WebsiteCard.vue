@@ -11,6 +11,7 @@ import {
 } from 'reka-ui'
 import { type Website, hostOf, thumbnailOf } from '../api'
 import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
+import { useMenuAction } from '../menu'
 
 const props = defineProps<{ website: Website }>()
 const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
@@ -85,20 +86,7 @@ function onKeydown(event: KeyboardEvent) {
   })
 }
 
-let chosen: (() => void) | null = null
-
-function choose(action: () => void) {
-  chosen = action
-}
-
-// Reka gives the focus back later: a dialog opened before that would give it back to an item that is gone
-function afterClose(event: Event) {
-  if (!chosen) return
-  event.preventDefault()
-  more.value?.$el.focus()
-  chosen()
-  chosen = null
-}
+const { choose, afterClose } = useMenuAction(more)
 </script>
 
 <template>

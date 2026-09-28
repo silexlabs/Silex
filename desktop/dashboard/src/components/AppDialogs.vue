@@ -107,7 +107,6 @@ function submit() {
     :key="dialog.id"
     ref="element"
     class="dialog"
-    :class="{ 'dialog--alert': dialog.kind === 'error' }"
     :role="dialog.kind === 'prompt' ? undefined : 'alertdialog'"
     :aria-labelledby="titleId"
     :aria-describedby="described()"
@@ -207,10 +206,6 @@ function submit() {
   border-radius: var(--silex-radius-md);
   background: var(--silex-bg-main);
   color: var(--silex-text-primary);
-}
-
-.dialog--alert {
-  border-top: 3px solid var(--silex-status-error);
 }
 
 .dialog::backdrop {

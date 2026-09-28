@@ -178,13 +178,9 @@ async function use(template: Template) {
 }
 
 .template__description {
-  display: -webkit-box;
   margin: 0;
-  overflow: hidden;
   color: var(--silex-text-secondary);
   font-size: 12px;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
 }
 
 .template__preview {
@@ -227,9 +223,9 @@ async function use(template: Template) {
   position: absolute;
   top: var(--silex-space-2);
   left: var(--silex-space-2);
-  padding: var(--silex-space-1) var(--silex-space-2);
+  padding: 2px var(--silex-space-3);
   border: 1px solid var(--silex-border-color-visible);
-  border-radius: var(--silex-radius-sm);
+  border-radius: 999px;
   background: var(--silex-bg-darker);
   color: var(--silex-text-primary);
   font-size: 12px;

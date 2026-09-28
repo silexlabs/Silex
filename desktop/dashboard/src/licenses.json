@@ -1425,7 +1425,7 @@
    "name": "css-line-break",
    "version": "2.1.0",
    "license": "MIT",
-   "repository": "ssh://git@github.com/niklasvh/css-line-break",
+   "repository": "https://github.com/niklasvh/css-line-break",
    "texts": [
     95
    ]
@@ -4883,7 +4883,7 @@
    "name": "text-segmentation",
    "version": "1.0.3",
    "license": "MIT",
-   "repository": "ssh://git@github.com/niklasvh/text-segmentation",
+   "repository": "https://github.com/niklasvh/text-segmentation",
    "texts": [
     306
    ]
@@ -5395,7 +5395,7 @@
    "name": "utrie",
    "version": "1.0.2",
    "license": "MIT",
-   "repository": "ssh://git@github.com/niklasvh/utrie",
+   "repository": "https://github.com/niklasvh/utrie",
    "texts": [
     306
    ]

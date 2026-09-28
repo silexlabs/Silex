@@ -14,6 +14,7 @@ import {
 } from 'reka-ui'
 import { type Language, savedLanguage, setLanguage, systemLanguage } from '../i18n'
 import contributors from '../contributors.json'
+import thanks from '../thanks.json'
 import ExternalLink from '../components/ExternalLink.vue'
 import LocalizedList from '../components/LocalizedList.vue'
 
@@ -26,6 +27,8 @@ const options = computed(() => ({
 const languageId = useId()
 const helpId = useId()
 const aboutId = useId()
+const thanksId = useId()
+const softwareId = useId()
 const author = 'Alex Hoyau'
 const credits = contributors
   .map(({ year, people }) => ({ year, people: people.filter(({ name }) => name !== author) }))
@@ -35,7 +38,6 @@ const upstream = [
   { name: 'GrapesJS', href: 'https://github.com/GrapesJS/grapesjs' },
   { name: 'Tauri', href: 'https://tauri.app/' },
   { name: 'Vue', href: 'https://vuejs.org/' },
-  { name: 'Axum', href: 'https://github.com/tokio-rs/axum' },
   { name: 'Eleventy', href: 'https://www.11ty.dev/' },
 ]
 // Reka refuses an empty value on an item
@@ -49,24 +51,32 @@ function choose(value: Language | 'system') {
 const version = ref('')
 // Outside the app window there is no Tauri to ask
 getVersion().then((value) => { version.value = value }, () => {})
+const releaseNotes = computed(() => (version.value.includes('-dev')
+  ? 'https://github.com/silexlabs/Silex/releases'
+  : `https://github.com/silexlabs/Silex/releases/tag/v${version.value}`))
 </script>
 
 <template>
   <h1 tabindex="-1">
     {{ $t('Settings') }}
   </h1>
-  <div class="settings__field">
-    <label
-      class="settings__label"
-      :for="languageId"
-    >{{ $t('Language') }}</label>
+  <section
+    class="settings__section"
+    :aria-labelledby="languageId"
+  >
+    <h2
+      :id="languageId"
+      class="settings__title"
+    >
+      {{ $t('Language') }}
+    </h2>
     <SelectRoot
       :model-value="language"
       @update:model-value="choose"
     >
       <SelectTrigger
-        :id="languageId"
         class="select settings__select"
+        :aria-labelledby="languageId"
         :aria-describedby="helpId"
       >
         <SelectValue />
@@ -98,9 +108,9 @@ getVersion().then((value) => { version.value = value }, () => {})
     >
       {{ $t('Applies to the whole app, including the editor.') }}
     </p>
-  </div>
+  </section>
   <section
-    class="settings__about"
+    class="settings__section"
     :aria-labelledby="aboutId"
   >
     <h2
@@ -111,6 +121,13 @@ getVersion().then((value) => { version.value = value }, () => {})
     </h2>
     <p class="settings__name">
       Silex Desktop {{ version }}
+      <ExternalLink
+        v-if="version"
+        class="settings__link"
+        :href="releaseNotes"
+        :name="$t('Release notes')"
+        arrow
+      />
     </p>
     <p class="settings__help">
       {{ $t('Free software under the AGPL.') }}
@@ -121,6 +138,18 @@ getVersion().then((value) => { version.value = value }, () => {})
         arrow
       />
     </p>
+  </section>
+
+  <section
+    class="settings__section"
+    :aria-labelledby="thanksId"
+  >
+    <h2
+      :id="thanksId"
+      class="settings__title"
+    >
+      {{ $t('Thanks') }}
+    </h2>
     <details class="settings__credits">
       <summary class="settings__help">
         {{ $t('Created by Alex Hoyau and one contributor | Created by Alex Hoyau and {count} contributors', others.size) }}
@@ -146,7 +175,55 @@ getVersion().then((value) => { version.value = value }, () => {})
       </p>
     </details>
     <p class="settings__help">
-      <i18n-t keypath="Silex is built on free software, first of all {projects}.">
+      <i18n-t keypath="Partners: {names}">
+        <template #names>
+          <LocalizedList
+            v-slot="{ item }"
+            :items="thanks.partners"
+          >
+            <ExternalLink
+              class="settings__link"
+              :href="item.href"
+              :name="item.name"
+            />
+          </LocalizedList>
+        </template>
+      </i18n-t>
+    </p>
+    <details class="settings__credits">
+      <summary class="settings__help">
+        {{ $t('Community') }}
+      </summary>
+      <p class="settings__help">
+        <LocalizedList
+          v-slot="{ item }"
+          :items="thanks.community"
+        >
+          <ExternalLink
+            v-if="item.href"
+            class="settings__link"
+            :href="item.href"
+            :name="item.name"
+          /><template v-else>
+            {{ item.name }}
+          </template>
+        </LocalizedList>
+      </p>
+    </details>
+  </section>
+
+  <section
+    class="settings__section"
+    :aria-labelledby="softwareId"
+  >
+    <h2
+      :id="softwareId"
+      class="settings__title"
+    >
+      {{ $t('Free software') }}
+    </h2>
+    <p class="settings__help">
+      <i18n-t keypath="Silex relies on many other free and open source programs, among them {projects}.">
         <template #projects>
           <LocalizedList
             v-slot="{ item: project }"
@@ -159,27 +236,23 @@ getVersion().then((value) => { version.value = value }, () => {})
             />
           </LocalizedList>
         </template>
-      </i18n-t> <RouterLink
-        class="settings__link"
-        to="/settings/licenses"
-      >
-        {{ $t('All licenses') }}
-      </RouterLink>
+      </i18n-t>
     </p>
+    <RouterLink
+      class="settings__link settings__more"
+      to="/settings/licenses"
+    >
+      {{ $t('See the programs used and their licenses') }}
+    </RouterLink>
   </section>
 </template>
 
 <style scoped>
-.settings__field {
+.settings__section {
   display: flex;
   flex-direction: column;
   gap: var(--silex-space-1);
-  max-width: 620px;
   margin-top: var(--silex-space-6);
-}
-
-.settings__label {
-  font-weight: 500;
 }
 
 .settings__select {
@@ -198,17 +271,10 @@ getVersion().then((value) => { version.value = value }, () => {})
   font-size: 13px;
 }
 
-.settings__about {
-  display: flex;
-  flex-direction: column;
-  gap: var(--silex-space-1);
-  margin-top: var(--silex-space-6);
-}
-
 .settings__title {
   margin: 0 0 var(--silex-space-1);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .settings__name {
@@ -231,6 +297,11 @@ getVersion().then((value) => { version.value = value }, () => {})
 
 .settings__link {
   color: var(--silex-text-primary);
+}
+
+.settings__more {
+  width: fit-content;
+  font-size: 13px;
 }
 
 </style>

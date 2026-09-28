@@ -1,0 +1,91 @@
+{
+ "partners": [
+  {
+   "name": "NLnet (NGI0 Commons Fund)",
+   "href": "https://www.silex.me/nlnet/"
+  },
+  {
+   "name": "OW2",
+   "href": "https://projects.ow2.org/view/silex/"
+  },
+  {
+   "name": "NoCode France",
+   "href": "https://www.nocode-france.fr/"
+  },
+  {
+   "name": "Internet 2000",
+   "href": "https://internet2000.net/"
+  },
+  {
+   "name": "WhyNotProd",
+   "href": "https://www.whynotprod.com/"
+  },
+  {
+   "name": "JP Web Design",
+   "href": "https://jpwebdesign.be/"
+  }
+ ],
+ "community": [
+  {
+   "name": "Brice Martin",
+   "href": "https://github.com/ceubri"
+  },
+  {
+   "name": "André Polykanine",
+   "href": "https://www.linkedin.com/in/menelion/"
+  },
+  {
+   "name": "Jean-Pierre Gay",
+   "href": "https://fr.linkedin.com/in/jean-pierre-gay-0804971"
+  },
+  {
+   "name": "Pol Goasdoué",
+   "href": "https://github.com/PolHenri"
+  },
+  {
+   "name": "Ariel Sommeria-Klein",
+   "href": "https://github.com/arielsom"
+  },
+  {
+   "name": "Franck Moutardier",
+   "href": "https://fr.linkedin.com/in/fmoutardier"
+  },
+  {
+   "name": "Raphaël Harmel"
+  },
+  {
+   "name": "Gregory Parodi"
+  },
+  {
+   "name": "devpix-web"
+  },
+  {
+   "name": "BaguetteAgile",
+   "href": "https://github.com/BaguetteAgile"
+  },
+  {
+   "name": "Jonas Moreau",
+   "href": "https://github.com/MoreauJonas"
+  },
+  {
+   "name": "sidmint",
+   "href": "https://github.com/sidmint"
+  },
+  {
+   "name": "Likha Studios",
+   "href": "https://github.com/GetLikha"
+  },
+  {
+   "name": "promoviper",
+   "href": "https://github.com/promoviper"
+  },
+  {
+   "name": "gtiani",
+   "href": "https://github.com/gtiani"
+  },
+  {
+   "name": "Francisco Zadikian",
+   "href": "https://github.com/fzadikian"
+  }
+ ]
+}

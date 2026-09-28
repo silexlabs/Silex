@@ -1,9 +1,9 @@
 <script lang="ts">
 import { ref } from 'vue'
 
-export type ToastKind = 'success' | 'info' | 'error'
+type ToastKind = 'success' | 'info' | 'error'
 
-export interface Toast {
+interface Toast {
   id: number
   message: string
   kind: ToastKind
@@ -15,12 +15,12 @@ export const toasts = ref<Toast[]>([])
 const timers = new Map<number, ReturnType<typeof setTimeout>>()
 let last = 0
 
-export function hold(id: number) {
+function hold(id: number) {
   clearTimeout(timers.get(id))
   timers.delete(id)
 }
 
-export function release(item: Toast) {
+function release(item: Toast) {
   hold(item.id)
   if (item.kind !== 'error') timers.set(item.id, setTimeout(() => dismiss(item.id), 20000))
 }

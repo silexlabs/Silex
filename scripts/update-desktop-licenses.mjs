@@ -23,6 +23,7 @@ function repositoryUrl(repository) {
     .replace(/^git\+/, '')
     .replace(/^git:\/\//, 'https://')
     .replace(/^git@github\.com:/, 'https://github.com/')
+    .replace(/^ssh:\/\/git@github\.com\//, 'https://github.com/')
     .replace(/^(github:)?([\w.-]+\/[\w.-]+)$/, 'https://github.com/$2')
     .replace(/\.git$/, '')
 }

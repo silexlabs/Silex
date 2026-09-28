@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+} from 'reka-ui'
 import WebsiteCard from '../components/WebsiteCard.vue'
 import AppTooltip from '../components/AppTooltip.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
+import { useMenuAction } from '../menu'
 import { confirm, prompt, showError } from '../components/AppDialogs.vue'
 import { toast } from '../components/AppToasts.vue'
 import {
@@ -20,6 +29,7 @@ import {
 } from '../api'
 
 const { t, locale } = useI18n()
+const router = useRouter()
 
 const websites = ref<Website[] | null>(null)
 const failed = ref<ReturnType<typeof explain> | null>(null)
@@ -88,6 +98,9 @@ async function create() {
     await showError({ title: t('Silex could not create the website'), ...explain(error) })
   }
 }
+
+const newWebsite = useTemplateRef<InstanceType<typeof DropdownMenuTrigger>>('newWebsite')
+const newWebsiteMenu = useMenuAction(newWebsite)
 
 async function rename(website: Website) {
   const name = await prompt({
@@ -182,6 +195,34 @@ async function showFolder(website: Website) {
         {{ $t('Choose a website to edit.') }}
       </p>
     </div>
+  </div>
+
+  <div class="websites__tools">
+    <template v-if="searchable">
+      <input
+        ref="search"
+        v-model="query"
+        :aria-keyshortcuts="ariaKeys('Mod+F')"
+        type="search"
+        class="websites__search"
+        :aria-label="$t('Search websites by name')"
+        :placeholder="$t('Search by name')"
+      >
+      <label class="websites__sort">
+        {{ $t('Sort by') }}
+        <select
+          v-model="order"
+          class="select"
+        >
+          <option value="edited">
+            {{ $t('Last edited') }}
+          </option>
+          <option value="name">
+            {{ $t('Name') }}
+          </option>
+        </select>
+      </label>
+    </template>
     <div class="websites__actions">
       <AppTooltip :text="$t('Refresh ({keys})', { keys: keyLabel('F5') })">
         <button
@@ -199,24 +240,45 @@ async function showFolder(website: Website) {
           ><path d="M21 12a9 9 0 1 1-2.64-6.36L21 8M21 3v5h-5" /></svg>
         </button>
       </AppTooltip>
-      <AppTooltip
-        v-if="websites?.length !== 0"
-        :text="keyLabel('Mod+N')"
-      >
-        <button
-          type="button"
+      <DropdownMenuRoot v-if="websites?.length !== 0">
+        <DropdownMenuTrigger
+          ref="newWebsite"
           class="button button--primary"
-          :aria-keyshortcuts="ariaKeys('Mod+N')"
-          @click="create"
         >
           <svg
             class="websites__icon"
             viewBox="0 0 24 24"
             aria-hidden="true"
           ><path d="M12 5v14M5 12h14" /></svg>
-          {{ $t('New website…') }}
-        </button>
-      </AppTooltip>
+          {{ $t('New website') }}
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent
+            class="menu"
+            align="end"
+            :side-offset="4"
+            @close-auto-focus="newWebsiteMenu.afterClose"
+          >
+            <DropdownMenuItem
+              class="menu__item"
+              :aria-keyshortcuts="ariaKeys('Mod+N')"
+              @select="newWebsiteMenu.choose(create)"
+            >
+              {{ $t('Blank website…') }}
+              <span
+                class="menu__keys"
+                aria-hidden="true"
+              >{{ keyLabel('Mod+N') }}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              class="menu__item"
+              @select="newWebsiteMenu.choose(() => router.push('/templates'))"
+            >
+              {{ $t('From a template…') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenuRoot>
     </div>
   </div>
 
@@ -290,34 +352,6 @@ async function showFolder(website: Website) {
   </div>
 
   <template v-else>
-    <div
-      v-if="searchable"
-      class="websites__tools"
-    >
-      <input
-        ref="search"
-        v-model="query"
-        :aria-keyshortcuts="ariaKeys('Mod+F')"
-        type="search"
-        class="websites__search"
-        :aria-label="$t('Search websites by name')"
-        :placeholder="$t('Search by name')"
-      >
-      <label class="websites__sort">
-        {{ $t('Sort by') }}
-        <select
-          v-model="order"
-          class="select"
-        >
-          <option value="edited">
-            {{ $t('Last edited') }}
-          </option>
-          <option value="name">
-            {{ $t('Name') }}
-          </option>
-        </select>
-      </label>
-    </div>
     <p
       v-if="!shown.length"
       class="page__lead"
@@ -362,6 +396,7 @@ async function showFolder(website: Website) {
   display: flex;
   align-items: center;
   gap: var(--silex-space-2);
+  margin-left: auto;
 }
 
 .websites__refresh {

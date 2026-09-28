@@ -23,6 +23,8 @@ const csp = [
 ].join('; ')
 
 export default defineConfig({
+  // Keeps the errors of the Rust build above, under tauri dev
+  clearScreen: false,
   plugins: [
     {
       name: 'content-security-policy',

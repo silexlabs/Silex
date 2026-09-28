@@ -31,9 +31,9 @@ pnpm lint    # ESLint and Stylelint
 
 Run `pnpm templates` to refresh the template list from silex.me before a release, then commit
 `src/templates.json`.
-After a change of dependencies, JS or Rust, run `pnpm run licenses` and commit `src/licenses.json`: it
-lists the packages the app includes, from `pnpm-lock.yaml` and `Cargo.lock`. CI fails if it is not up
-to date.
+`pnpm run doc` at the root refreshes what the About section and the licenses page show: the contributors
+in the README, then `src/contributors.json`, `src/thanks.json` (from `THANKS.md`) and `src/licenses.json` (from
+`pnpm-lock.yaml` and `Cargo.lock`). Run it after a change of dependencies or of `THANKS.md`, then commit.
 
 ## Conventions
 
