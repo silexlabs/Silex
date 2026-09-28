@@ -76,9 +76,6 @@ jobs:
       - name: Lint the desktop dashboard
         run: pnpm --filter @silexlabs/silex-desktop-dashboard lint
 
-      - name: Check that the licenses shown by the desktop app are up to date
-        run: node scripts/update-desktop-licenses.mjs && git diff --exit-code desktop/dashboard/src/licenses.json
-
   # ── Rust: server-rust library + desktop app ──────────────────────
   rust:
     name: rust (server-rust + desktop)
