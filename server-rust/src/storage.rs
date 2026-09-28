@@ -247,7 +247,8 @@ pub async fn create_website_from_template(
             image_url: None,
         };
         set_website_meta(data_path, &website_id, &meta).await?;
-        history::start_from_template(&site, &template_repo).map_err(Error::Told)
+        history::start_from_template(&site, &template_repo)
+            .map_err(|why| Error::Said(Said::raw(why)))
     }
     .await;
 

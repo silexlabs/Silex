@@ -61,14 +61,10 @@ pub enum Error {
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
-    /// Something the person editing has to know, in their own words (HTTP 500)
+    /// Something the person has to know, in their own words (HTTP 500)
     ///
-    /// The editor shows it as it is written here, so no prefix names what went
-    /// wrong technically.
-    #[error("{0}")]
-    Told(String),
-
-    /// Something the dashboard says in the language of the person (HTTP 500)
+    /// The dashboard translates it, the editor shows its English as it is, so
+    /// no prefix names what went wrong technically.
     #[error("{0}")]
     Said(Said),
 }
@@ -83,7 +79,7 @@ impl Error {
             Error::InvalidWebsite(_) | Error::Damaged { .. } => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Io(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Error::Json(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::Told(_) | Error::Said(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::Said(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 

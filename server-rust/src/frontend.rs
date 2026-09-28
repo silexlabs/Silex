@@ -36,7 +36,10 @@ pub struct EditorAssets;
 #[cfg(feature = "embed-frontend")]
 pub fn configure<S: Clone + Send + Sync + 'static>(app: Router<S>) -> Router<S> {
     app.fallback(|req: Request| async move {
-        serve::<EditorAssets>(asset(req.uri().path()), if_none_match(&req))
+        match asset(req.uri().path()) {
+            "index.html" => serve_editor::<EditorAssets>(if_none_match(&req)),
+            path => serve::<EditorAssets>(path, if_none_match(&req)),
+        }
     })
 }
 
@@ -105,6 +108,57 @@ pub fn serve<E: Embed>(path: &str, if_none_match: Option<&str>) -> Response {
     try_serve::<E>(path, if_none_match).unwrap_or_else(|| StatusCode::NOT_FOUND.into_response())
 }
 
+/// The desktop app gives the editor its IPC, so no script from elsewhere may
+/// run there, only its bundle and the inline script that starts it. A website
+/// in the canvas takes its styles, fonts, images and embeds from anywhere, and
+/// its data sources are any https API.
+#[cfg(feature = "embed-frontend")]
+fn editor_csp(page: &[u8]) -> String {
+    use base64::Engine;
+    use sha2::{Digest, Sha256};
+
+    let page = String::from_utf8_lossy(page);
+    let inline: String = page
+        .split("<script>")
+        .skip(1)
+        .filter_map(|rest| rest.split_once("</script>"))
+        .map(|(script, _)| {
+            let hash = base64::engine::general_purpose::STANDARD.encode(Sha256::digest(script));
+            format!(" 'sha256-{hash}'")
+        })
+        .collect();
+    [
+        "default-src 'self'".to_string(),
+        format!("script-src 'self'{inline}"),
+        "style-src 'self' 'unsafe-inline' https:".into(),
+        "font-src 'self' data: https:".into(),
+        "img-src 'self' data: blob: https: http:".into(),
+        "media-src 'self' data: blob: https: http:".into(),
+        "frame-src 'self' https:".into(),
+        "connect-src 'self' ipc: http://ipc.localhost https: http:".into(),
+        "worker-src 'self' blob:".into(),
+        "object-src 'none'".into(),
+        "base-uri 'self'".into(),
+        "form-action 'self'".into(),
+        "frame-ancestors 'self'".into(),
+    ]
+    .join("; ")
+}
+
+/// The editor's page, with its content security policy
+#[cfg(feature = "embed-frontend")]
+pub fn serve_editor<E: Embed>(if_none_match: Option<&str>) -> Response {
+    let mut response = serve::<E>("index.html", if_none_match);
+    let policy = E::get("index.html")
+        .and_then(|page| header::HeaderValue::from_str(&editor_csp(&page.data)).ok());
+    if let Some(policy) = policy {
+        response
+            .headers_mut()
+            .insert(header::CONTENT_SECURITY_POLICY, policy);
+    }
+    response
+}
+
 #[cfg(feature = "embed-frontend")]
 pub fn if_none_match<B>(req: &axum::http::Request<B>) -> Option<&str> {
     req.headers()
@@ -114,7 +168,22 @@ pub fn if_none_match<B>(req: &axum::http::Request<B>) -> Option<&str> {
 
 #[cfg(all(test, feature = "embed-frontend"))]
 mod tests {
-    use super::matches;
+    use super::{editor_csp, matches};
+
+    #[test]
+    fn the_editor_policy_lets_only_its_own_inline_script_run() {
+        let page = b"<script src=\"js/main.js\"></script><script>silex.start()</script>";
+        let policy = editor_csp(page);
+        let scripts = policy
+            .split("; ")
+            .find(|directive| directive.starts_with("script-src"))
+            .unwrap();
+        // sha256 of `silex.start()`
+        assert_eq!(
+            scripts,
+            "script-src 'self' 'sha256-ZTqXUZ+1NRAS9IrIvnHGa9CJ4DvqhjohfKUUoSpEgWQ='"
+        );
+    }
 
     #[test]
     fn if_none_match_is_compared_weakly() {

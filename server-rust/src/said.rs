@@ -38,6 +38,8 @@ pub const DAMAGED: &str = "Could not read “{file}”. This file of your websit
 pub const COPY_PUBLISHED_OVER: &str =
     "The copy would have kept where the first website is published, and publishing it would have replaced the first one.";
 pub const NOT_IN_A_WEBSITE: &str = "Silex only opens the folders of your websites, not {path}.";
+pub const NOT_VERSIONED: &str =
+    "Your website is saved on this computer. What Silex could not do is add this version to its history:";
 pub const DOES_NOT_OPEN: &str =
     "Silex only opens web addresses and the folders of your websites, not {url}.";
 
@@ -56,6 +58,7 @@ pub const ALL: &[&str] = &[
     COPY_PUBLISHED_OVER,
     NOT_IN_A_WEBSITE,
     DOES_NOT_OPEN,
+    NOT_VERSIONED,
 ];
 
 #[derive(Debug, Clone, Default, Serialize)]

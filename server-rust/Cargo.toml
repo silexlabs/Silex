@@ -39,10 +39,13 @@ mime_guess = "2"
 
 # Embedded frontend assets (optional, for single-binary distribution)
 rust-embed = { version = "8", optional = true, features = ["include-exclude"] }
+# The hash of the editor's inline script, for its content security policy
+sha2 = { version = "0.10", optional = true }
+base64 = { version = "0.22", optional = true }
 
 [features]
 default = []
-embed-frontend = ["rust-embed"]
+embed-frontend = ["rust-embed", "sha2", "base64"]
 
 [dev-dependencies]
 # Calling the router in tests without opening a socket

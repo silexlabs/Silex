@@ -21,7 +21,7 @@ use axum::routing::get;
 use axum::Router;
 
 use rust_embed::Embed;
-use silex_server::frontend::{if_none_match, serve, try_serve, EditorAssets};
+use silex_server::frontend::{if_none_match, serve, serve_editor, try_serve, EditorAssets};
 
 /// Path relative to this crate's Cargo.toml
 #[derive(Embed)]
@@ -36,7 +36,7 @@ pub fn configure(app: Router) -> Router {
             |Query(params): Query<HashMap<String, String>>, req: Request| async move {
                 let if_none_match = if_none_match(&req);
                 if params.contains_key("id") {
-                    serve::<EditorAssets>("index.html", if_none_match)
+                    serve_editor::<EditorAssets>(if_none_match)
                 } else {
                     serve::<DashboardAssets>("index.html", if_none_match)
                 }
@@ -60,9 +60,21 @@ pub fn configure(app: Router) -> Router {
     })
 }
 
+/// The dashboard's own copy, which the screenshots of the MCP load too
+pub fn html2canvas() -> Option<String> {
+    DashboardAssets::iter()
+        .find(|path| path.starts_with("_dashboard/html2canvas-"))
+        .map(|path| format!("/{path}"))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_screenshots_find_html2canvas_in_the_dashboard() {
+        assert!(html2canvas().is_some());
+    }
 
     #[test]
     fn the_dashboard_hides_no_file_of_the_editor() {

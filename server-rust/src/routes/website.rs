@@ -37,6 +37,7 @@ use crate::held::held;
 use crate::history::{self, Versioned};
 use crate::models::{File, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
 use crate::routes::AppState;
+use crate::said::{self, Said};
 use crate::storage;
 
 /// Build website routes
@@ -168,10 +169,7 @@ async fn update_website(
         // the disk.
         if worth_saying(&state, query.website_id.as_str(), &why) {
             tracing::error!("Could not version website {}: {}", query.website_id, why);
-            return Err(Error::Told(format!(
-                "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
-                why
-            )));
+            return Err(Error::Said(Said::new(said::NOT_VERSIONED).because(why)));
         }
     }
 
