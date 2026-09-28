@@ -20,20 +20,20 @@
  * reusing the getTranslation()/addMessages() pattern already proven in
  * grapesjs-advanced-selector, instead of a second JS i18n library.
  * Locale files are plain JSON identity maps (English string -> translation),
- * one full, standalone file per BCP-47 locale, loaded as-is with no
+ * one full, standalone file per language or BCP-47 locale, loaded as-is with no
  * merge/overlay step.
  */
 
 import { Editor } from 'grapesjs'
-import enUS from '../locales/en-US.json'
-import frFR from '../locales/fr-FR.json'
+import en from '../locales/en.json'
+import fr from '../locales/fr.json'
 
 const localeMessages: Record<string, Record<string, string>> = {
-  'en-US': enUS,
-  'fr-FR': frFR,
+  en,
+  fr,
 }
 
-const SOURCE_LOCALE = 'en-US'
+const SOURCE_LOCALE = 'en'
 
 /**
  * localStorage key used by the language switcher (settings-sections.ts) to
@@ -53,28 +53,20 @@ export function getAvailableLocales(): string[] {
 }
 
 /**
- * Fallback chain: exact locale match, else (only for a bare language code
- * with no region, e.g. 'fr') the first shipped locale for that language,
- * else the source locale (en-US).
- *
- * The bare-language step exists for callers outside our control that only
- * know two-letter codes (e.g. the SaaS dashboard's "open editor" link sends
- * `?lang=fr`, not `?lang=fr-FR`) — without it, such a link would silently
- * reset the editor to en-US instead of the closest available French.
- *
- * It does NOT apply to an already region-qualified request: an unshipped
- * region (e.g. fr-CH) still falls straight back to en-US rather than being
- * redirected to a different region (e.g. fr-FR) picked on its behalf.
+ * Resolve an exact locale first, then fall back to another shipped locale for
+ * the same language (including between bare and region-qualified tags), and
+ * finally use the source locale.
  */
 export function resolveLocale(requested: string | undefined | null, available: string[] = getAvailableLocales()): string {
-  if (!requested) return SOURCE_LOCALE
-  if (available.includes(requested)) return requested
-  if (!requested.includes('-')) {
-    const lang = requested.toLowerCase()
-    const match = available.find(locale => locale.split('-')[0].toLowerCase() === lang)
-    if (match) return match
-  }
-  return SOURCE_LOCALE
+  const normalized = requested?.trim().replace(/_/g, '-')
+  if (!normalized) return SOURCE_LOCALE
+
+  const exactMatch = available.find(locale => locale.toLowerCase() === normalized.toLowerCase())
+  if (exactMatch) return exactMatch
+
+  const language = normalized.split('-')[0].toLowerCase()
+  const languageMatches = available.filter(locale => locale.split('-')[0].toLowerCase() === language)
+  return languageMatches.find(locale => !locale.includes('-')) ?? languageMatches[0] ?? SOURCE_LOCALE
 }
 
 const untranslatedKeys = new Set<string>()

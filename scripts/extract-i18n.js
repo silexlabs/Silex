@@ -2,7 +2,7 @@
 /**
  * Extracts translatable strings from `t(editor, '...')` call sites in
  * editor/**\/*.ts and `msg('...')` call sites in server/**\/*.ts, and merges
- * them into editor/src/locales/en-US.json as identity keys (English string
+ * them into editor/src/locales/en.json as identity keys (English string
  * used as its own key, matching the project's i18n house style).
  *
  * Usage:
@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import path from 'path'
 
 const root = process.cwd()
-const localeFile = path.join(root, 'editor', 'src', 'locales', 'en-US.json')
+const localeFile = path.join(root, 'editor', 'src', 'locales', 'en.json')
 
 const checkMode = process.argv.includes('--check')
 const pruneMode = process.argv.includes('--prune')
@@ -71,11 +71,11 @@ const unused = [...existingKeys].filter(key => !foundKeys.has(key))
 
 if (checkMode) {
   if (missing.length) {
-    console.error(`i18n:extract --check failed: ${missing.length} key(s) referenced in source but missing from en-US.json:`)
+    console.error(`i18n:extract --check failed: ${missing.length} key(s) referenced in source but missing from en.json:`)
     missing.forEach(key => console.error(`  - ${JSON.stringify(key)}`))
     process.exit(1)
   }
-  console.log('i18n:extract --check passed: en-US.json is in sync with source.')
+  console.log('i18n:extract --check passed: en.json is in sync with source.')
   process.exit(0)
 }
 

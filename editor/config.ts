@@ -53,7 +53,7 @@ export class ClientConfig extends Config {
 
   /**
    * language for I18n module
-   * Falls back to the browser language, then to the source locale (en-US),
+    * Falls back to the browser language, then to the source locale (en),
    * resolved against the locale files actually shipped (see editor/src/i18n).
    */
   lang = resolveLocale(
