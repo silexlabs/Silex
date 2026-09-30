@@ -18,8 +18,8 @@
 import fs from 'fs/promises'
 import { createWriteStream } from 'fs'
 import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors.js'
-import { dirname, join } from 'path'
-import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, EMPTY_WEBSITE, ConnectorOptions } from '~/common/types.js'
+import { dirname, join, resolve, sep } from 'path'
+import { ApiError, ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, EMPTY_WEBSITE, ConnectorOptions } from '~/common/types.js'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation.js'
 import { ServerConfig } from '../config.js'
@@ -51,6 +51,17 @@ async function copyDir(src, dest) {
   }
 }
 
+
+// Website ids, page paths and asset names come from the client, and the file
+// may not exist yet, so `..` is resolved on the path itself, not on the disk
+export function underPath(root: string, ...parts: string[]): string {
+  const rootPath = resolve(root)
+  const path = resolve(join(rootPath, ...parts))
+  if (path !== rootPath && !path.startsWith(rootPath + sep)) {
+    throw new ApiError('Invalid path: it leads out of the storage folder', 400)
+  }
+  return path
+}
 
 type FsSession = ConnectorSession
 
@@ -147,15 +158,15 @@ export class FsStorage implements StorageConnector<FsSession> {
   async setWebsiteMeta(session: any, id: string, data: WebsiteMetaFileContent): Promise<void> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
     const content = stringify(data)
-    const path = join(this.options.path, id, WEBSITE_META_DATA_FILE)
+    const path = underPath(this.options.path, id, WEBSITE_META_DATA_FILE)
     await fs.writeFile(path, content)
   }
 
   async getWebsiteMeta(session: FsSession, id: WebsiteId): Promise<WebsiteMeta> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
     // Get stats for website folder
-    const fileStat = await fs.stat(join(this.options.path, websiteId))
-    const path = join(this.options.path, websiteId, WEBSITE_META_DATA_FILE)
+    const fileStat = await fs.stat(underPath(this.options.path, websiteId))
+    const path = underPath(this.options.path, websiteId, WEBSITE_META_DATA_FILE)
     // Get meta file
     const content = await fs.readFile(path)
     const meta = await JSON.parse(content.toString())
@@ -183,7 +194,7 @@ export class FsStorage implements StorageConnector<FsSession> {
 
   async readWebsite(session: FsSession, websiteId: WebsiteId): Promise<WebsiteData> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const path = join(this.options.path, id, WEBSITE_DATA_FILE)
+    const path = underPath(this.options.path, id, WEBSITE_DATA_FILE)
 
     const content = await fs.readFile(path)
     const websiteDataContent = content.toString()
@@ -192,7 +203,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     const parsedData = JSON.parse(websiteDataContent)
     // Use the merge function to reconstruct website data
     const pageLoader = async (pagePath: string): Promise<string> => {
-      const fullPath = join(this.options.path, id, pagePath)
+      const fullPath = underPath(this.options.path, id, pagePath)
       const pageContent = await fs.readFile(fullPath)
       return pageContent.toString()
     }
@@ -202,7 +213,7 @@ export class FsStorage implements StorageConnector<FsSession> {
 
   async updateWebsite(session: FsSession, websiteId: WebsiteId, data: WebsiteData): Promise<void> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const websitePath = join(this.options.path, id)
+    const websitePath = underPath(this.options.path, id)
 
     // Use the split function to create separate files for pages
     const filesToWrite = split(data)
@@ -216,12 +227,12 @@ export class FsStorage implements StorageConnector<FsSession> {
     // Ensure the pages directory exists if we have page files
     const hasPageFiles = filesToWrite.some(f => f.path.startsWith(pagesFolder))
     if (hasPageFiles) {
-      await fs.mkdir(join(websitePath, pagesFolder), { recursive: true })
+      await fs.mkdir(underPath(websitePath, pagesFolder), { recursive: true })
     }
 
     // **
     // Delete pages that are not in the new website data
-    const pagesPath = join(websitePath, pagesFolder)
+    const pagesPath = underPath(websitePath, pagesFolder)
     try {
       const existingPageFiles = await fs.readdir(pagesPath)
       const newPageFiles = new Set(
@@ -241,20 +252,20 @@ export class FsStorage implements StorageConnector<FsSession> {
 
     // Write all files
     for (const file of filesToWrite) {
-      const filePath = join(websitePath, file.path)
+      const filePath = underPath(websitePath, file.path)
       await fs.writeFile(filePath, file.content)
     }
   }
 
   async deleteWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const path = join(this.options.path, id)
+    const path = underPath(this.options.path, id)
     return fs.rm(path, { recursive: true, force: true })
   }
 
   async duplicateWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
     const newWebsiteId = uuid()
-    const from = join(this.options.path, websiteId)
+    const from = underPath(this.options.path, websiteId)
     const to = join(this.options.path, newWebsiteId)
     await copyDir(from, to)
     const meta = await this.getWebsiteMeta(session, websiteId)
@@ -273,7 +284,7 @@ export class FsStorage implements StorageConnector<FsSession> {
   }
 
   async getAsset(session: FsSession, id: WebsiteId, path: string): Promise<ConnectorFile> {
-    const fullPath = join(this.options.path, id, this.options.assetsFolder, path)
+    const fullPath = underPath(this.options.path, id, this.options.assetsFolder, path)
     const content = await fs.readFile(fullPath)
     return { path, content }
   }
@@ -287,7 +298,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     let error: Error | null = null
     for (const fileStatus of filesStatuses) {
       const {file} = fileStatus
-      const path = join(this.options.path, id, assetsFolder, file.path)
+      const path = underPath(this.options.path, id, assetsFolder, file.path)
       if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
@@ -331,13 +342,13 @@ export class FsStorage implements StorageConnector<FsSession> {
 
   async deleteAssets(session: FsSession, id: WebsiteId, paths: string[]): Promise<void> {
     for (const path of paths) {
-      await fs.unlink(join(this.options.path, id, path))
+      await fs.unlink(underPath(this.options.path, id, path))
     }
   }
 
   async readAsset(session: object, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const path = join(this.options.path, id, this.options.assetsFolder, fileName)
+    const path = underPath(this.options.path, id, this.options.assetsFolder, fileName)
     return await fs.readFile(path)
   }
 }
