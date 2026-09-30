@@ -22,6 +22,21 @@ import { keymapsPlugin } from './keymaps'
 let editor: Editor
 let panel: HTMLElement
 
+function initEditor(): Editor {
+  return grapesjs.init({
+    container: '#gjs',
+    storageManager: false,
+    autorender: false,
+    plugins: [keymapsPlugin],
+  })
+}
+
+// jsdom does not implement isContentEditable
+Object.defineProperty(HTMLElement.prototype, 'isContentEditable', {
+  configurable: true,
+  get() { return !!this.closest('[contenteditable]:not([contenteditable="false"])') },
+})
+
 function pressCtrlZ(target: HTMLElement, shiftKey = false): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key: 'z', keyCode: 90, ctrlKey: true, shiftKey, bubbles: true, cancelable: true })
   target.dispatchEvent(event)
@@ -40,12 +55,7 @@ function focusInPanel(html: string): HTMLElement {
 beforeEach(() => {
   document.body.innerHTML = '<div id="gjs"></div><div id="side-panel"></div>'
   panel = document.getElementById('side-panel')!
-  editor = grapesjs.init({
-    container: '#gjs',
-    storageManager: false,
-    autorender: false,
-    plugins: [keymapsPlugin],
-  })
+  editor = initEditor()
   editor.UndoManager.clear()
   editor.addComponents('<div id="added">added</div>')
   expect(editor.getComponents()).toHaveLength(1)
@@ -53,6 +63,17 @@ beforeEach(() => {
 
 afterEach(() => {
   editor.destroy()
+})
+
+test('core:undo and core:redo handlers are replaced', () => {
+  // If GrapesJS registers its default keymaps before the plugins, the config change is too late
+  for (const [id, keys] of [['core:undo', '⌘+z, ctrl+z'], ['core:redo', '⌘+shift+z, ctrl+shift+z']]) {
+    const keymap = editor.Keymaps.get(id)
+    expect(keymap.keys).toBe(keys)
+    expect(typeof keymap.handler).toBe('function')
+    // The handler prevents the event itself, `prevent` would block the native undo of the rich text editor
+    expect(editor.Keymaps.getConfig().defaults![id].opts).toEqual({ prevent: false, force: true })
+  }
 })
 
 test('Ctrl+Z undoes when an element of a side panel has the focus', () => {
@@ -80,4 +101,52 @@ test('Ctrl+Z is left to the browser in text fields', () => {
     expect(editor.getComponents()).toHaveLength(1)
     expect(event.defaultPrevented).toBe(false)
   }
+})
+
+test('Ctrl+Z is left to the browser in contenteditable', () => {
+  const event = pressCtrlZ(focusInPanel('<div contenteditable="true">text</div>'))
+  expect(editor.getComponents()).toHaveLength(1)
+  expect(event.defaultPrevented).toBe(false)
+})
+
+test('Ctrl+Z does not undo the canvas behind a dialog', () => {
+  editor.Modal.open({ title: 'dialog', content: '<select><option>a</option></select>' })
+  let event = pressCtrlZ(focusInPanel('<select><option>a</option></select>'))
+  expect(editor.getComponents()).toHaveLength(1)
+  expect(event.defaultPrevented).toBe(false)
+  editor.Modal.close()
+  // Publish dialog
+  const publishable = editor as Editor & { PublicationManager?: unknown }
+  publishable.PublicationManager = { dialog: { isOpen: true } }
+  event = pressCtrlZ(focusInPanel('<button>publish</button>'))
+  expect(editor.getComponents()).toHaveLength(1)
+  expect(event.defaultPrevented).toBe(false)
+  delete publishable.PublicationManager
+  // Settings dialog
+  editor.Commands.add('open-settings', { run() {}, stop() {} })
+  editor.runCommand('open-settings')
+  pressCtrlZ(focusInPanel('<div tabindex="0">settings tab</div>'))
+  expect(editor.getComponents()).toHaveLength(1)
+  editor.stopCommand('open-settings')
+  pressCtrlZ(focusInPanel('<button>publish</button>'))
+  expect(editor.getComponents()).toHaveLength(0)
+})
+
+test('the keymaster filter is wrapped only once and restored on destroy', () => {
+  const keymaster = editor.Keymaps.keymaster
+  const filter = keymaster.filter
+  editor.destroy()
+  const original = keymaster.filter
+  expect(original).not.toBe(filter)
+  // Each init wraps the original filter again, it does not stack on the previous wrapper
+  const first = initEditor()
+  const wrapped = keymaster.filter
+  expect(wrapped).not.toBe(original)
+  const second = initEditor()
+  expect(keymaster.filter).toBe(wrapped)
+  second.destroy()
+  expect(keymaster.filter).toBe(wrapped)
+  first.destroy()
+  expect(keymaster.filter).toBe(original)
+  editor = initEditor()
 })

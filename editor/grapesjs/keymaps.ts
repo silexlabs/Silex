@@ -1,6 +1,7 @@
 import {Editor, PluginOptions} from 'grapesjs'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
+import {cmdOpenSettings} from './settings'
 
 // Utility functions
 
@@ -70,6 +71,7 @@ const NON_TEXT_INPUT_TYPES = ['button', 'checkbox', 'color', 'file', 'hidden', '
 
 /**
  * Checks if the element is a field where the browser has its own text undo (text inputs, textarea, contenteditable).
+ * Not isTextOrInputField from utils: it also matches selects, buttons and checkboxes, which have no native undo.
  */
 function isTextField(el: Element | null): boolean {
   if (!el) return false
@@ -86,7 +88,12 @@ function isTextField(el: Element | null): boolean {
  */
 function undoRedoHandler(command: string) {
   return (editor: Editor, sender: unknown, opts: { event?: KeyboardEvent } = {}) => {
-    if (editor.getEditing() || editor.getModel().isEditing()) return
+    // Covers the rich text edition (editing = the text view) and the layer renaming (editing = true)
+    if (editor.getModel().isEditing()) return
+    // Do not undo the canvas behind a dialog
+    if (editor.Modal.isOpen()) return
+    if ((editor as PublishableEditor).PublicationManager?.dialog?.isOpen) return
+    if (editor.Commands.isActive(cmdOpenSettings)) return
     if (isTextField(getDeepActiveElement())) return
     if (opts.event) {
       // Like GrapesJS does, also prevent the original event when it comes from the canvas iframe
@@ -100,6 +107,25 @@ function undoRedoHandler(command: string) {
 
 function isUndoRedoShortcut(event: KeyboardEvent): boolean {
   return (event.ctrlKey || event.metaKey) && !event.altKey && event.key?.toLowerCase() === 'z'
+}
+
+const UNDO_REDO_FILTER = '__silexUndoRedoFilter'
+
+/**
+ * Keymaster ignores key strokes in all inputs and selects, let undo / redo through when it is not a text field.
+ * Keymaster is a singleton shared by all the editors, so wrap its filter only once and restore it on destroy.
+ */
+function patchKeymasterFilter(editor: Editor): void {
+  const keymaster = editor.Keymaps.keymaster
+  if (keymaster.filter[UNDO_REDO_FILTER]) return
+  const defaultFilter = keymaster.filter
+  const filter = (event: KeyboardEvent) => defaultFilter(event)
+    || (isUndoRedoShortcut(event) && !isTextField(event.target as Element))
+  filter[UNDO_REDO_FILTER] = true
+  keymaster.filter = filter
+  editor.on('destroy', () => {
+    if (keymaster.filter === filter) keymaster.filter = defaultFilter
+  })
 }
 
 function whenNoFocus(editor: Editor, cbk: () => void): void {
@@ -245,14 +271,13 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
 
   // Undo / redo wherever the focus is, except in text fields
   // GrapesJS registers its default keymaps after the plugins, so change their config
+  // The handler prevents the event itself, only when it runs: with force, GrapesJS' `prevent` would also
+  // block the native undo in contenteditable (rich text edition, layer renaming)
   const { defaults } = km.getConfig()
   for (const id of ['core:undo', 'core:redo']) {
-    if (defaults?.[id]) defaults[id] = { ...defaults[id], handler: undoRedoHandler(id), opts: { force: true } }
+    if (defaults?.[id]) defaults[id] = { ...defaults[id], handler: undoRedoHandler(id), opts: { ...defaults[id].opts, force: true, prevent: false } }
   }
-  // Keymaster ignores key strokes in all inputs and selects, let undo / redo through when it is not a text field
-  const defaultFilter = km.keymaster.filter
-  km.keymaster.filter = (event: KeyboardEvent) => defaultFilter(event)
-    || (isUndoRedoShortcut(event) && !isTextField(event.target as Element))
+  patchKeymasterFilter(editor)
 
   // Handling the Escape keymap during text edition
   document.addEventListener('keydown', event => {
