@@ -85,6 +85,7 @@ export default (editor: Editor, opts) => {
         { id: 'none', value: 'none', name: 'none' },
         { id: 'inherit', value: 'inherit', name: 'inherit' },
         { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'revert', value: 'revert', name: 'revert' },
         { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: '',
