@@ -1,6 +1,7 @@
 import {Editor, PluginOptions} from 'grapesjs'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
+import {cmdOpenSettings} from './settings'
 
 // Utility functions
 
@@ -47,6 +48,36 @@ function escapeContext(editor: Editor): void {
   } else {
     selectBody(editor)
   }
+}
+
+/**
+ * Returns the element which really has the focus, looking inside the canvas iframe and inside shadow roots.
+ */
+function getDeepActiveElement(): Element | null {
+  let el: Element | null = document.activeElement
+  while (el) {
+    if (el instanceof HTMLIFrameElement) {
+      el = el.contentDocument?.activeElement ?? null
+    } else if (el.shadowRoot?.activeElement) {
+      el = el.shadowRoot.activeElement
+    } else {
+      return el
+    }
+  }
+  return el
+}
+
+const NON_TEXT_INPUT_TYPES = ['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit']
+
+/**
+ * Checks if the element is a field where the browser has its own text undo (text inputs, textarea, contenteditable).
+ * Not isTextOrInputField from utils: it also matches selects, buttons and checkboxes, which have no native undo.
+ */
+function isTextField(el: Element | null): boolean {
+  if (!el) return false
+  if ((el as HTMLElement).isContentEditable) return true
+  if (el.tagName === 'TEXTAREA') return true
+  return el.tagName === 'INPUT' && !NON_TEXT_INPUT_TYPES.includes((el as HTMLInputElement).type)
 }
 
 function whenNoFocus(editor: Editor, cbk: () => void): void {
@@ -205,5 +236,16 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
         }
       }
     }
+  })
+
+  // Handling undo / redo when the focus is in a side panel, GrapesJS skips its keymaps then
+  document.addEventListener('keydown', event => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.key?.toLowerCase() !== 'z') return
+    if (event.defaultPrevented) return // Already done by the GrapesJS keymap
+    if (editor.getModel().isEditing()) return // Rich text edition or layer renaming
+    if (editor.Modal.isOpen() || (editor as PublishableEditor).PublicationManager?.dialog?.isOpen || editor.Commands.isActive(cmdOpenSettings)) return
+    if (isTextField(getDeepActiveElement())) return // Native text undo
+    event.preventDefault()
+    editor.runCommand(event.shiftKey ? 'core:redo' : 'core:undo')
   })
 }
