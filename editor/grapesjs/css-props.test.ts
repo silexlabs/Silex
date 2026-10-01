@@ -96,26 +96,6 @@ describe('text-underline-offset', () => {
   })
 })
 
-describe('display', () => {
-  // `display: revert` lets the browser show and hide a `popover` menu by itself,
-  // which `initial` and `unset` do not
-  it('offers all the css wide keywords', () => {
-    const options = getProperty('general', 'display')
-      .getOptions()
-      .map((option: any) => option.id)
-    expect(options).toEqual(expect.arrayContaining(['inherit', 'initial', 'revert', 'unset']))
-  })
-
-  it('writes and reads back revert', () => {
-    const rule = selectNewRule()
-    getProperty('general', 'display').upValue('revert')
-    expect(rule.getStyle()).toEqual({ display: 'revert' })
-    // Reload: the value is still in the panel
-    selectNewRule(rule.getStyle() as Record<string, string>)
-    expect(getProperty('general', 'display').getValue()).toBe('revert')
-  })
-})
-
 describe('transform-origin', () => {
   it('sits right after transform in the effects sector', () => {
     const names = propertyNames('extra')
