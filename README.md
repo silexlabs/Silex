@@ -54,7 +54,7 @@ cd Silex
 pnpm install && pnpm build && pnpm start
 ```
 
-Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me).
+Then open [http://localhost:6805](http://localhost:6805). For Docker and production setups, see the [self-hosting guide](https://docs.silex.me). To work on the desktop app, see [desktop/README.md](desktop/README.md).
 
 Useful links to get you contributing fast:
 
@@ -97,7 +97,7 @@ Silex is the work of contributors from all over the world. This project is maint
 
 <!-- Auto generated contributors -->
 
-**2026** — [Alex Hoyau](https://github.com/lexoyo), [Aysajan Eziz](https://github.com/AysajanE), [JE4NVRG](https://github.com/JE4NVRG), [KozakLordOfMatrix](https://github.com/MatrixNeoKozak), [pupuking723](https://github.com/pupuking723), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Wassim Triki](https://github.com/wassim-triki)
+**2026** — [Alex Hoyau](https://github.com/lexoyo), [mikemikimike](https://github.com/mikemikimike), [Sparsh Maurya](https://github.com/SparshM07), [Sparshm786](https://github.com/Sparshm786), [ZhangXiao](https://github.com/XiaoZ-0218), [Musfiqur Rahman Saimon](https://github.com/britsync07-prog), [mdsaimon1232](https://github.com/mdsaimon1), [Ayush Dubey](https://github.com/ayush2115), [Aysajan Eziz](https://github.com/AysajanE), [JE4NVRG](https://github.com/JE4NVRG), [KozakLordOfMatrix](https://github.com/MatrixNeoKozak), [pupuking723](https://github.com/pupuking723), [Ola Mohamed](https://github.com/ola-a11y), [Syed Ishmum Ahnaf](https://github.com/SyedIshmumAhnaf), [Wassim Triki](https://github.com/wassim-triki)
 
 **2025** — [Alex Hoyau](https://github.com/lexoyo), [Mazen Kamal](https://github.com/Mazen050), Piotr Golebiewski, [ioleo](https://github.com/ioleo), [oliviermgx](https://github.com/oliviermgx)
 
@@ -123,20 +123,14 @@ Silex is the work of contributors from all over the world. This project is maint
 
 **2014** — [Alex Hoyau](https://github.com/lexoyo), [Camille Gérard-Hirne](https://github.com/camcrock), [neocorp64](https://github.com/NeoCorp), Michele Martone, [peoslaap](https://github.com/peoslaap)
 
-**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, [TheCause](https://github.com/TheCause), [yanhick](https://github.com/yanhick), Alexandre Hoyau, [Thomas Fetiveau](https://github.com/zabojad)
+**2013** — [Alex Hoyau](https://github.com/lexoyo), Yann Le Scouarnec, [TheCause](https://github.com/TheCause), [yanhick](https://github.com/yanhick), [Thomas Fetiveau](https://github.com/zabojad)
 
 
 
 <!-- Auto generated contributors -->
 
 The list above is generated from the git history of this repository, so it only covers code. Silex
-owes just as much to people whose work lives elsewhere:
-
-- **Brice Martin** ([ceubri](https://github.com/ceubri)) — templates, brand assets and design
-- **Jonas Moreau** ([MoreauJonas](https://github.com/MoreauJonas)) — detailed bug reports and feedback from real world use
-- [**BaguetteAgile**](https://github.com/BaguetteAgile) — years of bug reports and integration requests, from GitLab publishing to AI agents
-- [**sidmint**](https://github.com/sidmint) — precise usability feedback on the editor and the desktop app
-- **Likha Studios** ([GetLikha](https://github.com/GetLikha)) — reproducible bug reports on Silex v3
+owes just as much to people whose work lives elsewhere: see [THANKS.md](THANKS.md).
 
 ## Links
 

@@ -52,116 +52,100 @@ export class CurrentSelectorDisplay extends StylableElement {
   private selectRef = createRef<HTMLSelectElement>()
 
   static override styles = css`
+  ${ FOCUS_VISIBLE }
   :host {
-    ${ FOCUS_VISIBLE }
-    & {
-      font-size: 0.65rem;
-      padding: 0.25rem 0;
-    }
-    .selection {
-      display: flex;
-      border: 1px solid var(--gjs-primary-color, #333);
-      border-radius: 4px;
-      font-size: .85rem;
-      ${ customizeSelect('select.value') }
-      select.value {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        border: 1px solid var(--gjs-light-border, #333);
-        font-size: inherit;
-        font-family: monospace;
-        text-align: center;
-        margin: .15rem;
-        padding: .1rem 0;
-        text-wrap: wrap;
-        width: 100%;
-        cursor: pointer;
-        background: var(--gjs-primary-color);
-        color: inherit;
-        border-radius: 3px;
-      }
-      ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-        & > li {
-          display: inline;
-          margin: 0 0.15rem;
-        }
-      }
-      aside {
-        ul {
-          display: flex;
-          align-items: center;
-          height: 100%;
-        }
-        button, a {
-          background-color: transparent;
-          color: var(--gjs-font-color-active, #f8f8f8);
-          cursor: pointer;
-          padding: 2px;
-          margin: 0;
-          border: none;
-          opacity: 0.35;
-          display: inline-flex;
-          align-items: center;
-          transition: opacity 0.15s;
-          &:hover {
-            opacity: 1;
-          }
-        }
-        .specificity {
-          font-size: 9px;
-          cursor: default;
-          opacity: 0.4;
-        }
-      }
-    }
-    .asm-display__help {
-      text-decoration: none;
-      color: var(--gjs-secondary-color, #333);
-      &:hover {
-        color: var(--gjs-font-color-active, #fff);
-      }
-    }
-
-    .asm-display__error {
-      color: var(--gjs-warning-color, #f90);
-      margin: 0;
-      padding: 2px 0;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 10px;
-      a {
-        text-decoration: none;
-        color: var(--gjs-secondary-color, #333);
-        display: inline-flex;
-        margin-left: 0.5rem;
-        &:hover {
-          color: var(--gjs-font-color-active, #fff);
-        }
-      }
-    }
-    .asm-display__warning {
-      color: var(--gjs-warning-color, #f90);
-      margin: 0;
-      padding: 2px 0;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 10px;
-      a {
-        text-decoration: none;
-        color: var(--gjs-secondary-color, #333);
-        display: inline-flex;
-        margin-left: 0.5rem;
-        &:hover {
-          color: var(--gjs-font-color-active, #fff);
-        }
-      }
-    }
+    font-size: 0.65rem;
+    padding: 0.25rem 0;
+  }
+  :host .selection {
+    display: flex;
+    border: 1px solid var(--gjs-primary-color, #333);
+    border-radius: 4px;
+    font-size: .85rem;
+  }
+  ${ customizeSelect(':host .selection select.value') }
+  :host .selection select.value {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 1px solid var(--gjs-light-border, #333);
+    font-size: inherit;
+    font-family: monospace;
+    text-align: center;
+    margin: .15rem;
+    padding: .1rem 0;
+    text-wrap: wrap;
+    width: 100%;
+    cursor: pointer;
+    background: var(--gjs-primary-color);
+    color: inherit;
+    border-radius: 3px;
+  }
+  :host .selection ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  :host .selection ul > li {
+    display: inline;
+    margin: 0 0.15rem;
+  }
+  :host .selection aside ul {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  :host .selection aside button,
+  :host .selection aside a {
+    background-color: transparent;
+    color: var(--gjs-font-color-active, #f8f8f8);
+    cursor: pointer;
+    padding: 2px;
+    margin: 0;
+    border: none;
+    opacity: 0.5;
+    display: inline-flex;
+    align-items: center;
+    transition: opacity 0.15s;
+  }
+  :host .selection aside button:hover,
+  :host .selection aside a:hover,
+  :host .selection aside button:focus-visible,
+  :host .selection aside a:focus-visible {
+    opacity: 1;
+  }
+  :host .selection aside .specificity {
+    font-size: 11px;
+    cursor: default;
+    opacity: 0.6;
+  }
+  :host .asm-display__help {
+    text-decoration: none;
+    color: var(--gjs-secondary-color, #333);
+  }
+  :host .asm-display__help:hover {
+    color: var(--gjs-font-color-active, #fff);
+  }
+  :host .asm-display__error,
+  :host .asm-display__warning {
+    color: var(--gjs-warning-color, #f90);
+    margin: 0;
+    padding: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 10px;
+  }
+  :host .asm-display__error a,
+  :host .asm-display__warning a {
+    text-decoration: none;
+    color: var(--gjs-secondary-color, #333);
+    display: inline-flex;
+    margin-left: 0.5rem;
+  }
+  :host .asm-display__error a:hover,
+  :host .asm-display__warning a:hover {
+    color: var(--gjs-font-color-active, #fff);
   }
   `
 

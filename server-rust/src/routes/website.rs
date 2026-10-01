@@ -14,7 +14,7 @@
 //! - POST /api/website/?websiteId=X - Update website
 //! - PUT /api/website/ - Create website
 //! - DELETE /api/website/?websiteId=X - Delete website
-//! - POST /api/website/duplicate?websiteId=X - Duplicate website
+//! - POST /api/website/duplicate?websiteId=X&name=Y - Duplicate website, `name` optional
 //! - GET /api/website/meta?websiteId=X - Read metadata
 //! - POST /api/website/meta?websiteId=X - Write metadata
 //! - GET /api/website/assets/:path?websiteId=X - Read asset
@@ -37,6 +37,7 @@ use crate::held::held;
 use crate::history::{self, Versioned};
 use crate::models::{File, WebsiteId, WebsiteMeta, WebsiteMetaFileContent};
 use crate::routes::AppState;
+use crate::said::{self, Said};
 use crate::storage;
 
 /// Build website routes
@@ -69,6 +70,14 @@ pub struct WebsiteQuery {
     pub website_id: WebsiteId,
 }
 
+/// `name` is sent by the desktop app, which names the copy in the language of the user
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DuplicateQuery {
+    pub website_id: WebsiteId,
+    pub name: Option<String>,
+}
+
 // ==================
 // Response types
 // ==================
@@ -80,10 +89,10 @@ pub struct MessageResponse {
     pub message: &'static str,
 }
 
-/// `websiteId` is read by the desktop app, to open the website it just created
+/// `websiteId` is read by the desktop app, to open or show the website it just made
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateResponse {
+pub struct NewWebsiteResponse {
     pub website_id: String,
     pub message: &'static str,
 }
@@ -160,10 +169,7 @@ async fn update_website(
         // the disk.
         if worth_saying(&state, query.website_id.as_str(), &why) {
             tracing::error!("Could not version website {}: {}", query.website_id, why);
-            return Err(Error::Told(format!(
-                "Your website is saved on this computer. What Silex could not do is add this version to its history: {}",
-                why
-            )));
+            return Err(Error::Said(Said::new(said::NOT_VERSIONED).because(why)));
         }
     }
 
@@ -195,10 +201,10 @@ fn forget(state: &AppState, website_id: &str) {
 async fn create_website(
     State(state): State<AppState>,
     Json(meta): Json<WebsiteMetaFileContent>,
-) -> Result<Json<CreateResponse>> {
+) -> Result<Json<NewWebsiteResponse>> {
     let website_id = storage::create_website(&state.data_path, &meta).await?;
 
-    Ok(Json(CreateResponse {
+    Ok(Json(NewWebsiteResponse {
         website_id: website_id.to_string(),
         message: "Website created",
     }))
@@ -219,11 +225,13 @@ async fn delete_website(
 /// Duplicate a website
 async fn duplicate_website(
     State(state): State<AppState>,
-    Query(query): Query<WebsiteQuery>,
-) -> Result<Json<MessageResponse>> {
-    storage::duplicate_website(&state.data_path, &query.website_id).await?;
+    Query(query): Query<DuplicateQuery>,
+) -> Result<Json<NewWebsiteResponse>> {
+    let website_id =
+        storage::duplicate_website(&state.data_path, &query.website_id, query.name).await?;
 
-    Ok(Json(MessageResponse {
+    Ok(Json(NewWebsiteResponse {
+        website_id: website_id.to_string(),
         message: "Website duplicated",
     }))
 }
@@ -246,8 +254,8 @@ async fn get_meta(
 /// Left as it was when nobody knows better, so a website kept on this computer
 /// alone still answers where its files are.
 ///
-/// On a thread of its own: answering starts a program per website, and a
-/// listing of a dozen would hold the thread the server answers with.
+/// On a thread of its own: answering opens the git repository of each website
+/// on disk, and a listing of a dozen would hold the thread the server answers with.
 async fn where_they_are_kept(state: &AppState, websites: Vec<WebsiteMeta>) -> Vec<WebsiteMeta> {
     let Some(actions) = state.actions.clone() else {
         return websites;

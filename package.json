@@ -67,6 +67,7 @@
     "build:client": "webpack --config webpack.config.js",
     "build:server": "tsc -p tsconfig-server-release.json && tsc-alias -p tsconfig-server-release.json",
     "build:public": "node scripts/copy-assets.mjs",
+    "build:desktop": "pnpm run build && pnpm --filter @silexlabs/silex-desktop-dashboard run build",
     "start": "node dist/server/server/",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
     "dev": "pnpm run build:server && pnpm run build:client && run-p watch start:debug",
@@ -78,7 +79,7 @@
     "lint:plugins": "pnpm -r --filter \"./grapesjs-plugins/*\" run lint",
     "build:plugins": "pnpm -r --filter \"./grapesjs-plugins/*\" run build",
     "prepare": "husky",
-    "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors"
+    "doc": "scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors && node scripts/update-desktop-contributors.mjs && node scripts/update-desktop-licenses.mjs"
   },
   "watch": {
     "build:client": {

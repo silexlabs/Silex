@@ -74,9 +74,9 @@ where the websites live, and lets `SILEX_DATA_PATH` override it.
 
 ## Serving the frontend
 
-With the `embed-frontend` feature, the editor (`../dist/client/`) and the dashboard
-(`../silex-dashboard-2026/public/`) are compiled into the binary. The dashboard is served at `/`, the
-editor at `/?id=<website id>`. Without the feature, the crate serves the API only.
+With the `embed-frontend` feature, the editor (`../dist/client/`) is compiled into the binary. The
+desktop app adds its own dashboard at `/` and serves the editor at `/?id=<website id>`. Without the
+feature, the crate serves the API only.
 
 ## Project structure
 

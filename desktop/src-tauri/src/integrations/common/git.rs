@@ -10,79 +10,67 @@
 //! The git of the user, and what it knows about a website
 //!
 //! Sending a website somewhere is somebody else's network, keys and passwords,
-//! and the git of the user already knows all three. Silex carries no git of its
-//! own. Making versions of a website is the server's, not this.
+//! and the git of the user already knows all three: only sending and taking in
+//! start it. What the repository says is read without starting a program, a
+//! save asks it every time. Making versions of a website is
+//! the server's, not this.
 
 use std::path::{Path, PathBuf};
 
+use git2::ConfigLevel;
+use silex_server::{repository, TEMPLATE_REMOTE};
+
 use super::run::{failure, run, run_sync_pull, run_transfer_verbatim, Ran};
-
-/// The branch assumed when git cannot say which one HEAD is on
-const BRANCH: &str = "main";
-
-/// Ask git about the repository of the website, and nothing over the network
-///
-/// Only the repository in the website folder: git climbs up to an enclosing
-/// one when the folder has none, and would answer for the wrong repository.
-fn asked(site: &Path, args: &[&str]) -> Option<String> {
-    if !site.join(".git").exists() {
-        return None;
-    }
-    run(&Git::found()?.program, site, args).ok()
-}
 
 /// Every remote of the repository, with the URL it was given
 ///
-/// Read from the config rather than from `git remote get-url`, which resolves
-/// insteadOf rewrites: the host is told from what the user wrote.
+/// Read from the config rather than with `Repository::find_remote`, which
+/// applies insteadOf rewrites: the host is told from what the user wrote.
 fn remotes(site: &Path) -> Vec<(String, String)> {
-    // -z: one entry per NUL, name and value parted by a newline, so that a URL
-    // holding a space or a newline is read whole
-    let Some(configured) = asked(
-        site,
-        &[
-            "config",
-            "--local",
-            "-z",
-            "--get-regexp",
-            r"^remote\..*\.url$",
-        ],
-    ) else {
+    let Some(config) = repository(site)
+        .ok()
+        .and_then(|repo| repo.config().ok())
+        .and_then(|config| config.open_level(ConfigLevel::Local).ok())
+    else {
+        return Vec::new();
+    };
+    let Ok(configured) = config.entries(Some(r"^remote\..*\.url$")) else {
         return Vec::new();
     };
 
     let mut found: Vec<(String, String)> = Vec::new();
-    for entry in configured.split('\0') {
-        let Some((setting, url)) = entry.split_once('\n') else {
-            continue;
+    let _ = configured.for_each(|entry| {
+        let (Ok(setting), Ok(url)) = (entry.name(), entry.value()) else {
+            return;
         };
         let name = setting
             .strip_prefix("remote.")
             .and_then(|rest| rest.strip_suffix(".url"));
         let Some(name) = name else {
-            continue;
+            return;
         };
         let url = url.trim();
         // A remote can be given several URLs, and git sends to the first
         if name.is_empty() || url.is_empty() || found.iter().any(|(known, _)| known == name) {
-            continue;
+            return;
         }
         found.push((name.to_string(), url.to_string()));
-    }
+    });
     found
 }
 
 /// The remote a website is published to: `origin` when there is one, the first
-/// the user configured otherwise
+/// the user configured otherwise, never `upstream`
 ///
 /// A repository set up by hand does not always call it `origin`, and reading
-/// that name alone leaves those websites publishing nothing at all.
+/// that name alone leaves those websites publishing nothing at all. `upstream`
+/// is the template a website was made from, which publishing must not replace.
 fn published_to(site: &Path) -> Option<(String, String)> {
     let remotes = remotes(site);
     remotes
         .iter()
         .find(|(name, _)| name == "origin")
-        .or_else(|| remotes.first())
+        .or_else(|| remotes.iter().find(|(name, _)| name != TEMPLATE_REMOTE))
         .cloned()
 }
 
@@ -93,13 +81,6 @@ pub fn remote_name(site: &Path) -> Option<String> {
 /// As the user wrote it
 pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
-}
-
-fn branch_name(site: &Path) -> String {
-    asked(site, &["symbolic-ref", "--short", "HEAD"])
-        .map(|name| name.trim().to_string())
-        .filter(|name| !name.is_empty())
-        .unwrap_or_else(|| BRANCH.to_string())
 }
 
 /// The git program found on this machine
@@ -146,7 +127,15 @@ impl Git {
     /// the folder in a state its user has no terminal to get out of.
     fn push_branch(&self, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), String> {
         // Together, because two pushes mean two handshakes with the host
-        let mut sending = vec!["push", "--porcelain", remote, "HEAD"];
+        // The remote's name comes from .git/config: never read as an option
+        let mut sending = vec![
+            "push",
+            "--porcelain",
+            "--set-upstream",
+            "--end-of-options",
+            remote,
+            "HEAD",
+        ];
         sending.extend(tag);
         let ran = run_transfer_verbatim(&self.program, site, &sending)?;
         if !ran.failed {
@@ -169,12 +158,16 @@ impl Git {
         let Some(remote) = remote_name(site) else {
             return Ok(());
         };
-        let branch = branch_name(site);
         // Fetched then merged rather than pulled: only the fetch reaches a
         // network, and `pull` reads settings of the user that are not Silex's
         // business to inherit.
-        run_sync_pull(&self.program, site, &["fetch", &remote, &branch])?;
-        run(&self.program, site, &["merge", "--ff-only", "FETCH_HEAD"]).map(|_| ())
+        run_sync_pull(&self.program, site, &["fetch", "--end-of-options", &remote])?;
+        // No upstream before the first publication sets one: nothing to take in
+        let upstream = repository(site).is_ok_and(|repo| repo.revparse_single("@{u}").is_ok());
+        if !upstream {
+            return Ok(());
+        }
+        run(&self.program, site, &["merge", "--ff-only", "@{u}"]).map(|_| ())
     }
 }
 
@@ -287,10 +280,6 @@ mod tests {
 
     #[test]
     fn a_remote_url_written_across_two_lines_is_read_whole() {
-        if Git::found().is_none() {
-            return;
-        }
-
         let site = a_website(
             "across",
             "[remote \"origin\"]\n\turl = \"https://example.org/a\\nb.git\"\n",
@@ -303,11 +292,7 @@ mod tests {
     }
 
     #[test]
-    fn the_remote_is_origin_or_the_first_one_configured() {
-        if Git::found().is_none() {
-            return;
-        }
-
+    fn the_remote_is_origin_or_the_first_other_than_upstream() {
         let site = a_website(
             "origin",
             "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n[remote \"origin\"]\n\turl = https://gitlab.com/lexoyo/site.git\n",
@@ -317,13 +302,12 @@ mod tests {
             remote_url(&site).as_deref(),
             Some("https://gitlab.com/lexoyo/site.git")
         );
-        assert_eq!(branch_name(&site), "main");
         let _ = std::fs::remove_dir_all(&site);
 
         // A repository set up by hand does not always call it origin
         let site = a_website(
             "named",
-            "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
+            "[remote \"upstream\"]\n\turl = https://gitlab.com/silex-templates/a.git\n[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
         );
         assert_eq!(remote_name(&site).as_deref(), Some("backup"));
         assert_eq!(
@@ -340,7 +324,6 @@ mod tests {
         let site = std::env::temp_dir().join(format!("silex-git-bare-{}", std::process::id()));
         std::fs::create_dir_all(&site).unwrap();
         assert_eq!(remote_url(&site), None);
-        assert_eq!(branch_name(&site), BRANCH);
         let _ = std::fs::remove_dir_all(&site);
     }
 

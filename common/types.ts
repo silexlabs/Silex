@@ -64,9 +64,10 @@ export type ApiWebsiteWriteBody = WebsiteData
 export type ApiWebsiteWriteResponse = { message: string }
 export type ApiWebsiteCreateQuery = { connectorId?: ConnectorId }
 export type ApiWebsiteCreateBody = WebsiteMetaFileContent
-export type ApiWebsiteCreateResponse = { message: string }
+export type ApiWebsiteCreateResponse = { websiteId: WebsiteId, message: string }
 export type ApiWebsiteDeleteQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
 export type ApiWebsiteDuplicateQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteDuplicateResponse = { websiteId: WebsiteId, message: string }
 export type ApiWebsiteForkQuery = { connectorId?: ConnectorId }
 export type ApiWebsiteForkBody = { gitlabUrl: string }
 export type ApiWebsiteForkResponse = { websiteId: WebsiteId, message: string }
@@ -342,8 +343,9 @@ export interface WebsiteMetaFileContent {
  */
 export interface WebsiteMeta extends WebsiteMetaFileContent {
   websiteId: WebsiteId
-  createdAt?: Date
-  updatedAt?: Date
+  /** ISO 8601, as JSON carries a date */
+  createdAt?: string
+  updatedAt?: string
 
   /** Visibility string: 'private', 'public', 'internal', etc. */
   visibility?: string

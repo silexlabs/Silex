@@ -61,125 +61,123 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-  :host {
-    ${ FOCUS_VISIBLE }
-    section {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.10rem;
-      border-radius: 0.2rem;
-      cursor: pointer;
-      background-color: var(--gjs-main-light-color, #f9f9f9);
-    }
-    section:has(:invalid) {
-      background: rgba(255, 0, 0, 0.1) !important;
-    }
-    header {
-      width: 12px;
-      text-wrap: nowrap;
-      transition: all .2s ease-out;
-      overflow: hidden;
-      text-align: center;
-      line-height: 1;
-    }
-    section:focus-within header,
-    section:hover header {
-      width: 0;
-    }
-    section.asm-simple-selector__id:focus-within header,
-    section.asm-simple-selector__id:hover header {
-      width: 12px;
-    }
-    footer {
-      width: 0;
-      transition: all .2s ease-out;
-      overflow: hidden;
-    }
-    section:focus-within footer,
-    section:hover footer {
-      width: 12px;
-    }
-    section.asm-simple-selector__id:focus-within footer,
-    section.asm-simple-selector__id:hover footer {
-      width: 0;
-    }
-    select {
-      text-align: center;
-    }
-    input, select, button {
-      font-family: inherit;
-      font-size: inherit;
-      color: var(--gjs-secondary-color, #333);
-    }
-    .asm-simple-selector__delete-button {
-      padding: 0;
-      line-height: 1;
-      margin: 1px;
-      background: transparent;
-      color: var(--gjs-color-warn, #f00);
-      font-size: 1.1rem;
-    }
-    /*
-    .asm-simple-selector__delete-button:hover {
-      color: var(--gjs-color-warn, #f00);
-      transform: scale(2) translateY(-1px);
-    }
-    */
-    .asm-simple-selector__active {
-      display: none;
-    }
-    ${ customizeInput('.asm-simple-selector__like-text') }
-    .asm-simple-selector__like-text {
-      padding: .25rem;
-    }
-    ${ customizeSelect('.asm-simple-selector__options-select') }
-    .asm-simple-selector__name {
-      display: inline-flex;
-      text-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-      min-height: 20px;
-      line-height: 1;
-      user-select: none;
-    }
-    .asm-simple-selector__selector {
-      cursor: text;
-      min-width: 200px;
-    }
+  ${ FOCUS_VISIBLE }
+  :host section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.10rem;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    background-color: var(--gjs-main-light-color, #f9f9f9);
+  }
+  :host section:has(:invalid) {
+    background: rgba(255, 0, 0, 0.1) !important;
+  }
+  :host header {
+    width: 12px;
+    text-wrap: nowrap;
+    transition: all .2s ease-out;
+    overflow: hidden;
+    text-align: center;
+    line-height: 1;
+  }
+  :host section:focus-within header,
+  :host section:hover header {
+    width: 0;
+  }
+  :host section.asm-simple-selector__id:focus-within header,
+  :host section.asm-simple-selector__id:hover header {
+    width: 12px;
+  }
+  :host footer {
+    width: 0;
+    transition: all .2s ease-out;
+    overflow: hidden;
+  }
+  :host section:focus-within footer,
+  :host section:hover footer {
+    width: 12px;
+  }
+  :host section.asm-simple-selector__id:focus-within footer,
+  :host section.asm-simple-selector__id:hover footer {
+    width: 0;
+  }
+  :host select {
+    text-align: center;
+  }
+  :host input, :host select, :host button {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--gjs-secondary-color, #333);
+  }
+  :host .asm-simple-selector__delete-button {
+    padding: 0;
+    line-height: 1;
+    margin: 1px;
+    background: transparent;
+    color: var(--gjs-color-warn, #f00);
+    font-size: 1.1rem;
+  }
+  /*
+  :host .asm-simple-selector__delete-button:hover {
+    color: var(--gjs-color-warn, #f00);
+    transform: scale(2) translateY(-1px);
+  }
+  */
+  :host .asm-simple-selector__active {
+    display: none;
+  }
+  ${ customizeInput(':host .asm-simple-selector__like-text') }
+  :host .asm-simple-selector__like-text {
+    padding: .25rem;
+  }
+  ${ customizeSelect(':host .asm-simple-selector__options-select') }
+  :host .asm-simple-selector__name {
+    display: inline-flex;
+    text-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    min-height: 20px;
+    line-height: 1;
+    user-select: none;
+  }
+  :host .asm-simple-selector__selector {
+    cursor: text;
+    min-width: 200px;
+  }
 
-    /* Try to style datalist options - browser support varies */
-    datalist {
-      position: absolute;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid var(--gjs-border-color, #ddd);
-      border-radius: 4px;
-      background: var(--gjs-main-bg-color, white);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+  /* Try to style datalist options - browser support varies */
+  :host datalist {
+    position: absolute;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--gjs-border-color, #ddd);
+    border-radius: 4px;
+    background: var(--gjs-main-bg-color, white);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 
-    /* Some browsers support styling datalist options */
-    datalist option {
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--gjs-border-light-color, #eee);
-      background: var(--gjs-main-bg-color, white);
-      color: var(--gjs-main-color, #333);
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      min-width: 250px;
-    }
+  /* Some browsers support styling datalist options */
+  :host datalist option {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--gjs-border-light-color, #eee);
+    background: var(--gjs-main-bg-color, white);
+    color: var(--gjs-main-color, #333);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 250px;
+  }
 
-    datalist option:hover {
-      background: var(--gjs-main-light-color, #f9f9f9);
-    }
+  :host datalist option:hover {
+    background: var(--gjs-main-light-color, #f9f9f9);
+  }
 
-    datalist option:last-child {
-      border-bottom: none;
-    }
+  :host datalist option:last-child {
+    border-bottom: none;
   }
   /* FIXME: this should be inside :host but it breaks opactity when visible */
   section:not(:has(.asm-simple-selector__active:checked)):not(:has(.asm-simple-selector__selector)) {

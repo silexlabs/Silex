@@ -15,10 +15,10 @@ use std::sync::Mutex;
 
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
+use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::remote::Remote;
+use super::common::run::run;
 use super::deploy::{silex_tag, Build, Deploy, EarlierBuild, Prepared, Urls};
-use super::pipeline::{ensure_build_files, ensure_pipeline_file};
-use super::remote::Remote;
-use super::run::run;
 use crate::held::held;
 
 const CODEBERG: &str = "codeberg.org";

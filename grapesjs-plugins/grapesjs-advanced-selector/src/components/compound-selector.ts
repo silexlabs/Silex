@@ -54,35 +54,33 @@ export default class CompoundSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-  :host {
-    ${ FOCUS_VISIBLE }
-    button:hover, a:hover {
-      transform: translateX(1px);
-      font-weight: bold;
-    }
-    .asm-compound__selectors {
-      display: flex;
-      gap: 0.35rem;
-      align-items: center;
-      flex-wrap: wrap;
-      padding: 0.3rem 0.5rem;
-      background-color: var(--gjs-main-dark-color);
-      border-radius: 4px;
-    }
-    .asm-compound__add {
-      color: var(--gjs-secondary-color, #b9a5a6);
-      opacity: 0.6;
-      transition: opacity 0.15s ease;
-    }
-    .asm-compound__add:hover {
-      opacity: 1;
-    }
-    .asm__add-inline {
-      font-size: 0.75rem;
-      background: transparent;
-      opacity: 0.6;
-      padding: 2px 4px;
-    }
+  ${ FOCUS_VISIBLE }
+  :host button:hover, :host a:hover {
+    transform: translateX(1px);
+    font-weight: bold;
+  }
+  :host .asm-compound__selectors {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.3rem 0.5rem;
+    background-color: var(--gjs-main-dark-color);
+    border-radius: 4px;
+  }
+  :host .asm-compound__add {
+    color: var(--gjs-secondary-color, #b9a5a6);
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+  }
+  :host .asm-compound__add:hover {
+    opacity: 1;
+  }
+  :host .asm__add-inline {
+    font-size: 0.75rem;
+    background: transparent;
+    opacity: 0.6;
+    padding: 2px 4px;
   }
   `
 

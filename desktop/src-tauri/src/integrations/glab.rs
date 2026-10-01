@@ -13,10 +13,10 @@ use std::path::{Path, PathBuf};
 
 use silex_server::{PublicationOptions, WEBSITE_URL};
 
+use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::remote::Remote;
+use super::common::run::run;
 use super::deploy::{silex_tag, Build, Deploy, Prepared, Urls};
-use super::pipeline::{ensure_build_files, ensure_pipeline_file};
-use super::remote::Remote;
-use super::run::run;
 
 /// The instance GitLab runs itself
 ///
@@ -41,11 +41,21 @@ impl Deploy for Glab {
         site: &Path,
         options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
-        if !Remote::of(site).is_some_and(|remote| signed_in_to(&remote.host)) {
+        let Some(remote) = Remote::of(site).filter(|remote| signed_in_to(&remote.host)) else {
             return Ok(None);
-        }
+        };
 
-        let repo = run(cli, site, &["repo", "view", "-F", "json"])?;
+        // GitLab answers 404 rather than 403 about a private repository
+        let repo = run(cli, site, &["repo", "view", "-F", "json"]).map_err(|e| {
+            if not_found(&e) {
+                format!(
+                    "glab is signed in to {} with an account that cannot open this repository.",
+                    remote.host
+                )
+            } else {
+                e
+            }
+        })?;
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
@@ -141,6 +151,17 @@ fn json_string(output: &str, key: &str) -> Option<String> {
     value.get(key)?.as_str().map(String::from)
 }
 
+/// glab says it on a line of its own, `404 Not Found` or `404 Project Not Found`,
+/// and exits with 1 as for any other error
+fn not_found(error: &str) -> bool {
+    error.lines().any(|line| {
+        line.contains("Not Found")
+            && line
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|word| word == "404")
+    })
+}
+
 /// Read from what glab keeps rather than from `glab auth status`, which calls
 /// the instance and costs a third of a second per website opened
 fn signed_in_to(host: &str) -> bool {
@@ -150,9 +171,19 @@ fn signed_in_to(host: &str) -> bool {
         .is_some_and(|block| holds_a_login(&block))
 }
 
+// Tests run side by side in one process, which GLAB_CONFIG_DIR would reach as a whole
+#[cfg(test)]
+thread_local! {
+    pub static CONFIG_DIR: std::cell::RefCell<Option<PathBuf>> = const { std::cell::RefCell::new(None) };
+}
+
 /// In the home of the user on every platform, and that one wins over the XDG
 /// folder when both exist
 fn config_file() -> Option<PathBuf> {
+    #[cfg(test)]
+    if let Some(dir) = CONFIG_DIR.with_borrow(Clone::clone) {
+        return Some(dir.join("config.yml"));
+    }
     if let Some(named) = std::env::var_os("GLAB_CONFIG_DIR") {
         return Some(PathBuf::from(named).join("config.yml"));
     }
@@ -280,6 +311,18 @@ hosts:
         token:
         use_keyring: "true"
 "#;
+
+    #[test]
+    fn tells_a_repository_it_cannot_open_from_other_errors() {
+        assert!(not_found("   ERROR\n  404 Not Found.\n"));
+        assert!(not_found(
+            "GET https://gitlab.com/api/v4/projects/a%2Fb: 404 {message: 404 Project Not Found}"
+        ));
+        assert!(!not_found(
+            "dial tcp: lookup gitlab.com: no such host (port 4043)"
+        ));
+        assert!(!not_found("error: 4040 items Not Found"));
+    }
 
     #[test]
     fn reads_which_hosts_glab_was_signed_in_to() {

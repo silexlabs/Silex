@@ -38,7 +38,7 @@ fn remembered() -> &'static Mutex<Remembered> {
 impl Remote {
     /// The remote of a website, asked by the integrations that work from one
     ///
-    /// Reading it starts a git, so the answer is kept against the file a remote
+    /// Reading it opens the repository, so the answer is kept against the file a remote
     /// is written in: `git remote add` in a terminal changes that file and the
     /// question is asked again. Its date alone would not do, a file system that
     /// keeps dates to the second cannot tell that second apart.
@@ -56,7 +56,7 @@ impl Remote {
             return known;
         }
 
-        // Read outside the lock, because this starts a program
+        // Read outside the lock, because this reads the disk
         let read = Remote::read(site);
         held(remembered()).insert(site.to_path_buf(), (written, read.clone()));
         read
@@ -90,7 +90,7 @@ impl Remote {
     }
 
     /// A host without the ssh port it was given
-    pub(super) fn without_port(authority: &str) -> &str {
+    pub(in crate::integrations) fn without_port(authority: &str) -> &str {
         match authority.rsplit_once(':') {
             Some((host, port))
                 if !host.is_empty()
@@ -266,10 +266,6 @@ mod tests {
 
     #[test]
     fn a_remote_added_from_a_terminal_is_seen() {
-        if crate::integrations::git::Git::found().is_none() {
-            return;
-        }
-
         let site = std::env::temp_dir().join(format!("silex-remote-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&site);
         std::fs::create_dir_all(site.join(".git/objects")).unwrap();
