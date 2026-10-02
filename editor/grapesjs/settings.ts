@@ -275,6 +275,9 @@ export const settingsDialog = (
   editor.on('page', (_e: unknown): void => {
     updateDom(editor)
   })
+  editor.on('i18n:locale', (): void => {
+    if (settingsState) displaySettings(editor, opts, settingsState.page, settingsState.sectionId)
+  })
   headEditor = editor.CodeManager.createViewer({
     readOnly: false,
     codeName: 'htmlmixed',

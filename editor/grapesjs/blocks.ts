@@ -20,6 +20,8 @@
  * This prevents GrapesJS from adding auto-generated IDs to published HTML
  * (GrapesJS adds IDs to components with inline styles for #id CSS selectors).
  */
+import { t } from '../src/i18n'
+
 const BLOCK_DEFAULT_STYLES: Record<string, Record<string, string>> = {
   'container': { 'min-height': '100px' },
   'text': { 'padding': '10px' },
@@ -39,7 +41,7 @@ export const blocksPlugin = (editor, opts) => {
   // Container block — use class instead of inline style
   const containerId = 'container'
   editor.BlockManager.add(containerId, {
-    label: 'Container',
+    label: t(editor, 'Container'),
     category: 'Basics',
     attributes: { class: 'container-png' },
     content: {

@@ -25,6 +25,7 @@ import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
+import { t } from '../src/i18n'
 import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
 import { EleventyDataSourceId } from './cms/DataSource'
 
@@ -525,7 +526,7 @@ export class PublicationManager {
         this.editor.runCommand('notifications:add', {
           id: `seo-validation-lang-${pageId}`,
           type: 'warning',
-          message: `Page "${pageName}": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.`,
+          message: t(this.editor, 'Page "{pageName}": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.', { pageName }),
           componentId,
           group: 'seo-validation'
         })

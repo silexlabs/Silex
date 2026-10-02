@@ -18,6 +18,7 @@
 import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
+import { t } from '../src/i18n'
 
 const pluginName = 'page-panel'
 let open
@@ -108,11 +109,11 @@ function removePageWithConfirm(editor, page) {
   }
   const content = document.createElement('div')
   const modal = editor.Modal.open({
-    title: 'Are you sure?',
+    title: t(editor, 'Are you sure?'),
     content,
   })
   render(html`
-    <p>Do you really want to remove this page?</p>
+    <p>${t(editor, 'Do you really want to remove this page?')}</p>
     <footer>
       <button
         ${ref((el: HTMLButtonElement) => {
@@ -298,6 +299,9 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
   // update
   const doRender = () => render(renderPages(editor, opts), el)
   editor.on('page', () => {
+    doRender()
+  })
+  editor.on('i18n:locale', () => {
     doRender()
   })
   editor.on('load', () => {
