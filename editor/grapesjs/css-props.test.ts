@@ -220,13 +220,14 @@ describe('transform-origin', () => {
 })
 
 describe('transition', () => {
-  it('keeps the three sub properties of the grapesjs stack', () => {
+  it('keeps the grapesjs sub properties and adds the delay last', () => {
     const prop = getProperty('extra', 'transition')
     expect(prop.getType()).toBe('stack')
     expect(prop.getProperties().map((sub: any) => sub.getId())).toEqual([
       'transition-property-sub',
       'transition-duration-sub',
       'transition-timing-function-sub',
+      'transition-delay-sub',
     ])
   })
 
@@ -251,13 +252,70 @@ describe('transition', () => {
       'transition-duration-sub': '2s',
       'transition-timing-function-sub': 'ease-in-out',
     }, { at: 0 })
-    expect(rule.getStyle()).toEqual({ transition: 'filter 2s ease-in-out' })
+    // The delay is not set, so it is written with its default
+    expect(rule.getStyle()).toEqual({ transition: 'filter 2s ease-in-out 0s' })
     // Reload: the layer is still in the panel
     selectNewRule(rule.getStyle() as Record<string, string>)
     expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
       'transition-property-sub': 'filter',
       'transition-duration-sub': '2s',
       'transition-timing-function-sub': 'ease-in-out',
+      'transition-delay-sub': '0s',
     }])
+    // A site saved before the delay was added still loads, with the default delay
+    selectNewRule({ transition: 'filter 2s ease-in-out' })
+    expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
+      'transition-property-sub': 'filter',
+      'transition-duration-sub': '2s',
+      'transition-timing-function-sub': 'ease-in-out',
+      'transition-delay-sub': '0s',
+    }])
+  })
+
+  it('writes and reads back several layers with a cubic-bezier and a delay', () => {
+    const rule = selectNewRule()
+    const stack = getProperty('extra', 'transition')
+    stack.addLayer({
+      'transition-property-sub': 'transform',
+      'transition-duration-sub': '2s',
+      'transition-timing-function-sub': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      'transition-delay-sub': '0.5s',
+    }, { at: 0 })
+    stack.addLayer({
+      'transition-property-sub': 'opacity',
+      'transition-duration-sub': '1s',
+      'transition-timing-function-sub': 'ease',
+      'transition-delay-sub': '200ms',
+    }, { at: 1 })
+    // The delay is written last, in s or in ms
+    expect(rule.getStyle()).toEqual({
+      transition: 'transform 2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s, opacity 1s ease 200ms',
+    })
+    // Reload: the delays are read back. Grapesjs only splits outside the parentheses,
+    // so the commas and spaces of the cubic-bezier do not split the layer
+    selectNewRule(rule.getStyle() as Record<string, string>)
+    const layers = getProperty('extra', 'transition').getLayers()
+    expect(layers.map((layer: any) => layer.getValues())).toEqual([{
+      'transition-property-sub': 'transform',
+      'transition-duration-sub': '2s',
+      'transition-timing-function-sub': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      'transition-delay-sub': '0.5s',
+    }, {
+      'transition-property-sub': 'opacity',
+      'transition-duration-sub': '1s',
+      'transition-timing-function-sub': 'ease',
+      'transition-delay-sub': '200ms',
+    }])
+    // The timing function select finds ease-out-back again: it matches the exact value
+    const timing = getProperty('extra', 'transition').getProperty('transition-timing-function-sub')
+    const option = timing.getOption(layers[0].getValues()['transition-timing-function-sub'])
+    expect(option?.name).toBe('ease-out-back')
+    expect(timing.getOptionId(option)).toBe('cubic-bezier(0.34, 1.56, 0.64, 1)')
+    // The same curve written without spaces is kept as it is, but it is not the option
+    const other = selectNewRule({ transition: 'transform 2s cubic-bezier(0.34,1.56,0.64,1) 0s' })
+    const otherLayer = getProperty('extra', 'transition').getLayers()[0] as any
+    expect(otherLayer.getValues()['transition-timing-function-sub']).toBe('cubic-bezier(0.34,1.56,0.64,1)')
+    expect(other.getStyle()).toEqual({ transition: 'transform 2s cubic-bezier(0.34,1.56,0.64,1) 0s' })
+    expect(timing.getOption('cubic-bezier(0.34,1.56,0.64,1)')).toBeFalsy()
   })
 })
