@@ -253,7 +253,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
 
   // Remove a state from the selected component
   editor.Commands.add(CMD_DS_REMOVE_STATE, {
-    run(editor: Editor, sender: any, options: any = {}) {
+    run(editor: Editor, sender: unknown, options: { component?: Component; stateId?: string; exported?: boolean } = {}) {
       const component = options.component || editor.getSelected()
       if (!component) throw new Error('No component selected. Use components:select first.')
 
@@ -261,6 +261,12 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use data-source:get-states to list existing states.')
 
       const isExported = exported !== false
+      if (!getState(component, stateId, isExported)) {
+        const ids = getStateIds(component, isExported)
+        throw new Error(ids.length
+          ? `State "${stateId}" not found on the selected component. Existing states: ${ids.join(', ')}.`
+          : `State "${stateId}" not found on the selected component. It has no states.`)
+      }
       removeState(component, stateId, isExported)
 
       if (isPreviewActive) forceRender(editor)

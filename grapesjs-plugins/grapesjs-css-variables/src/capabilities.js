@@ -41,10 +41,14 @@ export function registerCommands(editor) {
       if (!canonical) {
         throw new Error(`Invalid type "${type}". Must be one of: color, size, typo (aliases: font, font-family, typography)`)
       }
+      const order = editor.getModel().get('cssVarOrder') || []
+      const existing = order.find(o => o.name === name)
+      if (existing && existing.type !== canonical) {
+        throw new Error(`Variable "${name}" already exists with type "${existing.type}", not "${canonical}". Remove it first or reuse its type.`)
+      }
       setVariable(editor, { name, value })
       // Track type in cssVarOrder
-      const order = editor.getModel().get('cssVarOrder') || []
-      if (!order.some(o => o.name === name)) {
+      if (!existing) {
         order.push({ type: canonical, name })
         editor.getModel().set('cssVarOrder', [...order])
       }
@@ -56,6 +60,12 @@ export function registerCommands(editor) {
       const { name } = opts
       if (!name) {
         throw new Error('Required: name. Example: {name: "primary"}. Use css-var:list to see existing variables.')
+      }
+      const names = getAllVariablesOrdered(editor).map(v => v.name)
+      if (!names.includes(name)) {
+        throw new Error(names.length
+          ? `Variable "${name}" not found. Existing variables: ${names.join(', ')}.`
+          : `Variable "${name}" not found. No variables defined.`)
       }
       removeVariable(editor, { name })
       // Remove from cssVarOrder
@@ -70,6 +80,18 @@ export function registerCommands(editor) {
       const { oldName, newName } = opts
       if (!oldName || !newName) {
         throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var:list to see existing variables.')
+      }
+      const names = getAllVariablesOrdered(editor).map(v => v.name)
+      if (!names.includes(oldName)) {
+        throw new Error(names.length
+          ? `Variable "${oldName}" not found. Existing variables: ${names.join(', ')}.`
+          : `Variable "${oldName}" not found. No variables defined.`)
+      }
+      if (oldName === newName) {
+        throw new Error(`Variable "${oldName}" already has that name.`)
+      }
+      if (names.includes(newName)) {
+        throw new Error(`Variable "${newName}" already exists. Choose a different name. Existing variables: ${names.join(', ')}.`)
       }
       renameVariable(editor, { oldName, newName })
     },

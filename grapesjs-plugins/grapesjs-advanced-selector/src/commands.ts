@@ -99,6 +99,13 @@ export default function registerCommands(editor: Editor) {
       const { property } = cmdOpts
       if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
       const style = rule.getStyle()
+      if (!Object.prototype.hasOwnProperty.call(style, property)) {
+        const set = Object.keys(style)
+        const selector = rule.selectorsToString?.() ?? ''
+        throw new Error(set.length
+          ? `Property "${property}" is not set on "${selector}". Set properties are: ${set.join(', ')}.`
+          : `Property "${property}" is not set on "${selector}". It has no properties set.`)
+      }
       delete style[property]
       rule.setStyle(style)
     },

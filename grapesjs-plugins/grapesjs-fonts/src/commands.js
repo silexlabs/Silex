@@ -90,8 +90,13 @@ export default function (editor, opts) {
     if (!family) throw new Error('Required: family (e.g. "Roboto"). Use fonts:installed to list installed fonts.')
 
     const fonts = editor.getModel().get('fonts') || []
-    const idx = fonts.findIndex(f => f.family === family)
-    if (idx === -1) throw new Error(`Font "${family}" not installed. Use fonts:installed to list installed fonts.`)
+    const idx = fonts.findIndex(f => f.family.toLowerCase() === family.toLowerCase())
+    if (idx === -1) {
+      const installed = fonts.map(f => f.family)
+      throw new Error(installed.length
+        ? `Font "${family}" not installed. Installed fonts: ${installed.join(', ')}.`
+        : `Font "${family}" not installed. No fonts installed.`)
+    }
 
     fonts.splice(idx, 1)
     editor.getModel().set('fonts', [...fonts])
