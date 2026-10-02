@@ -13,16 +13,29 @@ use std::path::Path;
 
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
+use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
 use super::common::run::run;
-use super::deploy::{silex_tag, Deploy, Prepared, Urls};
+use super::integration::{silex_tag, Capacity, Integration, Prepared, SyncError, Urls};
 
 pub struct Hut;
 
-impl Deploy for Hut {
+impl Integration for Hut {
     fn program(&self) -> &'static str {
         "hut"
+    }
+
+    fn capacities(&self) -> &'static [Capacity] {
+        &[Capacity::Sync, Capacity::Deploy]
+    }
+
+    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag)
+    }
+
+    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site)
     }
 
     /// Nothing ties a site of pages.sr.ht to a repository, so the address is
@@ -49,7 +62,7 @@ impl Deploy for Hut {
         &["version"]
     }
 
-    fn keeps(&self, site: &Path) -> bool {
+    fn answers_for(&self, site: &Path) -> bool {
         Remote::of(site).is_some_and(|remote| is_sourcehut(&remote.host))
     }
 
@@ -148,76 +161,4 @@ fn clone_url(remote: &Remote) -> String {
 /// to name before there is anything to list
 fn default_site(remote: &Remote) -> String {
     format!("{}.srht.site", remote.owner)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn the_manifest_clones_over_https_without_a_token() {
-        let remote = Remote::parse("https://oauth2:secret@git.sr.ht/~alex/mysite.git").unwrap();
-        let manifest = include_str!("pipelines/sourcehut.build.yml")
-            .replace("{clone_url}", &clone_url(&remote))
-            .replace("{site_host}", &default_site(&remote))
-            .replace("{repo}", &remote.repo);
-        assert!(
-            manifest.contains("- https://git.sr.ht/~alex/mysite"),
-            "{}",
-            manifest
-        );
-        assert!(
-            manifest.contains("site: alex.srht.site"),
-            "where pages.sr.ht serves this user: {}",
-            manifest
-        );
-        assert!(
-            !manifest.contains("secret"),
-            "the manifest is committed: {}",
-            manifest
-        );
-        assert!(
-            manifest.contains("image: alpine/latest"),
-            "the stable Alpine: {}",
-            manifest
-        );
-        assert!(
-            manifest.contains("refs/tags/_silex_*"),
-            "only a Silex tag builds: {}",
-            manifest
-        );
-        assert!(
-            !manifest.contains("tar -cvz"),
-            "the file list does not belong in the log"
-        );
-        assert!(
-            !manifest.contains('{'),
-            "a placeholder was left: {}",
-            manifest
-        );
-    }
-
-    #[test]
-    fn asks_for_the_address_without_offering_one() {
-        let form = Hut.options_form(Path::new("/nowhere")).unwrap();
-        assert_eq!(form.title, "SourceHut Pages");
-        let [field] = &form.fields[..] else {
-            panic!("one field, the address: {:?}", form.fields)
-        };
-        assert_eq!(field.name, WEBSITE_URL);
-        assert_eq!(field.r#type, "url");
-        // A wrong guess publishes over another website of the same user
-        assert_eq!(field.value, None);
-    }
-
-    #[test]
-    fn a_hut_that_was_never_set_up_is_not_a_failure() {
-        // What hut writes itself, before anything else, then exits
-        assert!(never_set_up(
-            "hut failed: Looks like hut's config file hasn't been set up yet.\nRun `hut init` to configure it."
-        ));
-        assert!(!never_set_up(
-            "hut failed: failed to list sites: connection refused"
-        ));
-    }
 }

@@ -181,8 +181,25 @@
         });
       });
 
-    // GrapesJS counts changes up while editing and resets the count after a save
-    editor.on('change:changesCount storage:end:store', () => invoke('set_unsaved', { unsaved: editor.getDirtyCount() > 0 }));
+    // GrapesJS zeroes its count of changes as soon as a save is asked, even
+    // one the rate-limit plugin only postponed: closing then would lose it
+    let unsaved = false;
+    let saveFailed = false;
+    const setUnsaved = (value) => {
+      unsaved = value;
+      invoke('set_unsaved', { unsaved });
+    };
+    // Loading counts changes, and it ends by resuming autosave. The `update`
+    // that zeroing the count fires is not a change.
+    editor.on('command:stop:pause-auto-save', () => setUnsaved(false));
+    editor.on('update', () => editor.getDirtyCount() > 0 && setUnsaved(true));
+    editor.on('storage:start:store', () => {
+      saveFailed = false;
+      setUnsaved(true);
+    });
+    // storage.ts tells a write that failed as a load error
+    editor.on('storage:error:store storage:error:load', () => { saveFailed = true; });
+    editor.on('storage:end:store', () => setUnsaved(saveFailed || editor.getDirtyCount() > 0));
 
     // Track project_save
     editor.on('storage:start:store', () => {
@@ -216,15 +233,19 @@
       if (editor.__publishSpan) { editor.__publishSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__publishSpan.end(); editor.__publishSpan = null; }
     });
 
-    // Listen for menu events from Tauri (triggered by MCP or quit dialog)
-    safeListen('menu-save', async () => {
-      try {
-        await editor.store();
-      } finally {
-        // Said even when the save failed: quitting waits on this, and silence
-        // would hold the app open until its own timeout
-        invoke('saved_everything');
-      }
+    // Save & Quit: asking for a save here would only be postponed, so wait
+    // for the one already on its way
+    safeListen('menu-save', () => {
+      if (saveFailed) return invoke('save_ended', { failed: true });
+      if (!unsaved) return invoke('save_ended', { failed: false });
+      const done = () => {
+        clearTimeout(late);
+        editor.off('storage:end:store storage:error:store', done);
+        invoke('save_ended', { failed: saveFailed });
+      };
+      // Nothing comes for a change made during a write, or a save held back by a publication
+      const late = setTimeout(done, 10000);
+      editor.on('storage:end:store storage:error:store', done);
     });
     safeListen('menu-undo', () => editor.UndoManager.undo());
     safeListen('menu-redo', () => editor.UndoManager.redo());

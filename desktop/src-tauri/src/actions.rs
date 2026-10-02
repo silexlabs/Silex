@@ -23,10 +23,9 @@ use tokio::sync::watch;
 
 use silex_server::{Hosting, Job, PublicationOptions};
 
-use crate::integrations::common::git;
-use crate::integrations::common::remote::{without_secret, Remote};
-use crate::integrations::deploy::{Build, Deploy, Prepared};
-use crate::integrations::Loading;
+use crate::integrations::common::remote::Remote;
+use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError};
+use crate::integrations::{Integrations, Loading};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
 /// How long Silex waits on a host, and how often it asks
@@ -66,23 +65,6 @@ impl Default for Patience {
 /// signed in sees it.
 const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 
-/// How long a website that is already on its way waits before it goes again
-///
-/// The first save of a burst leaves at once, so that one keystroke after
-/// another is not one push after another.
-const SENT_AFTER: Duration = Duration::from_secs(5);
-
-/// How long Silex leaves a send that broke down before trying it again
-///
-/// The last one is kept repeating, so a machine that stays off the network is
-/// tried once an hour rather than never again.
-const TRIED_AGAIN_AFTER: [Duration; 4] = [
-    Duration::from_secs(60),
-    Duration::from_secs(5 * 60),
-    Duration::from_secs(15 * 60),
-    Duration::from_secs(60 * 60),
-];
-
 /// The website the editor has open, shared with the Tauri state
 ///
 /// The editor asks for its hosting connector without naming a website.
@@ -90,56 +72,48 @@ pub type CurrentWebsiteId = Arc<Mutex<Option<String>>>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Sending {
-    pub state: State,
+pub struct SyncStatus {
+    pub state: SyncState,
     /// What the last attempt that failed said, until one works
     ///
     /// Apart from `state` on purpose: held in it, the error would leave the
     /// screen as soon as the user typed something.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_failure: Option<Failure>,
+    pub sync_error: Option<SyncError>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum State {
+pub enum SyncState {
     Waiting,
-    Sending,
-    Sent,
+    Pushing,
+    Pushed,
     Failed,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Failure {
-    pub why: String,
-    /// Tells a break Silex will try again from one it will not
-    pub retrying: bool,
 }
 
 /// What becomes of the error a website carried, when it moves to a new state
 ///
 /// Three answers and not two: an attempt that starts must neither drop the
 /// error before it nor claim it as its own.
-enum LastFailure {
+enum SyncErrorChange {
     Kept,
     /// Something worked, so there is nothing left to explain
     Cleared,
-    Told(Failure),
+    Told(SyncError),
 }
 use crate::held::held;
-use LastFailure::{Cleared, Kept, Told};
+use SyncErrorChange::{Cleared, Kept, Told};
 
-impl Sending {
-    fn at(state: State) -> Sending {
-        Sending {
+impl SyncStatus {
+    fn at(state: SyncState) -> SyncStatus {
+        SyncStatus {
             state,
-            last_failure: None,
+            sync_error: None,
         }
     }
 
     pub fn on_its_way(&self) -> bool {
-        matches!(self.state, State::Waiting | State::Sending)
+        matches!(self.state, SyncState::Waiting | SyncState::Pushing)
     }
 }
 
@@ -147,15 +121,15 @@ impl Sending {
 ///
 /// A watch and not a stream of events: whoever asks later has to be told
 /// without having had to listen all along.
-pub type Sendings = watch::Receiver<BTreeMap<String, Sending>>;
+pub type SyncStatuses = watch::Receiver<BTreeMap<String, SyncStatus>>;
 
 /// Told by the editor once it has finished saving, whether or not it had
-/// anything to save
+/// anything to save, true when the save failed
 ///
-/// A count and not a flag: what waits on this needs one more save since it
-/// started waiting, not that any ever happened.
-pub type Saves = watch::Sender<u64>;
-pub type Saved = watch::Receiver<u64>;
+/// Every telling counts, even of the same value: what waits on this needs one
+/// more save since it started waiting, not that any ever happened.
+pub type SaveEnds = watch::Sender<bool>;
+pub type SaveEnded = watch::Receiver<bool>;
 
 pub struct SilexActions {
     /// Directory holding one sub directory per website
@@ -177,22 +151,32 @@ impl SilexActions {
         current_website_id: CurrentWebsiteId,
     ) -> Self {
         let integrations = Arc::new(integrations);
+        let on_its_folder = |does: fn(&Integrations, &Path) -> Result<bool, SyncError>| {
+            let data_path = data_path.clone();
+            let integrations = integrations.clone();
+            Box::new(move |website_id: &str| {
+                let site = site_path(&data_path, website_id)
+                    .ok_or_else(|| SyncError::Other(format!("Unknown website '{}'", website_id)))?;
+                does(&integrations, &site)
+            }) as OnAWebsite
+        };
         SilexActions {
             syncer: Arc::new(Syncer {
-                syncs: {
-                    let data_path = data_path.clone();
-                    let integrations = integrations.clone();
-                    Box::new(move |website_id| {
-                        let site = site_path(&data_path, website_id)
-                            .ok_or_else(|| format!("Unknown website '{}'", website_id))?;
-                        integrations.sync(&site)
-                    })
-                },
-                sent_after: SENT_AFTER,
-                tried_again_after: TRIED_AGAIN_AFTER.to_vec(),
-                queue: Mutex::new(HashMap::new()),
-                wake: Condvar::new(),
-                state: watch::Sender::new(BTreeMap::new()),
+                pushes: on_its_folder(|integrations, site| {
+                    let pushed = integrations
+                        .get(Capacity::Sync, site)
+                        .map(|(integration, _)| integration.push(site, None).map(|()| true));
+                    first_error(site, pushed.collect())
+                }),
+                syncs: on_its_folder(|integrations, site| {
+                    let synced = integrations
+                        .get(Capacity::Sync, site)
+                        .map(|(integration, _)| integration.sync(site));
+                    first_error(site, synced.collect())
+                }),
+                busy: Mutex::new(HashMap::new()),
+                freed: Condvar::new(),
+                statuses: watch::Sender::new(BTreeMap::new()),
             }),
             data_path,
             integrations,
@@ -201,8 +185,8 @@ impl SilexActions {
         }
     }
 
-    pub fn sending(&self) -> Sendings {
-        self.syncer.state.subscribe()
+    pub fn sync_statuses(&self) -> SyncStatuses {
+        self.syncer.statuses.subscribe()
     }
 
     fn site_path(&self, website_id: &str) -> Option<PathBuf> {
@@ -223,184 +207,210 @@ pub(crate) fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     (canonical.parent() == Some(data_path.as_path())).then_some(canonical)
 }
 
-struct Syncer {
-    syncs: Box<dyn Fn(&str) -> Result<(), String> + Send + Sync>,
-    sent_after: Duration,
-    tried_again_after: Vec<Duration>,
-    /// The websites a thread is looking after, and what is left to do
-    ///
-    /// An entry lives as long as that thread, which keeps it to one per website.
-    queue: Mutex<HashMap<String, Queued>>,
-    /// Wakes the thread of a website whose turn a save moved closer
-    wake: Condvar,
-    state: watch::Sender<BTreeMap<String, Sending>>,
+type OnAWebsite = Box<dyn Fn(&str) -> Result<bool, SyncError> + Send + Sync>;
+
+/// Every integration acts, and the first failure is the one told; false when
+/// nobody answered true
+fn first_error(site: &Path, results: Vec<Result<bool, SyncError>>) -> Result<bool, SyncError> {
+    let any = results.contains(&Ok(true));
+    let mut failures = results.into_iter().filter_map(Result::err);
+    let Some(first) = failures.next() else {
+        return Ok(any);
+    };
+    for later in failures {
+        tracing::warn!("Could not sync {}: {}", site.display(), later);
+    }
+    Err(first)
 }
 
-struct Queued {
-    due: Instant,
-    /// A save landed since the attempt in flight started, so it does not carry
-    /// it and another one is needed
-    again: bool,
+/// What the integrations do with each website, one thing at a time per website
+///
+/// git, the one there is, refuses rather than queues when a save, a
+/// publication and a sync race for the same ref or index.
+struct Syncer {
+    /// False when no integration answers for the website
+    pushes: OnAWebsite,
+    /// True when work done here is left to push
+    syncs: OnAWebsite,
+    /// The websites an integration is busy with, and whether a save landed
+    /// since, so that another push is needed
+    ///
+    /// An entry lives as long as that work, which keeps it to one per website.
+    busy: Mutex<HashMap<String, bool>>,
+    /// Told each time a website leaves `busy`
+    freed: Condvar,
+    statuses: watch::Sender<BTreeMap<String, SyncStatus>>,
 }
 
 impl Syncer {
+    fn push(self: &Arc<Self>, website_id: &str) {
+        let mut busy = held(&self.busy);
+        let looked_after = busy.insert(website_id.to_string(), true).is_some();
+        self.marks_waiting(website_id);
+        drop(busy);
+        if !looked_after {
+            self.lets_go(website_id);
+        }
+    }
+
+    /// Skipped while an integration is busy with this website: a push can
+    /// wait minutes on a network, and the user is waiting to open it.
     fn sync(self: &Arc<Self>, website_id: &str) {
-        let looked_after = {
-            let mut queue = held(&self.queue);
-            match queue.get_mut(website_id) {
-                Some(queued) => {
-                    queued.again = true;
-                    queued.due = Instant::now() + self.sent_after;
-                    true
-                }
-                None => {
-                    queue.insert(
-                        website_id.to_string(),
-                        Queued {
-                            due: Instant::now(),
-                            again: true,
-                        },
-                    );
-                    false
+        let Some(_claimed) = self.claims(website_id, false) else {
+            return;
+        };
+        match (self.syncs)(website_id) {
+            Ok(true) => self.push(website_id),
+            Ok(false) => self.statuses.send_modify(|websites| {
+                websites.remove(website_id);
+            }),
+            Err(why) => {
+                tracing::warn!("Could not sync website {}: {}", website_id, why);
+                // Offline would otherwise show the user an error at every opening
+                if matches!(why, SyncError::ChangedElsewhere(_)) {
+                    self.moves_to(website_id, SyncState::Failed, Told(why));
                 }
             }
-        };
-        self.queues(website_id);
-
-        if looked_after {
-            self.wake.notify_all();
-            return;
         }
+    }
 
+    /// Waits for whatever an integration is doing with this website, and
+    /// pushes what was saved meanwhile after it
+    fn alone<T>(self: &Arc<Self>, website_id: &str, work: impl FnOnce() -> T) -> T {
+        let _claimed = self.claims(website_id, true);
+        work()
+    }
+
+    fn claims<'a>(self: &'a Arc<Self>, website_id: &'a str, waits: bool) -> Option<Claimed<'a>> {
+        let mut busy = held(&self.busy);
+        while busy.contains_key(website_id) {
+            if !waits {
+                return None;
+            }
+            busy = self
+                .freed
+                .wait(busy)
+                .unwrap_or_else(|panicked| panicked.into_inner());
+        }
+        busy.insert(website_id.to_string(), false);
+        Some(Claimed(self, website_id))
+    }
+
+    fn lets_go(self: &Arc<Self>, website_id: &str) {
         let syncer = self.clone();
         let website_id = website_id.to_string();
         std::thread::spawn(move || {
-            syncer.sends(&website_id);
+            let pushing = std::panic::AssertUnwindSafe(|| syncer.keeps_pushing(&website_id));
+            if std::panic::catch_unwind(pushing).is_err() {
+                held(&syncer.busy).remove(&website_id);
+                syncer.freed.notify_all();
+                syncer.moves_to(&website_id, SyncState::Failed, Kept);
+            }
         });
     }
 
-    /// Send this website, and again for as long as there is a reason to
-    ///
-    /// The first save leaves at once and the ones that land while it goes
-    /// leave together after it: waiting out every save left a single change
-    /// sitting on this computer for five seconds.
-    fn sends(&self, website_id: &str) {
-        let mut broke_down = 0;
-        loop {
-            if !self.waits_for_its_turn(website_id) || !self.takes(website_id) {
-                return;
-            }
-            self.publishes(website_id, State::Sending, Kept);
-
-            let (state, failure, tried_again) = match (self.syncs)(website_id) {
-                Ok(()) => {
-                    broke_down = 0;
-                    (State::Sent, Cleared, None)
+    /// A publication sent everything: what failed before is behind
+    fn published(&self, website_id: &str) {
+        self.statuses.send_modify(|websites| {
+            if let Some(website) = websites.get_mut(website_id) {
+                if website.state == SyncState::Failed {
+                    website.state = SyncState::Pushed;
                 }
+                website.sync_error = None;
+            }
+        });
+    }
+
+    /// Push this website, and again for as long as saves land while it goes
+    fn keeps_pushing(&self, website_id: &str) {
+        while self.takes(website_id) {
+            self.moves_to(website_id, SyncState::Pushing, Kept);
+            let ended = match (self.pushes)(website_id) {
+                Ok(true) => Some((SyncState::Pushed, Cleared)),
+                Ok(false) => None,
                 Err(why) => {
-                    let retrying = git::worth_another_try(&why);
-                    if retrying {
-                        tracing::warn!("Could not send website {}: {}", website_id, why);
-                    } else {
-                        tracing::error!("Could not send website {}: {}", website_id, why);
-                    }
-                    let after = retrying.then(|| {
-                        let after = self.tried_again_after
-                            [broke_down.min(self.tried_again_after.len() - 1)];
-                        broke_down += 1;
-                        after
+                    tracing::warn!("Could not send website {}: {}", website_id, why);
+                    Some((SyncState::Failed, Told(why)))
+                }
+            };
+            // Under the lock a save takes to land: one that landed during the
+            // attempt must not read as nothing left to send, which Save & Quit
+            // would believe
+            let busy = held(&self.busy);
+            match ended {
+                Some((_, change)) if busy.get(website_id) == Some(&true) => {
+                    self.moves_to(website_id, SyncState::Waiting, change)
+                }
+                Some((state, change)) => self.moves_to(website_id, state, change),
+                None => {
+                    self.statuses.send_modify(|websites| {
+                        websites.remove(website_id);
                     });
-                    (State::Failed, Told(Failure { why, retrying }), after)
-                }
-            };
-
-            {
-                let mut queue = held(&self.queue);
-                let Some(queued) = queue.get_mut(website_id) else {
-                    self.publishes(website_id, state, failure);
-                    return;
-                };
-                match tried_again {
-                    Some(after) => {
-                        queued.due = Instant::now() + after;
-                        queued.again = true;
-                    }
-                    None => queued.due = Instant::now() + self.sent_after,
                 }
             }
-            self.publishes(website_id, state, failure);
         }
     }
 
-    /// Sleep until this website is due, waking if a save moves its turn
-    /// closer. False when nothing is left to do for it.
-    fn waits_for_its_turn(&self, website_id: &str) -> bool {
-        let mut queue = held(&self.queue);
-        loop {
-            let Some(queued) = queue.get(website_id) else {
-                return false;
-            };
-            let Some(left) = queued.due.checked_duration_since(Instant::now()) else {
-                return true;
-            };
-            queue = self
-                .wake
-                .wait_timeout(queue, left)
-                .unwrap_or_else(|held| held.into_inner())
-                .0;
-        }
-    }
-
-    /// Whether the attempt about to start has anything to carry
-    ///
-    /// Once a whole wait goes by with nothing, the website stops being looked
-    /// after and the next save leaves at once again.
+    /// Whether a save is waiting to be pushed, the website being let go otherwise
     fn takes(&self, website_id: &str) -> bool {
-        let mut queue = held(&self.queue);
-        if let Some(queued) = queue.get_mut(website_id) {
-            if queued.again {
-                queued.again = false;
+        let mut busy = held(&self.busy);
+        if let Some(again) = busy.get_mut(website_id) {
+            if *again {
+                *again = false;
                 return true;
             }
         }
-        queue.remove(website_id);
+        busy.remove(website_id);
+        self.freed.notify_all();
         false
     }
 
-    /// Say a save is waiting, unless one is being sent right now
-    fn queues(&self, website_id: &str) {
-        self.state
+    /// Say a save is waiting, unless one is being pushed right now
+    fn marks_waiting(&self, website_id: &str) {
+        self.statuses
             .send_if_modified(|websites| match websites.get_mut(website_id) {
                 Some(website) if website.on_its_way() => false,
                 Some(website) => {
-                    website.state = State::Waiting;
+                    website.state = SyncState::Waiting;
                     true
                 }
                 None => {
-                    websites.insert(website_id.to_string(), Sending::at(State::Waiting));
+                    websites.insert(website_id.to_string(), SyncStatus::at(SyncState::Waiting));
                     true
                 }
             });
     }
 
     /// Move a website to a state, and say what became of the error it carried
-    fn publishes(&self, website_id: &str, state: State, failure: LastFailure) {
-        self.state.send_modify(|websites| {
+    fn moves_to(&self, website_id: &str, state: SyncState, change: SyncErrorChange) {
+        self.statuses.send_modify(|websites| {
             let website = websites
                 .entry(website_id.to_string())
-                .or_insert(Sending::at(state));
+                .or_insert(SyncStatus::at(state));
             website.state = state;
-            match failure {
+            match change {
                 Kept => {}
-                Cleared => website.last_failure = None,
-                Told(failure) => website.last_failure = Some(failure),
+                Cleared => website.sync_error = None,
+                Told(error) => website.sync_error = Some(error),
             }
         });
     }
 }
 
+/// A website held by `claims`, let go however the work ends
+///
+/// A panic included: an entry left in `busy` would hold the website from every
+/// push and publication until Silex quits.
+struct Claimed<'a>(&'a Arc<Syncer>, &'a str);
+
+impl Drop for Claimed<'_> {
+    fn drop(&mut self) {
+        self.0.lets_go(self.1);
+    }
+}
+
 struct Sent {
-    provider: &'static dyn Deploy,
+    integration: &'static dyn Integration,
     cli: PathBuf,
     /// The host of its remote, as the user knows it
     host: String,
@@ -414,20 +424,16 @@ struct Sent {
 }
 
 impl silex_server::Actions for SilexActions {
-    /// A website that could not be caught up with is opened as it is: the
-    /// user is waiting to work
-    fn sync_pull(&self, website_id: &str) {
-        let Some(site) = self.site_path(website_id) else {
-            return;
-        };
-        if let Err(e) = self.integrations.sync_pull(&site) {
-            tracing::error!("Could not pull website {}: {}", website_id, e);
-        }
+    /// A website that could not be caught up with is opened as it is, and
+    /// what is left to push goes in the background: the user is waiting to
+    /// work
+    fn website_loading(&self, website_id: &str) {
+        self.syncer.sync(website_id);
     }
 
     /// Nothing of it goes online: putting a website online is `deploy`
-    fn sync(&self, website_id: &str) {
-        self.syncer.sync(website_id);
+    fn website_saved(&self, website_id: &str) {
+        self.syncer.push(website_id);
     }
 
     /// Sending is not publishing: a repository with its builds turned off
@@ -458,18 +464,42 @@ impl silex_server::Actions for SilexActions {
             .unwrap_or_default();
         let on_this_computer = || Button::secondary(FILES_ON_THIS_COMPUTER, &files);
 
-        // A local website is a way of working rather than something missing,
-        // and the server says so itself
-        let Some(remote_url) = git::remote_url(&site) else {
+        let Some(remote) = Remote::of(&site) else {
             return;
         };
-
-        let remote = without_secret(&remote_url).to_string();
-        // The user is told the host they push to, never the software it runs
-        let host = Remote::host_of(&remote_url).unwrap_or_else(|| remote.clone());
-        let sent = self
+        job.step("Looking for where your website is kept");
+        let Some((answering, repo)) = self
             .integrations
-            .publish(&site, &host, options, &|step| job.step(step))
+            .get(Capacity::Deploy, &site)
+            .next()
+            .and_then(|answering| {
+                let repo = answering.0.repo(&site)?;
+                Some((answering, repo))
+            })
+        else {
+            job.succeeded(message::explained(
+                "Your website is written on this computer.",
+                &format!(
+                    "No integration on this computer handles {}: your website stays on this computer.",
+                    remote.host
+                ),
+                &[on_this_computer()],
+            ));
+            return;
+        };
+        // The user is told the host they push to, never the software it runs
+        let host = Remote::host_of(&repo).unwrap_or_else(|| repo.clone());
+        let sent = self
+            .syncer
+            .alone(website_id, || {
+                let published =
+                    self.integrations
+                        .publish(answering, &site, &host, options, &|step| job.step(step));
+                if published.is_ok() {
+                    self.syncer.published(website_id);
+                }
+                published
+            })
             .map(|published| {
                 let signed_in = published
                     .urls
@@ -478,11 +508,11 @@ impl silex_server::Actions for SilexActions {
                     .map_err(Clone::clone);
                 let urls = published.urls.ok().flatten().unwrap_or_default();
                 Sent {
-                    build_url: published.provider.watch(&urls, &published.prepared),
+                    build_url: published.integration.watch(&urls, &published.prepared),
                     site_url: urls.site,
                     settings_url: urls.settings,
                     warning: urls.warning,
-                    provider: published.provider,
+                    integration: published.integration,
                     cli: published.cli,
                     host: host.clone(),
                     prepared: published.prepared,
@@ -498,7 +528,7 @@ impl silex_server::Actions for SilexActions {
                 // language of the machine
                 job.detail(failure.clone());
                 job.failed(message::explained(
-                    &format!("Silex could not send your website to {}.", remote),
+                    &format!("Silex could not send your website to {}.", repo),
                     &failure,
                     &[on_this_computer()],
                 ));
@@ -507,16 +537,16 @@ impl silex_server::Actions for SilexActions {
                 signed_in: Err(why),
                 ..
             }) => job.succeeded(message::explained(
-                &format!("Your website is sent to {}.", remote),
+                &format!("Your website is sent to {}.", repo),
                 &format!("Silex cannot tell whether {} built it: {}", host, why),
                 &[on_this_computer()],
             )),
             // The website is taken but nobody is signed in, so there is no way
             // to ask what its build did
             Ok(sent) if sent.signed_in == Ok(false) => {
-                let program = sent.provider.program();
+                let program = sent.integration.program();
                 job.succeeded(message::explained(
-                    &format!("Your website is sent to {}.", remote),
+                    &format!("Your website is sent to {}.", repo),
                     &format!(
                         "Silex cannot tell whether {} built it, because nobody is signed in there. Sign in with the {} command to see the build and the address of your website.",
                         host, program
@@ -531,7 +561,7 @@ impl silex_server::Actions for SilexActions {
     /// A listing asks this of every website, so no program is run.
     fn repo_url(&self, website_id: &str) -> Option<String> {
         let site = self.site_path(website_id)?;
-        let (integration, _) = self.integrations.answering_for(&site)?;
+        let (integration, _) = self.integrations.get(Capacity::Sync, &site).next()?;
         integration.repo(&site)
     }
 
@@ -560,19 +590,17 @@ impl SilexActions {
     fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
         let site = self.site_path(website_id)?;
 
+        let (integration, cli) = self.integrations.get(Capacity::Deploy, &site).next()?;
         // No options handed over: nobody is publishing, and the editor keeps
         // what the user answered
-        let asked = self
-            .integrations
-            .resolve_deploy(&site, &PublicationOptions::default());
-        let (provider, _cli, urls) = match asked {
-            Ok(answered) => answered?,
+        let urls = match integration.urls(&cli, &site, &PublicationOptions::default()) {
+            Ok(urls) => urls,
             Err(e) => {
                 tracing::warn!("Could not tell what serves website {}: {}", website_id, e);
                 return None;
             }
         };
-        let options_form = provider.options_form(&site);
+        let options_form = integration.options_form(&site);
         Some(Hosting {
             connector_id: "fs-hosting",
             display_name: Remote::of(&site)?.host,
@@ -594,7 +622,7 @@ impl SilexActions {
 /// returned.
 fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
     let host = sent.host.as_str();
-    let ask = || sent.provider.build(&sent.cli, site, &sent.prepared);
+    let ask = || sent.integration.build(&sent.cli, site, &sent.prepared);
     let building = |build_url: &str| {
         message::told(
             &format!("Building your website on {}", host),
@@ -795,38 +823,21 @@ fn nothing_built_it(
 }
 
 #[cfg(test)]
-mod sending {
+mod pushing {
     use super::*;
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::mpsc;
 
-    /// A syncer that notes what it was asked to send instead of sending it
-    fn watching(sent_after: Duration) -> (Arc<Syncer>, Arc<Mutex<Vec<String>>>) {
-        let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let noted = sent.clone();
-        let syncer = answering(sent_after, move |website_id| {
-            noted.lock().unwrap().push(website_id.to_string());
-            Ok(())
-        });
-        (syncer, sent)
-    }
-
-    /// A syncer that answers what the test wants, and gives up quickly
-    fn answering(
-        sent_after: Duration,
-        syncs: impl Fn(&str) -> Result<(), String> + Send + Sync + 'static,
+    /// A syncer that answers what the test wants instead of pushing
+    fn syncer_with(
+        pushes: impl Fn(&str) -> Result<bool, SyncError> + Send + Sync + 'static,
     ) -> Arc<Syncer> {
         Arc::new(Syncer {
-            syncs: Box::new(syncs),
-            sent_after,
-            tried_again_after: vec![Duration::from_millis(40)],
-            queue: Mutex::new(HashMap::new()),
-            wake: Condvar::new(),
-            state: watch::Sender::new(BTreeMap::new()),
+            pushes: Box::new(pushes),
+            syncs: Box::new(|_| Ok(false)),
+            busy: Mutex::new(HashMap::new()),
+            freed: Condvar::new(),
+            statuses: watch::Sender::new(BTreeMap::new()),
         })
-    }
-
-    fn pushed(noted: &Arc<Mutex<Vec<String>>>) -> Vec<String> {
-        noted.lock().unwrap().clone()
     }
 
     /// Waits for what a thread does, no longer than it takes
@@ -841,169 +852,66 @@ mod sending {
     }
 
     #[test]
-    fn a_lone_save_leaves_at_once_rather_than_waiting_for_more() {
-        let (syncer, sent) = watching(Duration::from_millis(80));
-
-        syncer.sync("site");
-        std::thread::sleep(Duration::from_millis(20));
-        assert_eq!(
-            pushed(&sent),
-            ["site"],
-            "waited for saves that were never coming"
-        );
-
-        std::thread::sleep(Duration::from_millis(200));
-        assert_eq!(pushed(&sent), ["site"], "went twice for one save");
-
-        // The wait went by with nothing in it, so the next save is a first one
-        syncer.sync("site");
-        std::thread::sleep(Duration::from_millis(20));
-        assert_eq!(pushed(&sent), ["site", "site"], "the pause did not count");
-    }
-
-    #[test]
     fn saves_that_land_while_a_website_is_leaving_go_together_after_it() {
-        let (syncer, sent) = watching(Duration::from_millis(80));
+        let (let_go, held_back) = mpsc::channel::<()>();
+        let held_back = Mutex::new(held_back);
+        let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+        let noted = sent.clone();
+        let syncer = syncer_with(move |website_id| {
+            noted.lock().unwrap().push(website_id.to_string());
+            let _ = held_back.lock().unwrap().recv();
+            Ok(true)
+        });
+        let pushed = || sent.lock().unwrap().clone();
 
-        // Typing in the editor: saves close enough that only the first is on
-        // its own
+        syncer.push("site");
+        assert!(until(|| pushed().len() == 1));
         for _ in 0..5 {
-            syncer.sync("site");
-            std::thread::sleep(Duration::from_millis(20));
+            syncer.push("site");
         }
-        assert_eq!(pushed(&sent), ["site"], "the first save waited its turn");
+        let_go.send(()).unwrap();
+        drop(let_go);
 
         assert!(
-            until(|| pushed(&sent).len() == 2),
-            "what was typed after the first push never left"
+            until(|| pushed().len() == 2),
+            "what was saved during the first push never left"
         );
-        std::thread::sleep(Duration::from_millis(200));
-        assert_eq!(
-            pushed(&sent),
-            ["site", "site"],
-            "one burst, one push at each end of it"
-        );
+        std::thread::sleep(Duration::from_millis(100));
+        assert_eq!(pushed(), ["site", "site"], "one push for all those saves");
     }
 
     #[test]
-    fn a_break_in_the_network_is_tried_again_and_a_closed_door_is_not() {
-        let tries = Arc::new(AtomicUsize::new(0));
-        let counted = tries.clone();
-        let syncer = answering(Duration::from_millis(20), move |_| {
-            counted.fetch_add(1, Ordering::SeqCst);
-            Err("fatal: unable to access 'https://gitlab.com/a/b.git/': Could not resolve host: gitlab.com".to_string())
-        });
-        syncer.sync("site");
-        assert!(
-            until(|| tries.load(Ordering::SeqCst) >= 3),
-            "a network that came back would have found nobody trying"
-        );
-
-        let tries = Arc::new(AtomicUsize::new(0));
-        let counted = tries.clone();
-        let syncer = answering(Duration::from_millis(20), move |_| {
-            counted.fetch_add(1, Ordering::SeqCst);
-            Err("fatal: Authentication failed for 'https://gitlab.com/a/b.git/'".to_string())
-        });
-        syncer.sync("site");
-        assert!(until(|| tries.load(Ordering::SeqCst) == 1));
-        std::thread::sleep(Duration::from_millis(200));
-        assert_eq!(
-            tries.load(Ordering::SeqCst),
-            1,
-            "kept knocking on a door that stays shut"
-        );
-        assert!(
-            matches!(
-                sending(&syncer, "site"),
-                Some(Sending {
-                    state: State::Failed,
-                    last_failure: Some(Failure {
-                        retrying: false,
-                        ..
-                    }),
-                })
-            ),
-            "left nothing for the user to read"
-        );
+    fn a_website_no_integration_answers_for_is_not_said_to_be_sent() {
+        let syncer = syncer_with(|_| Ok(false));
+        syncer.push("site");
+        assert!(until(|| held(&syncer.busy).is_empty()));
+        assert_eq!(status_of(&syncer, "site"), None);
     }
 
-    #[test]
-    fn a_website_that_left_is_told_apart_from_one_still_on_its_way() {
-        let (syncer, _) = watching(Duration::from_millis(20));
-        assert_eq!(sending(&syncer, "site"), None);
-
-        syncer.sync("site");
-        assert!(until(|| state(&syncer, "site") == Some(State::Sent)));
-    }
-
-    #[test]
-    fn a_save_waiting_its_turn_does_not_hide_the_failure_before_it() {
-        let (syncer, _) = watching(Duration::from_millis(20));
-        syncer.state.send_modify(|websites| {
-            websites.insert(
-                "site".to_string(),
-                Sending {
-                    state: State::Failed,
-                    last_failure: Some(Failure {
-                        why: "no network".to_string(),
-                        retrying: true,
-                    }),
-                },
-            );
-        });
-
-        syncer.queues("site");
-
-        let website = sending(&syncer, "site").expect("website went missing");
-        assert_eq!(website.state, State::Waiting);
-        assert_eq!(
-            website.last_failure.map(|failure| failure.why),
-            Some("no network".to_string())
-        );
-    }
-
-    fn sending(syncer: &Arc<Syncer>, website_id: &str) -> Option<Sending> {
-        syncer.state.borrow().get(website_id).cloned()
-    }
-
-    fn state(syncer: &Arc<Syncer>, website_id: &str) -> Option<State> {
-        sending(syncer, website_id).map(|website| website.state)
+    fn status_of(syncer: &Arc<Syncer>, website_id: &str) -> Option<SyncStatus> {
+        syncer.statuses.borrow().get(website_id).cloned()
     }
 }
 
 #[cfg(test)]
 mod publications {
     use super::*;
-    use crate::integrations::deploy::Urls;
-    use silex_server::{JobData, JobStatus, Jobs};
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use crate::integrations::integration::Urls;
+    use silex_server::{JobStatus, Jobs};
 
-    #[derive(Clone, Copy)]
-    enum Says {
-        Nothing,
-        Refuses,
-        Running,
-        Built,
-        Failed,
-        CannotBeFollowed,
-        /// The question itself did not go through
-        Unreachable,
-    }
+    /// A host that never starts a build
+    struct Host;
 
-    /// A host that answers what the test lined up, in order, and keeps
-    /// repeating the last answer
-    struct Host {
-        says: &'static [Says],
-        asked: AtomicUsize,
-    }
-
-    impl Deploy for Host {
+    impl Integration for Host {
         fn program(&self) -> &'static str {
             "host"
         }
 
-        fn keeps(&self, _site: &Path) -> bool {
+        fn capacities(&self) -> &'static [Capacity] {
+            &[Capacity::Deploy]
+        }
+
+        fn answers_for(&self, _site: &Path) -> bool {
             true
         }
 
@@ -1026,32 +934,15 @@ mod publications {
         }
 
         fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
-            let asked = self.asked.fetch_add(1, Ordering::SeqCst);
-            Ok(match self.says[asked.min(self.says.len() - 1)] {
-                Says::Nothing => Build::NotStarted,
-                Says::Refuses => Build::Refused(
-                    "Actions are turned off for this repository, so nothing built your website."
-                        .to_string(),
-                ),
-                Says::Running => Build::Running(None),
-                Says::Built => Build::Built,
-                Says::Failed => Build::Failed {
-                    url: Some("https://codeberg.org/alex/site/actions/runs/12".to_string()),
-                    reason: Some("The page generator stopped on an error.".to_string()),
-                },
-                Says::CannotBeFollowed => Build::Unknown,
-                Says::Unreachable => {
-                    return Err("host failed: Could not resolve host: codeberg.org".to_string())
-                }
-            })
+            Ok(Build::NotStarted)
         }
     }
 
     const FILES: &str = "file:///data/site/public";
 
-    fn sent(host: &'static Host) -> Sent {
+    fn sent() -> Sent {
         Sent {
-            provider: host,
+            integration: &Host,
             cli: PathBuf::from("/nowhere"),
             host: "codeberg.org".to_string(),
             warning: None,
@@ -1073,24 +964,14 @@ mod publications {
         }
     }
 
-    /// Follow one publication to its end and read what the user was told
-    fn followed(host: &'static Host) -> JobData {
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), &sent(host), FILES, quickly());
-        jobs.read(job.id())
-            .expect("the publication was just followed")
-    }
-
     #[test]
     fn a_host_that_never_starts_a_build_is_not_a_publication_that_worked() {
         // Codeberg with its Actions off, or an account GitLab has not
         // verified: the push works and the website is never built
-        static NOTHING: Host = Host {
-            says: &[Says::Nothing],
-            asked: AtomicUsize::new(0),
-        };
-        let told = followed(&NOTHING);
+        let jobs = Jobs::default();
+        let job = jobs.start("Publishing");
+        watch(&job, Path::new("/nowhere"), &sent(), FILES, quickly());
+        let told = jobs.read(job.id()).unwrap();
 
         assert_eq!(told.status, JobStatus::Error);
         assert!(
@@ -1110,169 +991,5 @@ mod publications {
             told.message
         );
         assert!(told.message.contains(FILES), "{}", told.message);
-    }
-
-    #[test]
-    fn a_build_the_host_says_worked_is_the_website_being_live() {
-        static BUILDS: Host = Host {
-            says: &[Says::Nothing, Says::Running, Says::Running, Says::Built],
-            asked: AtomicUsize::new(0),
-        };
-        let told = followed(&BUILDS);
-
-        assert_eq!(told.status, JobStatus::Success);
-        assert!(
-            told.message.contains("Your website is now live!"),
-            "{}",
-            told.message
-        );
-        assert!(
-            told.message.contains("https://alex.codeberg.page/site/"),
-            "the address it is served at: {}",
-            told.message
-        );
-    }
-
-    #[test]
-    fn a_host_that_says_it_will_not_build_says_so_without_the_wait() {
-        static REFUSES: Host = Host {
-            says: &[Says::Refuses],
-            asked: AtomicUsize::new(0),
-        };
-        let started = Instant::now();
-        let told = followed(&REFUSES);
-
-        assert_eq!(told.status, JobStatus::Error);
-        assert!(
-            told.message.contains("Actions are turned off"),
-            "{}",
-            told.message
-        );
-        assert!(
-            started.elapsed() < quickly().a_build_starts_within,
-            "a host that answered has nothing to be waited for"
-        );
-    }
-
-    #[test]
-    fn a_build_that_failed_is_told_with_where_to_read_it() {
-        static FAILS: Host = Host {
-            says: &[Says::Running, Says::Failed],
-            asked: AtomicUsize::new(0),
-        };
-        let told = followed(&FAILS);
-
-        assert_eq!(told.status, JobStatus::Error);
-        assert!(told.message.contains("failed"), "{}", told.message);
-        assert!(
-            told.message.contains("actions/runs/12"),
-            "the build itself, not the list: {}",
-            told.message
-        );
-    }
-
-    #[test]
-    fn a_host_silex_cannot_follow_is_said_rather_than_called_a_success() {
-        static UNFOLLOWED: Host = Host {
-            says: &[Says::CannotBeFollowed],
-            asked: AtomicUsize::new(0),
-        };
-        let told = followed(&UNFOLLOWED);
-
-        // The website was sent, so the publication did not fail
-        assert_eq!(told.status, JobStatus::Success);
-        assert!(
-            told.message.contains("cannot follow builds"),
-            "{}",
-            told.message
-        );
-        assert!(
-            !told.message.contains("now live"),
-            "nobody checked: {}",
-            told.message
-        );
-    }
-
-    #[test]
-    fn a_host_that_could_not_be_asked_at_all_is_not_a_host_that_built_nothing() {
-        static UNREACHABLE: Host = Host {
-            says: &[Says::Unreachable],
-            asked: AtomicUsize::new(0),
-        };
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        watch(
-            &job,
-            Path::new("/nowhere"),
-            &sent(&UNREACHABLE),
-            FILES,
-            quickly(),
-        );
-        let told = jobs.read(job.id()).unwrap();
-
-        assert_eq!(told.status, JobStatus::Error);
-        assert!(told.message.contains("could not ask"), "{}", told.message);
-        assert!(
-            !told.message.contains("did not start a build"),
-            "not knowing is not the host having built nothing: {}",
-            told.message
-        );
-        // And what the program said is there for whoever wants to read it
-        assert_eq!(told.errors[0].len(), 1);
-        assert!(
-            told.errors[0][0].contains("Could not resolve host"),
-            "{:?}",
-            told.errors
-        );
-    }
-
-    #[test]
-    fn what_silex_wrote_is_offered_while_the_host_is_still_building() {
-        static BUILDING: Host = Host {
-            says: &[Says::Running],
-            asked: AtomicUsize::new(0),
-        };
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        let job_id = job.id().to_string();
-
-        let following = std::thread::spawn(move || {
-            watch(
-                &job,
-                Path::new("/nowhere"),
-                &sent(&BUILDING),
-                FILES,
-                quickly(),
-            );
-        });
-        std::thread::sleep(Duration::from_millis(10));
-
-        let while_it_builds = jobs.read(&job_id).expect("the publication is still going");
-        assert_eq!(while_it_builds.status, JobStatus::InProgress);
-        assert!(
-            while_it_builds.message.contains("Building"),
-            "{}",
-            while_it_builds.message
-        );
-        assert!(
-            while_it_builds.message.contains(FILES),
-            "the files are there to open while the host works: {}",
-            while_it_builds.message
-        );
-        assert!(
-            !while_it_builds.message.contains("now live"),
-            "nothing is live until the host says so: {}",
-            while_it_builds.message
-        );
-
-        // And a build that never ends is said to be one, not called a success
-        following.join().unwrap();
-        let told = jobs.read(&job_id).unwrap();
-        assert_eq!(told.status, JobStatus::Error);
-        assert!(
-            told.message.contains("longer than expected"),
-            "{}",
-            told.message
-        );
     }
 }

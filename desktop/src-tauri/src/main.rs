@@ -139,14 +139,14 @@ async fn show_website_folder(
 #[tauri::command]
 async fn trash_website(
     folder: tauri::State<'_, WebsitesFolder>,
-    sendings: tauri::State<'_, actions::Sendings>,
+    sync_statuses: tauri::State<'_, actions::SyncStatuses>,
     website_id: WebsiteId,
 ) -> Result<(), Said> {
     // git holds its files while it sends them, and the send would then fail on a website that is gone
-    if sendings
+    if sync_statuses
         .borrow()
         .get(website_id.as_str())
-        .is_some_and(actions::Sending::on_its_way)
+        .is_some_and(actions::SyncStatus::on_its_way)
     {
         return Err(Said::new(said::SENDING));
     }
@@ -172,8 +172,8 @@ fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
 /// Called even when it had nothing to save: quitting waits on this to tell an
 /// empty queue from one whose save is still on its way.
 #[tauri::command]
-fn saved_everything(saves: tauri::State<'_, actions::Saves>) {
-    saves.send_modify(|saves| *saves += 1);
+fn save_ended(saves: tauri::State<'_, actions::SaveEnds>, failed: bool) {
+    saves.send_replace(failed);
 }
 
 /// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
@@ -299,11 +299,14 @@ const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
 /// has not arrived yet, and only the editor tells them apart.
 ///
 /// False when the wait ran out with some still on their way.
-async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::Saved) -> bool {
+async fn everything_left(
+    sync_statuses: &mut actions::SyncStatuses,
+    save_ended: &mut actions::SaveEnded,
+) -> bool {
     let wait_until = tokio::time::Instant::now() + SAVE_AND_QUIT_WAIT;
 
     // Err is the editor gone rather than a save: nobody is going to say it now
-    if tokio::time::timeout_at(wait_until, saved.changed())
+    if tokio::time::timeout_at(wait_until, save_ended.changed())
         .await
         .is_err()
     {
@@ -311,14 +314,14 @@ async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::
     }
 
     loop {
-        if !sendings
+        if !sync_statuses
             .borrow_and_update()
             .values()
-            .any(actions::Sending::on_its_way)
+            .any(actions::SyncStatus::on_its_way)
         {
             return true;
         }
-        match tokio::time::timeout_at(wait_until, sendings.changed()).await {
+        match tokio::time::timeout_at(wait_until, sync_statuses.changed()).await {
             Err(_) => return false,
             Ok(Err(_)) => return true,
             Ok(Ok(())) => {}
@@ -328,8 +331,8 @@ async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::
 
 /// Say what has not left yet, on the one occasion it is worth saying
 ///
-/// Their work is saved on this computer either way. What they cannot see is
-/// that Silex picks this up when it opens again.
+/// Their work is saved on this computer either way: only the repository is
+/// behind, until the next change or the next opening of the website sends it.
 fn says_what_is_left(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -357,16 +360,27 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
             if result {
                 // Subscribed before the editor is asked, so that the save it
                 // is about to confirm cannot be missed
-                let saved = app_handle.state::<actions::Saves>().subscribe();
+                let saves = app_handle.state::<actions::SaveEnds>();
+                saves.send_replace(false);
+                let save_ended = saves.subscribe();
                 let _ = app_handle.emit("menu-save", ());
                 if let Some(window) = app_handle.get_webview_window("main") {
                     let _ = window.set_title(&format!("{} \u{2014} Silex", tr(locales::SAVING)));
                 }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    let mut sendings = handle.state::<actions::Sendings>().inner().clone();
-                    let mut saved = saved;
-                    if !tauri::async_runtime::block_on(everything_left(&mut sendings, &mut saved)) {
+                    let mut sync_statuses = handle.state::<actions::SyncStatuses>().inner().clone();
+                    let mut save_ended = save_ended;
+                    let left = tauri::async_runtime::block_on(everything_left(
+                        &mut sync_statuses,
+                        &mut save_ended,
+                    ));
+                    let failed = *save_ended.borrow();
+                    // The editor shows why, and closing would hide it
+                    if failed {
+                        return;
+                    }
+                    if !left {
                         says_what_is_left(&handle);
                     }
                     if let Some(window) = handle.get_webview_window("main") {
@@ -531,7 +545,7 @@ async fn start_server(
     current_website_id: actions::CurrentWebsiteId,
     dashboard_in_development: bool,
     asking_integrations: sentry::Span,
-) -> Result<(u16, actions::Sendings), Box<dyn std::error::Error>> {
+) -> Result<(u16, actions::SyncStatuses), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -555,7 +569,7 @@ async fn start_server(
         });
     });
     let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
-    let sendings = actions.sending();
+    let sync_statuses = actions.sync_statuses();
 
     let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
 
@@ -614,7 +628,7 @@ async fn start_server(
         }
     });
 
-    Ok((port, sendings))
+    Ok((port, sync_statuses))
 }
 
 /// Only debug builds read it: a leftover variable cannot redirect a release
@@ -801,7 +815,7 @@ fn main() {
             show_website_folder,
             trash_website,
             templates::create_website_from_template,
-            saved_everything,
+            save_ended,
             get_telemetry_context,
         ])
         .setup(move |app| {
@@ -825,7 +839,7 @@ fn main() {
             let pending_evals = mcp::PendingEvals::default();
             let dashboard = dashboard_in_development();
             let server = setup.start_child("app.start", "server");
-            let (port, sendings) = tauri::async_runtime::block_on(start_server(
+            let (port, sync_statuses) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
                 app_data_dir,
@@ -834,8 +848,8 @@ fn main() {
                 startup.start_child("app.start", "integrations"),
             ))?;
             server.finish();
-            app.manage(sendings);
-            app.manage(actions::Saves::new(0));
+            app.manage(sync_statuses);
+            app.manage(actions::SaveEnds::new(false));
 
             let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));
             let creating_window = setup.start_child("app.start", "window");

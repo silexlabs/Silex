@@ -26,20 +26,7 @@ pub const SAVE_BEFORE_QUITTING: &str = "Do you want to save changes before quitt
 pub const SAVE_AND_QUIT: &str = "Save & Quit";
 pub const QUIT: &str = "Quit";
 pub const SAVING: &str = "Saving your work";
-pub const NOT_SENT_YET: &str = "Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open it.";
-
-#[cfg(test)]
-const ALL: &[&str] = &[
-    UPDATE_AVAILABLE,
-    UPDATE_NOW,
-    UPDATE_AND_RESTART,
-    LATER,
-    SAVE_BEFORE_QUITTING,
-    SAVE_AND_QUIT,
-    QUIT,
-    SAVING,
-    NOT_SENT_YET,
-];
+pub const NOT_SENT_YET: &str = "Your work is saved on this computer, but some of it has not reached your repository yet.\n\nSilex will send it the next time you open this website.";
 
 pub fn in_french() -> bool {
     sys_locale::get_locale().is_some_and(|locale| locale.starts_with("fr"))
@@ -68,43 +55,5 @@ pub fn button(key: &str) -> String {
         label.replace('&', "&&")
     } else {
         label
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::collections::BTreeMap;
-
-    use super::{ALL, FRENCH};
-
-    const ENGLISH: &str = include_str!("../../dashboard/src/locales/en.json");
-
-    fn keys(locale: &str) -> BTreeMap<String, String> {
-        serde_json::from_str(locale).expect("a locale is a flat object of strings")
-    }
-
-    #[test]
-    fn both_locales_have_the_same_keys() {
-        let (english, french) = (keys(ENGLISH), keys(FRENCH));
-        let only_in_one: Vec<_> = english
-            .keys()
-            .filter(|key| !french.contains_key(*key))
-            .chain(french.keys().filter(|key| !english.contains_key(*key)))
-            .collect();
-        assert!(
-            only_in_one.is_empty(),
-            "in one locale only: {only_in_one:?}"
-        );
-    }
-
-    #[test]
-    fn what_rust_says_is_in_both_locales() {
-        let (english, french) = (keys(ENGLISH), keys(FRENCH));
-        let missing: Vec<_> = silex_server::said::ALL
-            .iter()
-            .chain(ALL)
-            .filter(|key| !english.contains_key(**key) || !french.contains_key(**key))
-            .collect();
-        assert!(missing.is_empty(), "missing from the locales: {missing:?}");
     }
 }

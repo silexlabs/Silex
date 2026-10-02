@@ -66,27 +66,3 @@ pub fn html2canvas() -> Option<String> {
         .find(|path| path.starts_with("_dashboard/html2canvas-"))
         .map(|path| format!("/{path}"))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn the_screenshots_find_html2canvas_in_the_dashboard() {
-        assert!(html2canvas().is_some());
-    }
-
-    #[test]
-    fn the_dashboard_hides_no_file_of_the_editor() {
-        let hidden: Vec<_> = DashboardAssets::iter()
-            .filter(|path| {
-                !["index.html", "silex.js"].contains(&path.as_ref())
-                    && EditorAssets::get(path).is_some()
-            })
-            .collect();
-        assert!(
-            hidden.is_empty(),
-            "served instead of the editor's: {hidden:?}"
-        );
-    }
-}

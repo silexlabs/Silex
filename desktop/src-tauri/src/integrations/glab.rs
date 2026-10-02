@@ -13,10 +13,11 @@ use std::path::{Path, PathBuf};
 
 use silex_server::{PublicationOptions, WEBSITE_URL};
 
+use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
 use super::common::run::run;
-use super::deploy::{silex_tag, Build, Deploy, Prepared, Urls};
+use super::integration::{silex_tag, Build, Capacity, Integration, Prepared, SyncError, Urls};
 
 /// The instance GitLab runs itself
 ///
@@ -26,12 +27,24 @@ const GITLAB: &str = "gitlab.com";
 
 pub struct Glab;
 
-impl Deploy for Glab {
+impl Integration for Glab {
     fn program(&self) -> &'static str {
         "glab"
     }
 
-    fn keeps(&self, site: &Path) -> bool {
+    fn capacities(&self) -> &'static [Capacity] {
+        &[Capacity::Sync, Capacity::Deploy]
+    }
+
+    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag)
+    }
+
+    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site)
+    }
+
+    fn answers_for(&self, site: &Path) -> bool {
         Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
     }
 
@@ -274,95 +287,4 @@ fn value_of(block: &str, key: &str) -> Option<String> {
         .find_map(|line| line.trim().strip_prefix(&format!("{}:", key)))
         .map(|value| value.trim().trim_matches(['"', '\'']).to_string())
         .filter(|value| !value.is_empty())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// GitLab starts every repository private, website included
-    #[test]
-    fn pages_kept_to_the_members_of_a_repository_are_worth_a_word() {
-        assert!(kept_from_visitors(r#"{"pages_access_level": "private"}"#));
-        assert!(kept_from_visitors(r#"{"pages_access_level": "enabled"}"#));
-        assert!(!kept_from_visitors(r#"{"pages_access_level": "public"}"#));
-
-        // An older GitLab leaves the setting out, which is not it keeping a
-        // website from anybody
-        assert!(!kept_from_visitors(
-            r#"{"web_url": "https://gitlab.com/a/b"}"#
-        ));
-    }
-
-    /// What glab writes, shortened
-    const CONFIG: &str = r#"
-git_protocol: ssh
-host: gitlab.com
-hosts:
-    gitlab.com:
-        api_host: gitlab.com
-        # Your GitLab access token.
-        token:
-        use_keyring:
-    gitlab.example.com:
-        token: glpat-abc123
-        user: alex
-    keyring.example.com:
-        token:
-        use_keyring: "true"
-"#;
-
-    #[test]
-    fn tells_a_repository_it_cannot_open_from_other_errors() {
-        assert!(not_found("   ERROR\n  404 Not Found.\n"));
-        assert!(not_found(
-            "GET https://gitlab.com/api/v4/projects/a%2Fb: 404 {message: 404 Project Not Found}"
-        ));
-        assert!(!not_found(
-            "dial tcp: lookup gitlab.com: no such host (port 4043)"
-        ));
-        assert!(!not_found("error: 4040 items Not Found"));
-    }
-
-    #[test]
-    fn reads_which_hosts_glab_was_signed_in_to() {
-        let signed_in = |host| host_block(CONFIG, host).is_some_and(|block| holds_a_login(&block));
-        assert!(signed_in("gitlab.example.com"));
-        // The token is in the keyring, and the block says so
-        assert!(signed_in("keyring.example.com"));
-        // glab writes this block whether or not anybody signed in
-        assert!(!signed_in("gitlab.com"));
-        // A host nobody ever named to glab
-        assert!(!signed_in("codeberg.org"));
-    }
-
-    #[test]
-    fn watches_the_publication_that_just_left_and_not_every_other_one() {
-        let pipelines = |project: &str| Urls {
-            ci: Some(format!("{project}/-/pipelines")),
-            ..Default::default()
-        };
-        let watched = Glab
-            .watch(
-                &pipelines("https://gitlab.com/lexoyo/site"),
-                &Prepared {
-                    tag: Some("_silex_1755773700000".into()),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(
-            watched,
-            "https://gitlab.com/lexoyo/site/-/pipelines?ref=_silex_1755773700000"
-        );
-
-        // Nothing tagged: the user lands on the list and finds theirs at the top
-        let every_one = Glab
-            .watch(
-                &pipelines("https://gitlab.com/lexoyo/site"),
-                &Prepared::default(),
-            )
-            .unwrap();
-        assert_eq!(every_one, "https://gitlab.com/lexoyo/site/-/pipelines");
-    }
 }

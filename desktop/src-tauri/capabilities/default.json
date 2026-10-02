@@ -28,7 +28,7 @@
     "allow-show-website-folder",
     "allow-trash-website",
     "allow-create-website-from-template",
-    "allow-saved-everything",
+    "allow-save-ended",
     "allow-get-telemetry-context"
   ]
 }

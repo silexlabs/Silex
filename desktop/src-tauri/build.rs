@@ -9,7 +9,7 @@ const COMMANDS: &[&str] = &[
     "show_website_folder",
     "trash_website",
     "create_website_from_template",
-    "saved_everything",
+    "save_ended",
     "get_telemetry_context",
 ];
 
