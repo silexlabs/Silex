@@ -22,7 +22,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::held::held;
 use crate::locales::{button, tr};
 use silex_server::said::{self, Said};
-use silex_server::{Config, WebsiteId};
+use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE, WEBSITE_URL};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
@@ -133,6 +133,24 @@ async fn show_website_folder(
     website_id: WebsiteId,
 ) -> Result<(), Said> {
     open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
+}
+
+/// Where the website was published, as publishing wrote it in the website: read
+/// on this computer, so a website published from elsewhere has none until
+/// published again from here
+#[tauri::command]
+async fn website_url(
+    folder: tauri::State<'_, WebsitesFolder>,
+    website_id: WebsiteId,
+) -> Result<Option<String>, Said> {
+    let data = std::fs::read(folder.website(&website_id)?.join(WEBSITE_DATA_FILE)).ok();
+    let data = data.and_then(|data| serde_json::from_slice::<serde_json::Value>(&data).ok());
+    Ok(data
+        .as_ref()
+        .and_then(|data| data.pointer(&format!("/publication/options/{}", WEBSITE_URL)))
+        .and_then(serde_json::Value::as_str)
+        .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+        .map(String::from))
 }
 
 #[tauri::command]
@@ -898,6 +916,7 @@ fn main() {
             show_website_folder,
             trash_website,
             sync_places,
+            website_url,
             sync_website,
             templates::create_website_from_template,
             save_ended,

@@ -120,6 +120,8 @@ export interface SyncPlace {
 
 export const syncPlaces = (websiteId: string) => call<SyncPlace[]>('sync_places', { websiteId })
 
+export const websiteUrl = (websiteId: string) => call<string | null>('website_url', { websiteId })
+
 export const syncWebsite = (websiteId: string) => call<void>('sync_website', { websiteId })
 
 /** Each time where a website stands may have changed, without saying which */

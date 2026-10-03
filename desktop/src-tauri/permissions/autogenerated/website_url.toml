@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-website-url"
+description = "Enables the website_url command without any pre-configured scope."
+commands.allow = ["website_url"]
+
+[[permission]]
+identifier = "deny-website-url"
+description = "Denies the website_url command without any pre-configured scope."
+commands.deny = ["website_url"]

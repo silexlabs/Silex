@@ -243,6 +243,12 @@
           "markdownDescription": "Enables the trash_website command without any pre-configured scope."
         },
         {
+          "description": "Enables the website_url command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-website-url",
+          "markdownDescription": "Enables the website_url command without any pre-configured scope."
+        },
+        {
           "description": "Denies the clear_current_project command without any pre-configured scope.",
           "type": "string",
           "const": "deny-clear-current-project",
@@ -307,6 +313,12 @@
           "type": "string",
           "const": "deny-trash-website",
           "markdownDescription": "Denies the trash_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the website_url command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-website-url",
+          "markdownDescription": "Denies the website_url command without any pre-configured scope."
         },
         {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",

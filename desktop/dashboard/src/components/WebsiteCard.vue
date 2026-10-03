@@ -19,11 +19,13 @@ import {
   syncWebsite,
   thumbnailOf,
   translate,
+  websiteUrl,
 } from '../api'
 import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
 import { useMenuAction } from '../menu'
 import { type Problem, showError } from './AppDialogs.vue'
 import AppTooltip from './AppTooltip.vue'
+import ExternalLink from './ExternalLink.vue'
 
 const props = defineProps<{ website: Website }>()
 const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
@@ -62,8 +64,9 @@ const edited = computed(() => {
 })
 
 const places = ref<SyncPlace[]>([])
+const url = ref<string | null>(null)
 async function readSync() {
-  places.value = await syncPlaces(props.website.websiteId)
+  [places.value, url.value] = await Promise.all([syncPlaces(props.website.websiteId), websiteUrl(props.website.websiteId)])
 }
 // The list gives new objects when it is refreshed, and the same one when a website is renamed
 watch(() => props.website, readSync, { immediate: true })
@@ -191,6 +194,20 @@ const { choose, afterClose } = useMenuAction(more)
             {{ website.name }}
           </button>
         </h2>
+        <AppTooltip
+          v-if="url"
+          :text="url"
+        >
+          <ExternalLink
+            class="card__url"
+            dir="ltr"
+            :href="url"
+            :name="url"
+            arrow
+          >
+            <span class="card__url-text">{{ url.replace(/^https?:\/\/|\/$/g, '') }}</span>
+          </ExternalLink>
+        </AppTooltip>
         <p class="card__meta">
           <span class="card__edited">{{ edited }}</span>
           <span
@@ -341,6 +358,25 @@ const { choose, afterClose } = useMenuAction(more)
 .card__open:focus-visible::after {
   outline: 2px solid var(--silex-focus-outline);
   outline-offset: 2px;
+}
+
+/* Above the link of the whole card, so that it opens the website and not the editor */
+.card__url {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  max-width: 100%;
+  font-size: 12px;
+  line-height: 24px;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+/* Cut before the arrow, which says the link leaves Silex */
+.card__url-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card__meta {
