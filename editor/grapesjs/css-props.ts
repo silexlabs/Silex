@@ -720,14 +720,7 @@ export default (editor: Editor, opts) => {
     })
     // Grapesjs only offers all, width, height, background-color, transform, box-shadow
     // and opacity here, so re-add the property with a longer list of animatable properties.
-    // Grapesjs writes and reads the sub values of a layer by position, not by type, so the
-    // delay comes last: `property duration timing-function delay`. A transition saved
-    // before the delay was added has 3 values and still loads, with the default delay.
-    // Known limit: a transition written outside Silex with a delay and no timing
-    // function, such as `opacity 1s 0.5s`, puts `0.5s` in the timing function.
-    // ease-out-back uses its cubic-bezier as id: the select writes the id to the css
-    // and finds the option again by exact match. Grapesjs only splits layers and values
-    // outside parentheses, so the commas of the cubic-bezier are safe
+    // The delay comes last because grapesjs reads the values of a layer by position
     editor.StyleManager.removeProperty('extra', 'transition')
     editor.StyleManager.addProperty('extra', {
       name: 'Transition',
