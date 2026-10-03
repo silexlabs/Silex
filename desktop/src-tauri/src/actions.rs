@@ -25,7 +25,7 @@ use silex_server::{Hosting, Job, PublicationOptions};
 
 use crate::integrations::common::remote::Remote;
 use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError};
-use crate::integrations::{Integrations, Loading};
+use crate::integrations::Loading;
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 
 /// How long Silex waits on a host, and how often it asks
@@ -99,7 +99,7 @@ enum SyncErrorChange {
     Kept,
     /// Something worked, so there is nothing left to explain
     Cleared,
-    Told(SyncError),
+    Told(Failure),
 }
 use crate::held::held;
 use SyncErrorChange::{Cleared, Kept, Told};
@@ -149,31 +149,32 @@ impl SilexActions {
         data_path: PathBuf,
         integrations: Loading,
         current_website_id: CurrentWebsiteId,
+        tells: impl Fn(&str, &Failure) + Send + Sync + 'static,
     ) -> Self {
         let integrations = Arc::new(integrations);
-        let on_its_folder = |does: fn(&Integrations, &Path) -> Result<bool, SyncError>| {
+        let on_its_folder = |does: fn(&dyn Integration, &Path) -> Result<bool, SyncError>| {
             let data_path = data_path.clone();
             let integrations = integrations.clone();
             Box::new(move |website_id: &str| {
-                let site = site_path(&data_path, website_id)
-                    .ok_or_else(|| SyncError::Other(format!("Unknown website '{}'", website_id)))?;
-                does(&integrations, &site)
+                let site = site_path(&data_path, website_id).ok_or_else(|| Failure {
+                    error: SyncError::Other(format!("Unknown website '{}'", website_id)),
+                    url: None,
+                })?;
+                let done = integrations
+                    .get(Capacity::Sync, &site)
+                    .map(|(integration, _)| {
+                        does(integration, &site).map_err(|error| failed(integration, &site, error))
+                    });
+                first_error(&site, done.collect())
             }) as OnAWebsite
         };
         SilexActions {
             syncer: Arc::new(Syncer {
-                pushes: on_its_folder(|integrations, site| {
-                    let pushed = integrations
-                        .get(Capacity::Sync, site)
-                        .map(|(integration, _)| integration.push(site, None).map(|()| true));
-                    first_error(site, pushed.collect())
+                pushes: on_its_folder(|integration, site| {
+                    integration.push(site, None).map(|()| true)
                 }),
-                syncs: on_its_folder(|integrations, site| {
-                    let synced = integrations
-                        .get(Capacity::Sync, site)
-                        .map(|(integration, _)| integration.sync(site));
-                    first_error(site, synced.collect())
-                }),
+                syncs: on_its_folder(|integration, site| integration.sync(site)),
+                tells: Box::new(tells),
                 busy: Mutex::new(HashMap::new()),
                 freed: Condvar::new(),
                 statuses: watch::Sender::new(BTreeMap::new()),
@@ -207,18 +208,33 @@ pub(crate) fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
     (canonical.parent() == Some(data_path.as_path())).then_some(canonical)
 }
 
-type OnAWebsite = Box<dyn Fn(&str) -> Result<bool, SyncError> + Send + Sync>;
+/// What went wrong, and the web address of where it happened
+#[derive(Debug, PartialEq)]
+pub struct Failure {
+    pub error: SyncError,
+    pub url: Option<String>,
+}
+type OnAWebsite = Box<dyn Fn(&str) -> Result<bool, Failure> + Send + Sync>;
+type TellsFailure = Box<dyn Fn(&str, &Failure) + Send + Sync>;
+
+/// The editor follows web addresses only
+fn failed(integration: &dyn Integration, site: &Path, error: SyncError) -> Failure {
+    let url = integration
+        .repo(site)
+        .filter(|url| url.starts_with("https://") || url.starts_with("http://"));
+    Failure { error, url }
+}
 
 /// Every integration acts, and the first failure is the one told; false when
 /// nobody answered true
-fn first_error(site: &Path, results: Vec<Result<bool, SyncError>>) -> Result<bool, SyncError> {
+fn first_error(site: &Path, results: Vec<Result<bool, Failure>>) -> Result<bool, Failure> {
     let any = results.contains(&Ok(true));
     let mut failures = results.into_iter().filter_map(Result::err);
     let Some(first) = failures.next() else {
         return Ok(any);
     };
     for later in failures {
-        tracing::warn!("Could not sync {}: {}", site.display(), later);
+        tracing::warn!("Could not sync {}: {}", site.display(), later.error);
     }
     Err(first)
 }
@@ -232,6 +248,7 @@ struct Syncer {
     pushes: OnAWebsite,
     /// True when work done here is left to push
     syncs: OnAWebsite,
+    tells: TellsFailure,
     /// The websites an integration is busy with, and whether a save landed
     /// since, so that another push is needed
     ///
@@ -265,9 +282,9 @@ impl Syncer {
                 websites.remove(website_id);
             }),
             Err(why) => {
-                tracing::warn!("Could not sync website {}: {}", website_id, why);
+                tracing::warn!("Could not sync website {}: {}", website_id, why.error);
                 // Offline would otherwise show the user an error at every opening
-                if matches!(why, SyncError::ChangedElsewhere(_)) {
+                if matches!(why.error, SyncError::ChangedElsewhere(_)) {
                     self.moves_to(website_id, SyncState::Failed, Told(why));
                 }
             }
@@ -329,12 +346,12 @@ impl Syncer {
                 Ok(true) => Some((SyncState::Pushed, Cleared)),
                 Ok(false) => None,
                 Err(why) => {
-                    tracing::warn!("Could not send website {}: {}", website_id, why);
+                    tracing::warn!("Could not send website {}: {}", website_id, why.error);
                     Some((SyncState::Failed, Told(why)))
                 }
             };
             // Under the lock a save takes to land: one that landed during the
-            // attempt must not read as nothing left to send, which Save & Quit
+            // attempt must not read as nothing left to send, which Save and quit
             // would believe
             let busy = held(&self.busy);
             match ended {
@@ -383,6 +400,9 @@ impl Syncer {
 
     /// Move a website to a state, and say what became of the error it carried
     fn moves_to(&self, website_id: &str, state: SyncState, change: SyncErrorChange) {
+        if let Told(failed) = &change {
+            (self.tells)(website_id, failed);
+        }
         self.statuses.send_modify(|websites| {
             let website = websites
                 .entry(website_id.to_string())
@@ -391,7 +411,7 @@ impl Syncer {
             match change {
                 Kept => {}
                 Cleared => website.sync_error = None,
-                Told(error) => website.sync_error = Some(error),
+                Told(Failure { error, .. }) => website.sync_error = Some(error),
             }
         });
     }
@@ -832,8 +852,9 @@ mod pushing {
         pushes: impl Fn(&str) -> Result<bool, SyncError> + Send + Sync + 'static,
     ) -> Arc<Syncer> {
         Arc::new(Syncer {
-            pushes: Box::new(pushes),
+            pushes: Box::new(move |id| pushes(id).map_err(|error| Failure { error, url: None })),
             syncs: Box::new(|_| Ok(false)),
+            tells: Box::new(|_, _| {}),
             busy: Mutex::new(HashMap::new()),
             freed: Condvar::new(),
             statuses: watch::Sender::new(BTreeMap::new()),

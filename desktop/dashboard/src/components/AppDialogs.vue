@@ -172,7 +172,7 @@ function submit() {
         class="dialog__detail"
         tabindex="0"
         role="region"
-        :aria-label="$t('Error detail')"
+        :aria-label="$t('Technical details')"
       >{{ dialog.detail }}</pre>
       <div class="dialog__actions">
         <button

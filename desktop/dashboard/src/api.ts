@@ -76,7 +76,7 @@ export function explain(error: unknown): { message?: string; detail?: string } {
     return { message: t(said.sentence, params), detail }
   }
   // What the system said alone gives the person nothing to do
-  return { message: detail && i18n.global.t('Try again. If the problem goes on, report it with this detail.'), detail }
+  return { message: detail && i18n.global.t('Try again. If the problem continues, report it and include the technical details below.'), detail }
 }
 
 export const listWebsites = () => request<Website[]>('GET', API_WEBSITE_LIST)

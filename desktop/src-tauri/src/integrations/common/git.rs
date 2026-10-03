@@ -20,7 +20,7 @@ use std::path::{Path, PathBuf};
 use git2::{ConfigLevel, ErrorCode};
 use silex_server::{repository, TEMPLATE_REMOTE};
 
-use super::run::{failure, run, run_fetch, run_transfer_verbatim, Ran};
+use super::run::{failure, run, run_fetch, run_transfer_verbatim};
 use crate::integrations::integration::SyncError;
 
 /// Every remote of the repository, with the URL it was given
@@ -198,22 +198,25 @@ fn push_branch(git: &Path, site: &Path, remote: &str, tag: Option<&str>) -> Resu
     if !ran.failed {
         return Ok(());
     }
-    let why = failure(git, &ran);
-    if behind_remote(&ran) {
-        return Err(SyncError::ChangedElsewhere(why));
-    }
-    Err(SyncError::Other(why))
+    Err(refusal(&ran.stdout, failure(git, &ran)))
 }
 
-/// Whether git refused because the remote has commits this repository has not
+/// Why git refused, read from `--porcelain`, which writes one line per ref as
+/// `<flag> \t <from>:<to> \t <summary> (<reason>)`
 ///
-/// Read from `--porcelain`, which writes one line per ref as
-/// `<flag> \t <from>:<to> \t <summary> (<reason>)`. Only the reason tells a
-/// remote that moved on from a hook that said no.
-fn behind_remote(ran: &Ran) -> bool {
-    ran.stdout.lines().any(|line| {
-        line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first"))
-    })
+/// The reason is the host's own words after `[remote rejected]`, and git's
+/// after `[rejected]`.
+fn refusal(porcelain: &str, why: String) -> SyncError {
+    for summary in porcelain.lines().filter_map(|line| line.split('\t').nth(2)) {
+        match summary.split_once(" (") {
+            Some(("[remote rejected]", _)) => return SyncError::RefusedByHost(why),
+            Some(("[rejected]", "fetch first)" | "non-fast-forward)")) => {
+                return SyncError::ChangedElsewhere(why)
+            }
+            _ => {}
+        }
+    }
+    SyncError::Other(why)
 }
 
 /// Said when a website has no repository to go to
@@ -222,3 +225,19 @@ fn behind_remote(ran: &Ran) -> bool {
 /// in Silex. "Remote" least of all.
 pub const NOWHERE_TO_SEND_IT: &str =
     "Silex does not know where to send this website. Open it again from the list of websites, or check where it is kept.";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_refusal_is_told_by_its_summary() {
+        let kind = |line: &str| refusal(line, String::new());
+        let line = "!\tHEAD:refs/heads/main\t[rejected] (fetch first)";
+        assert_eq!(kind(line), SyncError::ChangedElsewhere(String::new()));
+        let line = "!\tHEAD:refs/heads/main\t[remote rejected] (non-fast-forward)";
+        assert_eq!(kind(line), SyncError::RefusedByHost(String::new()));
+        let line = "!\trefs/tags/x:refs/tags/x\t[rejected] (already exists)";
+        assert_eq!(kind(line), SyncError::Other(String::new()));
+    }
+}

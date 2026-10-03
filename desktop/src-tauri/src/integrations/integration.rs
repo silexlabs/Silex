@@ -33,6 +33,8 @@ pub fn not_provided(program: &str, capacity: Capacity) -> String {
 pub enum SyncError {
     /// The repository has changes this computer does not have
     ChangedElsewhere(String),
+    /// The host took the push in, then said no
+    RefusedByHost(String),
     Other(String),
 }
 
@@ -44,6 +46,7 @@ impl std::fmt::Display for SyncError {
                 "This website was changed somewhere else, and those changes are not on this computer. {}",
                 why
             ),
+            SyncError::RefusedByHost(why) => write!(f, "The host refused this push. {}", why),
             SyncError::Other(why) => f.write_str(why),
         }
     }

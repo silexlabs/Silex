@@ -20,6 +20,8 @@ use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::held::held;
+use crate::integrations::common::remote::Remote;
+use crate::integrations::integration::SyncError;
 use crate::locales::{button, tr};
 use silex_server::said::{self, Said};
 use silex_server::{Config, WebsiteId};
@@ -287,7 +289,7 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     })
 }
 
-/// The longest "Save & Quit" keeps the app running after the save is asked for
+/// The longest "Save and quit" keeps the app running after the save is asked for
 ///
 /// The website still has to reach its repository, over a network that answers
 /// when it answers. Past this the app closes and says what is left.
@@ -344,20 +346,61 @@ fn says_what_is_left(app: &tauri::AppHandle) {
         .blocking_show();
 }
 
+/// The editor has no catalog for what the desktop says
+fn tells_the_editor(
+    app_handle: tauri::AppHandle,
+) -> impl Fn(&str, &actions::Failure) + Send + Sync {
+    move |website_id, failure| {
+        let host = failure.url.as_deref().and_then(Remote::host_of);
+        let with_host = |key| {
+            host.as_deref()
+                .map(|host| said::fill(&tr(key), [("host", host)]))
+        };
+        let what_happened = match &failure.error {
+            SyncError::ChangedElsewhere(_) => tr(locales::CHANGED_ELSEWHERE),
+            SyncError::RefusedByHost(_) => {
+                with_host(locales::REFUSED_BY_HOST).unwrap_or_else(|| tr(locales::SEND_FAILED))
+            }
+            SyncError::Other(_) => tr(locales::SEND_FAILED),
+        };
+        let _ = app_handle.emit(
+            "sync-failed",
+            serde_json::json!({
+                "websiteId": website_id,
+                "error": failure.error,
+                "url": host.as_ref().and(failure.url.as_ref()),
+                "texts": {
+                    "whatHappened": what_happened,
+                    "newCommits": tr(locales::NEW_COMMITS),
+                    "newCommitsDetail": tr(locales::NEW_COMMITS_DETAIL),
+                    "technicalDetails": tr(locales::TECHNICAL_DETAILS),
+                    "openRepository": with_host(locales::OPEN_REPOSITORY),
+                    "continueEditing": tr(locales::CONTINUE_EDITING),
+                },
+            }),
+        );
+    }
+}
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
-    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+    use tauri_plugin_dialog::{
+        DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
+    };
 
     let app_handle = app.clone();
+    let save_and_quit = button(locales::SAVE_AND_QUIT);
+    let quit_without_saving = button(locales::QUIT_WITHOUT_SAVING);
     app.dialog()
         .message(tr(locales::SAVE_BEFORE_QUITTING))
         .title("Silex")
         .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            button(locales::SAVE_AND_QUIT),
-            button(locales::QUIT),
+        .buttons(MessageDialogButtons::YesNoCancelCustom(
+            save_and_quit.clone(),
+            quit_without_saving.clone(),
+            button(locales::CANCEL),
         ))
-        .show(move |result| {
-            if result {
+        .show_with_result(move |result| match result {
+            MessageDialogResult::Custom(chosen) if chosen == save_and_quit => {
                 // Subscribed before the editor is asked, so that the save it
                 // is about to confirm cannot be missed
                 let saves = app_handle.state::<actions::SaveEnds>();
@@ -387,9 +430,14 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
                         let _ = window.destroy();
                     }
                 });
-            } else if let Some(window) = app_handle.get_webview_window("main") {
-                let _ = window.destroy();
             }
+            MessageDialogResult::Custom(chosen) if chosen == quit_without_saving => {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.destroy();
+                }
+            }
+            // Cancel, Escape and the close button of the dialog keep the editor open
+            _ => {}
         });
 }
 
@@ -545,6 +593,7 @@ async fn start_server(
     current_website_id: actions::CurrentWebsiteId,
     dashboard_in_development: bool,
     asking_integrations: sentry::Span,
+    app_handle: tauri::AppHandle,
 ) -> Result<(u16, actions::SyncStatuses), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
@@ -568,7 +617,12 @@ async fn start_server(
             ..Default::default()
         });
     });
-    let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
+    let actions = actions::SilexActions::new(
+        data_path.clone(),
+        integrations,
+        current_website_id,
+        tells_the_editor(app_handle),
+    );
     let sync_statuses = actions.sync_statuses();
 
     let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
@@ -846,6 +900,7 @@ fn main() {
                 app.state::<AppState>().current_website_id.clone(),
                 dashboard.is_some(),
                 startup.start_child("app.start", "integrations"),
+                app.handle().clone(),
             ))?;
             server.finish();
             app.manage(sync_statuses);

@@ -143,7 +143,7 @@ async function remove(website: Website) {
   const confirmed = await confirm({
     title: t('Delete “{name}”?', { name: website.name }),
     message: host
-      ? t('Silex moves its folder to the trash of this computer. The copy on {host} and the published website stay in place. You can restore it from the trash.', { host })
+      ? t('Silex moves its folder to the trash of this computer. Your repository on {host} and the published website stay in place. You can restore the folder from the trash.', { host })
       : t('Silex moves its folder to the trash of this computer. You can restore it from there.'),
     confirmLabel: t('Delete'),
     danger: true,
