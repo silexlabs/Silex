@@ -9,9 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { type Website, hostOf, thumbnailOf } from '../api'
+import {
+  type SyncPlace,
+  type Website,
+  explain,
+  onSyncStatus,
+  openLink,
+  syncPlaces,
+  syncWebsite,
+  thumbnailOf,
+  translate,
+} from '../api'
 import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
 import { useMenuAction } from '../menu'
+import { type Problem, showError } from './AppDialogs.vue'
+import AppTooltip from './AppTooltip.vue'
 
 const props = defineProps<{ website: Website }>()
 const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
@@ -49,7 +61,59 @@ const edited = computed(() => {
   return t('Edited {when}', { when: format.format(Math.round(seconds / size), unit) })
 })
 
-const host = computed(() => hostOf(props.website))
+const places = ref<SyncPlace[]>([])
+async function readSync() {
+  places.value = await syncPlaces(props.website.websiteId)
+}
+// The list gives new objects when it is refreshed, and the same one when a website is renamed
+watch(() => props.website, readSync, { immediate: true })
+// Read again once the sync has ended: until then, what it fixes would leave the dialog under the user
+let syncing = false
+const stopListening = onSyncStatus(() => syncing || readSync())
+onBeforeUnmount(() => stopListening.then((stop) => stop()))
+
+let synced: Promise<unknown> = Promise.resolve()
+async function sync() {
+  syncing = true
+  const ended = syncWebsite(props.website.websiteId).then(
+    () => undefined,
+    (error: unknown) => ({ title: t('Silex could not sync “{name}”', { name: props.website.name }), ...explain(error) }),
+  )
+  synced = ended
+  const failure = await ended
+  syncing = false
+  await readSync()
+  return failure
+}
+
+// The editor would load the website while a sync rewrites its files, and save the old ones over them
+async function open() {
+  await synced
+  emit('open')
+}
+
+const problems = computed(() => places.value
+  .filter(({ failure, action, changesUrl }) => failure || action || changesUrl)
+  .map(({ icon, place, label, action, changesUrl, failure }): Problem => ({
+    icon,
+    place,
+    message: translate(failure ?? label),
+    detail: failure?.detail,
+    // Syncing would only be refused
+    action: changesUrl
+      ? {
+          label: t('Open on {host}', { host: place }),
+          name: t('Open on {host} (opens in your browser)', { host: place }),
+          external: true,
+          run: () => openLink(changesUrl).then(
+            () => undefined,
+            (error: unknown) => ({ title: t('Silex could not open {host}', { host: place }), ...explain(error) }),
+          ),
+        }
+      : { label: action ? translate(action) : t('Sync'), run: sync },
+  })))
+
+const needsYou = computed(() => t('“{name}” needs you', { name: props.website.name }))
 
 const broken = ref(false)
 watch(() => props.website.imageUrl, () => {
@@ -120,7 +184,7 @@ const { choose, afterClose } = useMenuAction(more)
             ref="open"
             type="button"
             class="card__open"
-            @click="emit('open')"
+            @click="open"
             @keydown="onKeydown"
             @contextmenu.prevent="menuOpen = true"
           >
@@ -128,10 +192,35 @@ const { choose, afterClose } = useMenuAction(more)
           </button>
         </h2>
         <p class="card__meta">
-          {{ edited }}<template v-if="edited && host">
-            ·
-          </template>{{ host }}
+          <span class="card__edited">{{ edited }}</span>
+          <span
+            v-for="({ place, icon, label }, index) in places"
+            :key="place"
+            class="card__place"
+          >
+            <span
+              v-if="edited || index"
+              aria-hidden="true"
+            >·</span>
+            <span
+              v-if="icon"
+              class="logo"
+              aria-hidden="true"
+              v-html="icon"
+            />{{ place }}<span class="visually-hidden">{{ `, ${translate(label)}` }}</span>
+          </span>
         </p>
+        <AppTooltip
+          v-if="problems.length"
+          :text="$t('1 thing needs you | {count} things need you', problems.length)"
+        >
+          <button
+            type="button"
+            class="card__alert"
+            :aria-label="needsYou"
+            @click="showError({ title: needsYou, problems: () => problems })"
+          />
+        </AppTooltip>
       </div>
       <DropdownMenuRoot v-model:open="menuOpen">
         <DropdownMenuTrigger
@@ -152,7 +241,7 @@ const { choose, afterClose } = useMenuAction(more)
           >
             <DropdownMenuItem
               class="menu__item"
-              @select="choose(() => emit('open'))"
+              @select="choose(open)"
             >
               {{ $t('Edit') }}
             </DropdownMenuItem>
@@ -255,12 +344,54 @@ const { choose, afterClose } = useMenuAction(more)
 }
 
 .card__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--silex-space-1);
   margin: 0;
   overflow: hidden;
   color: var(--silex-text-secondary);
   font-size: 12px;
   white-space: nowrap;
+}
+
+/* The date gives way, never the host */
+.card__edited {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card__place {
+  flex: none;
+}
+
+.card__place .logo {
+  margin-left: var(--silex-space-1);
+}
+
+/* Over the thumbnail, while it stays after the name in the order of the focus */
+.card__alert {
+  position: absolute;
+  top: var(--silex-space-2);
+  right: var(--silex-space-2);
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: var(--silex-danger);
+  box-shadow: 0 0 0 2px var(--silex-bg-darker);
+  color: var(--silex-text-inverse);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card__alert::before {
+  content: '!';
+}
+
+.card__alert:hover {
+  background: var(--silex-danger-hover);
 }
 
 .card__more {

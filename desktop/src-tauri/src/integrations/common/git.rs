@@ -17,11 +17,13 @@
 
 use std::path::{Path, PathBuf};
 
-use git2::{ConfigLevel, ErrorCode};
+use git2::{ConfigLevel, ErrorCode, Oid};
 use silex_server::{repository, TEMPLATE_REMOTE};
 
 use super::run::{failure, run, run_fetch, run_transfer_verbatim};
-use crate::integrations::integration::SyncError;
+use crate::integrations::integration::{SyncError, Synced};
+use crate::locales::{AHEAD, BEHIND, DIVERGED, NOT_PUSHED, PUSHED, SYNC};
+use silex_server::said::Said;
 
 /// Every remote of the repository, with the URL it was given
 ///
@@ -125,12 +127,63 @@ pub fn sync(site: &Path) -> Result<bool, SyncError> {
     // network, and `pull` reads settings of the user that are not Silex's
     // business to inherit.
     run_fetch(&git, site, &["fetch", "--end-of-options", &remote]).map_err(SyncError::Other)?;
+    let Some((ahead, behind, upstream)) = compared(site, &remote)? else {
+        // Never sent: all of it is left to push
+        return Ok(true);
+    };
+    if behind == 0 {
+        return Ok(ahead > 0);
+    }
+    run(&git, site, &["merge", "--ff-only", &upstream.to_string()]).map_err(|why| {
+        if ahead > 0 {
+            SyncError::ChangedElsewhere(why)
+        } else {
+            SyncError::Other(why)
+        }
+    })?;
+    Ok(false)
+}
+
+/// The host of the remote the website is sent to
+pub fn place(site: &Path) -> Option<String> {
+    super::remote::Remote::of(site).map(|remote| remote.host)
+}
+
+pub fn synced(site: &Path, repo: Option<String>) -> Option<Synced> {
+    let sync = || Some(Said::new(SYNC));
+    let (label, action, changes_url) = match compared(site, &remote_name(site)?).ok()? {
+        None => (Said::new(NOT_PUSHED), sync(), None),
+        Some((0, 0, _)) => (Said::new(PUSHED), None, None),
+        Some((ahead, 0, _)) => (
+            Said::new(AHEAD).with_number("count", ahead as u64),
+            sync(),
+            None,
+        ),
+        Some((0, behind, _)) => (
+            Said::new(BEHIND).with_number("count", behind as u64),
+            sync(),
+            None,
+        ),
+        // Fast-forward only: syncing could only be refused
+        Some(_) => (Said::new(DIVERGED), None, repo),
+    };
+    Some(Synced {
+        label,
+        action,
+        changes_url,
+    })
+}
+
+/// HEAD against `refs/remotes`, git's own record of where the remote branch
+/// was at the last push or fetch, so nothing here needs a network: ahead,
+/// behind and the remote commit, or None when it was never sent
+fn compared(site: &Path, remote: &str) -> Result<Option<(usize, usize, Oid)>, SyncError> {
     let other = |e: git2::Error| SyncError::Other(e.message().to_string());
     let repo = repository(site).map_err(other)?;
     let head = match repo.head() {
         Ok(head) => head,
         // No commit yet: nothing here to send, nothing to take in on top of
-        Err(e) if e.code() == ErrorCode::UnbornBranch => return Ok(false),
+        Err(e) if e.code() == ErrorCode::UnbornBranch => return Ok(Some((0, 0, Oid::ZERO_SHA1))),
         Err(e) => return Err(other(e)),
     };
     let (true, Some(local), Ok(branch)) = (head.is_branch(), head.target(), head.shorthand())
@@ -143,28 +196,12 @@ pub fn sync(site: &Path) -> Result<bool, SyncError> {
     // Rather than `@{u}`, which a website published before Silex set it, or
     // whose first push failed, does not have
     let Ok(upstream) = repo.revparse_single(&format!("refs/remotes/{}/{}", remote, branch)) else {
-        // Never sent: all of it is left to push
-        return Ok(true);
+        return Ok(None);
     };
     let (ahead, behind) = repo
         .graph_ahead_behind(local, upstream.id())
         .map_err(other)?;
-    if behind == 0 {
-        return Ok(ahead > 0);
-    }
-    run(
-        &git,
-        site,
-        &["merge", "--ff-only", &upstream.id().to_string()],
-    )
-    .map_err(|why| {
-        if ahead > 0 {
-            SyncError::ChangedElsewhere(why)
-        } else {
-            SyncError::Other(why)
-        }
-    })?;
-    Ok(false)
+    Ok(Some((ahead, behind, upstream.id())))
 }
 
 fn git_and_remote(site: &Path) -> Result<(PathBuf, String), SyncError> {

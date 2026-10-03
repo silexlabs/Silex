@@ -17,7 +17,10 @@ use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
 use super::common::run::run;
-use super::integration::{silex_tag, Capacity, Integration, Prepared, SyncError, Urls};
+use super::integration::{silex_tag, Capacity, Integration, Prepared, SyncError, Synced, Urls};
+
+/// The SourceHut logo, CC0, with a thicker ring that reads at the size of text
+const SOURCEHUT_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.371 0 0 5.371 0 12s5.371 12 12 12 12-5.371 12-12S18.629 0 12 0Zm0 20a8 8 0 1 1 0-16 8 8 0 1 1 0 16Z"/></svg>"#;
 
 pub struct Hut;
 
@@ -36,6 +39,18 @@ impl Integration for Hut {
 
     fn sync(&self, site: &Path) -> Result<bool, SyncError> {
         git::sync(site)
+    }
+
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        git::synced(site, self.repo(site))
+    }
+
+    fn place(&self, site: &Path) -> Option<String> {
+        git::place(site)
+    }
+
+    fn icon(&self) -> Option<&'static str> {
+        Some(SOURCEHUT_LOGO)
     }
 
     /// Nothing ties a site of pages.sr.ht to a repository, so the address is

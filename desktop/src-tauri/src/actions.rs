@@ -24,9 +24,11 @@ use tokio::sync::watch;
 use silex_server::{Hosting, Job, PublicationOptions};
 
 use crate::integrations::common::remote::Remote;
-use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError};
+use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError, Synced};
 use crate::integrations::Loading;
+use crate::locales::{CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
+use silex_server::said::Said;
 
 /// How long Silex waits on a host, and how often it asks
 ///
@@ -70,16 +72,14 @@ const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
 /// The editor asks for its hosting connector without naming a website.
 pub type CurrentWebsiteId = Arc<Mutex<Option<String>>>;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SyncStatus {
     pub state: SyncState,
     /// What the last attempt that failed said, until one works
     ///
     /// Apart from `state` on purpose: held in it, the error would leave the
     /// screen as soon as the user typed something.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sync_error: Option<SyncError>,
+    pub sync_failure: Option<Failure>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -108,7 +108,7 @@ impl SyncStatus {
     fn at(state: SyncState) -> SyncStatus {
         SyncStatus {
             state,
-            sync_error: None,
+            sync_failure: None,
         }
     }
 
@@ -157,6 +157,8 @@ impl SilexActions {
             let integrations = integrations.clone();
             Box::new(move |website_id: &str| {
                 let site = site_path(&data_path, website_id).ok_or_else(|| Failure {
+                    program: None,
+                    place: None,
                     error: SyncError::Other(format!("Unknown website '{}'", website_id)),
                     url: None,
                 })?;
@@ -190,6 +192,57 @@ impl SilexActions {
         self.syncer.statuses.subscribe()
     }
 
+    pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {
+        let Some(site) = self.site_path(website_id) else {
+            return Vec::new();
+        };
+        let status = self.syncer.statuses.borrow().get(website_id).cloned();
+        let on_its_way = status.as_ref().is_some_and(SyncStatus::on_its_way);
+        let failure = status.and_then(|status| status.sync_failure);
+        self.integrations
+            .get(Capacity::Sync, &site)
+            .filter_map(|(integration, _)| {
+                let failure = failure
+                    .clone()
+                    .filter(|failure| failure.program == Some(integration.program()));
+                let mut synced = integration.synced(&site)?;
+                // What a save left is being sent: nothing to ask of the user
+                if on_its_way {
+                    synced.action = None;
+                }
+                Some(SyncPlace {
+                    place: integration.place(&site)?,
+                    icon: integration.icon(),
+                    synced,
+                    failure: failure.as_ref().map(Failure::what_happened),
+                })
+            })
+            .collect()
+    }
+
+    /// What opening the website does, waited for: the dashboard opens the
+    /// editor only once it is done, so taking changes in risks no work
+    pub async fn sync_now(&self, website_id: &str) -> Result<(), Said> {
+        let mut statuses = self.syncer.statuses.subscribe();
+        let (syncer, id) = (self.syncer.clone(), website_id.to_string());
+        tokio::task::spawn_blocking(move || syncer.sync(&id))
+            .await
+            .map_err(Said::raw)?
+            .map_err(|failure| failure.what_happened())?;
+        let ended = statuses
+            .wait_for(|websites| !websites.get(website_id).is_some_and(SyncStatus::on_its_way))
+            .await
+            .map(|websites| websites.get(website_id).cloned());
+        let Ok(Some(SyncStatus {
+            state: SyncState::Failed,
+            sync_failure,
+        })) = ended
+        else {
+            return Ok(());
+        };
+        Err(sync_failure.map_or_else(|| Said::new(SEND_FAILED), |failure| failure.what_happened()))
+    }
+
     fn site_path(&self, website_id: &str) -> Option<PathBuf> {
         site_path(&self.data_path, website_id)
     }
@@ -209,11 +262,44 @@ pub(crate) fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
 }
 
 /// What went wrong, and the web address of where it happened
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Failure {
+    /// The program of the integration that failed
+    pub program: Option<&'static str>,
+    /// Where it was going, as the user knows it
+    pub place: Option<String>,
     pub error: SyncError,
     pub url: Option<String>,
 }
+
+impl Failure {
+    /// The same words in the editor and on the dashboard
+    pub fn what_happened(&self) -> Said {
+        let (said, why) = match (&self.error, &self.place) {
+            (SyncError::ChangedElsewhere(why), _) => (Said::new(CHANGED_ELSEWHERE), why),
+            (SyncError::RefusedByHost(why), Some(host)) => {
+                (Said::new(REFUSED_BY_HOST).with("host", host), why)
+            }
+            (SyncError::RefusedByHost(why) | SyncError::Other(why), _) => {
+                (Said::new(SEND_FAILED), why)
+            }
+        };
+        said.because(why)
+    }
+}
+
+/// Where a website stands with one of the integrations that send it
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncPlace {
+    place: String,
+    icon: Option<&'static str>,
+    #[serde(flatten)]
+    synced: Synced,
+    /// What the last failed sending through this integration said, until one works
+    failure: Option<Said>,
+}
+
 type OnAWebsite = Box<dyn Fn(&str) -> Result<bool, Failure> + Send + Sync>;
 type TellsFailure = Box<dyn Fn(&str, &Failure) + Send + Sync>;
 
@@ -222,7 +308,12 @@ fn failed(integration: &dyn Integration, site: &Path, error: SyncError) -> Failu
     let url = integration
         .repo(site)
         .filter(|url| url.starts_with("https://") || url.starts_with("http://"));
-    Failure { error, url }
+    Failure {
+        program: Some(integration.program()),
+        place: integration.place(site),
+        error,
+        url,
+    }
 }
 
 /// Every integration acts, and the first failure is the one told; false when
@@ -272,9 +363,9 @@ impl Syncer {
 
     /// Skipped while an integration is busy with this website: a push can
     /// wait minutes on a network, and the user is waiting to open it.
-    fn sync(self: &Arc<Self>, website_id: &str) {
+    fn sync(self: &Arc<Self>, website_id: &str) -> Result<(), Failure> {
         let Some(_claimed) = self.claims(website_id, false) else {
-            return;
+            return Ok(());
         };
         match (self.syncs)(website_id) {
             Ok(true) => self.push(website_id),
@@ -285,10 +376,12 @@ impl Syncer {
                 tracing::warn!("Could not sync website {}: {}", website_id, why.error);
                 // Offline would otherwise show the user an error at every opening
                 if matches!(why.error, SyncError::ChangedElsewhere(_)) {
-                    self.moves_to(website_id, SyncState::Failed, Told(why));
+                    self.moves_to(website_id, SyncState::Failed, Told(why.clone()));
                 }
+                return Err(why);
             }
         }
+        Ok(())
     }
 
     /// Waits for whatever an integration is doing with this website, and
@@ -333,7 +426,7 @@ impl Syncer {
                 if website.state == SyncState::Failed {
                     website.state = SyncState::Pushed;
                 }
-                website.sync_error = None;
+                website.sync_failure = None;
             }
         });
     }
@@ -410,8 +503,8 @@ impl Syncer {
             website.state = state;
             match change {
                 Kept => {}
-                Cleared => website.sync_error = None,
-                Told(Failure { error, .. }) => website.sync_error = Some(error),
+                Cleared => website.sync_failure = None,
+                Told(failure) => website.sync_failure = Some(failure),
             }
         });
     }
@@ -448,7 +541,7 @@ impl silex_server::Actions for SilexActions {
     /// what is left to push goes in the background: the user is waiting to
     /// work
     fn website_loading(&self, website_id: &str) {
-        self.syncer.sync(website_id);
+        let _ = self.syncer.sync(website_id);
     }
 
     /// Nothing of it goes online: putting a website online is `deploy`
@@ -852,7 +945,14 @@ mod pushing {
         pushes: impl Fn(&str) -> Result<bool, SyncError> + Send + Sync + 'static,
     ) -> Arc<Syncer> {
         Arc::new(Syncer {
-            pushes: Box::new(move |id| pushes(id).map_err(|error| Failure { error, url: None })),
+            pushes: Box::new(move |id| {
+                pushes(id).map_err(|error| Failure {
+                    program: None,
+                    place: None,
+                    error,
+                    url: None,
+                })
+            }),
             syncs: Box::new(|_| Ok(false)),
             tells: Box::new(|_, _| {}),
             busy: Mutex::new(HashMap::new()),

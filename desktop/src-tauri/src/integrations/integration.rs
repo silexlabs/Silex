@@ -10,6 +10,7 @@
 use std::path::Path;
 
 use serde::Serialize;
+use silex_server::said::Said;
 use silex_server::{OptionsForm, PublicationOptions};
 
 use super::common::remote::Remote;
@@ -25,6 +26,18 @@ pub enum Capacity {
 
 pub fn not_provided(program: &str, capacity: Capacity) -> String {
     format!("{} does not provide {:?}", program, capacity)
+}
+
+/// Where a website stands with the place it is sent to
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Synced {
+    /// A sentence, in the words of the integration
+    pub label: Said,
+    /// What the user can do about it, when there is something to do
+    pub action: Option<Said>,
+    /// Where the changes made elsewhere can be seen, when they keep it from syncing
+    pub changes_url: Option<String>,
 }
 
 /// Why a website could not be sent or taken in, with what the program said
@@ -130,6 +143,18 @@ pub trait Integration: Send + Sync {
     /// even when two send it to the same remote.
     fn answers_for(&self, site: &Path) -> bool;
 
+    /// Where the website goes, as the user knows it
+    fn place(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
+
+    /// The logo of the place, an SVG of one `currentColor` shape on a square
+    /// that reads at the size of text
+    fn icon(&self) -> Option<&'static str> {
+        None
+    }
+
     /// Where the repository of this website can be read, as a user would open
     /// it
     ///
@@ -210,6 +235,13 @@ pub trait Integration: Send + Sync {
             self.program(),
             Capacity::Sync,
         )))
+    }
+
+    /// Where a website stands with the place it is sent to, read on this
+    /// computer only: the dashboard asks it for every website it shows
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        let _ = site;
+        None
     }
 
     /// Where the user watches the build of the publication that just left

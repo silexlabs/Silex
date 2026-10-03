@@ -20,8 +20,6 @@ use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::held::held;
-use crate::integrations::common::remote::Remote;
-use crate::integrations::integration::SyncError;
 use crate::locales::{button, tr};
 use silex_server::said::{self, Said};
 use silex_server::{Config, WebsiteId};
@@ -137,15 +135,35 @@ async fn show_website_folder(
     open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
 }
 
+#[tauri::command]
+async fn sync_places(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<Vec<actions::SyncPlace>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.sync_places(website_id.as_str()))
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn sync_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    actions.sync_now(website_id.as_str()).await
+}
+
 /// Unlike the DELETE route, which the hosted server shares, the user can get the website back
 #[tauri::command]
 async fn trash_website(
     folder: tauri::State<'_, WebsitesFolder>,
-    sync_statuses: tauri::State<'_, actions::SyncStatuses>,
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
     website_id: WebsiteId,
 ) -> Result<(), Said> {
     // git holds its files while it sends them, and the send would then fail on a website that is gone
-    if sync_statuses
+    if actions
+        .sync_statuses()
         .borrow()
         .get(website_id.as_str())
         .is_some_and(actions::SyncStatus::on_its_way)
@@ -351,18 +369,19 @@ fn tells_the_editor(
     app_handle: tauri::AppHandle,
 ) -> impl Fn(&str, &actions::Failure) + Send + Sync {
     move |website_id, failure| {
-        let host = failure.url.as_deref().and_then(Remote::host_of);
+        let host = &failure.place;
         let with_host = |key| {
             host.as_deref()
                 .map(|host| said::fill(&tr(key), [("host", host)]))
         };
-        let what_happened = match &failure.error {
-            SyncError::ChangedElsewhere(_) => tr(locales::CHANGED_ELSEWHERE),
-            SyncError::RefusedByHost(_) => {
-                with_host(locales::REFUSED_BY_HOST).unwrap_or_else(|| tr(locales::SEND_FAILED))
-            }
-            SyncError::Other(_) => tr(locales::SEND_FAILED),
-        };
+        let what_happened = failure.what_happened();
+        let params = what_happened
+            .params
+            .iter()
+            .filter_map(|(name, value)| Some((*name, value.as_str()?)));
+        let what_happened = what_happened
+            .sentence
+            .map(|sentence| said::fill(&tr(sentence), params));
         let _ = app_handle.emit(
             "sync-failed",
             serde_json::json!({
@@ -412,7 +431,8 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
                 }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    let mut sync_statuses = handle.state::<actions::SyncStatuses>().inner().clone();
+                    let mut sync_statuses =
+                        handle.state::<Arc<actions::SilexActions>>().sync_statuses();
                     let mut save_ended = save_ended;
                     let left = tauri::async_runtime::block_on(everything_left(
                         &mut sync_statuses,
@@ -594,7 +614,7 @@ async fn start_server(
     dashboard_in_development: bool,
     asking_integrations: sentry::Span,
     app_handle: tauri::AppHandle,
-) -> Result<(u16, actions::SyncStatuses), Box<dyn std::error::Error>> {
+) -> Result<(u16, Arc<actions::SilexActions>), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -617,15 +637,14 @@ async fn start_server(
             ..Default::default()
         });
     });
-    let actions = actions::SilexActions::new(
+    let actions = Arc::new(actions::SilexActions::new(
         data_path.clone(),
         integrations,
         current_website_id,
         tells_the_editor(app_handle),
-    );
-    let sync_statuses = actions.sync_statuses();
+    ));
 
-    let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
+    let config = Config::new(data_path).with_actions(actions.clone());
 
     let (app, port) = silex_server::build_app(config).await;
 
@@ -682,7 +701,17 @@ async fn start_server(
         }
     });
 
-    Ok((port, sync_statuses))
+    Ok((port, actions))
+}
+
+/// Every card reads where its website stands again, on the disk: the watch
+/// keeps only the last state, which can equal the one before a push
+fn tells_the_dashboard(app_handle: tauri::AppHandle, mut sync_statuses: actions::SyncStatuses) {
+    tauri::async_runtime::spawn(async move {
+        while sync_statuses.changed().await.is_ok() {
+            let _ = app_handle.emit("sync-status", ());
+        }
+    });
 }
 
 /// Only debug builds read it: a leftover variable cannot redirect a release
@@ -868,6 +897,8 @@ fn main() {
             open_link,
             show_website_folder,
             trash_website,
+            sync_places,
+            sync_website,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,
@@ -893,7 +924,7 @@ fn main() {
             let pending_evals = mcp::PendingEvals::default();
             let dashboard = dashboard_in_development();
             let server = setup.start_child("app.start", "server");
-            let (port, sync_statuses) = tauri::async_runtime::block_on(start_server(
+            let (port, actions) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
                 app_data_dir,
@@ -903,7 +934,8 @@ fn main() {
                 app.handle().clone(),
             ))?;
             server.finish();
-            app.manage(sync_statuses);
+            tells_the_dashboard(app.handle().clone(), actions.sync_statuses());
+            app.manage(actions);
             app.manage(actions::SaveEnds::new(false));
 
             let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));

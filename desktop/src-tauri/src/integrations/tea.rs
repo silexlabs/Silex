@@ -20,7 +20,7 @@ use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
-    silex_tag, Build, Capacity, EarlierBuild, Integration, Prepared, SyncError, Urls,
+    silex_tag, Build, Capacity, EarlierBuild, Integration, Prepared, SyncError, Synced, Urls,
 };
 use crate::held::held;
 
@@ -37,6 +37,10 @@ const CODEBERG_RUNNER: &str = "codeberg-tiny";
 const PAGES_REPO: &str = "pages";
 
 const PIPELINE: &str = ".forgejo/workflows/pages.yml";
+
+/// The Forgejo logo by Caesar Schinas, CC BY-SA 4.0, without the holes that
+/// vanish at the size of text
+const FORGEJO_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.7773 0c1.6018 0 2.9004 1.2986 2.9004 2.9005s-1.2986 2.9004-2.9004 2.9004c-1.0854 0-2.0315-.596-2.5288-1.4787H12.91c-2.3322 0-4.2272 1.8718-4.2649 4.195l-.0007 2.1175a7.0759 7.0759 0 0 1 4.148-1.4205l.1176-.001 1.3385.0002c.4973-.8827 1.4434-1.4788 2.5288-1.4788 1.6018 0 2.9004 1.2986 2.9004 2.9005s-1.2986 2.9004-2.9004 2.9004c-1.0854 0-2.0315-.596-2.5288-1.4787H12.91c-2.3322 0-4.2272 1.8718-4.2649 4.195l-.0007 2.319c.8827.4973 1.4788 1.4434 1.4788 2.5287 0 1.602-1.2986 2.9005-2.9005 2.9005-1.6018 0-2.9004-1.2986-2.9004-2.9005 0-1.0853.596-2.0314 1.4788-2.5287l-.0002-9.9831c0-3.887 3.1195-7.0453 6.9915-7.108l.1176-.001h1.3385C14.7458.5962 15.692 0 16.7773 0Z"/></svg>"#;
 
 pub struct Tea;
 
@@ -55,6 +59,18 @@ impl Integration for Tea {
 
     fn sync(&self, site: &Path) -> Result<bool, SyncError> {
         git::sync(site)
+    }
+
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        git::synced(site, self.repo(site))
+    }
+
+    fn place(&self, site: &Path) -> Option<String> {
+        git::place(site)
+    }
+
+    fn icon(&self) -> Option<&'static str> {
+        Some(FORGEJO_LOGO)
     }
 
     fn options_form(&self, site: &Path) -> Option<OptionsForm> {

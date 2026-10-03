@@ -225,6 +225,18 @@
           "markdownDescription": "Enables the show_website_folder command without any pre-configured scope."
         },
         {
+          "description": "Enables the sync_places command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-places",
+          "markdownDescription": "Enables the sync_places command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-website",
+          "markdownDescription": "Enables the sync_website command without any pre-configured scope."
+        },
+        {
           "description": "Enables the trash_website command without any pre-configured scope.",
           "type": "string",
           "const": "allow-trash-website",
@@ -277,6 +289,18 @@
           "type": "string",
           "const": "deny-show-website-folder",
           "markdownDescription": "Denies the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_places command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-places",
+          "markdownDescription": "Denies the sync_places command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-website",
+          "markdownDescription": "Denies the sync_website command without any pre-configured scope."
         },
         {
           "description": "Denies the trash_website command without any pre-configured scope.",

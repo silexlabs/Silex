@@ -37,6 +37,13 @@ pub const NEW_COMMITS_DETAIL: &str = "This computer does not have these commits 
 pub const TECHNICAL_DETAILS: &str = "Technical details";
 pub const OPEN_REPOSITORY: &str = "Open your repository on {host}";
 pub const CONTINUE_EDITING: &str = "Continue editing";
+pub const PUSHED: &str = "Pushed.";
+pub const NOT_PUSHED: &str = "This website was never pushed.";
+pub const AHEAD: &str = "1 commit is not pushed yet. | {count} commits are not pushed yet.";
+pub const BEHIND: &str = "1 commit is not pulled yet. | {count} commits are not pulled yet.";
+pub const DIVERGED: &str =
+    "This computer and your repository both have new commits: they have diverged.";
+pub const SYNC: &str = "Sync";
 
 pub fn in_french() -> bool {
     sys_locale::get_locale().is_some_and(|locale| locale.starts_with("fr"))

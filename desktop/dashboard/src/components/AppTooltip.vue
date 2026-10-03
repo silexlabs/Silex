@@ -14,6 +14,7 @@ defineProps<{ text: string; side?: 'top' | 'right' | 'bottom' | 'left' }>()
         class="tooltip"
         :side="side ?? 'bottom'"
         :side-offset="6"
+        :collision-padding="8"
       >
         {{ text }}
       </TooltipContent>
@@ -25,6 +26,7 @@ defineProps<{ text: string; side?: 'top' | 'right' | 'bottom' | 'left' }>()
 /* Not scoped: the tooltip is rendered at the end of the body */
 .tooltip {
   z-index: 6;
+  max-width: 280px;
   padding: var(--silex-space-1) var(--silex-space-2);
   border: 1px solid var(--silex-border-color-visible);
   border-radius: var(--silex-radius-sm);

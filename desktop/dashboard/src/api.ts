@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import {
   API_PATH,
   API_WEBSITE_CREATE,
@@ -16,7 +17,7 @@ import type {
 import { storedToDisplayed } from '~/editor/assetUrl'
 import { i18n } from './i18n'
 
-export type Website = Pick<WebsiteMeta, 'websiteId' | 'name' | 'imageUrl' | 'updatedAt' | 'repoUrl'>
+export type Website = Pick<WebsiteMeta, 'websiteId' | 'name' | 'imageUrl' | 'updatedAt'>
 
 /** A sentence of the locales, and what the system said, which is not translated */
 export class Said extends Error {
@@ -64,17 +65,22 @@ const call = <T>(command: string, args: Record<string, unknown>) =>
     throw new Said(sentence, params, detail)
   })
 
+/** A sentence as Rust sends it, without what the system said */
+export type Words = Pick<Said, 'sentence'> & Partial<Pick<Said, 'params'>>
+
+export function translate({ sentence = '', params = {} }: Words) {
+  const { n, t } = i18n.global
+  const named = Object.fromEntries(
+    Object.entries(params).map(([name, value]) => [name, typeof value === 'number' ? n(value) : value]),
+  )
+  return typeof params.count === 'number' ? t(sentence, named, params.count) : t(sentence, named)
+}
+
 /** What an error dialog says of a failure, under the title */
 export function explain(error: unknown): { message?: string; detail?: string } {
   const said = error instanceof Said ? error : new Said(undefined, {}, String((error as Error)?.message ?? error))
   const detail = said.detail || undefined
-  if (said.sentence) {
-    const { n, t } = i18n.global
-    const params = Object.fromEntries(
-      Object.entries(said.params).map(([name, value]) => [name, typeof value === 'number' ? n(value) : value]),
-    )
-    return { message: t(said.sentence, params), detail }
-  }
+  if (said.sentence) return { message: translate(said), detail }
   // What the system said alone gives the person nothing to do
   return { message: detail && i18n.global.t('Try again. If the problem continues, report it and include the technical details below.'), detail }
 }
@@ -98,6 +104,29 @@ export const trashWebsite = (websiteId: string) => call<void>('trash_website', {
 
 export const showWebsiteFolder = (websiteId: string) => call<void>('show_website_folder', { websiteId })
 
+/** Where a website stands with one of the integrations that send it, in its words */
+export interface SyncPlace {
+  /** Where the website goes, as the user knows it */
+  place: string
+  /** The logo of the place, an SVG from the integration */
+  icon: string | null
+  label: Words
+  action: Words | null
+  /** Where the changes made elsewhere can be seen, when they keep it from syncing */
+  changesUrl: string | null
+  /** What the last failed sending through this integration said, until one works */
+  failure: (Words & Pick<Said, 'detail'>) | null
+}
+
+export const syncPlaces = (websiteId: string) => call<SyncPlace[]>('sync_places', { websiteId })
+
+export const syncWebsite = (websiteId: string) => call<void>('sync_website', { websiteId })
+
+/** Each time where a website stands may have changed, without saying which */
+export const onSyncStatus = (then: () => void) => listen('sync-status', () => then())
+
+export const openLink = (url: string) => call<void>('open_link', { url })
+
 // The editor keeps the path of the file in the website, as it does for any image of the website
 export function thumbnailOf({ imageUrl, websiteId }: Website) {
   return imageUrl ? storedToDisplayed(imageUrl, websiteId, '') : ''
@@ -106,14 +135,4 @@ export function thumbnailOf({ imageUrl, websiteId }: Website) {
 export function openEditor(websiteId: WebsiteId) {
   const query = new URLSearchParams({ id: websiteId, lang: i18n.global.locale.value })
   window.location.href = `/?${query}`
-}
-
-// A website no integration looks after has a file:// link, which says nothing to the user
-export function hostOf(website: Website) {
-  try {
-    const url = new URL(website.repoUrl ?? '')
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.host : ''
-  } catch {
-    return ''
-  }
 }

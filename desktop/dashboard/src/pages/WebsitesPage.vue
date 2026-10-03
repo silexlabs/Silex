@@ -20,11 +20,11 @@ import {
   createWebsite,
   duplicateWebsite,
   explain,
-  hostOf,
   listWebsites,
   openEditor,
   renameWebsite,
   showWebsiteFolder,
+  syncPlaces,
   trashWebsite,
 } from '../api'
 
@@ -139,7 +139,7 @@ async function duplicate(website: Website) {
 }
 
 async function remove(website: Website) {
-  const host = hostOf(website)
+  const host = (await syncPlaces(website.websiteId).catch(() => []))[0]?.place
   const confirmed = await confirm({
     title: t('Delete “{name}”?', { name: website.name }),
     message: host

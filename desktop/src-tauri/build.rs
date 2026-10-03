@@ -8,6 +8,8 @@ const COMMANDS: &[&str] = &[
     "open_link",
     "show_website_folder",
     "trash_website",
+    "sync_places",
+    "sync_website",
     "create_website_from_template",
     "save_ended",
     "get_telemetry_context",

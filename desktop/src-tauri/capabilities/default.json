@@ -27,6 +27,8 @@
     "allow-open-link",
     "allow-show-website-folder",
     "allow-trash-website",
+    "allow-sync-places",
+    "allow-sync-website",
     "allow-create-website-from-template",
     "allow-save-ended",
     "allow-get-telemetry-context"
