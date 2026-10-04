@@ -87,6 +87,7 @@ impl Integration for Tea {
                         "This is the domain that serves your pages. Codeberg serves them at codeberg.page. Another Forgejo serves them at a domain of its own."
                             .to_string(),
                     ),
+                    placeholder: None,
                     required: true,
                 },
                 OptionsField {
@@ -98,6 +99,7 @@ impl Integration for Tea {
                         "Silex asks a machine on this server to build your website. Codeberg calls its machines codeberg-tiny. On another server the name is different: ask the person who runs it. A wrong name here means your website is never built."
                             .to_string(),
                     ),
+                    placeholder: None,
                     required: true,
                 },
                 OptionsField {
@@ -109,6 +111,7 @@ impl Integration for Tea {
                         "Leave this empty unless you point a domain of your own at your pages. Silex works out the address of your website from the domain above."
                             .to_string(),
                     ),
+                    placeholder: Some("https://www.example.com/".to_string()),
                     required: false,
                 },
             ],
@@ -131,7 +134,7 @@ impl Integration for Tea {
         &self,
         cli: &Path,
         site: &Path,
-        options: &PublicationOptions,
+        _options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
         let Some(remote) = Remote::of(site) else {
             return Ok(None);
@@ -141,7 +144,6 @@ impl Integration for Tea {
         }
 
         Ok(Some(Urls {
-            site: Some(website_url(&remote, options)),
             ci: Some(format!(
                 "https://{}/{}/{}/actions",
                 remote.host, remote.owner, remote.repo
@@ -153,6 +155,10 @@ impl Integration for Tea {
             )),
             warning: None,
         }))
+    }
+
+    fn address(&self, _cli: &Path, site: &Path, options: &PublicationOptions) -> Option<String> {
+        Remote::of(site).map(|remote| website_url(&remote, options))
     }
 
     fn deploy(

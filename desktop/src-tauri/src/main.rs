@@ -22,7 +22,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::held::held;
 use crate::locales::{button, tr};
 use silex_server::said::{self, Said};
-use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE, WEBSITE_URL};
+use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
@@ -135,22 +135,35 @@ async fn show_website_folder(
     open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
 }
 
-/// Where the website was published, as publishing wrote it in the website: read
-/// on this computer, so a website published from elsewhere has none until
-/// published again from here
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LastPublication {
+    /// Silex made the website and nothing published it since
+    never_published: bool,
+    /// Where the last publication that worked put it online
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<String>,
+}
+
+/// None for a website made before Silex kept this, which may well be online:
+/// the editor keeps how publishing went in the website, read on this computer
 #[tauri::command]
-async fn website_url(
+async fn last_publication(
     folder: tauri::State<'_, WebsitesFolder>,
     website_id: WebsiteId,
-) -> Result<Option<String>, Said> {
+) -> Result<Option<LastPublication>, Said> {
     let data = std::fs::read(folder.website(&website_id)?.join(WEBSITE_DATA_FILE)).ok();
     let data = data.and_then(|data| serde_json::from_slice::<serde_json::Value>(&data).ok());
-    Ok(data
+    let last = data
         .as_ref()
-        .and_then(|data| data.pointer(&format!("/publication/options/{}", WEBSITE_URL)))
-        .and_then(serde_json::Value::as_str)
-        .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
-        .map(String::from))
+        .and_then(|data| data.pointer("/publication/lastPublication"));
+    Ok(last.map(|last| LastPublication {
+        never_published: last.is_null(),
+        url: last["url"]
+            .as_str()
+            .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+            .map(String::from),
+    }))
 }
 
 #[tauri::command]
@@ -916,7 +929,7 @@ fn main() {
             show_website_folder,
             trash_website,
             sync_places,
-            website_url,
+            last_publication,
             sync_website,
             templates::create_website_from_template,
             save_ended,

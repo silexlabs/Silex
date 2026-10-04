@@ -11,6 +11,7 @@ import {
 import type {
   ApiWebsiteCreateResponse,
   ApiWebsiteDuplicateResponse,
+  LastPublication,
   WebsiteId,
   WebsiteMeta,
 } from '~/common/types'
@@ -120,7 +121,10 @@ export interface SyncPlace {
 
 export const syncPlaces = (websiteId: string) => call<SyncPlace[]>('sync_places', { websiteId })
 
-export const websiteUrl = (websiteId: string) => call<string | null>('website_url', { websiteId })
+/** Null for a website made before Silex kept it */
+export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null
+
+export const readLastPublication = (websiteId: string) => call<Publication>('last_publication', { websiteId })
 
 export const syncWebsite = (websiteId: string) => call<void>('sync_website', { websiteId })
 

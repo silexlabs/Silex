@@ -454,7 +454,8 @@ fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
         .map_err(|why| Error::Said(Said::new(said::COPY_PUBLISHED_OVER).because(why)))
 }
 
-/// Take out of a copy the publication settings it inherited
+/// Take out of a copy the publication settings it inherited, and say it was
+/// never published
 ///
 /// Otherwise the copy shows the destination of the website it was copied
 /// from, and publishing it would replace that website.
@@ -464,10 +465,11 @@ async fn forget_where_the_original_is_published(site: &Path) -> Result<()> {
     let Some(object) = data.as_object_mut() else {
         return Ok(());
     };
-    if object.remove("publication").is_some() {
-        write_file(&path, serialize_json(&data)?).await?;
-    }
-    Ok(())
+    object.insert(
+        "publication".to_string(),
+        serde_json::json!({ "lastPublication": null }),
+    );
+    write_file(&path, serialize_json(&data)?).await
 }
 
 // ==================
@@ -1053,7 +1055,10 @@ mod tests {
         let path = website_path(&data_path, &website_id).join(WEBSITE_DATA_FILE);
         let written: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
-        assert_eq!(written, serde_json::json!({ "pages": [{ "id": "home" }] }));
+        assert_eq!(
+            written,
+            serde_json::json!({ "pages": [{ "id": "home" }], "publication": { "lastPublication": null } })
+        );
         let _ = std::fs::remove_dir_all(&data_path);
     }
 }

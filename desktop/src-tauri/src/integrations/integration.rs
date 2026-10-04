@@ -69,7 +69,6 @@ impl std::error::Error for SyncError {}
 
 #[derive(Default)]
 pub struct Urls {
-    pub site: Option<String>,
     /// Where the build can be watched
     pub ci: Option<String>,
     /// Where the user sets a domain of their own
@@ -77,6 +76,13 @@ pub struct Urls {
     /// What the user has to know about their published website, in their own
     /// words: a build that worked is not always a website anybody can open
     pub warning: Option<String>,
+}
+
+pub struct Refusal {
+    pub sentence: &'static str,
+    pub why: &'static str,
+    /// Where the user sets it right
+    pub button: (&'static str, &'static str),
 }
 
 /// What became of the build a publication started
@@ -185,6 +191,24 @@ pub trait Integration: Send + Sync {
     ) -> Result<Option<Urls>, String> {
         let _ = (cli, site, options);
         Err(not_provided(self.program(), Capacity::Deploy))
+    }
+
+    /// Where the website is served, asked once the host has it
+    ///
+    /// Before a first build GitLab has no address to give.
+    fn address(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Option<String> {
+        let _ = (cli, site, options);
+        None
+    }
+
+    /// Why the host will build nothing for this account, known before
+    /// anything is written, so that nothing is sent for nothing
+    ///
+    /// None when it would, and when the host could not be asked. `say` is told
+    /// when the host is asked, for whoever is waiting on it.
+    fn refuses(&self, cli: &Path, site: &Path, say: &dyn Fn(String)) -> Option<Refusal> {
+        let _ = (cli, site, say);
+        None
     }
 
     /// Write what the build needs and version it, answering what the

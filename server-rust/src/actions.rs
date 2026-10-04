@@ -110,12 +110,6 @@ pub struct Hosting {
     /// The name of the host, as the user knows it
     pub display_name: String,
 
-    /// What publishing already knows, `websiteUrl` among it
-    ///
-    /// Kept untyped: the editor hands them back to the publication as they
-    /// came.
-    pub options: Option<serde_json::Value>,
-
     /// What the user is asked, when the host cannot say it itself
     pub options_form: Option<OptionsForm>,
 }
@@ -149,6 +143,10 @@ pub struct OptionsField {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub help: Option<String>,
+
+    /// What the field holds when left empty
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub placeholder: Option<String>,
 
     pub required: bool,
 }

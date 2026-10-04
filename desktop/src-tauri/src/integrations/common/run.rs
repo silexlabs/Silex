@@ -13,7 +13,7 @@
 //! directory, no way for it to ask the user anything, a time limit, a bounded
 //! amount of output kept, and no secret in what comes back.
 
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{self, Receiver};
@@ -53,11 +53,22 @@ const MAX_OUTPUT: usize = 64 * 1024;
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, LOCAL)?)
+    said(program, run_within(program, dir, args, None, LOCAL)?)
+}
+
+/// A question asked over the network, to a program that only takes it on its
+/// input
+pub fn run_with_input(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    input: &str,
+) -> Result<String, String> {
+    said(program, run_within(program, dir, args, Some(input), FETCH)?)
 }
 
 pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, FETCH)?)
+    said(program, run_within(program, dir, args, None, FETCH)?)
 }
 
 /// The same, keeping what the program said even when it failed
@@ -65,7 +76,7 @@ pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, St
 /// A program can say something a caller has to act on rather than show: git
 /// answers `--porcelain` on its standard output and fails all the same.
 pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Result<Ran, String> {
-    run_within(program, dir, args, TRANSFER)
+    run_within(program, dir, args, None, TRANSFER)
 }
 
 pub struct Ran {
@@ -110,13 +121,23 @@ pub fn failure(program: &Path, ran: &Ran) -> String {
     )
 }
 
-fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> Result<Ran, String> {
+fn run_within(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    input: Option<&str>,
+    timeout: Duration,
+) -> Result<Ran, String> {
     let mut command = Command::new(program);
     command
         .args(args)
         .current_dir(dir)
         // git asking for a password would otherwise freeze a save forever
-        .stdin(Stdio::null())
+        .stdin(if input.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         // Same idea, for the ways git has of asking on its own
@@ -159,6 +180,11 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
     let mut child = command
         .spawn()
         .map_err(|e| format!("Could not run {}: {}", name, e))?;
+
+    // Closed once written, so that the program knows it has it all
+    if let (Some(input), Some(mut stdin)) = (input, child.stdin.take()) {
+        let _ = stdin.write_all(input.as_bytes());
+    }
 
     let stdout = drain(child.stdout.take());
     let stderr = drain(child.stderr.take());

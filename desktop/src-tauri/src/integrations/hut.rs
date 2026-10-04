@@ -16,8 +16,10 @@ use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
-use super::common::run::run;
-use super::integration::{silex_tag, Capacity, Integration, Prepared, SyncError, Synced, Urls};
+use super::common::run::{run, run_with_input};
+use super::integration::{
+    silex_tag, Build, Capacity, Integration, Prepared, Refusal, SyncError, Synced, Urls,
+};
 
 /// The SourceHut logo, CC0, with a thicker ring that reads at the size of text
 const SOURCEHUT_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.371 0 0 5.371 0 12s5.371 12 12 12 12-5.371 12-12S18.629 0 12 0Zm0 20a8 8 0 1 1 0-16 8 8 0 1 1 0 16Z"/></svg>"#;
@@ -55,7 +57,7 @@ impl Integration for Hut {
 
     /// Nothing ties a site of pages.sr.ht to a repository, so the address is
     /// asked rather than guessed: a wrong guess overwrites another website
-    fn options_form(&self, _site: &Path) -> Option<OptionsForm> {
+    fn options_form(&self, site: &Path) -> Option<OptionsForm> {
         Some(OptionsForm {
             title: "SourceHut Pages".to_string(),
             fields: vec![OptionsField {
@@ -64,9 +66,11 @@ impl Integration for Hut {
                 label: "Website address".to_string(),
                 value: None,
                 help: Some(
-                    "This is the address pages.sr.ht serves your website at. It is your site on sr.ht, or a domain of your own."
+                    "This is the address pages.sr.ht serves your website at. It is your site on sr.ht, or a domain of your own. SourceHut builds websites only for paid accounts."
                         .to_string(),
                 ),
+                placeholder: Remote::of(site)
+                    .map(|remote| format!("https://{}/", default_site(&remote))),
                 required: false,
             }],
         })
@@ -94,7 +98,7 @@ impl Integration for Hut {
         &self,
         cli: &Path,
         site: &Path,
-        options: &PublicationOptions,
+        _options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
         // Without a config hut says so and stops, which is nobody signed in
         // rather than a failure
@@ -108,13 +112,38 @@ impl Integration for Hut {
         let remote = Remote::of(site).ok_or(super::common::git::NOWHERE_TO_SEND_IT)?;
 
         Ok(Some(Urls {
-            // Only what the user named: a site hut lists is one of theirs,
-            // not this website's
-            site: options.named(WEBSITE_URL).map(String::from),
             ci: Some(format!("https://builds.sr.ht/~{}", remote.owner)),
             warning: None,
             settings: Some("https://pages.sr.ht".to_string()),
         }))
+    }
+
+    /// Where `deploy` sent it rather than a site hut lists: those are the
+    /// account's, not this website's
+    fn address(&self, _cli: &Path, site: &Path, options: &PublicationOptions) -> Option<String> {
+        if let Some(named) = options.named(WEBSITE_URL) {
+            return Some(named.to_string());
+        }
+        Remote::of(site).map(|remote| format!("https://{}/", default_site(&remote)))
+    }
+
+    /// builds.sr.ht takes no job from an unpaid account, and git.sr.ht says
+    /// nothing of it: the push works and no build ever comes
+    fn refuses(&self, cli: &Path, site: &Path, say: &dyn Fn(String)) -> Option<Refusal> {
+        let remote = Remote::of(site)?;
+        say(format!("Checking your account on {}", remote.host));
+        let answer = run_with_input(
+            cli,
+            site,
+            &["graphql", "meta"],
+            "query { me { receivesPaidServices } }",
+        )
+        .ok()?;
+        (!receives_paid_services(&answer)?).then_some(Refusal {
+            sentence: "SourceHut builds websites only for paid accounts.",
+            why: "Your account on sr.ht is not paid, so nothing was sent.",
+            button: ("Billing on SourceHut", "https://meta.sr.ht/billing"),
+        })
     }
 
     fn deploy(
@@ -146,13 +175,69 @@ impl Integration for Hut {
         // Silex tag through
         let tag = silex_tag();
         silex_server::tag(site, &tag)?;
-        // No `build`: hut lists the builds of an account without saying which
-        // repository or push each came from, so ours cannot be told apart
         Ok(Prepared {
             tag: Some(tag),
             ..Default::default()
         })
     }
+
+    /// git.sr.ht tags the builds it starts with the repository, and writes the
+    /// commit pushed in their note: the commit of our tag tells ours apart
+    fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
+        let (Some(tag), Some(remote)) = (prepared.tag.as_deref(), Remote::of(site)) else {
+            return Ok(Build::Unknown);
+        };
+        let commit = git2::Repository::open(site)
+            .and_then(|repo| {
+                repo.revparse_single(&format!("refs/tags/{}^{{commit}}", tag))
+                    .map(|commit| commit.id().to_string())
+            })
+            .map_err(|e| e.message().to_string())?;
+        let listed = run(
+            cli,
+            site,
+            &[
+                "builds",
+                "list",
+                "--count",
+                "20",
+                "--tags",
+                &format!("{}/commits/", remote.repo),
+            ],
+        )?;
+        Ok(build_of(&listed, &commit[..7], &remote.owner))
+    }
+}
+
+/// Our build among those `hut builds list` printed, newest first
+///
+/// Each starts with a line `#<id> - <tags>: <icon> <STATUS>`, and its note
+/// follows, indented, starting with `[<short commit>][0]`.
+fn build_of(listed: &str, commit: &str, owner: &str) -> Build {
+    let note = format!("[{}]", commit);
+    let ours = listed
+        .split("\n#")
+        .map(|job| job.trim_start_matches('#'))
+        .find(|job| job.contains(&note));
+    let Some(job) = ours else {
+        return Build::NotStarted;
+    };
+    let header = job.lines().next().unwrap_or_default();
+    let id = header.split([' ', ':']).next().unwrap_or_default();
+    let url = Some(format!("https://builds.sr.ht/~{}/job/{}", owner, id));
+    let status = header.rsplit(' ').next().unwrap_or_default();
+    match status.to_ascii_lowercase().as_str() {
+        "pending" | "queued" => Build::Queued,
+        "success" => Build::Built,
+        "failed" | "timeout" | "cancelled" => Build::Failed { url, reason: None },
+        // running, and whatever builds.sr.ht adds next
+        _ => Build::Running(url),
+    }
+}
+
+fn receives_paid_services(answer: &str) -> Option<bool> {
+    let answer: serde_json::Value = serde_json::from_str(answer).ok()?;
+    answer["me"]["receivesPaidServices"].as_bool()
 }
 
 fn is_sourcehut(host: &str) -> bool {
@@ -176,4 +261,67 @@ fn clone_url(remote: &Remote) -> String {
 /// to name before there is anything to list
 fn default_site(remote: &Remote) -> String {
     format!("{}.srht.site", remote.owner)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// As hut prints it when its output is not a terminal
+    const LISTED: &str = "#1402 - site/commits/.build.yml: ● RUNNING
+✔ build  ● package  ○ upload  
+
+  [9f8e7d6][0] — [Alex]
+
+      Publish website
+
+  [0]: https://git.sr.ht/~alex/site/commit/9f8e7d6c5b4a
+  [1]: mailto:alex@example.org
+
+#1398 - site/commits/.build.yml: ✗ FAILED
+✗ build  ○ package  ○ upload  
+
+  [1a2b3c4][0] — [Alex]
+
+      Publish website
+
+  [0]: https://git.sr.ht/~alex/site/commit/1a2b3c4d5e6f
+  [1]: mailto:alex@example.org
+
+";
+
+    #[test]
+    fn our_build_is_the_one_noting_our_commit() {
+        assert!(matches!(
+            build_of(LISTED, "9f8e7d6", "alex"),
+            Build::Running(Some(url)) if url == "https://builds.sr.ht/~alex/job/1402"
+        ));
+        assert!(matches!(
+            build_of(LISTED, "1a2b3c4", "alex"),
+            Build::Failed { url: Some(url), .. } if url == "https://builds.sr.ht/~alex/job/1398"
+        ));
+        assert!(matches!(
+            build_of(LISTED, "0000000", "alex"),
+            Build::NotStarted
+        ));
+        assert!(matches!(build_of("", "9f8e7d6", "alex"), Build::NotStarted));
+        assert!(matches!(
+            build_of(&LISTED.replace("● RUNNING", "✔ SUCCESS"), "9f8e7d6", "alex"),
+            Build::Built
+        ));
+    }
+
+    #[test]
+    fn an_unpaid_account_is_refused_and_a_doubt_is_not() {
+        // As hut prints it for `hut graphql meta`
+        let answered = |paid: &str| {
+            format!(
+                "{{\n  \"me\": {{\n    \"receivesPaidServices\": {}\n  }}\n}}",
+                paid
+            )
+        };
+        assert_eq!(receives_paid_services(&answered("false")), Some(false));
+        assert_eq!(receives_paid_services(&answered("true")), Some(true));
+        assert_eq!(receives_paid_services("Error: unauthorized"), None);
+    }
 }

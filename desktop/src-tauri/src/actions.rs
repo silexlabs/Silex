@@ -60,13 +60,6 @@ impl Default for Patience {
     }
 }
 
-/// How long the answer about what serves a website is reused
-///
-/// Answering runs a program and reaches the network. Long enough that one
-/// burst of questions costs one answer, short enough that a user who just
-/// signed in sees it.
-const WHAT_HOSTS_IT_KEPT: Duration = Duration::from_secs(10);
-
 /// The website the editor has open, shared with the Tauri state
 ///
 /// The editor asks for its hosting connector without naming a website.
@@ -137,11 +130,6 @@ pub struct SilexActions {
     integrations: Arc<Loading>,
     current_website_id: CurrentWebsiteId,
     syncer: Arc<Syncer>,
-    /// What was last answered about who serves a website, and when
-    ///
-    /// Held across the asking, so that two questions arriving together cost
-    /// one answer rather than two programs.
-    what_hosts_it: Mutex<Option<(String, Instant, Option<Hosting>)>>,
 }
 
 impl SilexActions {
@@ -184,7 +172,6 @@ impl SilexActions {
             data_path,
             integrations,
             current_website_id,
-            what_hosts_it: Mutex::new(None),
         }
     }
 
@@ -528,7 +515,6 @@ struct Sent {
     /// The host of its remote, as the user knows it
     host: String,
     prepared: Prepared,
-    site_url: Option<String>,
     settings_url: Option<String>,
     build_url: Option<String>,
     /// Or why the host could not be asked
@@ -552,7 +538,7 @@ impl silex_server::Actions for SilexActions {
     /// Sending is not publishing: a repository with its builds turned off
     /// takes every push and serves nothing. The job stays open until the host
     /// has answered.
-    fn deploy(&self, website_id: &str, options: &silex_server::PublicationOptions, job: &Job) {
+    fn deploy(&self, website_id: &str, options: &PublicationOptions, job: &Job) {
         let Some(site) = self.site_path(website_id) else {
             tracing::error!(
                 "Asked to publish a website that is not there: {}",
@@ -602,6 +588,18 @@ impl silex_server::Actions for SilexActions {
         };
         // The user is told the host they push to, never the software it runs
         let host = Remote::host_of(&repo).unwrap_or_else(|| repo.clone());
+        if let Some(refusal) = answering
+            .0
+            .refuses(&answering.1, &site, &|step| job.step(step))
+        {
+            let (label, url) = refusal.button;
+            job.failed(message::explained(
+                refusal.sentence,
+                refusal.why,
+                &[Button::secondary(label, url), on_this_computer()],
+            ));
+            return;
+        }
         let sent = self
             .syncer
             .alone(website_id, || {
@@ -622,7 +620,6 @@ impl silex_server::Actions for SilexActions {
                 let urls = published.urls.ok().flatten().unwrap_or_default();
                 Sent {
                     build_url: published.integration.watch(&urls, &published.prepared),
-                    site_url: urls.site,
                     settings_url: urls.settings,
                     warning: urls.warning,
                     integration: published.integration,
@@ -667,7 +664,7 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ))
             }
-            Ok(sent) => watch(job, &site, &sent, &files, Patience::default()),
+            Ok(sent) => watch(job, &site, options, &sent, &files, Patience::default()),
         }
     }
 
@@ -684,47 +681,20 @@ impl silex_server::Actions for SilexActions {
     /// file system hosting it showed before, which publishes just as well.
     fn hosting(&self) -> Option<Hosting> {
         let website_id = held(&self.current_website_id).clone()?;
-
-        let mut said = held(&self.what_hosts_it);
-        if let Some((asked_about, when, answer)) = said.as_ref() {
-            if asked_about == &website_id && when.elapsed() < WHAT_HOSTS_IT_KEPT {
-                return answer.clone();
-            }
-        }
-
-        let answer = self.who_hosts(&website_id);
-        *said = Some((website_id, Instant::now(), answer.clone()));
-        answer
+        self.who_hosts(&website_id)
     }
 }
 
 impl SilexActions {
-    /// Asked of the programs of this machine
+    /// Read on this computer, without running a program: the editor asks
+    /// each time its publication dialog opens
     fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
         let site = self.site_path(website_id)?;
-
-        let (integration, cli) = self.integrations.get(Capacity::Deploy, &site).next()?;
-        // No options handed over: nobody is publishing, and the editor keeps
-        // what the user answered
-        let urls = match integration.urls(&cli, &site, &PublicationOptions::default()) {
-            Ok(urls) => urls,
-            Err(e) => {
-                tracing::warn!("Could not tell what serves website {}: {}", website_id, e);
-                return None;
-            }
-        };
-        let options_form = integration.options_form(&site);
+        let (integration, _) = self.integrations.get(Capacity::Deploy, &site).next()?;
         Some(Hosting {
             connector_id: "fs-hosting",
             display_name: Remote::of(&site)?.host,
-            // A host that asks is left to its form: an address worked out
-            // from an empty field would land in that field and stay there
-            options: options_form
-                .is_none()
-                .then(|| urls.and_then(|urls| urls.site))
-                .flatten()
-                .map(|url| serde_json::json!({ "websiteUrl": url })),
-            options_form,
+            options_form: integration.options_form(&site),
         })
     }
 }
@@ -733,9 +703,17 @@ impl SilexActions {
 ///
 /// The website is live when the host says its build worked, not when a push
 /// returned.
-fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
+fn watch(
+    job: &Job,
+    site: &Path,
+    options: &PublicationOptions,
+    sent: &Sent,
+    files: &str,
+    patience: Patience,
+) {
     let host = sent.host.as_str();
     let ask = || sent.integration.build(&sent.cli, site, &sent.prepared);
+    let address = || sent.integration.address(&sent.cli, site, options);
     let building = |build_url: &str| {
         message::told(
             &format!("Building your website on {}", host),
@@ -841,8 +819,11 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                         None => message::told("Your website is now live!", &buttons),
                     }
                 };
-                return job.succeeded(match sent.site_url.as_deref() {
-                    Some(website) => seen_by_everyone(website),
+                return job.succeeded(match address().as_deref() {
+                    Some(website) => {
+                        job.live_at(website);
+                        seen_by_everyone(website)
+                    }
                     None => message::explained(
                         "Your website is built.",
                         &format!("Silex does not know the address {} serves it at.", host),
@@ -863,7 +844,7 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
                         .as_deref()
                         .unwrap_or("Read the build to see what went wrong, then publish again."),
                     &[
-                        Button::primary("See the build", url.as_deref().unwrap_or(&build_url)),
+                        Button::secondary("See the build", url.as_deref().unwrap_or(&build_url)),
                         Button::secondary(FILES_ON_THIS_COMPUTER, files),
                     ],
                 ))
@@ -876,19 +857,18 @@ fn watch(job: &Job, site: &Path, sent: &Sent, files: &str, patience: Patience) {
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
         }
         if started.elapsed() >= patience.a_build_ends_within {
+            let website = address();
+            let mut buttons = vec![Button::secondary("See the build", &build_url)];
+            if let Some(website) = website.as_deref() {
+                buttons.push(Button::secondary("View your website", website));
+            }
             return job.failed(message::explained(
                 "The build is taking longer than expected.",
                 &format!(
                     "Silex stopped following it after {} minutes. Your website may still come online.",
                     patience.a_build_ends_within.as_secs() / 60
                 ),
-                &[
-                    Button::primary("See the build", &build_url),
-                    Button::secondary(
-                        "View your website",
-                        sent.site_url.as_deref().unwrap_or_default(),
-                    ),
-                ],
+                &buttons,
             ));
         }
         std::thread::sleep(patience.while_it_builds);
@@ -918,7 +898,7 @@ fn nothing_built_it(
             &format!("Silex could not ask {} what became of the build.", host),
             "Your website was sent. Check the build yourself to see whether it worked.",
             &[
-                Button::primary("See the builds", build_url),
+                Button::secondary("See the builds", build_url),
                 Button::secondary(FILES_ON_THIS_COMPUTER, files),
             ],
         ));
@@ -928,7 +908,7 @@ fn nothing_built_it(
         &format!("{} did not start a build.", host),
         "Your website was sent, but nothing built it, so it is not online. Check that builds are turned on for this repository, and that your account there is verified.",
         &[
-            Button::primary("Repository settings", settings_url),
+            Button::secondary("Repository settings", settings_url),
             Button::secondary("See the builds", build_url),
             Button::secondary(FILES_ON_THIS_COMPUTER, files),
         ],
@@ -1020,8 +1000,12 @@ mod publications {
     use crate::integrations::integration::Urls;
     use silex_server::{JobStatus, Jobs};
 
-    /// A host that never starts a build
-    struct Host;
+    /// A host that answers the same about every build, and serves it at the
+    /// same address
+    struct Host(fn() -> Build, Option<&'static str>);
+
+    const SITE: Option<&str> = Some("https://alex.codeberg.page/site/");
+    static NEVER_BUILDS: Host = Host(|| Build::NotStarted, SITE);
 
     impl Integration for Host {
         fn program(&self) -> &'static str {
@@ -1045,6 +1029,15 @@ mod publications {
             Ok(Some(Urls::default()))
         }
 
+        fn address(
+            &self,
+            _cli: &Path,
+            _site: &Path,
+            _options: &PublicationOptions,
+        ) -> Option<String> {
+            self.1.map(String::from)
+        }
+
         fn deploy(
             &self,
             _cli: &Path,
@@ -1055,20 +1048,19 @@ mod publications {
         }
 
         fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
-            Ok(Build::NotStarted)
+            Ok((self.0)())
         }
     }
 
     const FILES: &str = "file:///data/site/public";
 
-    fn sent() -> Sent {
+    fn sent(integration: &'static Host) -> Sent {
         Sent {
-            integration: &Host,
+            integration,
             cli: PathBuf::from("/nowhere"),
             host: "codeberg.org".to_string(),
             warning: None,
             prepared: Prepared::default(),
-            site_url: Some("https://alex.codeberg.page/site/".to_string()),
             settings_url: Some("https://codeberg.org/alex/site/settings".to_string()),
             build_url: Some("https://codeberg.org/alex/site/actions".to_string()),
             signed_in: Ok(true),
@@ -1091,7 +1083,14 @@ mod publications {
         // verified: the push works and the website is never built
         let jobs = Jobs::default();
         let job = jobs.start("Publishing");
-        watch(&job, Path::new("/nowhere"), &sent(), FILES, quickly());
+        watch(
+            &job,
+            Path::new("/nowhere"),
+            &PublicationOptions::default(),
+            &sent(&NEVER_BUILDS),
+            FILES,
+            quickly(),
+        );
         let told = jobs.read(job.id()).unwrap();
 
         assert_eq!(told.status, JobStatus::Error);
@@ -1112,5 +1111,59 @@ mod publications {
             told.message
         );
         assert!(told.message.contains(FILES), "{}", told.message);
+    }
+
+    #[test]
+    fn a_website_is_online_once_its_host_built_it() {
+        static BUILDS: Host = Host(|| Build::Built, SITE);
+        static CANNOT_TELL: Host = Host(|| Build::Unknown, SITE);
+        let jobs = Jobs::default();
+        let online = |host: &'static Host| {
+            let job = jobs.start("Publishing");
+            watch(
+                &job,
+                Path::new("/nowhere"),
+                &PublicationOptions::default(),
+                &sent(host),
+                FILES,
+                quickly(),
+            );
+            jobs.read(job.id()).unwrap().url
+        };
+
+        assert_eq!(
+            online(&BUILDS).as_deref(),
+            Some("https://alex.codeberg.page/site/")
+        );
+        assert_eq!(online(&CANNOT_TELL), None, "nobody checked it is online");
+        assert_eq!(online(&NEVER_BUILDS), None);
+    }
+
+    #[test]
+    fn a_build_given_up_on_offers_no_website_it_has_no_address_for() {
+        // GitLab before its first build
+        static NO_ADDRESS_YET: Host = Host(|| Build::Running(None), None);
+        let jobs = Jobs::default();
+        let job = jobs.start("Publishing");
+        watch(
+            &job,
+            Path::new("/nowhere"),
+            &PublicationOptions::default(),
+            &sent(&NO_ADDRESS_YET),
+            FILES,
+            quickly(),
+        );
+        let told = jobs.read(job.id()).unwrap();
+
+        assert!(
+            told.message.contains("taking longer than expected"),
+            "{}",
+            told.message
+        );
+        assert!(
+            !told.message.contains("View your website"),
+            "{}",
+            told.message
+        );
     }
 }

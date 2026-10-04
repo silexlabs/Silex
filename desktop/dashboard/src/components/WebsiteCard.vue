@@ -19,7 +19,8 @@ import {
   syncWebsite,
   thumbnailOf,
   translate,
-  websiteUrl,
+  readLastPublication,
+  type Publication,
 } from '../api'
 import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
 import { useMenuAction } from '../menu'
@@ -64,9 +65,13 @@ const edited = computed(() => {
 })
 
 const places = ref<SyncPlace[]>([])
-const url = ref<string | null>(null)
+const lastPublication = ref<Publication>(null)
+// Apart, so that one failing does not hide the other
 async function readSync() {
-  [places.value, url.value] = await Promise.all([syncPlaces(props.website.websiteId), websiteUrl(props.website.websiteId)])
+  readLastPublication(props.website.websiteId).then((last) => {
+    lastPublication.value = last
+  }, console.error)
+  places.value = await syncPlaces(props.website.websiteId)
 }
 // The list gives new objects when it is refreshed, and the same one when a website is renamed
 watch(() => props.website, readSync, { immediate: true })
@@ -195,19 +200,21 @@ const { choose, afterClose } = useMenuAction(more)
           </button>
         </h2>
         <AppTooltip
-          v-if="url"
-          :text="url"
+          v-if="lastPublication?.url"
+          :text="lastPublication.url"
         >
           <ExternalLink
-            class="card__url"
-            dir="ltr"
-            :href="url"
-            :name="url"
-            arrow
+            class="card__state card__state--live"
+            :href="lastPublication.url"
+            :name="$t('Live at {url}', { url: lastPublication.url })"
           >
-            <span class="card__url-text">{{ url.replace(/^https?:\/\/|\/$/g, '') }}</span>
+            {{ $t('Live') }}
           </ExternalLink>
         </AppTooltip>
+        <span
+          v-else-if="lastPublication?.neverPublished"
+          class="card__state card__state--draft"
+        >{{ $t('Draft') }}</span>
         <p class="card__meta">
           <span class="card__edited">{{ edited }}</span>
           <span
@@ -360,23 +367,41 @@ const { choose, afterClose } = useMenuAction(more)
   outline-offset: 2px;
 }
 
-/* Above the link of the whole card, so that it opens the website and not the editor */
-.card__url {
-  position: relative;
+/* Above the link of the whole card, on an opaque ground that reads the same on any thumbnail */
+.card__state {
+  position: absolute;
+  top: var(--silex-space-2);
+  left: var(--silex-space-2);
   z-index: 1;
   display: inline-flex;
-  max-width: 100%;
+  align-items: center;
+  gap: var(--silex-space-1);
+  height: var(--silex-space-6);
+  padding: 0 var(--silex-space-2);
+  border: 1px solid var(--silex-border-color-visible);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-secondary);
   font-size: 12px;
-  line-height: 24px;
-  white-space: nowrap;
-  vertical-align: top;
+  font-weight: 500;
+  text-decoration: none;
 }
 
-/* Cut before the arrow, which says the link leaves Silex */
-.card__url-text {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.card__state::before {
+  width: var(--silex-space-2);
+  height: var(--silex-space-2);
+  border-radius: 50%;
+  background: currentcolor;
+  content: '';
+}
+
+/* The click goes to the card under it, which opens the editor */
+.card__state--draft {
+  pointer-events: none;
+}
+
+.card__state--live {
+  color: var(--silex-status-success);
 }
 
 .card__meta {

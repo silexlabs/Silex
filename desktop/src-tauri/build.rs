@@ -9,7 +9,7 @@ const COMMANDS: &[&str] = &[
     "show_website_folder",
     "trash_website",
     "sync_places",
-    "website_url",
+    "last_publication",
     "sync_website",
     "create_website_from_template",
     "save_ended",

@@ -11,7 +11,7 @@
 
 use std::path::{Path, PathBuf};
 
-use silex_server::{PublicationOptions, WEBSITE_URL};
+use silex_server::PublicationOptions;
 
 use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
@@ -70,7 +70,7 @@ impl Integration for Glab {
         &self,
         cli: &Path,
         site: &Path,
-        options: &PublicationOptions,
+        _options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
         let Some(remote) = Remote::of(site).filter(|remote| signed_in_to(&remote.host)) else {
             return Ok(None);
@@ -90,21 +90,19 @@ impl Integration for Glab {
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
-        // Asked again at each publication in case it changed, so the address
-        // saved with the website stays right
-        let site_url = run(cli, site, &["api", "projects/:fullpath/pages"])
-            .ok()
-            .and_then(|pages| json_string(&pages, "url"))
-            .or_else(|| options.named(WEBSITE_URL).map(String::from));
-
         Ok(Some(Urls {
-            site: site_url,
             ci: Some(format!("{}/-/pipelines", web_url)),
             settings: Some(format!("{}/pages", web_url)),
             warning: kept_from_visitors(&repo).then(|| {
                 "Your website is online, but only the members of its repository can open it. GitLab keeps Pages private until you say otherwise, under \"Address and domain\".".to_string()
             }),
         }))
+    }
+
+    fn address(&self, cli: &Path, site: &Path, _options: &PublicationOptions) -> Option<String> {
+        run(cli, site, &["api", "projects/:fullpath/pages"])
+            .ok()
+            .and_then(|pages| json_string(&pages, "url"))
     }
 
     fn deploy(

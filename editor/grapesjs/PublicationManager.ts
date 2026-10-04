@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '~/common/page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ConnectorOptions, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -65,13 +65,6 @@ export type PublicationManagerOptions = {
 // plugin init cod
 export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
-}
-
-// What the user filled in wins, anything else comes from the host, which knows better than an old copy
-export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
-  const asked = new Set(connector.optionsForm?.fields.map(field => field.name))
-  const filledIn = Object.fromEntries(Object.entries(settings.options ?? {}).filter(([name]) => asked.has(name)))
-  return { ...settings.options, ...connector.options, ...filledIn }
 }
 
 function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
@@ -142,7 +135,7 @@ export class PublicationManager {
         .then((user) => {})
         .catch((err) => {
           this.status = PublicationStatus.STATUS_LOGGED_OUT
-          this.settings = {}
+          this.forgetHosting()
           this.dialog && this.dialog.displayError('Please login', this.job, this.status)
         })
     })
@@ -183,7 +176,6 @@ export class PublicationManager {
       this.settings = {
         ...this.settings,
         connector,
-        options: withConnectorOptions(this.settings, connector),
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
@@ -193,7 +185,7 @@ export class PublicationManager {
       this.dialog && this.dialog.displayPending(this.job, this.status)
       return
     }
-    this.settings = {}
+    this.forgetHosting()
     this.status = PublicationStatus.STATUS_LOGGED_OUT
     this.dialog && this.dialog.displayPending(this.job, this.status)
     const params: ApiConnectorLoginQuery = {
@@ -208,7 +200,7 @@ export class PublicationManager {
           window.removeEventListener('message', onMessage)
           if (data.error) {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.settings = {}
+            this.forgetHosting()
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
             reject(new Error(data.message))
           } else {
@@ -239,7 +231,7 @@ export class PublicationManager {
       if (this.settings.connector.connectorId !== storageId) {
         await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
       }
-      this.settings = {}
+      this.forgetHosting()
       this.dialog && this.dialog.displayPending(this.job, this.status)
     } catch (e) {
       console.error('logout error', e)
@@ -364,6 +356,7 @@ export class PublicationManager {
       if(preventDefaultStart) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // Get the data to publish
@@ -372,6 +365,8 @@ export class PublicationManager {
       if(preventDefaultData) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        // A save that came in meanwhile waits for this
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // User and where to publish
@@ -402,7 +397,7 @@ export class PublicationManager {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings = {}
+        this.forgetHosting()
         this.dialog && this.dialog.displayError('Please login.', this.job, this.status)
       } else {
         this.status = PublicationStatus.STATUS_ERROR
@@ -669,9 +664,21 @@ ${htmlContent}
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
+      if (this.job.url) this.saveLastPublication(this.job.url)
       this.editor.trigger(ClientEvent.PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
+  }
+
+  // Kept in the website, so that its card tells whether it is online without asking anyone
+  private saveLastPublication(url: string) {
+    this.settings.lastPublication = { url }
+    this.editor.store()
+  }
+
+  // What the last publication gave stays: the website is still where it was put
+  private forgetHosting() {
+    this.settings = { lastPublication: this.settings?.lastPublication }
   }
 
   private setPublicationTransformers() {
