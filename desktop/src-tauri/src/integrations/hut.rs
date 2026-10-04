@@ -64,13 +64,12 @@ impl Integration for Hut {
                 name: WEBSITE_URL.to_string(),
                 r#type: "url".to_string(),
                 label: "Website address".to_string(),
-                value: None,
+                value: Remote::of(site).map(|remote| format!("https://{}/", default_site(&remote))),
                 help: Some(
                     "This is the address pages.sr.ht serves your website at. It is your site on sr.ht, or a domain of your own. SourceHut builds websites only for paid accounts."
                         .to_string(),
                 ),
-                placeholder: Remote::of(site)
-                    .map(|remote| format!("https://{}/", default_site(&remote))),
+                placeholder: None,
                 required: true,
             }],
         })
