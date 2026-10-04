@@ -25,7 +25,7 @@ import * as api from './api'
 import { assetsPublicationTransformer } from './assetUrl'
 import { SettingsSection } from './grapesjs/settings-sections'
 import { addSection, removeSection } from './grapesjs/settings'
-import { getAvailableLocales, resolveLocale } from './src/i18n'
+import { getAvailableLocales, resolveLocale } from './i18n'
 
 // Plugins
 import publishCustomCodeBlock from './publish-custom-code-block'
@@ -54,7 +54,7 @@ export class ClientConfig extends Config {
   /**
    * language for I18n module
     * Falls back to the browser language, then to the source locale (en),
-   * resolved against the locale files actually shipped (see editor/src/i18n).
+   * resolved against the locale files actually shipped (see editor/i18n).
    */
   lang = resolveLocale(
     new URL(location.href).searchParams.get('lang') ?? navigator.language,

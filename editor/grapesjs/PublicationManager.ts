@@ -25,7 +25,7 @@ import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
 import { EleventyDataSourceId } from './cms/DataSource'
 

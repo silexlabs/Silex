@@ -17,7 +17,7 @@
  */
 
 import { Editor } from 'grapesjs'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 const pasteBtnClass = 'fa fa-fw fa-paste silex-button'
 const undoBtnClass = 'fa fa-fw fa-rotate-left silex-button'

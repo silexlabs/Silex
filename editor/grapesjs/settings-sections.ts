@@ -6,7 +6,7 @@ import { websiteMetaRead } from '../api' // Adjust as needed
 import { ClientConfig, config } from '..'
 import { Editor } from 'grapesjs'
 import { cmdRenderSection } from './settings'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 // ID of the code editor wrapper
 export const idCodeWrapper = 'settings-head-wrapper'

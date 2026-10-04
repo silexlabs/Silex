@@ -2,7 +2,7 @@
 /**
  * Extracts translatable strings from `t(editor, '...')` call sites in
  * editor/**\/*.ts and `msg('...')` call sites in server/**\/*.ts, and merges
- * them into editor/src/locales/en.json as identity keys (English string
+ * them into editor/locales/en.json as identity keys (English string
  * used as its own key, matching the project's i18n house style).
  *
  * Usage:
@@ -15,7 +15,7 @@ import { readFileSync, writeFileSync, readdirSync } from 'fs'
 import path from 'path'
 
 const root = process.cwd()
-const localeFile = path.join(root, 'editor', 'src', 'locales', 'en.json')
+const localeFile = path.join(root, 'editor', 'locales', 'en.json')
 
 const checkMode = process.argv.includes('--check')
 const pruneMode = process.argv.includes('--prune')

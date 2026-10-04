@@ -17,7 +17,7 @@
 
 import {html, render} from 'lit-html'
 import {live} from 'lit-html/directives/live.js'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 
 const name = 'new-page-dialog'

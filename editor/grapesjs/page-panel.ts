@@ -18,7 +18,7 @@
 import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 const pluginName = 'page-panel'
 let open

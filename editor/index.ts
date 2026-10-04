@@ -27,7 +27,7 @@ import { DEV_MESSAGE } from '~/common/constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
-import { initI18n } from './src/i18n'
+import { initI18n } from './i18n'
 
 // Expose API to calling app as window.silex
 export * from './expose'

@@ -17,7 +17,7 @@
 
 /**
  * @fileoverview No-op marker so server-side string literals can be statically
- * extracted into editor/src/locales/en-US.json, the same way t(editor, '...')
+ * extracted into editor/locales/en-US.json, the same way t(editor, '...')
  * is for editor code. Translation itself always happens client-side.
  */
 export function msg(s: string): string {

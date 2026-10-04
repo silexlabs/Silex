@@ -20,7 +20,7 @@
  * This prevents GrapesJS from adding auto-generated IDs to published HTML
  * (GrapesJS adds IDs to components with inline styles for #id CSS selectors).
  */
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 const BLOCK_DEFAULT_STYLES: Record<string, Record<string, string>> = {
   'container': { 'min-height': '100px' },

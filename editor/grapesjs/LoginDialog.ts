@@ -4,7 +4,7 @@ import { ApiConnectorLoggedInPostMessage, ConnectorData, ConnectorId, ConnectorT
 import { connectorList, getUser, logout } from '../api'
 import { WebsiteId } from '~/common/types'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '~/common/constants'
-import { t } from '../src/i18n'
+import { t } from '../i18n'
 
 export const cmdLogin = 'silex:auth:login'
 export const cmdLogout = 'silex:auth:logout'

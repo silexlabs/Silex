@@ -40,7 +40,7 @@ const localeMessages: Record<string, Record<string, Record<string, string>>> = {
 const SOURCE_LOCALE = 'en'
 
 /**
- * Register every locale file found in editor/src/locales with GrapesJS I18n.
+ * Register every locale file found in editor/locales with GrapesJS I18n.
  */
 export function initI18n(editor: Editor): void {
   editor.I18n.addMessages(localeMessages)
