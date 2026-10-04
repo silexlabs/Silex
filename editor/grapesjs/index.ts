@@ -590,6 +590,12 @@ export async function initEditor(config: EditorConfig) {
         }
       })
 
+      // Select the dropped component right away, GrapesJS does it in a setTimeout
+      // which ends up in a separate undo step in Firefox (layer manager drag)
+      editor.on('component:drag:end', ({ target }) => {
+        if (target && !editor.getSelectedAll().includes(target)) editor.select(target)
+      })
+
       // Remove useless buttons
       editor.Panels.getPanel('options').buttons.remove('export-template')
       editor.Panels.getPanel('options').buttons.remove('fullscreen')
