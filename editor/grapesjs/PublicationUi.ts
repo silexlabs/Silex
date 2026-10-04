@@ -199,7 +199,6 @@ export class PublicationUi {
         ` : nothing}
         ${this.isReady(status) ? html`
           <p>Click on the button below to publish your website.</p>
-          ${this.listedOptions().length > 0 ? html`<p>Publication options:</p><ul>${ this.listedOptions().map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
         ` : nothing}
         ${this.isSuccess(status) && !job?.message ? html`
           <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
@@ -333,12 +332,6 @@ export class PublicationUi {
    *
    * An option the user is about to fill in is already in the field made for it.
    */
-  private listedOptions(): Array<[string, unknown]> {
-    const asked = (this.settings.connector?.optionsForm?.fields ?? []).map(field => field.name)
-    return Object.entries(this.settings.options ?? {})
-      .filter(([key]) => !asked.includes(key))
-  }
-
   /**
    * What the hosting needs to know and cannot find out on its own
    *
