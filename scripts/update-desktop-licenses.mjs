@@ -161,6 +161,15 @@ while (queue.length) {
   }
 }
 
+// Not a package: the desktop draws this logo next to the host of a website, and its license asks for the credit
+add({
+  name: 'Forgejo logo',
+  version: '',
+  license: 'CC-BY-SA-4.0',
+  repository: 'https://codeberg.org/forgejo/meta/src/branch/readme/branding',
+  texts: ['The Forgejo logo was created by Caesar Schinas and is licensed under the Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0) license: https://creativecommons.org/licenses/by-sa/4.0/\n\nSilex Desktop draws it without its holes.'],
+})
+
 // Most packages share a few license texts: each distinct text is written once
 const texts = []
 const list = [...packages.values()]

@@ -70,6 +70,7 @@
       // Tauri rejects with a string, which GlitchTip titles <unknown>
       const failure = err instanceof Error ? err : new Error(`tauri listen ${event}: ${String(err)}`);
       window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
+      console.error(failure);
     });
   };
 
@@ -157,8 +158,51 @@
   // Track project_open: from navigation to editor ready
   const openStart = Date.now() / 1000;
 
+  const element = (tag, properties, ...children) => {
+    const created = Object.assign(document.createElement(tag), properties);
+    created.append(...children);
+    return created;
+  };
+  // Once per opening: every autosave pushes, and each refusal tells again
+  let told = false;
+  const syncFailed = (editor, { error, url, texts }) => {
+    // The bell takes HTML, the modal takes nodes: each builds its own
+    const link = () => url ? element('p', {}, element('a', { href: url, textContent: texts.openRepository })) : '';
+    const detail = () => element('details', {},
+      // The bell's style hides the marker that says it unfolds
+      element('summary', { textContent: texts.technicalDetails, style: 'display: list-item; list-style: revert' }),
+      element('pre', { textContent: error.why, style: 'white-space: pre-wrap; overflow-wrap: anywhere' }),
+    );
+    const bell = element('div', {}, element('p', { textContent: texts.whatHappened }), link(), detail());
+    // The bell renders its messages as HTML
+    editor.runCommand('notifications:add', { id: `sync-failed-${error.kind}`, type: 'error', message: bell.innerHTML });
+    if (error.kind !== 'changedElsewhere' || told || editor.Modal.isOpen()) return;
+    told = true;
+    const title = element('span', { id: 'sync-failed-title', textContent: texts.newCommits });
+    const continueEditing = element('button', { type: 'button', className: 'gjs-btn-prim', textContent: texts.continueEditing, style: 'margin-top: 1em' });
+    continueEditing.addEventListener('click', () => editor.Modal.close());
+    const content = element('div', {},
+      element('p', { id: 'sync-failed-message', textContent: texts.newCommitsDetail }),
+      link(),
+      detail(),
+      continueEditing,
+    );
+    const attributes = { role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': title.id, 'aria-describedby': 'sync-failed-message' };
+    const before = document.activeElement;
+    editor.Modal.open({ title, content, attributes }).onceClose(() => before?.focus());
+    // The editor shows in the same tick as silex:startup:end, and a hidden button takes no focus
+    if (document.querySelector('#gjs.silex-dialog-hide')) window.silex.config.once('silex:startup:end', () => setTimeout(() => continueEditing.focus()));
+    else continueEditing.focus();
+  };
+
+  const editorReady = new Promise(waitForEditor);
+  // Before the editor asks for the website, whose opening may fail already
+  safeListen('sync-failed', ({ payload }) => {
+    if (payload.websiteId === websiteId) editorReady.then((editor) => syncFailed(editor, payload));
+  });
+
   // On the editor page, wire up the bridge
-  waitForEditor((editor) => {
+  editorReady.then((editor) => {
     // Finish project_open transaction
     if (window.Sentry?.startInactiveSpan) {
       const span = window.Sentry.startInactiveSpan({ name: 'project_open', op: 'lifecycle', startTime: openStart, forceTransaction: true });
@@ -181,8 +225,25 @@
         });
       });
 
-    // GrapesJS counts changes up while editing and resets the count after a save
-    editor.on('change:changesCount storage:end:store', () => invoke('set_unsaved', { unsaved: editor.getDirtyCount() > 0 }));
+    // GrapesJS zeroes its count of changes as soon as a save is asked, even
+    // one the rate-limit plugin only postponed: closing then would lose it
+    let unsaved = false;
+    let saveFailed = false;
+    const setUnsaved = (value) => {
+      unsaved = value;
+      invoke('set_unsaved', { unsaved });
+    };
+    // Loading counts changes, and it ends by resuming autosave. The `update`
+    // that zeroing the count fires is not a change.
+    editor.on('command:stop:pause-auto-save', () => setUnsaved(false));
+    editor.on('update', () => editor.getDirtyCount() > 0 && setUnsaved(true));
+    editor.on('storage:start:store', () => {
+      saveFailed = false;
+      setUnsaved(true);
+    });
+    // storage.ts tells a write that failed as a load error
+    editor.on('storage:error:store storage:error:load', () => { saveFailed = true; });
+    editor.on('storage:end:store', () => setUnsaved(saveFailed || editor.getDirtyCount() > 0));
 
     // Track project_save
     editor.on('storage:start:store', () => {
@@ -216,15 +277,19 @@
       if (editor.__publishSpan) { editor.__publishSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__publishSpan.end(); editor.__publishSpan = null; }
     });
 
-    // Listen for menu events from Tauri (triggered by MCP or quit dialog)
-    safeListen('menu-save', async () => {
-      try {
-        await editor.store();
-      } finally {
-        // Said even when the save failed: quitting waits on this, and silence
-        // would hold the app open until its own timeout
-        invoke('saved_everything');
-      }
+    // Save and quit: asking for a save here would only be postponed, so wait
+    // for the one already on its way
+    safeListen('menu-save', () => {
+      if (saveFailed) return invoke('save_ended', { failed: true });
+      if (!unsaved) return invoke('save_ended', { failed: false });
+      const done = () => {
+        clearTimeout(late);
+        editor.off('storage:end:store storage:error:store', done);
+        invoke('save_ended', { failed: saveFailed });
+      };
+      // Nothing comes for a change made during a write, or a save held back by a publication
+      const late = setTimeout(done, 10000);
+      editor.on('storage:end:store storage:error:store', done);
     });
     safeListen('menu-undo', () => editor.UndoManager.undo());
     safeListen('menu-redo', () => editor.UndoManager.redo());

@@ -114,11 +114,12 @@ async fn read_or_list_website(
     match query.website_id {
         Some(website_id) => {
             if let Some(actions) = &state.actions {
-                let pulling = actions.clone();
+                let loading = actions.clone();
                 let asked_about = website_id.clone();
-                let _ =
-                    tokio::task::spawn_blocking(move || pulling.sync_pull(asked_about.as_str()))
-                        .await;
+                let _ = tokio::task::spawn_blocking(move || {
+                    loading.website_loading(asked_about.as_str())
+                })
+                .await;
             }
             let data = storage::read_website(&state.data_path, &website_id).await?;
             Ok(Json(data).into_response())
@@ -155,7 +156,7 @@ async fn update_website(
             if let (Versioned::Created, Some(actions)) = (versioned, &state.actions) {
                 // A website nobody changed is sent nowhere: it costs seconds
                 // and several processes to send what is already there
-                actions.sync(query.website_id.as_str());
+                actions.website_saved(query.website_id.as_str());
             }
             None
         }
@@ -288,10 +289,33 @@ async fn set_meta(
     Json(meta): Json<WebsiteMetaFileContent>,
 ) -> Result<Json<MessageResponse>> {
     storage::set_website_meta(&state.data_path, &query.website_id, &meta).await?;
+    version_and_send(&state, &query.website_id, "Update website meta from Silex").await;
 
     Ok(Json(MessageResponse {
         message: "Website meta saved",
     }))
+}
+
+/// Version what the editor wrote outside of a save, and send it like a save
+///
+/// Left out of the history, a file the editor writes after a publication (the
+/// thumbnail and the meta that points to it) keeps the next opening from
+/// taking in what changed elsewhere.
+async fn version_and_send(state: &AppState, website_id: &WebsiteId, message: &'static str) {
+    let site = storage::website_path(&state.data_path, website_id);
+    let versioned = tokio::task::spawn_blocking(move || history::version(&site, message)).await;
+    match versioned
+        .map_err(|e| e.to_string())
+        .and_then(|versioned| versioned)
+    {
+        Ok(Versioned::Created) => {
+            if let Some(actions) = &state.actions {
+                actions.website_saved(website_id.as_str());
+            }
+        }
+        Ok(Versioned::Unchanged) => {}
+        Err(why) => tracing::warn!("Could not version website {}: {}", website_id, why),
+    }
 }
 
 /// Read one asset of a website
@@ -332,6 +356,13 @@ async fn write_assets(
     }
 
     let paths = storage::write_assets(&state.data_path, &query.website_id, files).await?;
+
+    version_and_send(
+        &state,
+        &query.website_id,
+        "Update website assets from Silex",
+    )
+    .await;
 
     // Relative URLs, so that the editor can parse them back into stored paths
     let data = paths

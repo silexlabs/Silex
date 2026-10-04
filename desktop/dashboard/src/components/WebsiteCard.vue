@@ -9,9 +9,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'reka-ui'
-import { type Website, hostOf, thumbnailOf } from '../api'
+import {
+  type SyncPlace,
+  type Website,
+  explain,
+  onSyncStatus,
+  openLink,
+  syncPlaces,
+  syncWebsite,
+  thumbnailOf,
+  translate,
+  readLastPublication,
+  type Publication,
+} from '../api'
 import { ariaKeys, handleShortcut, keyLabel } from '../shortcuts'
 import { useMenuAction } from '../menu'
+import { type Problem, showError } from './AppDialogs.vue'
+import AppTooltip from './AppTooltip.vue'
+import ExternalLink from './ExternalLink.vue'
 
 const props = defineProps<{ website: Website }>()
 const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
@@ -49,7 +64,64 @@ const edited = computed(() => {
   return t('Edited {when}', { when: format.format(Math.round(seconds / size), unit) })
 })
 
-const host = computed(() => hostOf(props.website))
+const places = ref<SyncPlace[]>([])
+const lastPublication = ref<Publication>(null)
+// Apart, so that one failing does not hide the other
+async function readSync() {
+  readLastPublication(props.website.websiteId).then((last) => {
+    lastPublication.value = last
+  }, console.error)
+  places.value = await syncPlaces(props.website.websiteId)
+}
+// The list gives new objects when it is refreshed, and the same one when a website is renamed
+watch(() => props.website, readSync, { immediate: true })
+// Read again once the sync has ended: until then, what it fixes would leave the dialog under the user
+let syncing = false
+const stopListening = onSyncStatus(() => syncing || readSync())
+onBeforeUnmount(() => stopListening.then((stop) => stop()))
+
+let synced: Promise<unknown> = Promise.resolve()
+async function sync() {
+  syncing = true
+  const ended = syncWebsite(props.website.websiteId).then(
+    () => undefined,
+    (error: unknown) => ({ title: t('Silex could not sync “{name}”', { name: props.website.name }), ...explain(error) }),
+  )
+  synced = ended
+  const failure = await ended
+  syncing = false
+  await readSync()
+  return failure
+}
+
+// The editor would load the website while a sync rewrites its files, and save the old ones over them
+async function open() {
+  await synced
+  emit('open')
+}
+
+const problems = computed(() => places.value
+  .filter(({ failure, action, changesUrl }) => failure || action || changesUrl)
+  .map(({ icon, place, label, action, changesUrl, failure }): Problem => ({
+    icon,
+    place,
+    message: translate(failure ?? label),
+    detail: failure?.detail,
+    // Syncing would only be refused
+    action: changesUrl
+      ? {
+          label: t('Open on {host}', { host: place }),
+          name: t('Open on {host} (opens in your browser)', { host: place }),
+          external: true,
+          run: () => openLink(changesUrl).then(
+            () => undefined,
+            (error: unknown) => ({ title: t('Silex could not open {host}', { host: place }), ...explain(error) }),
+          ),
+        }
+      : { label: action ? translate(action) : t('Sync'), run: sync },
+  })))
+
+const needsYou = computed(() => t('“{name}” needs you', { name: props.website.name }))
 
 const broken = ref(false)
 watch(() => props.website.imageUrl, () => {
@@ -120,18 +192,59 @@ const { choose, afterClose } = useMenuAction(more)
             ref="open"
             type="button"
             class="card__open"
-            @click="emit('open')"
+            @click="open"
             @keydown="onKeydown"
             @contextmenu.prevent="menuOpen = true"
           >
             {{ website.name }}
           </button>
         </h2>
+        <AppTooltip
+          v-if="lastPublication?.url"
+          :text="lastPublication.url"
+        >
+          <ExternalLink
+            class="card__state card__state--live"
+            :href="lastPublication.url"
+            :name="$t('Live at {url}', { url: lastPublication.url })"
+          >
+            {{ $t('Live') }}
+          </ExternalLink>
+        </AppTooltip>
+        <span
+          v-else-if="lastPublication?.neverPublished"
+          class="card__state card__state--draft"
+        >{{ $t('Draft') }}</span>
         <p class="card__meta">
-          {{ edited }}<template v-if="edited && host">
-            ·
-          </template>{{ host }}
+          <span class="card__edited">{{ edited }}</span>
+          <span
+            v-for="({ place, icon, label }, index) in places"
+            :key="place"
+            class="card__place"
+          >
+            <span
+              v-if="edited || index"
+              aria-hidden="true"
+            >·</span>
+            <span
+              v-if="icon"
+              class="logo"
+              aria-hidden="true"
+              v-html="icon"
+            />{{ place }}<span class="visually-hidden">{{ `, ${translate(label)}` }}</span>
+          </span>
         </p>
+        <AppTooltip
+          v-if="problems.length"
+          :text="$t('1 thing needs you | {count} things need you', problems.length)"
+        >
+          <button
+            type="button"
+            class="card__alert"
+            :aria-label="needsYou"
+            @click="showError({ title: needsYou, problems: () => problems })"
+          />
+        </AppTooltip>
       </div>
       <DropdownMenuRoot v-model:open="menuOpen">
         <DropdownMenuTrigger
@@ -152,7 +265,7 @@ const { choose, afterClose } = useMenuAction(more)
           >
             <DropdownMenuItem
               class="menu__item"
-              @select="choose(() => emit('open'))"
+              @select="choose(open)"
             >
               {{ $t('Edit') }}
             </DropdownMenuItem>
@@ -254,13 +367,92 @@ const { choose, afterClose } = useMenuAction(more)
   outline-offset: 2px;
 }
 
+/* Above the link of the whole card, on an opaque ground that reads the same on any thumbnail */
+.card__state {
+  position: absolute;
+  top: var(--silex-space-2);
+  left: var(--silex-space-2);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--silex-space-1);
+  height: var(--silex-space-6);
+  padding: 0 var(--silex-space-2);
+  border: 1px solid var(--silex-border-color-visible);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.card__state::before {
+  width: var(--silex-space-2);
+  height: var(--silex-space-2);
+  border-radius: 50%;
+  background: currentcolor;
+  content: '';
+}
+
+/* The click goes to the card under it, which opens the editor */
+.card__state--draft {
+  pointer-events: none;
+}
+
+.card__state--live {
+  color: var(--silex-status-success);
+}
+
 .card__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--silex-space-1);
   margin: 0;
   overflow: hidden;
   color: var(--silex-text-secondary);
   font-size: 12px;
   white-space: nowrap;
+}
+
+/* The date gives way, never the host */
+.card__edited {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.card__place {
+  flex: none;
+}
+
+.card__place .logo {
+  margin-left: var(--silex-space-1);
+}
+
+/* Over the thumbnail, while it stays after the name in the order of the focus */
+.card__alert {
+  position: absolute;
+  top: var(--silex-space-2);
+  right: var(--silex-space-2);
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: var(--silex-danger);
+  box-shadow: 0 0 0 2px var(--silex-bg-darker);
+  color: var(--silex-text-inverse);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card__alert::before {
+  content: '!';
+}
+
+.card__alert:hover {
+  background: var(--silex-danger-hover);
 }
 
 .card__more {

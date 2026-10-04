@@ -15,10 +15,13 @@ use std::sync::Mutex;
 
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
+use super::common::git;
 use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
 use super::common::remote::Remote;
 use super::common::run::run;
-use super::deploy::{silex_tag, Build, Deploy, EarlierBuild, Prepared, Urls};
+use super::integration::{
+    silex_tag, Build, Capacity, EarlierBuild, Integration, Prepared, SyncError, Synced, Urls,
+};
 use crate::held::held;
 
 const CODEBERG: &str = "codeberg.org";
@@ -35,11 +38,39 @@ const PAGES_REPO: &str = "pages";
 
 const PIPELINE: &str = ".forgejo/workflows/pages.yml";
 
+/// The Forgejo logo by Caesar Schinas, CC BY-SA 4.0, without the holes that
+/// vanish at the size of text
+const FORGEJO_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.7773 0c1.6018 0 2.9004 1.2986 2.9004 2.9005s-1.2986 2.9004-2.9004 2.9004c-1.0854 0-2.0315-.596-2.5288-1.4787H12.91c-2.3322 0-4.2272 1.8718-4.2649 4.195l-.0007 2.1175a7.0759 7.0759 0 0 1 4.148-1.4205l.1176-.001 1.3385.0002c.4973-.8827 1.4434-1.4788 2.5288-1.4788 1.6018 0 2.9004 1.2986 2.9004 2.9005s-1.2986 2.9004-2.9004 2.9004c-1.0854 0-2.0315-.596-2.5288-1.4787H12.91c-2.3322 0-4.2272 1.8718-4.2649 4.195l-.0007 2.319c.8827.4973 1.4788 1.4434 1.4788 2.5287 0 1.602-1.2986 2.9005-2.9005 2.9005-1.6018 0-2.9004-1.2986-2.9004-2.9005 0-1.0853.596-2.0314 1.4788-2.5287l-.0002-9.9831c0-3.887 3.1195-7.0453 6.9915-7.108l.1176-.001h1.3385C14.7458.5962 15.692 0 16.7773 0Z"/></svg>"#;
+
 pub struct Tea;
 
-impl Deploy for Tea {
+impl Integration for Tea {
     fn program(&self) -> &'static str {
         "tea"
+    }
+
+    fn capacities(&self) -> &'static [Capacity] {
+        &[Capacity::Sync, Capacity::Deploy]
+    }
+
+    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag)
+    }
+
+    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site)
+    }
+
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        git::synced(site, self.repo(site))
+    }
+
+    fn place(&self, site: &Path) -> Option<String> {
+        git::place(site)
+    }
+
+    fn icon(&self) -> Option<&'static str> {
+        Some(FORGEJO_LOGO)
     }
 
     fn options_form(&self, site: &Path) -> Option<OptionsForm> {
@@ -56,6 +87,7 @@ impl Deploy for Tea {
                         "This is the domain that serves your pages. Codeberg serves them at codeberg.page. Another Forgejo serves them at a domain of its own."
                             .to_string(),
                     ),
+                    placeholder: None,
                     required: true,
                 },
                 OptionsField {
@@ -67,6 +99,7 @@ impl Deploy for Tea {
                         "Silex asks a machine on this server to build your website. Codeberg calls its machines codeberg-tiny. On another server the name is different: ask the person who runs it. A wrong name here means your website is never built."
                             .to_string(),
                     ),
+                    placeholder: None,
                     required: true,
                 },
                 OptionsField {
@@ -78,13 +111,14 @@ impl Deploy for Tea {
                         "Leave this empty unless you point a domain of your own at your pages. Silex works out the address of your website from the domain above."
                             .to_string(),
                     ),
+                    placeholder: Some("https://www.example.com/".to_string()),
                     required: false,
                 },
             ],
         })
     }
 
-    fn keeps(&self, site: &Path) -> bool {
+    fn answers_for(&self, site: &Path) -> bool {
         let Some(remote) = Remote::of(site) else {
             return false;
         };
@@ -100,7 +134,7 @@ impl Deploy for Tea {
         &self,
         cli: &Path,
         site: &Path,
-        options: &PublicationOptions,
+        _options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
         let Some(remote) = Remote::of(site) else {
             return Ok(None);
@@ -110,7 +144,6 @@ impl Deploy for Tea {
         }
 
         Ok(Some(Urls {
-            site: Some(website_url(&remote, options)),
             ci: Some(format!(
                 "https://{}/{}/{}/actions",
                 remote.host, remote.owner, remote.repo
@@ -122,6 +155,10 @@ impl Deploy for Tea {
             )),
             warning: None,
         }))
+    }
+
+    fn address(&self, _cli: &Path, site: &Path, options: &PublicationOptions) -> Option<String> {
+        Remote::of(site).map(|remote| website_url(&remote, options))
     }
 
     fn deploy(
@@ -376,66 +413,6 @@ fn repository(cli: &Path, site: &Path, remote: &Remote) -> Result<serde_json::Va
 mod tests {
     use super::*;
 
-    fn answered(json: &str) -> PublicationOptions {
-        serde_json::from_str(json).expect("options of a publication")
-    }
-
-    fn workflow(options: &PublicationOptions) -> String {
-        include_str!("pipelines/forgejo-pages.yml")
-            .replace("{site_url}", &site_url(options))
-            .replace("{pages_domain}", pages_domain(options))
-            .replace("{runner}", runner_label(options))
-    }
-
-    #[test]
-    fn the_workflow_names_the_runner_the_user_said_they_have() {
-        let mine = workflow(&answered(r#"{"runnerLabel": "ubuntu-latest"}"#));
-        assert!(mine.contains("runs-on: ubuntu-latest"), "{}", mine);
-
-        // The label the form offers before anybody answers
-        let untouched = workflow(&answered("{}"));
-        assert!(
-            untouched.contains("runs-on: codeberg-tiny"),
-            "{}",
-            untouched
-        );
-
-        // A field the user emptied is nobody having answered
-        let cleared = workflow(&answered(r#"{"runnerLabel": "  "}"#));
-        assert!(cleared.contains("runs-on: codeberg-tiny"), "{}", cleared);
-    }
-
-    #[test]
-    fn a_build_waiting_for_a_runner_is_not_a_build_that_started() {
-        let queued = build_of(&EarlierBuild::Nothing, || {
-            Ok(vec![serde_json::json!({"id": 1, "status": "waiting"})])
-        })
-        .unwrap();
-        assert!(matches!(queued, Build::Queued));
-
-        let running = build_of(&EarlierBuild::Nothing, || {
-            Ok(vec![serde_json::json!({"id": 1, "status": "running"})])
-        })
-        .unwrap();
-        assert!(matches!(running, Build::Running(_)));
-    }
-
-    #[test]
-    fn a_login_of_tea_is_read_from_its_file_without_running_it() {
-        let config = "logins:\n- name: codeberg\n  url: https://codeberg.org\n  ssh_host: codeberg.org\n  user: alex\n  token: secret\n- name: forgejo-next\n  url: https://v15.next.forgejo.org\n  ssh_host: v15.next.forgejo.org:2150\n  user: alex\n  token: secret\n";
-        assert!(names_the_host(config, "codeberg.org"));
-        // An instance answering ssh on a port of its own is the same host
-        assert!(names_the_host(config, "v15.next.forgejo.org"));
-        assert!(!names_the_host(config, "gitlab.com"));
-        assert!(!names_the_host(config, "git.sr.ht"));
-        // A host named under another key is not a login
-        assert!(!names_the_host(
-            "logins:\n- name: github.com\n  url: https://codeberg.org\n",
-            "github.com"
-        ));
-        assert!(!names_the_host("", "codeberg.org"));
-    }
-
     #[test]
     fn a_repository_nothing_ever_built_has_no_runs_rather_than_an_error() {
         // What tea answers on the first publication of a website
@@ -449,148 +426,6 @@ mod tests {
             1
         );
         assert!(read_runs("[{oops").is_err());
-    }
-
-    #[test]
-    fn the_workflow_leaves_the_repository_to_the_forge() {
-        let workflow = workflow(&answered("{}"));
-        // The forge fills both, so a renamed repository keeps publishing
-        assert!(
-            workflow.contains(
-                "site: https://${{ forge.repository_owner }}.codeberg.page/${{ forge.event.repository.name }}/"
-            ),
-            "{}",
-            workflow
-        );
-        assert!(
-            workflow.contains("server: codeberg.page"),
-            "the pages server should be named: {}",
-            workflow
-        );
-        assert!(
-            workflow.contains("runs-on: codeberg-tiny"),
-            "a runner Codeberg has, sized for the job: {}",
-            workflow
-        );
-        // Publishing again without Silex, and one build at a time
-        assert!(workflow.contains("workflow_dispatch:"), "{}", workflow);
-        assert!(
-            workflow.contains("cancel-in-progress: true"),
-            "{}",
-            workflow
-        );
-        assert!(
-            workflow.contains("- '_silex_*'"),
-            "only a Silex tag publishes: {}",
-            workflow
-        );
-        // Every placeholder of ours is filled
-        let ours = workflow.replace("${{", "").replace("}}", "");
-        assert!(!ours.contains('{'), "a placeholder was left: {}", ours);
-    }
-
-    #[test]
-    fn the_domain_the_user_named_is_the_pages_server_of_the_workflow() {
-        let elsewhere = workflow(&answered(r#"{"pagesDomain":"pages.example.org"}"#));
-        assert!(
-            elsewhere.contains("server: pages.example.org"),
-            "{}",
-            elsewhere
-        );
-        // Worked out by the forge from the domain it was given
-        assert!(
-            elsewhere.contains("${{ forge.repository_owner }}.pages.example.org/"),
-            "{}",
-            elsewhere
-        );
-
-        // Nobody named one: the default
-        let untouched = workflow(&answered(r#"{"pagesDomain":"   "}"#));
-        assert!(untouched.contains("server: codeberg.page"), "{}", untouched);
-    }
-
-    #[test]
-    fn the_address_the_user_named_is_what_the_workflow_publishes_to() {
-        // Nobody named one: the forge works out its own address
-        let site_url = |json: &str| site_url(&answered(json));
-        assert!(site_url("{}").contains("${{ forge.repository_owner }}"));
-        // An empty field is nobody having named one either
-        assert!(site_url(r#"{"websiteUrl":"  "}"#).contains("${{ forge.repository_owner }}"));
-
-        // Ends on a slash whether or not the user typed one
-        assert_eq!(
-            site_url(r#"{"websiteUrl":"https://blog.example.com"}"#),
-            "https://blog.example.com/"
-        );
-        assert_eq!(
-            site_url(r#"{"websiteUrl":"https://blog.example.com/"}"#),
-            "https://blog.example.com/"
-        );
-
-        let named = workflow(&answered(r#"{"websiteUrl":"https://blog.example.com"}"#));
-        assert!(
-            named.contains("site: https://blog.example.com/"),
-            "{}",
-            named
-        );
-        // The pages server still has to be named, or no certificate is asked for
-        assert!(named.contains("server: codeberg.page"), "{}", named);
-    }
-
-    #[test]
-    fn the_address_is_worked_out_from_the_pages_domain() {
-        let served = |remote: &str, json: &str| {
-            website_url(&Remote::parse(remote).unwrap(), &answered(json))
-        };
-
-        assert_eq!(
-            served("git@codeberg.org:alex/mysite.git", "{}"),
-            "https://alex.codeberg.page/mysite/"
-        );
-        // A repository named `pages` sits at the root of the subdomain
-        assert_eq!(
-            served("git@codeberg.org:alex/pages.git", "{}"),
-            "https://alex.codeberg.page/"
-        );
-        // Any Forgejo that serves pages, not Codeberg alone
-        assert_eq!(
-            served(
-                "git@v15.next.forgejo.org:alex/mysite.git",
-                r#"{"pagesDomain":"pages.example.org"}"#
-            ),
-            "https://alex.pages.example.org/mysite/"
-        );
-    }
-
-    #[test]
-    fn a_domain_of_ones_own_wins_over_the_one_worked_out() {
-        let remote = Remote::parse("git@codeberg.org:alex/mysite.git").unwrap();
-        let named =
-            answered(r#"{"pagesDomain":"codeberg.page","websiteUrl":"https://blog.example.com/"}"#);
-        assert_eq!(website_url(&remote, &named), "https://blog.example.com/");
-    }
-
-    #[test]
-    fn a_login_on_another_instance_is_not_this_one() {
-        // What `tea logins list -o json` gives, cut down to what is read
-        let logins: Vec<serde_json::Value> = serde_json::from_str(
-            r#"[{"name":"codeberg","url":"https://codeberg.org","ssh_host":"codeberg.org"},
-                {"name":"forgejo-next","url":"https://v15.next.forgejo.org","ssh_host":"v15.next.forgejo.org"}]"#,
-        )
-        .unwrap();
-
-        assert_eq!(
-            login_named(&logins, "codeberg.org").as_deref(),
-            Some("codeberg")
-        );
-        // Any Forgejo the user signed in to, not Codeberg alone
-        assert_eq!(
-            login_named(&logins, "v15.next.forgejo.org").as_deref(),
-            Some("forgejo-next")
-        );
-        // Nothing for a host another integration answers for
-        assert_eq!(login_named(&logins, "gitlab.com"), None);
-        assert_eq!(login_named(&logins, "git.sr.ht"), None);
     }
 
     #[test]
@@ -616,16 +451,5 @@ mod tests {
             build_of(&EarlierBuild::Nothing, || Ok(Vec::new())).unwrap(),
             Build::NotStarted
         ));
-    }
-
-    #[test]
-    fn a_run_forgejo_answered_as_a_number_is_read_all_the_same() {
-        let run = |json: &str| -> serde_json::Value { serde_json::from_str(json).unwrap() };
-        assert_eq!(
-            run_id(&run(r#"{"id":842,"status":"success"}"#)).as_deref(),
-            Some("842")
-        );
-        assert_eq!(run_id(&run(r#"{"id":"842"}"#)).as_deref(), Some("842"));
-        assert_eq!(run_id(&run(r#"{"status":"success"}"#)), None);
     }
 }

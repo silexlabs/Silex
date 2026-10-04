@@ -62,6 +62,10 @@ pub struct JobData {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end_time: Option<u64>,
+
+    /// Where the website is online, once the host said it built it
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 impl JobData {
@@ -88,6 +92,7 @@ impl Jobs {
             errors: vec![Vec::new()],
             start_time: now(),
             end_time: None,
+            url: None,
         };
 
         let mut known = held(&self.known);
@@ -155,6 +160,16 @@ impl Job {
         let said = said.into();
         self.jobs.change(&self.job_id, |job| {
             job.errors[0].push(said);
+        });
+    }
+
+    /// Said only once the host built the website: sent is not online
+    pub fn live_at(&self, url: impl Into<String>) {
+        let url = url.into();
+        self.jobs.change(&self.job_id, |job| {
+            if !job.is_over() {
+                job.url = Some(url);
+            }
         });
     }
 
@@ -288,10 +303,13 @@ mod tests {
             written.get("endTime").is_none(),
             "no end until there is one"
         );
+        assert!(written.get("url").is_none(), "not online until built");
 
+        job.live_at("https://alex.codeberg.page/site/");
         job.failed("Nothing built it");
         let over = serde_json::to_value(jobs.read(job.id()).unwrap()).unwrap();
         assert_eq!(over["status"], "ERROR");
         assert!(over["endTime"].is_number());
+        assert_eq!(over["url"], "https://alex.codeberg.page/site/");
     }
 }

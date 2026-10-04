@@ -195,16 +195,22 @@
           "markdownDescription": "Enables the get_telemetry_context command without any pre-configured scope."
         },
         {
+          "description": "Enables the last_publication command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-last-publication",
+          "markdownDescription": "Enables the last_publication command without any pre-configured scope."
+        },
+        {
           "description": "Enables the open_link command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-link",
           "markdownDescription": "Enables the open_link command without any pre-configured scope."
         },
         {
-          "description": "Enables the saved_everything command without any pre-configured scope.",
+          "description": "Enables the save_ended command without any pre-configured scope.",
           "type": "string",
-          "const": "allow-saved-everything",
-          "markdownDescription": "Enables the saved_everything command without any pre-configured scope."
+          "const": "allow-save-ended",
+          "markdownDescription": "Enables the save_ended command without any pre-configured scope."
         },
         {
           "description": "Enables the set_current_project command without any pre-configured scope.",
@@ -223,6 +229,18 @@
           "type": "string",
           "const": "allow-show-website-folder",
           "markdownDescription": "Enables the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_places command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-places",
+          "markdownDescription": "Enables the sync_places command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the sync_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-sync-website",
+          "markdownDescription": "Enables the sync_website command without any pre-configured scope."
         },
         {
           "description": "Enables the trash_website command without any pre-configured scope.",
@@ -249,16 +267,22 @@
           "markdownDescription": "Denies the get_telemetry_context command without any pre-configured scope."
         },
         {
+          "description": "Denies the last_publication command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-last-publication",
+          "markdownDescription": "Denies the last_publication command without any pre-configured scope."
+        },
+        {
           "description": "Denies the open_link command without any pre-configured scope.",
           "type": "string",
           "const": "deny-open-link",
           "markdownDescription": "Denies the open_link command without any pre-configured scope."
         },
         {
-          "description": "Denies the saved_everything command without any pre-configured scope.",
+          "description": "Denies the save_ended command without any pre-configured scope.",
           "type": "string",
-          "const": "deny-saved-everything",
-          "markdownDescription": "Denies the saved_everything command without any pre-configured scope."
+          "const": "deny-save-ended",
+          "markdownDescription": "Denies the save_ended command without any pre-configured scope."
         },
         {
           "description": "Denies the set_current_project command without any pre-configured scope.",
@@ -277,6 +301,18 @@
           "type": "string",
           "const": "deny-show-website-folder",
           "markdownDescription": "Denies the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_places command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-places",
+          "markdownDescription": "Denies the sync_places command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the sync_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-sync-website",
+          "markdownDescription": "Denies the sync_website command without any pre-configured scope."
         },
         {
           "description": "Denies the trash_website command without any pre-configured scope.",

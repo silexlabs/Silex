@@ -22,7 +22,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use crate::held::held;
 use crate::locales::{button, tr};
 use silex_server::said::{self, Said};
-use silex_server::{Config, WebsiteId};
+use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
@@ -135,18 +135,69 @@ async fn show_website_folder(
     open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
 }
 
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LastPublication {
+    /// Silex made the website and nothing published it since
+    never_published: bool,
+    /// Where the last publication that worked put it online
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<String>,
+}
+
+/// None for a website made before Silex kept this, which may well be online:
+/// the editor keeps how publishing went in the website, read on this computer
+#[tauri::command]
+async fn last_publication(
+    folder: tauri::State<'_, WebsitesFolder>,
+    website_id: WebsiteId,
+) -> Result<Option<LastPublication>, Said> {
+    let data = std::fs::read(folder.website(&website_id)?.join(WEBSITE_DATA_FILE)).ok();
+    let data = data.and_then(|data| serde_json::from_slice::<serde_json::Value>(&data).ok());
+    let last = data
+        .as_ref()
+        .and_then(|data| data.pointer("/publication/lastPublication"));
+    Ok(last.map(|last| LastPublication {
+        never_published: last.is_null(),
+        url: last["url"]
+            .as_str()
+            .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+            .map(String::from),
+    }))
+}
+
+#[tauri::command]
+async fn sync_places(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<Vec<actions::SyncPlace>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.sync_places(website_id.as_str()))
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn sync_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    actions.sync_now(website_id.as_str()).await
+}
+
 /// Unlike the DELETE route, which the hosted server shares, the user can get the website back
 #[tauri::command]
 async fn trash_website(
     folder: tauri::State<'_, WebsitesFolder>,
-    sendings: tauri::State<'_, actions::Sendings>,
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
     website_id: WebsiteId,
 ) -> Result<(), Said> {
     // git holds its files while it sends them, and the send would then fail on a website that is gone
-    if sendings
+    if actions
+        .sync_statuses()
         .borrow()
         .get(website_id.as_str())
-        .is_some_and(actions::Sending::on_its_way)
+        .is_some_and(actions::SyncStatus::on_its_way)
     {
         return Err(Said::new(said::SENDING));
     }
@@ -172,8 +223,8 @@ fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
 /// Called even when it had nothing to save: quitting waits on this to tell an
 /// empty queue from one whose save is still on its way.
 #[tauri::command]
-fn saved_everything(saves: tauri::State<'_, actions::Saves>) {
-    saves.send_modify(|saves| *saves += 1);
+fn save_ended(saves: tauri::State<'_, actions::SaveEnds>, failed: bool) {
+    saves.send_replace(failed);
 }
 
 /// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
@@ -287,7 +338,7 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
     })
 }
 
-/// The longest "Save & Quit" keeps the app running after the save is asked for
+/// The longest "Save and quit" keeps the app running after the save is asked for
 ///
 /// The website still has to reach its repository, over a network that answers
 /// when it answers. Past this the app closes and says what is left.
@@ -299,11 +350,14 @@ const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
 /// has not arrived yet, and only the editor tells them apart.
 ///
 /// False when the wait ran out with some still on their way.
-async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::Saved) -> bool {
+async fn everything_left(
+    sync_statuses: &mut actions::SyncStatuses,
+    save_ended: &mut actions::SaveEnded,
+) -> bool {
     let wait_until = tokio::time::Instant::now() + SAVE_AND_QUIT_WAIT;
 
     // Err is the editor gone rather than a save: nobody is going to say it now
-    if tokio::time::timeout_at(wait_until, saved.changed())
+    if tokio::time::timeout_at(wait_until, save_ended.changed())
         .await
         .is_err()
     {
@@ -311,14 +365,14 @@ async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::
     }
 
     loop {
-        if !sendings
+        if !sync_statuses
             .borrow_and_update()
             .values()
-            .any(actions::Sending::on_its_way)
+            .any(actions::SyncStatus::on_its_way)
         {
             return true;
         }
-        match tokio::time::timeout_at(wait_until, sendings.changed()).await {
+        match tokio::time::timeout_at(wait_until, sync_statuses.changed()).await {
             Err(_) => return false,
             Ok(Err(_)) => return true,
             Ok(Ok(())) => {}
@@ -328,8 +382,8 @@ async fn everything_left(sendings: &mut actions::Sendings, saved: &mut actions::
 
 /// Say what has not left yet, on the one occasion it is worth saying
 ///
-/// Their work is saved on this computer either way. What they cannot see is
-/// that Silex picks this up when it opens again.
+/// Their work is saved on this computer either way: only the repository is
+/// behind, until the next change or the next opening of the website sends it.
 fn says_what_is_left(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -341,41 +395,100 @@ fn says_what_is_left(app: &tauri::AppHandle) {
         .blocking_show();
 }
 
+/// The editor has no catalog for what the desktop says
+fn tells_the_editor(
+    app_handle: tauri::AppHandle,
+) -> impl Fn(&str, &actions::Failure) + Send + Sync {
+    move |website_id, failure| {
+        let host = &failure.place;
+        let with_host = |key| {
+            host.as_deref()
+                .map(|host| said::fill(&tr(key), [("host", host)]))
+        };
+        let what_happened = failure.what_happened();
+        let params = what_happened
+            .params
+            .iter()
+            .filter_map(|(name, value)| Some((*name, value.as_str()?)));
+        let what_happened = what_happened
+            .sentence
+            .map(|sentence| said::fill(&tr(sentence), params));
+        let _ = app_handle.emit(
+            "sync-failed",
+            serde_json::json!({
+                "websiteId": website_id,
+                "error": failure.error,
+                "url": host.as_ref().and(failure.url.as_ref()),
+                "texts": {
+                    "whatHappened": what_happened,
+                    "newCommits": tr(locales::NEW_COMMITS),
+                    "newCommitsDetail": tr(locales::NEW_COMMITS_DETAIL),
+                    "technicalDetails": tr(locales::TECHNICAL_DETAILS),
+                    "openRepository": with_host(locales::OPEN_REPOSITORY),
+                    "continueEditing": tr(locales::CONTINUE_EDITING),
+                },
+            }),
+        );
+    }
+}
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
-    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+    use tauri_plugin_dialog::{
+        DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
+    };
 
     let app_handle = app.clone();
+    let save_and_quit = button(locales::SAVE_AND_QUIT);
+    let quit_without_saving = button(locales::QUIT_WITHOUT_SAVING);
     app.dialog()
         .message(tr(locales::SAVE_BEFORE_QUITTING))
         .title("Silex")
         .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            button(locales::SAVE_AND_QUIT),
-            button(locales::QUIT),
+        .buttons(MessageDialogButtons::YesNoCancelCustom(
+            save_and_quit.clone(),
+            quit_without_saving.clone(),
+            button(locales::CANCEL),
         ))
-        .show(move |result| {
-            if result {
+        .show_with_result(move |result| match result {
+            MessageDialogResult::Custom(chosen) if chosen == save_and_quit => {
                 // Subscribed before the editor is asked, so that the save it
                 // is about to confirm cannot be missed
-                let saved = app_handle.state::<actions::Saves>().subscribe();
+                let saves = app_handle.state::<actions::SaveEnds>();
+                saves.send_replace(false);
+                let save_ended = saves.subscribe();
                 let _ = app_handle.emit("menu-save", ());
                 if let Some(window) = app_handle.get_webview_window("main") {
                     let _ = window.set_title(&format!("{} \u{2014} Silex", tr(locales::SAVING)));
                 }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    let mut sendings = handle.state::<actions::Sendings>().inner().clone();
-                    let mut saved = saved;
-                    if !tauri::async_runtime::block_on(everything_left(&mut sendings, &mut saved)) {
+                    let mut sync_statuses =
+                        handle.state::<Arc<actions::SilexActions>>().sync_statuses();
+                    let mut save_ended = save_ended;
+                    let left = tauri::async_runtime::block_on(everything_left(
+                        &mut sync_statuses,
+                        &mut save_ended,
+                    ));
+                    let failed = *save_ended.borrow();
+                    // The editor shows why, and closing would hide it
+                    if failed {
+                        return;
+                    }
+                    if !left {
                         says_what_is_left(&handle);
                     }
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.destroy();
                     }
                 });
-            } else if let Some(window) = app_handle.get_webview_window("main") {
-                let _ = window.destroy();
             }
+            MessageDialogResult::Custom(chosen) if chosen == quit_without_saving => {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.destroy();
+                }
+            }
+            // Cancel, Escape and the close button of the dialog keep the editor open
+            _ => {}
         });
 }
 
@@ -531,7 +644,8 @@ async fn start_server(
     current_website_id: actions::CurrentWebsiteId,
     dashboard_in_development: bool,
     asking_integrations: sentry::Span,
-) -> Result<(u16, actions::Sendings), Box<dyn std::error::Error>> {
+    app_handle: tauri::AppHandle,
+) -> Result<(u16, Arc<actions::SilexActions>), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -554,10 +668,14 @@ async fn start_server(
             ..Default::default()
         });
     });
-    let actions = actions::SilexActions::new(data_path.clone(), integrations, current_website_id);
-    let sendings = actions.sending();
+    let actions = Arc::new(actions::SilexActions::new(
+        data_path.clone(),
+        integrations,
+        current_website_id,
+        tells_the_editor(app_handle),
+    ));
 
-    let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
+    let config = Config::new(data_path).with_actions(actions.clone());
 
     let (app, port) = silex_server::build_app(config).await;
 
@@ -614,7 +732,17 @@ async fn start_server(
         }
     });
 
-    Ok((port, sendings))
+    Ok((port, actions))
+}
+
+/// Every card reads where its website stands again, on the disk: the watch
+/// keeps only the last state, which can equal the one before a push
+fn tells_the_dashboard(app_handle: tauri::AppHandle, mut sync_statuses: actions::SyncStatuses) {
+    tauri::async_runtime::spawn(async move {
+        while sync_statuses.changed().await.is_ok() {
+            let _ = app_handle.emit("sync-status", ());
+        }
+    });
 }
 
 /// Only debug builds read it: a leftover variable cannot redirect a release
@@ -800,8 +928,11 @@ fn main() {
             open_link,
             show_website_folder,
             trash_website,
+            sync_places,
+            last_publication,
+            sync_website,
             templates::create_website_from_template,
-            saved_everything,
+            save_ended,
             get_telemetry_context,
         ])
         .setup(move |app| {
@@ -825,17 +956,19 @@ fn main() {
             let pending_evals = mcp::PendingEvals::default();
             let dashboard = dashboard_in_development();
             let server = setup.start_child("app.start", "server");
-            let (port, sendings) = tauri::async_runtime::block_on(start_server(
+            let (port, actions) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
                 app_data_dir,
                 app.state::<AppState>().current_website_id.clone(),
                 dashboard.is_some(),
                 startup.start_child("app.start", "integrations"),
+                app.handle().clone(),
             ))?;
             server.finish();
-            app.manage(sendings);
-            app.manage(actions::Saves::new(0));
+            tells_the_dashboard(app.handle().clone(), actions.sync_statuses());
+            app.manage(actions);
+            app.manage(actions::SaveEnds::new(false));
 
             let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));
             let creating_window = setup.start_child("app.start", "window");

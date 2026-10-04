@@ -17,10 +17,13 @@
 
 use std::path::{Path, PathBuf};
 
-use git2::ConfigLevel;
+use git2::{ConfigLevel, ErrorCode, Oid};
 use silex_server::{repository, TEMPLATE_REMOTE};
 
-use super::run::{failure, run, run_sync_pull, run_transfer_verbatim, Ran};
+use super::run::{failure, run, run_fetch, run_transfer_verbatim};
+use crate::integrations::integration::{SyncError, Synced};
+use crate::locales::{AHEAD, BEHIND, DIVERGED, NOT_PUSHED, PUSHED, SYNC};
+use silex_server::said::Said;
 
 /// Every remote of the repository, with the URL it was given
 ///
@@ -83,103 +86,174 @@ pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
 }
 
-/// The git program found on this machine
-pub struct Git {
-    program: PathBuf,
-}
-
-impl Git {
-    /// The git of this machine, looked for once and kept
-    ///
-    /// Not an integration: nothing to turn on, nothing to remember. Asked its
-    /// version rather than taken on sight, because a file being there does not
-    /// mean it runs.
-    pub fn found() -> Option<Self> {
-        static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
-        FOUND
-            .get_or_init(|| {
-                super::programs::found("git")
-                    .filter(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
-            })
-            .clone()
-            .map(|program| Git { program })
-    }
-
-    /// Push the branch, and the tag when there is one
-    ///
-    /// A tag nothing was pushed with would be left behind at every failed
-    /// attempt, so it goes with the failure.
-    pub fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), String> {
-        let remote = remote_name(site).ok_or(NOWHERE_TO_SEND_IT)?;
-        let pushed = self.push_branch(site, &remote, tag);
-        if let Err(e) = pushed {
-            if let Some(tag) = tag {
-                silex_server::untag(site, tag);
-            }
-            return Err(e);
-        }
-        Ok(())
-    }
-
-    /// Send the branch, saying so plainly when the remote moved on
-    ///
-    /// Nothing is merged or rebased here: a merge Silex started would leave
-    /// the folder in a state its user has no terminal to get out of.
-    fn push_branch(&self, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), String> {
-        // Together, because two pushes mean two handshakes with the host
-        // The remote's name comes from .git/config: never read as an option
-        let mut sending = vec![
-            "push",
-            "--porcelain",
-            "--set-upstream",
-            "--end-of-options",
-            remote,
-            "HEAD",
-        ];
-        sending.extend(tag);
-        let ran = run_transfer_verbatim(&self.program, site, &sending)?;
-        if !ran.failed {
-            return Ok(());
-        }
-        if !behind_remote(&ran) {
-            return Err(failure(&self.program, &ran));
-        }
-        Err(format!(
-            "This website was changed somewhere else, and those changes are not on this computer. Open it again from the list of websites to take them in, then publish again. {}",
-            failure(&self.program, &ran)
-        ))
-    }
-
-    /// Take in what was pushed from somewhere else, and only that
-    ///
-    /// Fast-forward only: a website that moved on both here and there is left
-    /// to its user and the git client they already have.
-    pub fn pull(&self, site: &Path) -> Result<(), String> {
-        let Some(remote) = remote_name(site) else {
-            return Ok(());
-        };
-        // Fetched then merged rather than pulled: only the fetch reaches a
-        // network, and `pull` reads settings of the user that are not Silex's
-        // business to inherit.
-        run_sync_pull(&self.program, site, &["fetch", "--end-of-options", &remote])?;
-        // No upstream before the first publication sets one: nothing to take in
-        let upstream = repository(site).is_ok_and(|repo| repo.revparse_single("@{u}").is_ok());
-        if !upstream {
-            return Ok(());
-        }
-        run(&self.program, site, &["merge", "--ff-only", "@{u}"]).map(|_| ())
-    }
-}
-
-/// Whether git refused because the remote has commits this repository has not
+/// The git of this machine, looked for once and kept
 ///
-/// Read from `--porcelain`, which writes one line per ref as
-/// `<flag> \t <from>:<to> \t <summary> (<reason>)`. Only the reason tells a
-/// remote that moved on from a hook that said no.
-fn behind_remote(ran: &Ran) -> bool {
-    ran.stdout.lines().any(|line| {
-        line.starts_with('!') && (line.contains("non-fast-forward") || line.contains("fetch first"))
+/// Not an integration: nothing to turn on, nothing to remember. Asked its
+/// version rather than taken on sight, because a file being there does not
+/// mean it runs.
+fn git_path() -> Option<PathBuf> {
+    static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
+    FOUND
+        .get_or_init(|| {
+            super::programs::found("git")
+                .filter(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
+        })
+        .clone()
+}
+
+/// Push the branch, and the tag when there is one
+///
+/// A tag nothing was pushed with would be left behind at every failed
+/// attempt, so it goes with the failure.
+pub fn push(site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+    let (git, remote) = git_and_remote(site)?;
+    let pushed = push_branch(&git, site, &remote, tag);
+    if pushed.is_err() {
+        if let Some(tag) = tag {
+            silex_server::untag(site, tag);
+        }
+    }
+    pushed
+}
+
+/// Fast-forward only: a website that moved on both here and there is left
+/// to its user and the git client they already have.
+///
+/// False only once it is known that nothing is left to push: what could not be
+/// compared is an error.
+pub fn sync(site: &Path) -> Result<bool, SyncError> {
+    let (git, remote) = git_and_remote(site)?;
+    // Fetched then merged rather than pulled: only the fetch reaches a
+    // network, and `pull` reads settings of the user that are not Silex's
+    // business to inherit.
+    run_fetch(&git, site, &["fetch", "--end-of-options", &remote]).map_err(SyncError::Other)?;
+    let Some((ahead, behind, upstream)) = compared(site, &remote)? else {
+        // Never sent: all of it is left to push
+        return Ok(true);
+    };
+    if behind == 0 {
+        return Ok(ahead > 0);
+    }
+    run(&git, site, &["merge", "--ff-only", &upstream.to_string()]).map_err(|why| {
+        if ahead > 0 {
+            SyncError::ChangedElsewhere(why)
+        } else {
+            SyncError::Other(why)
+        }
+    })?;
+    Ok(false)
+}
+
+/// The host of the remote the website is sent to
+pub fn place(site: &Path) -> Option<String> {
+    super::remote::Remote::of(site).map(|remote| remote.host)
+}
+
+pub fn synced(site: &Path, repo: Option<String>) -> Option<Synced> {
+    let sync = || Some(Said::new(SYNC));
+    let (label, action, changes_url) = match compared(site, &remote_name(site)?).ok()? {
+        None => (Said::new(NOT_PUSHED), sync(), None),
+        Some((0, 0, _)) => (Said::new(PUSHED), None, None),
+        Some((ahead, 0, _)) => (
+            Said::new(AHEAD).with_number("count", ahead as u64),
+            sync(),
+            None,
+        ),
+        Some((0, behind, _)) => (
+            Said::new(BEHIND).with_number("count", behind as u64),
+            sync(),
+            None,
+        ),
+        // Fast-forward only: syncing could only be refused
+        Some(_) => (Said::new(DIVERGED), None, repo),
+    };
+    Some(Synced {
+        label,
+        action,
+        changes_url,
     })
+}
+
+/// HEAD against `refs/remotes`, git's own record of where the remote branch
+/// was at the last push or fetch, so nothing here needs a network: ahead,
+/// behind and the remote commit, or None when it was never sent
+fn compared(site: &Path, remote: &str) -> Result<Option<(usize, usize, Oid)>, SyncError> {
+    let other = |e: git2::Error| SyncError::Other(e.message().to_string());
+    let repo = repository(site).map_err(other)?;
+    let head = match repo.head() {
+        Ok(head) => head,
+        // No commit yet: nothing here to send, nothing to take in on top of
+        Err(e) if e.code() == ErrorCode::UnbornBranch => return Ok(Some((0, 0, Oid::ZERO_SHA1))),
+        Err(e) => return Err(other(e)),
+    };
+    let (true, Some(local), Ok(branch)) = (head.is_branch(), head.target(), head.shorthand())
+    else {
+        return Err(SyncError::Other(format!(
+            "{} is not on a branch",
+            site.display()
+        )));
+    };
+    // Rather than `@{u}`, which a website published before Silex set it, or
+    // whose first push failed, does not have
+    let Ok(upstream) = repo.revparse_single(&format!("refs/remotes/{}/{}", remote, branch)) else {
+        return Ok(None);
+    };
+    let (ahead, behind) = repo
+        .graph_ahead_behind(local, upstream.id())
+        .map_err(other)?;
+    Ok(Some((ahead, behind, upstream.id())))
+}
+
+fn git_and_remote(site: &Path) -> Result<(PathBuf, String), SyncError> {
+    let git = git_path().ok_or_else(|| {
+        SyncError::Other(
+            "Silex could not find git on this computer, and it is git that sends a website to its host."
+                .to_string(),
+        )
+    })?;
+    let remote =
+        remote_name(site).ok_or_else(|| SyncError::Other(NOWHERE_TO_SEND_IT.to_string()))?;
+    Ok((git, remote))
+}
+
+/// Send the branch, saying so plainly when the remote moved on
+///
+/// Nothing is merged or rebased here: a merge Silex started would leave the
+/// folder in a state its user has no terminal to get out of.
+fn push_branch(git: &Path, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), SyncError> {
+    let mut args = vec!["push", "--porcelain", "--set-upstream"];
+    // A tag that leaves without its branch starts a build of a commit the
+    // branch does not have
+    if tag.is_some() {
+        args.push("--atomic");
+    }
+    // The remote's name comes from .git/config: never read as an option
+    args.extend(["--end-of-options", remote, "HEAD"]);
+    // Together, because two pushes mean two handshakes with the host
+    args.extend(tag);
+    let ran = run_transfer_verbatim(git, site, &args).map_err(SyncError::Other)?;
+    if !ran.failed {
+        return Ok(());
+    }
+    Err(refusal(&ran.stdout, failure(git, &ran)))
+}
+
+/// Why git refused, read from `--porcelain`, which writes one line per ref as
+/// `<flag> \t <from>:<to> \t <summary> (<reason>)`
+///
+/// The reason is the host's own words after `[remote rejected]`, and git's
+/// after `[rejected]`.
+fn refusal(porcelain: &str, why: String) -> SyncError {
+    for summary in porcelain.lines().filter_map(|line| line.split('\t').nth(2)) {
+        match summary.split_once(" (") {
+            Some(("[remote rejected]", _)) => return SyncError::RefusedByHost(why),
+            Some(("[rejected]", "fetch first)" | "non-fast-forward)")) => {
+                return SyncError::ChangedElsewhere(why)
+            }
+            _ => {}
+        }
+    }
+    SyncError::Other(why)
 }
 
 /// Said when a website has no repository to go to
@@ -189,162 +263,18 @@ fn behind_remote(ran: &Ran) -> bool {
 pub const NOWHERE_TO_SEND_IT: &str =
     "Silex does not know where to send this website. Open it again from the list of websites, or check where it is kept.";
 
-/// Whether a send that broke down could work later, read from what git said
-///
-/// Anything unrecognised counts as permanent: trying a wrong password again
-/// fails the same way, quietly, and the user never learns what is in the way.
-/// A network coming back is the one case worth waiting for.
-pub fn worth_another_try(why: &str) -> bool {
-    const BREAKS: [&str; 20] = [
-        "could not resolve host",
-        "temporary failure in name resolution",
-        "name or service not known",
-        "connection timed out",
-        "operation timed out",
-        "timed out after",
-        "connection refused",
-        "connection reset",
-        "network is unreachable",
-        "no route to host",
-        "failed to connect to",
-        "couldn't connect to server",
-        "the remote end hung up",
-        "early eof",
-        "broken pipe",
-        "http 5",
-        "returned error: 5",
-        "gateway time-out",
-        // Silex's own words, when it stopped waiting for git: a slow network
-        // rather than a closed one
-        "took more than",
-        // The git of the user, running in their own terminal on the same
-        // folder, held a lock file. index.lock, HEAD.lock and the rest all end
-        // the same way.
-        ".lock': file exists",
-    ];
-    let why = why.to_lowercase();
-    BREAKS.iter().any(|break_down| why.contains(break_down))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn tells_what_can_work_later_from_what_never_will() {
-        for later in [
-            "fatal: unable to access 'https://gitlab.com/a/b.git/': Could not resolve host: gitlab.com",
-            "ssh: connect to host codeberg.org port 22: Connection timed out",
-            "ssh: connect to host git.sr.ht port 22: Network is unreachable",
-            "fatal: unable to access 'https://x/y.git/': Failed to connect to x port 443 after 130276 ms: Couldn't connect to server",
-            "fatal: unable to access 'https://x/y.git/': Operation timed out after 300000 milliseconds with 0 out of 0 bytes received",
-            "error: RPC failed; HTTP 502 curl 22 The requested URL returned error: 502",
-            "fatal: unable to access 'https://x/y.git/': The requested URL returned error: 503",
-            "fatal: the remote end hung up unexpectedly",
-            "error: RPC failed; curl 56 Recv failure: Connection reset by peer",
-            "fatal: early EOF",
-            "send-pack: unexpected disconnect while reading sideband packet: Broken pipe",
-            "ssh: connect to host codeberg.org port 22: Connection refused",
-            "fatal: unable to access 'https://x/y.git/': Could not resolve host: x, Temporary failure in name resolution",
-        ] {
-            assert!(worth_another_try(later), "given up on: {}", later);
-        }
-
-        for never in [
-            "fatal: Authentication failed for 'https://gitlab.com/a/b.git/'",
-            "remote: HTTP Basic: Access denied. The provided password or token is incorrect",
-            "git@github.com: Permission denied (publickey).",
-            "remote: Repository not found.",
-            "fatal: repository 'https://github.com/a/b.git/' not found",
-            "ERROR: The project you were looking for could not be found or you don't have permission to view it.",
-            "The repository this website is sent to has versions Silex does not have. git failed: ! refs/heads/main:refs/heads/main [rejected] (fetch first)",
-            "! HEAD:refs/heads/main [remote rejected] (pre-receive hook declined)",
-            "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
-            NOWHERE_TO_SEND_IT,
-        ] {
-            assert!(!worth_another_try(never), "kept trying: {}", never);
-        }
-    }
-
-    /// A repository written by hand, so that no git has to run to make one
-    fn a_website(name: &str, remotes: &str) -> PathBuf {
-        let site = std::env::temp_dir().join(format!("silex-git-{}-{}", name, std::process::id()));
-        let _ = std::fs::remove_dir_all(&site);
-        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
-        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
-        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
-        let config = format!("[core]\n\trepositoryformatversion = 0\n{}", remotes);
-        std::fs::write(site.join(".git/config"), config).unwrap();
-        site
-    }
-
-    #[test]
-    fn a_remote_url_written_across_two_lines_is_read_whole() {
-        let site = a_website(
-            "across",
-            "[remote \"origin\"]\n\turl = \"https://example.org/a\\nb.git\"\n",
-        );
-        assert_eq!(
-            remote_url(&site).as_deref(),
-            Some("https://example.org/a\nb.git")
-        );
-        let _ = std::fs::remove_dir_all(&site);
-    }
-
-    #[test]
-    fn the_remote_is_origin_or_the_first_other_than_upstream() {
-        let site = a_website(
-            "origin",
-            "[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n[remote \"origin\"]\n\turl = https://gitlab.com/lexoyo/site.git\n",
-        );
-        assert_eq!(remote_name(&site).as_deref(), Some("origin"));
-        assert_eq!(
-            remote_url(&site).as_deref(),
-            Some("https://gitlab.com/lexoyo/site.git")
-        );
-        let _ = std::fs::remove_dir_all(&site);
-
-        // A repository set up by hand does not always call it origin
-        let site = a_website(
-            "named",
-            "[remote \"upstream\"]\n\turl = https://gitlab.com/silex-templates/a.git\n[remote \"backup\"]\n\turl = git@codeberg.org:alex/site.git\n",
-        );
-        assert_eq!(remote_name(&site).as_deref(), Some("backup"));
-        assert_eq!(
-            remote_url(&site).as_deref(),
-            Some("git@codeberg.org:alex/site.git")
-        );
-        let _ = std::fs::remove_dir_all(&site);
-
-        let site = a_website("none", "");
-        assert_eq!(remote_name(&site), None);
-        let _ = std::fs::remove_dir_all(&site);
-
-        // A website with no repository is a website nothing can be read of
-        let site = std::env::temp_dir().join(format!("silex-git-bare-{}", std::process::id()));
-        std::fs::create_dir_all(&site).unwrap();
-        assert_eq!(remote_url(&site), None);
-        let _ = std::fs::remove_dir_all(&site);
-    }
-
-    #[test]
-    fn reads_the_refusal_git_writes_in_porcelain() {
-        let refused = |stdout: &str| {
-            behind_remote(&Ran {
-                stdout: stdout.to_string(),
-                stderr: String::new(),
-                failed: true,
-            })
-        };
-        assert!(refused(
-            "To gitlab.com/x/y.git\n!\trefs/heads/main:refs/heads/main\t[rejected] (non-fast-forward)\nDone"
-        ));
-        assert!(refused("!\tHEAD:refs/heads/main\t[rejected] (fetch first)"));
-        // A hook that said no is not a remote that moved on
-        assert!(!refused(
-            "!\tHEAD:refs/heads/main\t[remote rejected] (pre-receive hook declined)"
-        ));
-        assert!(!refused("*\tHEAD:refs/heads/main\t[new branch]"));
-        assert!(!refused(""));
+    fn a_refusal_is_told_by_its_summary() {
+        let kind = |line: &str| refusal(line, String::new());
+        let line = "!\tHEAD:refs/heads/main\t[rejected] (fetch first)";
+        assert_eq!(kind(line), SyncError::ChangedElsewhere(String::new()));
+        let line = "!\tHEAD:refs/heads/main\t[remote rejected] (non-fast-forward)";
+        assert_eq!(kind(line), SyncError::RefusedByHost(String::new()));
+        let line = "!\trefs/tags/x:refs/tags/x\t[rejected] (already exists)";
+        assert_eq!(kind(line), SyncError::Other(String::new()));
     }
 }

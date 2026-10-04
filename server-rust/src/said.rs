@@ -34,12 +34,12 @@ pub const NOT_A_WEBSITE: &str =
 pub const TEMPLATE_LINKS: &str =
     "This template has symbolic links in it, which Silex does not copy.";
 pub const TEMPLATE_FILE: &str = "This template has a file Silex does not copy: {file}";
-pub const DAMAGED: &str = "Could not read “{file}”. This file of your website is damaged.";
+pub const DAMAGED: &str = "Silex could not read “{file}”. This file of your website is damaged.";
 pub const COPY_PUBLISHED_OVER: &str =
-    "The copy would have kept where the first website is published, and publishing it would have replaced the first one.";
+    "The copy would be published to the same place as the original, and would replace it.";
 pub const NOT_IN_A_WEBSITE: &str = "Silex only opens the folders of your websites, not {path}.";
 pub const NOT_VERSIONED: &str =
-    "Your website is saved on this computer. What Silex could not do is add this version to its history:";
+    "Your website is saved on this computer, but Silex could not commit this version:";
 pub const DOES_NOT_OPEN: &str =
     "Silex only opens web addresses and the folders of your websites, not {url}.";
 

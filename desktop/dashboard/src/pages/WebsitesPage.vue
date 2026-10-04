@@ -20,11 +20,11 @@ import {
   createWebsite,
   duplicateWebsite,
   explain,
-  hostOf,
   listWebsites,
   openEditor,
   renameWebsite,
   showWebsiteFolder,
+  syncPlaces,
   trashWebsite,
 } from '../api'
 
@@ -139,11 +139,11 @@ async function duplicate(website: Website) {
 }
 
 async function remove(website: Website) {
-  const host = hostOf(website)
+  const host = (await syncPlaces(website.websiteId).catch(() => []))[0]?.place
   const confirmed = await confirm({
     title: t('Delete “{name}”?', { name: website.name }),
     message: host
-      ? t('Silex moves its folder to the trash of this computer. The copy on {host} and the published website stay in place. You can restore it from the trash.', { host })
+      ? t('Silex moves its folder to the trash of this computer. Your repository on {host} and the published website stay in place. You can restore the folder from the trash.', { host })
       : t('Silex moves its folder to the trash of this computer. You can restore it from there.'),
     confirmLabel: t('Delete'),
     danger: true,

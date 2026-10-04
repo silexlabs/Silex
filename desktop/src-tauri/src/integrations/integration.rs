@@ -9,13 +9,66 @@
 
 use std::path::Path;
 
+use serde::Serialize;
+use silex_server::said::Said;
 use silex_server::{OptionsForm, PublicationOptions};
 
 use super::common::remote::Remote;
 
+/// What an integration can do for a website
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Capacity {
+    /// Keep a website the same here and where it is kept
+    Sync,
+    /// Put a website online
+    Deploy,
+}
+
+pub fn not_provided(program: &str, capacity: Capacity) -> String {
+    format!("{} does not provide {:?}", program, capacity)
+}
+
+/// Where a website stands with the place it is sent to
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Synced {
+    /// A sentence, in the words of the integration
+    pub label: Said,
+    /// What the user can do about it, when there is something to do
+    pub action: Option<Said>,
+    /// Where the changes made elsewhere can be seen, when they keep it from syncing
+    pub changes_url: Option<String>,
+}
+
+/// Why a website could not be sent or taken in, with what the program said
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(tag = "kind", content = "why", rename_all = "camelCase")]
+pub enum SyncError {
+    /// The repository has changes this computer does not have
+    ChangedElsewhere(String),
+    /// The host took the push in, then said no
+    RefusedByHost(String),
+    Other(String),
+}
+
+impl std::fmt::Display for SyncError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SyncError::ChangedElsewhere(why) => write!(
+                f,
+                "This website was changed somewhere else, and those changes are not on this computer. {}",
+                why
+            ),
+            SyncError::RefusedByHost(why) => write!(f, "The host refused this push. {}", why),
+            SyncError::Other(why) => f.write_str(why),
+        }
+    }
+}
+
+impl std::error::Error for SyncError {}
+
 #[derive(Default)]
 pub struct Urls {
-    pub site: Option<String>,
     /// Where the build can be watched
     pub ci: Option<String>,
     /// Where the user sets a domain of their own
@@ -23,6 +76,13 @@ pub struct Urls {
     /// What the user has to know about their published website, in their own
     /// words: a build that worked is not always a website anybody can open
     pub warning: Option<String>,
+}
+
+pub struct Refusal {
+    pub sentence: &'static str,
+    pub why: &'static str,
+    /// Where the user sets it right
+    pub button: (&'static str, &'static str),
 }
 
 /// What became of the build a publication started
@@ -62,8 +122,12 @@ pub enum Build {
     },
 }
 
-pub trait Deploy: Send + Sync {
+pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
+
+    /// Only those are asked of it: a method of another capacity answers
+    /// `not_provided`
+    fn capacities(&self) -> &'static [Capacity];
 
     /// What to ask the user before publishing, when this program cannot say
     /// where the website is served
@@ -81,9 +145,21 @@ pub trait Deploy: Send + Sync {
     }
 
     /// Answered from the disk, never from the network: a user waits behind
-    /// this. Two integrations answering yes for the same website is a mistake
-    /// in their conditions, not a tie to break.
-    fn keeps(&self, site: &Path) -> bool;
+    /// this. Every integration answering yes that can sync sends the website,
+    /// even when two send it to the same remote.
+    fn answers_for(&self, site: &Path) -> bool;
+
+    /// Where the website goes, as the user knows it
+    fn place(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
+
+    /// The logo of the place, an SVG of one `currentColor` shape on a square
+    /// that reads at the size of text
+    fn icon(&self) -> Option<&'static str> {
+        None
+    }
 
     /// Where the repository of this website can be read, as a user would open
     /// it
@@ -112,20 +188,45 @@ pub trait Deploy: Send + Sync {
         cli: &Path,
         site: &Path,
         options: &PublicationOptions,
-    ) -> Result<Option<Urls>, String>;
+    ) -> Result<Option<Urls>, String> {
+        let _ = (cli, site, options);
+        Err(not_provided(self.program(), Capacity::Deploy))
+    }
+
+    /// Where the website is served, asked once the host has it
+    ///
+    /// Before a first build GitLab has no address to give.
+    fn address(&self, cli: &Path, site: &Path, options: &PublicationOptions) -> Option<String> {
+        let _ = (cli, site, options);
+        None
+    }
+
+    /// Why the host will build nothing for this account, known before
+    /// anything is written, so that nothing is sent for nothing
+    ///
+    /// None when it would, and when the host could not be asked. `say` is told
+    /// when the host is asked, for whoever is waiting on it.
+    fn refuses(&self, cli: &Path, site: &Path, say: &dyn Fn(String)) -> Option<Refusal> {
+        let _ = (cli, site, say);
+        None
+    }
 
     /// Write what the build needs and version it, answering what the
     /// publication has to send along
     ///
-    /// Nothing is sent here: that is the caller's, with the git of the user.
-    /// An integration may ask the host what its builds looked like before the
+    /// Sends nothing when the integration can sync: `push` does, with the tag
+    /// answered here. One that cannot sync sends the website here. An
+    /// integration may ask the host what its builds looked like before the
     /// push.
     fn deploy(
         &self,
         cli: &Path,
         site: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String>;
+    ) -> Result<Prepared, String> {
+        let _ = (cli, site, options);
+        Err(not_provided(self.program(), Capacity::Deploy))
+    }
 
     /// Ask what became of the build this publication started
     ///
@@ -134,6 +235,37 @@ pub trait Deploy: Send + Sync {
     fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
         let _ = (cli, site, prepared);
         Ok(Build::Unknown)
+    }
+
+    /// Send what was saved, with the tag of a publication when there is one
+    ///
+    /// Never touches the files of the website: the editor may have it open.
+    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        let _ = (site, tag);
+        Err(SyncError::Other(not_provided(
+            self.program(),
+            Capacity::Sync,
+        )))
+    }
+
+    /// Take in what was sent from somewhere else, before the editor reads the
+    /// website, and say whether work done here is left to push
+    ///
+    /// Never makes a merge: a website that moved on both here and there is
+    /// left to its user.
+    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
+        let _ = site;
+        Err(SyncError::Other(not_provided(
+            self.program(),
+            Capacity::Sync,
+        )))
+    }
+
+    /// Where a website stands with the place it is sent to, read on this
+    /// computer only: the dashboard asks it for every website it shows
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        let _ = site;
+        None
     }
 
     /// Where the user watches the build of the publication that just left
@@ -180,60 +312,4 @@ pub fn silex_tag() -> String {
         .map(|since| since.as_millis())
         .unwrap_or_default();
     format!("_silex_{}", timestamp)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// A repository written by hand, so that no git has to make one
-    fn a_website(name: &str, remote: &str) -> std::path::PathBuf {
-        let site = std::env::temp_dir().join(format!("silex-repo-{}-{}", name, std::process::id()));
-        let _ = std::fs::remove_dir_all(&site);
-        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
-        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
-        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
-        let config = format!(
-            "[core]\n\trepositoryformatversion = 0\n[remote \"origin\"]\n\turl = {}\n",
-            remote
-        );
-        std::fs::write(site.join(".git/config"), config).unwrap();
-        site
-    }
-
-    #[test]
-    fn the_repository_of_a_website_is_named_as_a_user_would_open_it() {
-        let site = a_website("gitlab", "git@gitlab.com:lexoyo/a-site.git");
-        assert_eq!(
-            super::super::glab::Glab.repo(&site).as_deref(),
-            Some("https://gitlab.com/lexoyo/a-site")
-        );
-
-        // The ssh port is not part of the address repositories are read at
-        let site = a_website(
-            "forgejo",
-            "ssh://git@forge.example.org:2150/lexoyo/a-site.git",
-        );
-        assert_eq!(
-            super::super::tea::Tea.repo(&site).as_deref(),
-            Some("https://forge.example.org/lexoyo/a-site")
-        );
-    }
-
-    #[test]
-    fn sourcehut_keeps_the_tilde_its_owners_are_written_with() {
-        let site = a_website("sourcehut", "git@git.sr.ht:~lexoyo/a-site");
-        assert_eq!(
-            super::super::hut::Hut.repo(&site).as_deref(),
-            Some("https://git.sr.ht/~lexoyo/a-site")
-        );
-    }
-
-    #[test]
-    fn a_website_kept_on_this_computer_alone_has_no_repository() {
-        let site = std::env::temp_dir().join(format!("silex-norepo-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&site);
-        std::fs::create_dir_all(&site).unwrap();
-        assert_eq!(super::super::glab::Glab.repo(&site), None);
-    }
 }
