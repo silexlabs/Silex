@@ -1,5 +1,5 @@
 import {Editor, PluginOptions} from 'grapesjs'
-import {isTextOrInputField, selectBody} from '../utils'
+import {isTextField, isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
 import {cmdOpenSettings} from './settings'
 
@@ -65,19 +65,6 @@ function getDeepActiveElement(): Element | null {
     }
   }
   return el
-}
-
-const NON_TEXT_INPUT_TYPES = ['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit']
-
-/**
- * Checks if the element is a field where the browser has its own text undo (text inputs, textarea, contenteditable).
- * Not isTextOrInputField from utils: it also matches selects, buttons and checkboxes, which have no native undo.
- */
-function isTextField(el: Element | null): boolean {
-  if (!el) return false
-  if ((el as HTMLElement).isContentEditable) return true
-  if (el.tagName === 'TEXTAREA') return true
-  return el.tagName === 'INPUT' && !NON_TEXT_INPUT_TYPES.includes((el as HTMLInputElement).type)
 }
 
 function whenNoFocus(editor: Editor, cbk: () => void): void {
