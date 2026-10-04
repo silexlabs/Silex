@@ -67,8 +67,6 @@ export function resolveLocale(requested: string | undefined | null, available: s
   return languageMatches.find(locale => !locale.includes('-')) ?? languageMatches[0] ?? SOURCE_LOCALE
 }
 
-const untranslatedKeys = new Set<string>()
-
 /**
  * Index the `silex` namespace of a locale with the raw English key. Returns
  * undefined when the locale or the key is missing, so the caller can fall back.
@@ -107,13 +105,5 @@ export function t(editor: Editor, key: string, vars?: Record<string, unknown>): 
   if (translated && vars) {
     translated = addParams(translated, vars)
   }
-  if (!translated) {
-    untranslatedKeys.add(key)
-    console.info(`Untranslated key "${key}", call editor.runCommand("i18n:info") to see all untranslated keys`)
-  }
   return translated || key
-}
-
-export function getUntranslatedKeys(): string[] {
-  return Array.from(untranslatedKeys)
 }
