@@ -105,5 +105,5 @@ export function t(editor: Editor, key: string, vars?: Record<string, unknown>): 
   if (translated && vars) {
     translated = addParams(translated, vars)
   }
-  return translated || key
+  return translated || (vars ? addParams(key, vars) : key)
 }
