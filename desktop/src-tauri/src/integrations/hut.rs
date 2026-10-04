@@ -71,7 +71,7 @@ impl Integration for Hut {
                 ),
                 placeholder: Remote::of(site)
                     .map(|remote| format!("https://{}/", default_site(&remote))),
-                required: false,
+                required: true,
             }],
         })
     }
