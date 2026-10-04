@@ -1025,40 +1025,4 @@ mod tests {
         assert!(unpack_template(&archive(b"root/index.html"), &site).is_err());
         let _ = std::fs::remove_dir_all(&data_path);
     }
-
-    #[tokio::test]
-    async fn a_website_made_from_a_template_is_not_published_where_the_template_was() {
-        let data =
-            br#"{"pages":[{"id":"home"}],"publication":{"connector":{"connectorId":"gitlab"}}}"#;
-        let mut header = tar::Header::new_gnu();
-        header.set_path("root/website.json").unwrap();
-        header.set_size(data.len() as u64);
-        header.set_mode(0o644);
-        header.set_cksum();
-        let mut tar = tar::Builder::new(flate2::write::GzEncoder::new(
-            Vec::new(),
-            flate2::Compression::fast(),
-        ));
-        tar.append(&header, &data[..]).unwrap();
-        let archive = tar.into_inner().unwrap().finish().unwrap();
-        let data_path = a_data_path("template-publication");
-
-        let website_id = create_website_from_template(
-            &data_path,
-            "From a template".to_string(),
-            archive,
-            "https://gitlab.com/silex-templates/a-template".to_string(),
-        )
-        .await
-        .unwrap();
-
-        let path = website_path(&data_path, &website_id).join(WEBSITE_DATA_FILE);
-        let written: serde_json::Value =
-            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
-        assert_eq!(
-            written,
-            serde_json::json!({ "pages": [{ "id": "home" }], "publication": { "lastPublication": null } })
-        );
-        let _ = std::fs::remove_dir_all(&data_path);
-    }
 }

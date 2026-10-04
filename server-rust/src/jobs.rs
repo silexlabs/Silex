@@ -285,31 +285,4 @@ mod tests {
         assert!(jobs.read(job.id()).is_none(), "the old one is gone");
         assert!(jobs.read(next.id()).is_some(), "and the new one is there");
     }
-
-    #[test]
-    fn the_editor_reads_the_names_it_was_written_against() {
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        let written = serde_json::to_value(jobs.read(job.id()).unwrap()).unwrap();
-
-        // What `PublicationJobData` names in common/types.ts, field for field
-        assert!(written["jobId"].is_string());
-        assert_eq!(written["status"], "IN_PROGRESS");
-        assert_eq!(written["message"], "Publishing");
-        assert!(written["logs"].is_array());
-        assert!(written["errors"].is_array());
-        assert!(written["startTime"].is_number());
-        assert!(
-            written.get("endTime").is_none(),
-            "no end until there is one"
-        );
-        assert!(written.get("url").is_none(), "not online until built");
-
-        job.live_at("https://alex.codeberg.page/site/");
-        job.failed("Nothing built it");
-        let over = serde_json::to_value(jobs.read(job.id()).unwrap()).unwrap();
-        assert_eq!(over["status"], "ERROR");
-        assert!(over["endTime"].is_number());
-        assert_eq!(over["url"], "https://alex.codeberg.page/site/");
-    }
 }

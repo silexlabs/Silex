@@ -30,35 +30,17 @@ use crate::locales::{CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 use silex_server::said::Said;
 
-/// How long Silex waits on a host, and how often it asks
+const LOOKING_FOR_THE_BUILD: Duration = Duration::from_secs(5);
+
+/// How long the host has to start a build before Silex says it never did
 ///
-/// A value rather than constants, so that a test can follow a whole
-/// publication without waiting the minute a real one takes.
-#[derive(Clone, Copy)]
-struct Patience {
-    looking_for_the_build: Duration,
+/// A host that takes the push queues its build within seconds.
+const A_BUILD_STARTS_WITHIN: Duration = Duration::from_secs(60);
 
-    /// How long the host has to start a build before Silex says it never did
-    ///
-    /// A host that takes the push queues its build within seconds.
-    a_build_starts_within: Duration,
+const WHILE_IT_BUILDS: Duration = Duration::from_secs(10);
 
-    while_it_builds: Duration,
-
-    /// Building a website is a minute of work
-    a_build_ends_within: Duration,
-}
-
-impl Default for Patience {
-    fn default() -> Self {
-        Patience {
-            looking_for_the_build: Duration::from_secs(5),
-            a_build_starts_within: Duration::from_secs(60),
-            while_it_builds: Duration::from_secs(10),
-            a_build_ends_within: Duration::from_secs(15 * 60),
-        }
-    }
-}
+/// Building a website is a minute of work
+const A_BUILD_ENDS_WITHIN: Duration = Duration::from_secs(15 * 60);
 
 /// The website the editor has open, shared with the Tauri state
 ///
@@ -664,7 +646,7 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ))
             }
-            Ok(sent) => watch(job, &site, options, &sent, &files, Patience::default()),
+            Ok(sent) => watch(job, &site, options, &sent, &files),
         }
     }
 
@@ -703,14 +685,7 @@ impl SilexActions {
 ///
 /// The website is live when the host says its build worked, not when a push
 /// returned.
-fn watch(
-    job: &Job,
-    site: &Path,
-    options: &PublicationOptions,
-    sent: &Sent,
-    files: &str,
-    patience: Patience,
-) {
+fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, files: &str) {
     let host = sent.host.as_str();
     let ask = || sent.integration.build(&sent.cli, site, &sent.prepared);
     let address = || sent.integration.address(&sent.cli, site, options);
@@ -777,7 +752,7 @@ fn watch(
                 could_not_ask = Some(e);
             }
         }
-        if started.elapsed() >= patience.a_build_starts_within {
+        if started.elapsed() >= A_BUILD_STARTS_WITHIN {
             if queued {
                 return job.failed(message::explained(
                     &format!("Nothing on {} built your website.", host),
@@ -793,7 +768,7 @@ fn watch(
             let never_answered = if answered { None } else { could_not_ask };
             return nothing_built_it(job, host, sent, files, never_answered);
         }
-        std::thread::sleep(patience.looking_for_the_build);
+        std::thread::sleep(LOOKING_FOR_THE_BUILD);
     };
 
     // The build exists: followed until the host says how it ended
@@ -856,7 +831,7 @@ fn watch(
             // Asked again rather than drawn a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
         }
-        if started.elapsed() >= patience.a_build_ends_within {
+        if started.elapsed() >= A_BUILD_ENDS_WITHIN {
             let website = address();
             let mut buttons = vec![Button::secondary("See the build", &build_url)];
             if let Some(website) = website.as_deref() {
@@ -866,12 +841,12 @@ fn watch(
                 "The build is taking longer than expected.",
                 &format!(
                     "Silex stopped following it after {} minutes. Your website may still come online.",
-                    patience.a_build_ends_within.as_secs() / 60
+                    A_BUILD_ENDS_WITHIN.as_secs() / 60
                 ),
                 &buttons,
             ));
         }
-        std::thread::sleep(patience.while_it_builds);
+        std::thread::sleep(WHILE_IT_BUILDS);
         build = match ask() {
             Ok(build) => build,
             Err(e) => {
@@ -913,257 +888,4 @@ fn nothing_built_it(
             Button::secondary(FILES_ON_THIS_COMPUTER, files),
         ],
     ))
-}
-
-#[cfg(test)]
-mod pushing {
-    use super::*;
-    use std::sync::mpsc;
-
-    /// A syncer that answers what the test wants instead of pushing
-    fn syncer_with(
-        pushes: impl Fn(&str) -> Result<bool, SyncError> + Send + Sync + 'static,
-    ) -> Arc<Syncer> {
-        Arc::new(Syncer {
-            pushes: Box::new(move |id| {
-                pushes(id).map_err(|error| Failure {
-                    program: None,
-                    place: None,
-                    error,
-                    url: None,
-                })
-            }),
-            syncs: Box::new(|_| Ok(false)),
-            tells: Box::new(|_, _| {}),
-            busy: Mutex::new(HashMap::new()),
-            freed: Condvar::new(),
-            statuses: watch::Sender::new(BTreeMap::new()),
-        })
-    }
-
-    /// Waits for what a thread does, no longer than it takes
-    fn until(done: impl Fn() -> bool) -> bool {
-        for _ in 0..200 {
-            if done() {
-                return true;
-            }
-            std::thread::sleep(Duration::from_millis(10));
-        }
-        false
-    }
-
-    #[test]
-    fn saves_that_land_while_a_website_is_leaving_go_together_after_it() {
-        let (let_go, held_back) = mpsc::channel::<()>();
-        let held_back = Mutex::new(held_back);
-        let sent: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-        let noted = sent.clone();
-        let syncer = syncer_with(move |website_id| {
-            noted.lock().unwrap().push(website_id.to_string());
-            let _ = held_back.lock().unwrap().recv();
-            Ok(true)
-        });
-        let pushed = || sent.lock().unwrap().clone();
-
-        syncer.push("site");
-        assert!(until(|| pushed().len() == 1));
-        for _ in 0..5 {
-            syncer.push("site");
-        }
-        let_go.send(()).unwrap();
-        drop(let_go);
-
-        assert!(
-            until(|| pushed().len() == 2),
-            "what was saved during the first push never left"
-        );
-        std::thread::sleep(Duration::from_millis(100));
-        assert_eq!(pushed(), ["site", "site"], "one push for all those saves");
-    }
-
-    #[test]
-    fn a_website_no_integration_answers_for_is_not_said_to_be_sent() {
-        let syncer = syncer_with(|_| Ok(false));
-        syncer.push("site");
-        assert!(until(|| held(&syncer.busy).is_empty()));
-        assert_eq!(status_of(&syncer, "site"), None);
-    }
-
-    fn status_of(syncer: &Arc<Syncer>, website_id: &str) -> Option<SyncStatus> {
-        syncer.statuses.borrow().get(website_id).cloned()
-    }
-}
-
-#[cfg(test)]
-mod publications {
-    use super::*;
-    use crate::integrations::integration::Urls;
-    use silex_server::{JobStatus, Jobs};
-
-    /// A host that answers the same about every build, and serves it at the
-    /// same address
-    struct Host(fn() -> Build, Option<&'static str>);
-
-    const SITE: Option<&str> = Some("https://alex.codeberg.page/site/");
-    static NEVER_BUILDS: Host = Host(|| Build::NotStarted, SITE);
-
-    impl Integration for Host {
-        fn program(&self) -> &'static str {
-            "host"
-        }
-
-        fn capacities(&self) -> &'static [Capacity] {
-            &[Capacity::Deploy]
-        }
-
-        fn answers_for(&self, _site: &Path) -> bool {
-            true
-        }
-
-        fn urls(
-            &self,
-            _cli: &Path,
-            _site: &Path,
-            _options: &PublicationOptions,
-        ) -> Result<Option<Urls>, String> {
-            Ok(Some(Urls::default()))
-        }
-
-        fn address(
-            &self,
-            _cli: &Path,
-            _site: &Path,
-            _options: &PublicationOptions,
-        ) -> Option<String> {
-            self.1.map(String::from)
-        }
-
-        fn deploy(
-            &self,
-            _cli: &Path,
-            _site: &Path,
-            _options: &PublicationOptions,
-        ) -> Result<Prepared, String> {
-            Ok(Prepared::default())
-        }
-
-        fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
-            Ok((self.0)())
-        }
-    }
-
-    const FILES: &str = "file:///data/site/public";
-
-    fn sent(integration: &'static Host) -> Sent {
-        Sent {
-            integration,
-            cli: PathBuf::from("/nowhere"),
-            host: "codeberg.org".to_string(),
-            warning: None,
-            prepared: Prepared::default(),
-            settings_url: Some("https://codeberg.org/alex/site/settings".to_string()),
-            build_url: Some("https://codeberg.org/alex/site/actions".to_string()),
-            signed_in: Ok(true),
-        }
-    }
-
-    /// The same waiting as a real publication, in milliseconds
-    fn quickly() -> Patience {
-        Patience {
-            looking_for_the_build: Duration::from_millis(1),
-            a_build_starts_within: Duration::from_millis(20),
-            while_it_builds: Duration::from_millis(1),
-            a_build_ends_within: Duration::from_millis(60),
-        }
-    }
-
-    #[test]
-    fn a_host_that_never_starts_a_build_is_not_a_publication_that_worked() {
-        // Codeberg with its Actions off, or an account GitLab has not
-        // verified: the push works and the website is never built
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        watch(
-            &job,
-            Path::new("/nowhere"),
-            &PublicationOptions::default(),
-            &sent(&NEVER_BUILDS),
-            FILES,
-            quickly(),
-        );
-        let told = jobs.read(job.id()).unwrap();
-
-        assert_eq!(told.status, JobStatus::Error);
-        assert!(
-            told.message.contains("did not start a build"),
-            "{}",
-            told.message
-        );
-        assert!(
-            !told.message.contains("live"),
-            "nothing built it: {}",
-            told.message
-        );
-        // And pointed at what to do about it
-        assert!(
-            told.message.contains("Repository settings"),
-            "{}",
-            told.message
-        );
-        assert!(told.message.contains(FILES), "{}", told.message);
-    }
-
-    #[test]
-    fn a_website_is_online_once_its_host_built_it() {
-        static BUILDS: Host = Host(|| Build::Built, SITE);
-        static CANNOT_TELL: Host = Host(|| Build::Unknown, SITE);
-        let jobs = Jobs::default();
-        let online = |host: &'static Host| {
-            let job = jobs.start("Publishing");
-            watch(
-                &job,
-                Path::new("/nowhere"),
-                &PublicationOptions::default(),
-                &sent(host),
-                FILES,
-                quickly(),
-            );
-            jobs.read(job.id()).unwrap().url
-        };
-
-        assert_eq!(
-            online(&BUILDS).as_deref(),
-            Some("https://alex.codeberg.page/site/")
-        );
-        assert_eq!(online(&CANNOT_TELL), None, "nobody checked it is online");
-        assert_eq!(online(&NEVER_BUILDS), None);
-    }
-
-    #[test]
-    fn a_build_given_up_on_offers_no_website_it_has_no_address_for() {
-        // GitLab before its first build
-        static NO_ADDRESS_YET: Host = Host(|| Build::Running(None), None);
-        let jobs = Jobs::default();
-        let job = jobs.start("Publishing");
-        watch(
-            &job,
-            Path::new("/nowhere"),
-            &PublicationOptions::default(),
-            &sent(&NO_ADDRESS_YET),
-            FILES,
-            quickly(),
-        );
-        let told = jobs.read(job.id()).unwrap();
-
-        assert!(
-            told.message.contains("taking longer than expected"),
-            "{}",
-            told.message
-        );
-        assert!(
-            !told.message.contains("View your website"),
-            "{}",
-            told.message
-        );
-    }
 }

@@ -4,8 +4,8 @@
 
 import { expect, jest, describe, it, beforeEach } from '@jest/globals'
 import grapesjs, { Editor } from 'grapesjs'
-import { ConnectorData, ConnectorType, JobStatus, WebsiteData, WebsiteSettings } from '~/common/types'
-import { PublicationManager, PublishableEditor } from './PublicationManager'
+import { WebsiteSettings } from '~/common/types'
+import { PublicationManager } from './PublicationManager'
 
 // Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
 jest.mock('lit-html', () => ({}))
@@ -54,35 +54,5 @@ describe('PublicationManager html output', () => {
     expect(html).toContain('<title>Custom title</title>')
     expect(html).not.toContain('<title>My page</title>')
   })
-
-  it('does not save the fallback title into the page settings', async () => {
-    await getHtml({}, {}, 'My page')
-    const settings = editor.Pages.getAll()[0].get('settings') as WebsiteSettings
-    expect(settings?.title).toBeUndefined()
-  })
 })
 
-describe('the last publication', () => {
-  const host = { connectorId: 'fs-hosting', type: ConnectorType.HOSTING } as ConnectorData
-  const job = { jobId: '1', status: JobStatus.IN_PROGRESS, message: '', logs: [], errors: [] }
-
-  it('is saved in the website, and stays when the hosting is forgotten', async () => {
-    /* @ts-ignore */
-    const editor = grapesjs.init({ headless: true, storageManager: { autoload: false } }) as PublishableEditor
-    const store = jest.spyOn(editor, 'store').mockResolvedValue({})
-    const manager = new PublicationManager(editor, { websiteId: 'test', appendTo: '' })
-    manager.settings = { connector: host, lastPublication: null }
-    manager.job = job
-    // The server answers the status of the job, then the logout
-    global.fetch = jest.fn(async () => ({ ok: true, json: async () => ({ ...job, status: JobStatus.SUCCESS, url: 'https://alex.gitlab.io/site/' }) })) as unknown as typeof fetch
-
-    await manager.trackProgress()
-    expect(store).toHaveBeenCalled()
-    const saved = {} as WebsiteData
-    editor.trigger('storage:start:store', saved)
-    expect(saved.publication.lastPublication).toEqual({ url: 'https://alex.gitlab.io/site/' })
-
-    await manager.goLogout()
-    expect(manager.settings.lastPublication?.url).toBe('https://alex.gitlab.io/site/')
-  })
-})

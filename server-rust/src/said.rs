@@ -43,24 +43,6 @@ pub const NOT_VERSIONED: &str =
 pub const DOES_NOT_OPEN: &str =
     "Silex only opens web addresses and the folders of your websites, not {url}.";
 
-/// Every sentence, for the test that finds each one in the locales
-pub const ALL: &[&str] = &[
-    SENDING,
-    NO_WEBSITE,
-    CHECK_CONNECTION,
-    TEMPLATE_ELSEWHERE,
-    ARCHIVE_TOO_LARGE,
-    TEMPLATE_TOO_LARGE,
-    NOT_A_WEBSITE,
-    TEMPLATE_LINKS,
-    TEMPLATE_FILE,
-    DAMAGED,
-    COPY_PUBLISHED_OVER,
-    NOT_IN_A_WEBSITE,
-    DOES_NOT_OPEN,
-    NOT_VERSIONED,
-];
-
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct Said {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -200,19 +200,9 @@ fn signed_in_to(host: &str) -> bool {
         .is_some_and(|block| holds_a_login(&block))
 }
 
-// Tests run side by side in one process, which GLAB_CONFIG_DIR would reach as a whole
-#[cfg(test)]
-thread_local! {
-    pub static CONFIG_DIR: std::cell::RefCell<Option<PathBuf>> = const { std::cell::RefCell::new(None) };
-}
-
 /// In the home of the user on every platform, and that one wins over the XDG
 /// folder when both exist
 fn config_file() -> Option<PathBuf> {
-    #[cfg(test)]
-    if let Some(dir) = CONFIG_DIR.with_borrow(Clone::clone) {
-        return Some(dir.join("config.yml"));
-    }
     if let Some(named) = std::env::var_os("GLAB_CONFIG_DIR") {
         return Some(PathBuf::from(named).join("config.yml"));
     }

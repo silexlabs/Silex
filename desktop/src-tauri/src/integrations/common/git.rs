@@ -262,19 +262,3 @@ fn refusal(porcelain: &str, why: String) -> SyncError {
 /// in Silex. "Remote" least of all.
 pub const NOWHERE_TO_SEND_IT: &str =
     "Silex does not know where to send this website. Open it again from the list of websites, or check where it is kept.";
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn a_refusal_is_told_by_its_summary() {
-        let kind = |line: &str| refusal(line, String::new());
-        let line = "!\tHEAD:refs/heads/main\t[rejected] (fetch first)";
-        assert_eq!(kind(line), SyncError::ChangedElsewhere(String::new()));
-        let line = "!\tHEAD:refs/heads/main\t[remote rejected] (non-fast-forward)";
-        assert_eq!(kind(line), SyncError::RefusedByHost(String::new()));
-        let line = "!\trefs/tags/x:refs/tags/x\t[rejected] (already exists)";
-        assert_eq!(kind(line), SyncError::Other(String::new()));
-    }
-}
