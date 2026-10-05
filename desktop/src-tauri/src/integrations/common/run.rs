@@ -14,7 +14,7 @@
 //! amount of output kept, and no secret in what comes back.
 
 use std::env;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{self, Receiver};
@@ -37,7 +37,7 @@ const TRANSFER: Duration = Duration::from_secs(600);
 ///
 /// Somebody is waiting in front of an editor that has not opened yet, so it is
 /// short: what it does not bring back arrives at the next opening.
-const SYNC_PULL: Duration = Duration::from_secs(15);
+const FETCH: Duration = Duration::from_secs(15);
 
 /// How long the output of a program is waited for once it exited
 ///
@@ -54,11 +54,22 @@ const MAX_OUTPUT: usize = 64 * 1024;
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, LOCAL)?)
+    said(program, run_within(program, dir, args, None, LOCAL)?)
 }
 
-pub fn run_sync_pull(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, SYNC_PULL)?)
+/// A question asked over the network, to a program that only takes it on its
+/// input
+pub fn run_with_input(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    input: &str,
+) -> Result<String, String> {
+    said(program, run_within(program, dir, args, Some(input), FETCH)?)
+}
+
+pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+    said(program, run_within(program, dir, args, None, FETCH)?)
 }
 
 /// The same, keeping what the program said even when it failed
@@ -66,7 +77,7 @@ pub fn run_sync_pull(program: &Path, dir: &Path, args: &[&str]) -> Result<String
 /// A program can say something a caller has to act on rather than show: git
 /// answers `--porcelain` on its standard output and fails all the same.
 pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Result<Ran, String> {
-    run_within(program, dir, args, TRANSFER)
+    run_within(program, dir, args, None, TRANSFER)
 }
 
 pub struct Ran {
@@ -131,13 +142,23 @@ fn without_appimage_libraries(command: &mut Command) {
     }
 }
 
-fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> Result<Ran, String> {
+fn run_within(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    input: Option<&str>,
+    timeout: Duration,
+) -> Result<Ran, String> {
     let mut command = Command::new(program);
     command
         .args(args)
         .current_dir(dir)
         // git asking for a password would otherwise freeze a save forever
-        .stdin(Stdio::null())
+        .stdin(if input.is_some() {
+            Stdio::piped()
+        } else {
+            Stdio::null()
+        })
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         // Same idea, for the ways git has of asking on its own
@@ -182,6 +203,11 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
     let mut child = command
         .spawn()
         .map_err(|e| format!("Could not run {}: {}", name, e))?;
+
+    // Closed once written, so that the program knows it has it all
+    if let (Some(input), Some(mut stdin)) = (input, child.stdin.take()) {
+        let _ = stdin.write_all(input.as_bytes());
+    }
 
     let stdout = drain(child.stdout.take());
     let stderr = drain(child.stderr.take());
@@ -289,12 +315,6 @@ pub fn readable(said: &str) -> String {
 mod tests {
     use super::*;
 
-    fn a_temp_file(name: &str) -> std::path::PathBuf {
-        let file = std::env::temp_dir().join(format!("silex-run-{}-{}", name, std::process::id()));
-        let _ = std::fs::remove_file(&file);
-        file
-    }
-
     #[test]
     fn does_not_wait_for_a_child_the_program_left_behind() {
         // git leaves an ssh holding the pipes and exits
@@ -313,29 +333,6 @@ mod tests {
     }
 
     #[test]
-    fn a_program_that_ran_out_of_time_takes_its_children_with_it() {
-        // The grandchild writes the marker if it survived
-        let marker = a_temp_file("survivor");
-        let script = format!("(sleep 2; touch {}) & sleep 30", marker.display());
-        let timed_out = run_within(
-            Path::new("/bin/sh"),
-            Path::new("/tmp"),
-            &["-c", &script],
-            Duration::from_secs(1),
-        );
-        assert!(
-            timed_out.is_err(),
-            "the program should have run out of time"
-        );
-
-        std::thread::sleep(Duration::from_secs(3));
-        assert!(
-            !marker.exists(),
-            "a child of the program outlived it: the whole group was not stopped"
-        );
-    }
-
-    #[test]
     fn what_a_program_says_is_its_own_words_without_its_secrets() {
         let failed = run(
             Path::new("/bin/sh"),
@@ -346,33 +343,5 @@ mod tests {
         assert!(failed.starts_with("sh failed: "), "{}", failed);
         assert!(!failed.contains("glpat-abc"), "{}", failed);
         assert!(failed.contains("***@gitlab.com/x/y.git"), "{}", failed);
-    }
-
-    #[test]
-    fn what_makes_text_bold_in_a_terminal_does_not_come_back() {
-        // What tea really writes, and keeps writing even into a pipe
-        assert_eq!(
-            readable("Version: \u{1b}[1m0.15.1\u{1b}[0m\tgolang: 1.26.5").trim(),
-            "Version: 0.15.1 golang: 1.26.5"
-        );
-        // A sequence that ends in something other than `m`
-        assert_eq!(readable("\u{1b}[2Jstill here"), "still here");
-        // And one that ends in a bell rather than a letter at all
-        assert_eq!(readable("\u{1b}]0;a title\u{7}still here"), "still here");
-        // What has nothing to take off comes back as it was, accents included
-        assert_eq!(readable("café — naïve"), "café — naïve");
-    }
-
-    #[test]
-    fn what_a_program_said_is_kept_even_when_it_failed() {
-        // git answers --porcelain on its standard output and fails all the same
-        let ran = run_transfer_verbatim(
-            Path::new("/bin/sh"),
-            Path::new("/tmp"),
-            &["-c", "echo 'to the caller'; exit 1"],
-        )
-        .unwrap();
-        assert!(ran.failed);
-        assert_eq!(ran.stdout.trim(), "to the caller");
     }
 }

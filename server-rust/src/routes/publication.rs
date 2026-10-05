@@ -235,6 +235,7 @@ async fn publication_status(
         errors: vec![Vec::new()],
         start_time: 0,
         end_time: None,
+        url: None,
     });
     Ok(Json(job))
 }

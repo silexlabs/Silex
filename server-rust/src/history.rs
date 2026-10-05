@@ -162,13 +162,13 @@ fn whoever(repo: &Repository) -> Result<git2::Signature<'static>, git2::Error> {
 ///
 /// A git the user started themselves knows nothing of the locks Silex takes,
 /// and neither does a tool watching the folder. git answers a code of its own
-/// for a held repository; its words differ from one lock to the next, the code
-/// does not.
+/// for a held repository, or for a ref moved by another while this one wrote;
+/// its words differ from one lock to the next, the code does not.
 fn patiently<T>(mut work: impl FnMut() -> Result<T, git2::Error>) -> Result<T, String> {
     let mut wait = Duration::from_millis(50);
     for _ in 0..4 {
         match work() {
-            Err(e) if e.code() == ErrorCode::Locked => {
+            Err(e) if matches!(e.code(), ErrorCode::Locked | ErrorCode::Modified) => {
                 std::thread::sleep(wait);
                 wait *= 2;
             }

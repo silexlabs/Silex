@@ -30,20 +30,22 @@ pub trait Actions: Send + Sync {
         let _ = (website_id, options, job);
     }
 
-    /// Take in the versions of a website made somewhere else, before it is read.
+    /// A website is about to be read, which is the moment to take in the
+    /// versions of it made somewhere else.
     ///
     /// The read waits for it, because after the editor loaded the website
-    /// would be too late. Nothing is taken in by default.
-    fn sync_pull(&self, website_id: &str) {
+    /// would be too late. Nothing happens by default.
+    fn website_loading(&self, website_id: &str) {
         let _ = website_id;
     }
 
-    /// Send a website to wherever it is kept, right after it was versioned.
+    /// A save or an upload made a new version of a website, which is the
+    /// moment to send it to wherever it is kept.
     ///
     /// Returns at once and answers nothing: a save must not wait on somebody
-    /// else's network. Nothing is sent by default, and what was pushed from
-    /// elsewhere comes back through `sync_pull`.
-    fn sync(&self, website_id: &str) {
+    /// else's network. Nothing happens by default, and what was pushed from
+    /// elsewhere comes back through `website_loading`.
+    fn website_saved(&self, website_id: &str) {
         let _ = website_id;
     }
 
@@ -108,12 +110,6 @@ pub struct Hosting {
     /// The name of the host, as the user knows it
     pub display_name: String,
 
-    /// What publishing already knows, `websiteUrl` among it
-    ///
-    /// Kept untyped: the editor hands them back to the publication as they
-    /// came.
-    pub options: Option<serde_json::Value>,
-
     /// What the user is asked, when the host cannot say it itself
     pub options_form: Option<OptionsForm>,
 }
@@ -147,6 +143,10 @@ pub struct OptionsField {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub help: Option<String>,
+
+    /// What the field holds when left empty
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub placeholder: Option<String>,
 
     pub required: bool,
 }

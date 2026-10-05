@@ -25,6 +25,11 @@ import { Page } from 'grapesjs'
 export interface PublicationSettings {
   connector?: ConnectorData, // Set by the postMessage from the login callback page
   options?: ConnectorOptions, // Options for the publication connector saved with the site
+  lastPublication?: LastPublication | null, // Null from the desktop when it makes a website, then written by the editor when a publication puts it online
+}
+
+export interface LastPublication {
+  url: string // Where the last publication that worked put the website online
 }
 
 export interface WebsiteFile {
@@ -279,15 +284,8 @@ export interface ConnectorData {
   color: string
   background: string
   /**
-   * What the host already knows about publishing this website, `websiteUrl`
-   * among it.
-   *
-   * Only Silex Desktop sends this. What the user filled in wins over it.
-   */
-  options?: ConnectorOptions
-  /**
    * What to ask the user before publishing, when the host cannot say where the
-   * website is served. Only Silex Desktop sends this, as above.
+   * website is served. Only Silex Desktop sends this.
    */
   optionsForm?: OptionsForm
 }
@@ -311,6 +309,8 @@ export interface OptionsField {
   /** What to start from, until the user writes something of their own */
   value?: string
   help?: string
+  /** What the field holds when left empty */
+  placeholder?: string
   required: boolean
 }
 
@@ -412,4 +412,5 @@ export interface PublicationJobData extends JobData {
   errors: string[][]
   startTime?: number
   endTime?: number
+  url?: string // Where the website is online, set only once the host said it built it
 }

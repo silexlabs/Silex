@@ -91,6 +91,21 @@ select {
   appearance: none;
 }
 
+/* The logo of an integration, as large as the text and sitting on its baseline */
+.logo {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: var(--silex-space-1);
+  color: var(--silex-text-secondary);
+}
+
+.logo svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

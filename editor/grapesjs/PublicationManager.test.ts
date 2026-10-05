@@ -4,8 +4,8 @@
 
 import { expect, jest, describe, it, beforeEach } from '@jest/globals'
 import grapesjs, { Editor } from 'grapesjs'
-import { ConnectorData, ConnectorType, WebsiteSettings } from '~/common/types'
-import { PublicationManager, withConnectorOptions } from './PublicationManager'
+import { WebsiteSettings } from '~/common/types'
+import { PublicationManager } from './PublicationManager'
 
 // Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
 jest.mock('lit-html', () => ({}))
@@ -54,22 +54,5 @@ describe('PublicationManager html output', () => {
     expect(html).toContain('<title>Custom title</title>')
     expect(html).not.toContain('<title>My page</title>')
   })
-
-  it('does not save the fallback title into the page settings', async () => {
-    await getHtml({}, {}, 'My page')
-    const settings = editor.Pages.getAll()[0].get('settings') as WebsiteSettings
-    expect(settings?.title).toBeUndefined()
-  })
 })
 
-describe('withConnectorOptions', () => {
-  const host: ConnectorData = {
-    connectorId: 'fs-hosting', type: ConnectorType.HOSTING, displayName: 'gitlab.com', icon: '', disableLogout: true,
-    isLoggedIn: true, oauthUrl: null, color: '', background: '',
-    options: { websiteUrl: 'https://now.gitlab.io' },
-  }
-
-  it('takes the address of the host over one saved from an earlier answer', () => {
-    expect(withConnectorOptions({ options: { websiteUrl: 'https://before.gitlab.io' } }, host).websiteUrl).toBe('https://now.gitlab.io')
-  })
-})

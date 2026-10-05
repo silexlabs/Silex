@@ -66,14 +66,8 @@ pub struct ConnectorData {
     /// Only read when logging in, which never happens here
     pub oauth_url: Option<String>,
 
-    /// What publishing already knows, `websiteUrl` among it
-    ///
-    /// Only Silex Desktop has anything to say here.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub options: Option<serde_json::Value>,
-
     /// What to ask the user before publishing, when the host cannot say where
-    /// the website is served. Silex Desktop only, as above.
+    /// the website is served. Silex Desktop only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options_form: Option<OptionsForm>,
 }
@@ -90,8 +84,8 @@ async fn connector_data(state: &AppState, connector_type: ConnectorType) -> Conn
     // Only the hosting is asked about: the storage is these files whoever
     // embeds the crate, while what serves a website depends on the machine
     let hosting = match (connector_type, state.actions.clone()) {
-        // Answering this starts a program that reaches the network, so a slow
-        // answer must not hold up what else the editor asks for
+        // Answering reads the files of the website and of the programs that
+        // publish it, which is no work for the async runtime
         (ConnectorType::Hosting, Some(actions)) => {
             tokio::task::spawn_blocking(move || actions.hosting())
                 .await
@@ -103,11 +97,10 @@ async fn connector_data(state: &AppState, connector_type: ConnectorType) -> Conn
         _ => None,
     };
 
-    let (connector_id, display_name, options, options_form) = match hosting {
+    let (connector_id, display_name, options_form) = match hosting {
         Some(hosting) => (
             hosting.connector_id,
             hosting.display_name,
-            hosting.options,
             hosting.options_form,
         ),
         None => {
@@ -115,7 +108,7 @@ async fn connector_data(state: &AppState, connector_type: ConnectorType) -> Conn
                 ConnectorType::Storage => ("fs-storage", "File system storage"),
                 ConnectorType::Hosting => ("fs-hosting", "File system hosting"),
             };
-            (connector_id, display_name.to_string(), None, None)
+            (connector_id, display_name.to_string(), None)
         }
     };
 
@@ -126,7 +119,6 @@ async fn connector_data(state: &AppState, connector_type: ConnectorType) -> Conn
         disable_logout: true,
         is_logged_in: true,
         oauth_url: None,
-        options,
         options_form,
     }
 }

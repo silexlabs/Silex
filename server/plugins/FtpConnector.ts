@@ -666,6 +666,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       job.message = message
       job.logs[0].push(message)
       if(status === JobStatus.SUCCESS) {
+        job.url = this.sessionData(session).websiteUrl || undefined
         jobSuccess(job.jobId, message)
       } else if(status === JobStatus.ERROR) {
         job.errors[0].push(message)

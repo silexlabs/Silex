@@ -1,16 +1,23 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import pluginVue from 'eslint-plugin-vue'
 import pluginVueA11y from 'eslint-plugin-vuejs-accessibility'
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n'
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
 
-// Rust says these sentences itself, in its errors and in the native dialogs
+// Rust says these sentences itself, in its errors, in the native dialogs and to the editor
 const saidByRust = ['../../server-rust/src/said.rs', '../src-tauri/src/locales.rs'].flatMap((file) =>
   [...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(/pub const \w+: &str =\s*("(?:[^"\\]|\\.)*");/g)]
     .map(([, literal]) => JSON.parse(literal)),
 )
 // A sentence of api.ts reaches t() through a Said, where the lint cannot follow it
 const saidByTheDashboard = ['Silex is not answering. Restart it, then try again.']
+// no-missing-keys only sees the keys of .vue and .ts files
+const locales = new URL('./src/locales/', import.meta.url)
+const missing = readdirSync(locales).filter((file) => file.endsWith('.json')).flatMap((file) => {
+  const messages = JSON.parse(readFileSync(new URL(file, locales), 'utf8'))
+  return [...saidByRust, ...saidByTheDashboard].filter((key) => !(key in messages)).map((key) => `${file}: ${key}`)
+})
+if (missing.length) throw new Error(`Missing in the locales:\n${missing.join('\n')}`)
 const escape = (text) => text.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&').replaceAll('\n', '\\n')
 // The rule matches the path of a key as it prints it: bare, or quoted in brackets
 const keyPattern = (key) => `/^(?:${escape(key)}|\\[${escape(JSON.stringify(key))}\\])$/`

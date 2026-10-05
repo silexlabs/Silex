@@ -15,11 +15,29 @@ interface ConfirmOptions {
   danger?: boolean
 }
 
+export interface Problem {
+  /** An SVG drawn in the color of the text */
+  icon: string | null
+  place: string
+  message: string
+  detail?: string
+  action: {
+    label: string
+    /** When the label alone does not say what the button does */
+    name?: string
+    external?: boolean
+    /** What failed replaces the list */
+    run: () => Promise<ErrorOptions | void>
+  }
+}
+
 interface ErrorOptions {
   title: string
   message?: string
   /** What the system said, shown as it is */
   detail?: string
+  /** Read again each time they change, as the user fixes them */
+  problems?: () => Problem[]
 }
 
 type Request =
@@ -70,18 +88,26 @@ const messageId = useId()
 const detailId = useId()
 const problemId = useId()
 let focusedBefore: Element | null = null
+let around: Element[] = []
+
+// What the dialog fixed may have taken the element away: the first control left near it gets the focus
+function focusBack() {
+  if (focusedBefore instanceof HTMLElement && focusedBefore.isConnected) return focusedBefore.focus()
+  around.find((element) => element.isConnected)?.querySelector<HTMLElement>('button, a[href], input')?.focus()
+}
 
 watch(
   () => dialog.value?.id,
   async (id, previous) => {
-    if (previous === undefined) focusedBefore = document.activeElement
+    if (previous === undefined) {
+      focusedBefore = document.activeElement
+      around = []
+      for (let element = focusedBefore?.parentElement; element; element = element.parentElement) around.push(element)
+    }
     empty.value = false
     name.value = dialog.value?.kind === 'prompt' ? (dialog.value.value ?? '') : ''
     await nextTick()
-    if (id === undefined) {
-      if (focusedBefore instanceof HTMLElement) focusedBefore.focus()
-      return
-    }
+    if (id === undefined) return focusBack()
     element.value?.showModal()
     element.value?.querySelector('input')?.select()
   },
@@ -92,6 +118,21 @@ function described() {
   if (!request || request.kind === 'prompt') return undefined
   const detail = request.kind === 'error' && request.detail ? detailId : ''
   return [request.message ? messageId : '', detail].filter(Boolean).join(' ') || undefined
+}
+
+const acting = ref(false)
+async function act({ run }: Problem['action']) {
+  const request = dialog.value
+  if (acting.value) return
+  acting.value = true
+  const failure = await run().finally(() => {
+    acting.value = false
+  })
+  const shown = dialog.value === request
+  if (failure) {
+    if (shown) answer(null)
+    showError(failure)
+  } else if (shown && request?.kind === 'error' && !request.problems?.().length) answer(null)
 }
 
 function submit() {
@@ -166,13 +207,55 @@ function submit() {
       >
         {{ dialog.message }}
       </p>
+      <ul
+        v-if="dialog.kind === 'error' && dialog.problems"
+        class="problems"
+      >
+        <li
+          v-for="(problem, index) in dialog.problems()"
+          :key="problem.place"
+          class="problem"
+        >
+          <p
+            :id="`${titleId}-${index}`"
+            class="problem__place"
+          >
+            <span
+              v-if="problem.icon"
+              class="logo"
+              aria-hidden="true"
+              v-html="problem.icon"
+            />{{ problem.place }}
+          </p>
+          <p class="problem__message">
+            {{ problem.message }}
+          </p>
+          <details v-if="problem.detail">
+            <summary>{{ $t('Technical details') }}</summary>
+            <pre class="dialog__detail">{{ problem.detail }}</pre>
+          </details>
+          <button
+            type="button"
+            class="button problem__action"
+            :aria-label="problem.action.name"
+            :aria-describedby="`${titleId}-${index}`"
+            :aria-disabled="acting"
+            @click="act(problem.action)"
+          >
+            {{ problem.action.label }}<span
+              v-if="problem.action.external"
+              aria-hidden="true"
+            >&nbsp;↗</span>
+          </button>
+        </li>
+      </ul>
       <pre
         v-if="dialog.kind === 'error' && dialog.detail"
         :id="detailId"
         class="dialog__detail"
         tabindex="0"
         role="region"
-        :aria-label="$t('Error detail')"
+        :aria-label="$t('Technical details')"
       >{{ dialog.detail }}</pre>
       <div class="dialog__actions">
         <button
@@ -239,6 +322,37 @@ function submit() {
 
 .dialog__title + .dialog__detail {
   margin-top: 0;
+}
+
+.problems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.problem + .problem {
+  margin-top: var(--silex-space-4);
+  padding-top: var(--silex-space-4);
+  border-top: 1px solid var(--silex-border-color);
+}
+
+.problem__place {
+  margin: 0;
+  font-weight: 500;
+}
+
+.problem__message {
+  margin: var(--silex-space-1) 0 0;
+  color: var(--silex-text-secondary);
+}
+
+.problem__action {
+  margin-top: var(--silex-space-2);
+}
+
+.problem__action[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .dialog__actions {
