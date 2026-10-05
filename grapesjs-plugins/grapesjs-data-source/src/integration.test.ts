@@ -25,6 +25,7 @@ import { doRender } from './view/canvas'
 (global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
 ;(global as any).ReadableStream = require('stream/web').ReadableStream
+;(global as any).MessagePort = require('worker_threads').MessagePort
 const { JSDOM } = require('jsdom')
 // ////
 

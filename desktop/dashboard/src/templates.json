@@ -39,6 +39,19 @@
     }
   },
   {
+    "name": "Green Hope",
+    "repo": "https://gitlab.com/silex-templates/silex_green-hope",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/green-hope-screenshot-768x1035.png",
+    "en": {
+      "description": "Green Hope is a 7-page website template for environmental NGOs, associations and community projects: home, about, projects, stories, events, news and contact. The home page presents the mission, three impact areas (forest conservation, clean water access, renewable energy) and a call to get involved. Green tones, and the layout adapts to phones and tablets (the menu wraps onto several lines, there is no burger menu). Built with Silex in plain HTML and CSS, without a framework. Free under CC BY 4.0: credit the author.",
+      "preview": "https://silex-green-hope-ea4118.gitlab.io/"
+    },
+    "fr": {
+      "description": "Green Hope est un modèle de site de 7 pages pour les associations, ONG environnementales et projets citoyens : accueil, à propos, projets, histoires, événements, actualités et contact. L’accueil présente la mission, trois domaines d’action (conservation des forêts, accès à l’eau propre, énergies renouvelables) et un appel à s’engager. Tons verts, mise en page qui s’adapte aux téléphones et tablettes (le menu passe sur plusieurs lignes, sans menu burger). Fait avec Silex, en HTML et CSS simples, sans framework. Gratuit sous licence CC BY 4.0 : créditez l’auteur.",
+      "preview": "https://silex-green-hope-ea4118.gitlab.io/"
+    }
+  },
+  {
     "name": "Local commerce",
     "repo": "https://gitlab.com/silex-templates/silex_la-table-dor-restaurant",
     "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-la-table-dor-restaurant-1-768x3166.jpg",
