@@ -24,6 +24,22 @@ export const cmdSetVar = 'css-var:set'
 export const cmdRemoveVar = 'css-var:remove'
 export const cmdRenameVar = 'css-var:rename'
 
+/** Names of all defined CSS variables, in order. */
+function getVariableNames(editor) {
+  return getAllVariablesOrdered(editor).map(v => v.name)
+}
+
+/** Throw an actionable error unless `name` is a defined variable. */
+function requireVariable(editor, name, label = 'Variable') {
+  const names = getVariableNames(editor)
+  if (!names.includes(name)) {
+    throw new Error(names.length
+      ? `${label} "${name}" not found. Existing variables: ${names.join(', ')}.`
+      : `${label} "${name}" not found. No variables defined.`)
+  }
+  return names
+}
+
 export function registerCommands(editor) {
   editor.Commands.add(cmdListVars, {
     run() {
@@ -61,12 +77,7 @@ export function registerCommands(editor) {
       if (!name) {
         throw new Error('Required: name. Example: {name: "primary"}. Use css-var:list to see existing variables.')
       }
-      const names = getAllVariablesOrdered(editor).map(v => v.name)
-      if (!names.includes(name)) {
-        throw new Error(names.length
-          ? `Variable "${name}" not found. Existing variables: ${names.join(', ')}.`
-          : `Variable "${name}" not found. No variables defined.`)
-      }
+      requireVariable(editor, name)
       removeVariable(editor, { name })
       // Remove from cssVarOrder
       const order = editor.getModel().get('cssVarOrder') || []
@@ -81,12 +92,7 @@ export function registerCommands(editor) {
       if (!oldName || !newName) {
         throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var:list to see existing variables.')
       }
-      const names = getAllVariablesOrdered(editor).map(v => v.name)
-      if (!names.includes(oldName)) {
-        throw new Error(names.length
-          ? `Variable "${oldName}" not found. Existing variables: ${names.join(', ')}.`
-          : `Variable "${oldName}" not found. No variables defined.`)
-      }
+      const names = requireVariable(editor, oldName)
       if (oldName === newName) {
         throw new Error(`Variable "${oldName}" already has that name.`)
       }
