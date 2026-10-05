@@ -132,6 +132,12 @@ fn run_within(program: &Path, dir: &Path, args: &[&str], timeout: Duration) -> R
         // reads what they say
         .env("LC_ALL", "C");
 
+    // The AppImage points it at the libraries it carries for Silex, and the
+    // git, ssh and curl of the system would load those instead of their own
+    if std::env::var_os("APPIMAGE").is_some() {
+        command.env_remove("LD_LIBRARY_PATH");
+    }
+
     // A killed program takes with it whatever it started: git leaves an ssh
     // behind, and that ssh holds the connection and the pipes
     #[cfg(unix)]
