@@ -564,6 +564,38 @@ fn without_home(text: &str) -> String {
     }
 }
 
+/// The Linux distribution, in the fields Sentry defines for it, read where its
+/// Python SDK reads them: a bug can hang on the libraries of one distribution
+fn distribution() -> &'static [(&'static str, String)] {
+    static RELEASE: std::sync::OnceLock<Vec<(&'static str, String)>> = std::sync::OnceLock::new();
+    RELEASE.get_or_init(|| {
+        let text = std::fs::read_to_string("/etc/os-release")
+            .or_else(|_| std::fs::read_to_string("/usr/lib/os-release"))
+            .unwrap_or_default();
+        [
+            ("ID", "distribution_name"),
+            ("VERSION_ID", "distribution_version"),
+            ("PRETTY_NAME", "distribution_pretty_name"),
+        ]
+        .into_iter()
+        .filter_map(|(key, field)| {
+            text.lines()
+                .find_map(|line| line.strip_prefix(key)?.strip_prefix('='))
+                .map(|value| (field, value.trim_matches('"').to_string()))
+        })
+        .collect()
+    })
+}
+
+/// Sentry itself only says "Linux" and the kernel
+fn with_distribution(event: &mut sentry::protocol::Event<'static>) {
+    if let Some(sentry::protocol::Context::Os(os)) = event.contexts.get_mut("os") {
+        for (field, value) in distribution() {
+            os.other.insert(field.to_string(), value.clone().into());
+        }
+    }
+}
+
 /// The query of an API call carries what the user typed to publish
 fn without_query(request: &sentry::protocol::Request) -> sentry::protocol::Request {
     let mut url = request.url.clone();
@@ -850,6 +882,7 @@ fn main() {
             for exception in event.exception.values.iter_mut() {
                 exception.value = exception.value.as_deref().map(without_home);
             }
+            with_distribution(&mut event);
             Some(event)
         })
         .before_breadcrumb(|mut breadcrumb| {
@@ -870,6 +903,19 @@ fn main() {
         scope.set_tag("package", package_kind());
         if let Ok(webview) = tauri::webview_version() {
             scope.set_tag("webview", webview);
+        }
+        // GlitchTip drops the distribution fields of the os context
+        let release: Vec<&str> = distribution()
+            .iter()
+            .filter(|(field, _)| *field != "distribution_pretty_name")
+            .map(|(_, value)| value.as_str())
+            .collect();
+        if !release.is_empty() {
+            scope.set_tag("distro", release.join(" "));
+        }
+        // Opening a folder or a browser goes through the desktop on Linux
+        if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
+            scope.set_tag("desktop", desktop);
         }
         // Anonymous install id → distinguishes distinct installs from repeat crashes.
         scope.set_user(Some(sentry::protocol::User {
