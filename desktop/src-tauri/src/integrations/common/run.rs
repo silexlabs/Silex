@@ -122,22 +122,28 @@ pub fn failure(program: &Path, ran: &Ran) -> String {
     )
 }
 
-/// The AppImage puts the libraries it carries for Silex in front of
-/// LD_LIBRARY_PATH, and the git, ssh and curl of the system would load those
-/// instead of their own
-fn without_appimage_libraries(command: &mut Command) {
-    let (Some(appdir), Some(paths)) = (env::var_os("APPDIR"), env::var_os("LD_LIBRARY_PATH"))
-    else {
+/// The AppImage points LD_LIBRARY_PATH, PYTHONHOME, PATH and others at what
+/// it carries for Silex, and the git, ssh, python or perl of the system would
+/// load that instead of their own
+fn without_appimage_environment(command: &mut Command) {
+    let Some(appdir) = env::var_os("APPDIR") else {
         return;
     };
-    let users: Vec<PathBuf> = env::split_paths(&paths)
-        // An empty entry is the working directory, here the website folder
-        .filter(|path| !path.as_os_str().is_empty() && !path.starts_with(&appdir))
-        .collect();
-    command.env_remove("LD_LIBRARY_PATH");
-    if let Ok(paths) = env::join_paths(&users) {
-        if !users.is_empty() {
-            command.env("LD_LIBRARY_PATH", paths);
+    // An AppImage started from here would take them for its own
+    command.env_remove("APPDIR").env_remove("APPIMAGE");
+    for (name, value) in env::vars_os() {
+        let paths: Vec<PathBuf> = env::split_paths(&value).collect();
+        if !paths.iter().any(|path| path.starts_with(&appdir)) {
+            continue;
+        }
+        let users: Vec<PathBuf> = paths
+            .into_iter()
+            // An empty entry is the working directory, here the website folder
+            .filter(|path| !path.as_os_str().is_empty() && !path.starts_with(&appdir))
+            .collect();
+        command.env_remove(&name);
+        if let (false, Ok(value)) = (users.is_empty(), env::join_paths(&users)) {
+            command.env(&name, value);
         }
     }
 }
@@ -174,7 +180,7 @@ fn run_within(
         // reads what they say
         .env("LC_ALL", "C");
 
-    without_appimage_libraries(&mut command);
+    without_appimage_environment(&mut command);
 
     // A killed program takes with it whatever it started: git leaves an ssh
     // behind, and that ssh holds the connection and the pipes
