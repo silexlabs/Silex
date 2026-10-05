@@ -13,8 +13,9 @@
 //! directory, no way for it to ask the user anything, a time limit, a bounded
 //! amount of output kept, and no secret in what comes back.
 
+use std::env;
 use std::io::{Read, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Mutex};
@@ -121,6 +122,26 @@ pub fn failure(program: &Path, ran: &Ran) -> String {
     )
 }
 
+/// The AppImage puts the libraries it carries for Silex in front of
+/// LD_LIBRARY_PATH, and the git, ssh and curl of the system would load those
+/// instead of their own
+fn without_appimage_libraries(command: &mut Command) {
+    let (Some(appdir), Some(paths)) = (env::var_os("APPDIR"), env::var_os("LD_LIBRARY_PATH"))
+    else {
+        return;
+    };
+    let users: Vec<PathBuf> = env::split_paths(&paths)
+        // An empty entry is the working directory, here the website folder
+        .filter(|path| !path.as_os_str().is_empty() && !path.starts_with(&appdir))
+        .collect();
+    command.env_remove("LD_LIBRARY_PATH");
+    if let Ok(paths) = env::join_paths(&users) {
+        if !users.is_empty() {
+            command.env("LD_LIBRARY_PATH", paths);
+        }
+    }
+}
+
 fn run_within(
     program: &Path,
     dir: &Path,
@@ -152,6 +173,8 @@ fn run_within(
         // Programs answer in the language of the user otherwise, and Silex
         // reads what they say
         .env("LC_ALL", "C");
+
+    without_appimage_libraries(&mut command);
 
     // A killed program takes with it whatever it started: git leaves an ssh
     // behind, and that ssh holds the connection and the pipes
