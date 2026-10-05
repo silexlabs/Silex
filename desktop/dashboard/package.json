@@ -12,13 +12,13 @@
     "templates": "node ../../scripts/update-desktop-templates.mjs"
   },
   "dependencies": {
-    "@fontsource/ubuntu": "^5.2.8",
-    "@sentry/browser": "^10.75.3",
-    "@tauri-apps/api": "~2.11.0",
+    "@fontsource/ubuntu": "^5.3.0",
+    "@sentry/browser": "^11.4.0",
+    "@tauri-apps/api": "~2.12.1",
     "html2canvas": "^1.4.1",
-    "reka-ui": "^2.10.5",
+    "reka-ui": "^2.11.0",
     "vue": "^3.5.43",
-    "vue-i18n": "^11.4.12",
+    "vue-i18n": "^11.4.13",
     "vue-router": "^5.3.1"
   },
   "devDependencies": {
@@ -26,14 +26,14 @@
     "@intlify/unplugin-vue-i18n": "^11.2.5",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vue/eslint-config-typescript": "^14.9.0",
-    "eslint": "^10.6.0",
+    "eslint": "^10.12.0",
     "eslint-plugin-vue": "^10.11.1",
     "eslint-plugin-vuejs-accessibility": "^2.6.0",
-    "grapesjs": "^0.23.2",
-    "stylelint": "^17.15.0",
+    "grapesjs": "^0.23.6",
+    "stylelint": "^17.16.0",
     "stylelint-config-standard-vue": "^2.0.0",
     "typescript": "6.0.3",
-    "vite": "^8.3.1",
-    "vue-tsc": "^3.3.11"
+    "vite": "^8.3.2",
+    "vue-tsc": "^3.3.12"
   }
 }
