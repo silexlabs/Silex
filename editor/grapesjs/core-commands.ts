@@ -114,11 +114,17 @@ export default (editor: Editor) => {
     if (!name) throw new Error('Required: name (CSS class name, e.g. "my-card", "container"). Use classes:list to see existing classes.')
     selected.addClass(name)
   })
-  editor.Commands.add('classes:remove', (_ed, _sender, options: any = {}) => {
+  editor.Commands.add('classes:remove', (_ed, _sender, options: { name?: string } = {}) => {
     const selected = editor.getSelected()
     if (!selected) throw new Error('No component selected. Use components:select first.')
     const { name } = options
     if (!name) throw new Error('Required: name (CSS class name). Use classes:list to see classes on the selected component.')
+    const classes: string[] = selected.getClasses()
+    if (!classes.includes(name)) {
+      throw new Error(classes.length
+        ? `Class "${name}" is not on the selected element. Its classes are: ${classes.join(', ')}.`
+        : `Class "${name}" is not on the selected element. It has no classes.`)
+    }
     selected.removeClass(name)
   })
 
@@ -142,9 +148,11 @@ export default (editor: Editor) => {
 
   // History
   editor.Commands.add('history:undo', () => {
+    if (!editor.UndoManager.hasUndo()) throw new Error('Nothing to undo.')
     editor.UndoManager.undo()
   })
   editor.Commands.add('history:redo', () => {
+    if (!editor.UndoManager.hasRedo()) throw new Error('Nothing to redo.')
     editor.UndoManager.redo()
   })
 
