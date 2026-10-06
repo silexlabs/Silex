@@ -63,3 +63,16 @@ describe('array filters: per-item key resolver + null guard', () => {
     expect(map.apply(null, { key: () => 1 })).toBeNull()
   })
 })
+
+describe('slice filter: the second option is a length, like Liquid `slice: start, length`', () => {
+  const posts = ['a', 'b', 'c', 'd', 'e']
+  test('keeps as many items as asked, starting at `start`', () => {
+    const slice = byId('slice') as ApplyFilter
+    // The published site runs `slice: 2, 3` and shows the 3rd, 4th and 5th items
+    expect(slice.apply(posts, { start: 2, end: 3 })).toEqual(['c', 'd', 'e'])
+    // Starting at 0 was already consistent, which is why the bug went unnoticed
+    expect(slice.apply(posts, { start: 0, end: 3 })).toEqual(['a', 'b', 'c'])
+    // Stops at the end of the list instead of wrapping or throwing
+    expect(slice.apply(posts, { start: 4, end: 3 })).toEqual(['e'])
+  })
+})
