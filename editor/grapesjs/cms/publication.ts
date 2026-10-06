@@ -8,6 +8,7 @@ import { ClientConfig } from '../../config'
 import { UNWRAP_ID } from './traits'
 import { EleventyDataSourceId } from './DataSource'
 import { ClientEvent } from '../../events'
+import { getPageSlug } from '~/common/page'
 import { WebsiteSettings, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
 
 const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
@@ -84,18 +85,6 @@ function makeAttribute(key: string, value: string | boolean): string {
   case 'boolean': return value ? key : ''
   default: return `${key}="${value}"`
   }
-}
-
-/**
- * Transform the file name to be published
- */
-function slugify(text: string | number) {
-  return text.toString().toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^a-z0-9-]/g, '') // Remove all non-word chars
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, '') // Trim - from end of text
 }
 
 function ensureLeadingAndTrailingSlash(str: string): string {
@@ -278,7 +267,7 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
 
   editor.Pages.getAll().forEach(page => {
     // Get the page properties
-    const slug = slugify(page.getName() || 'index')
+    const slug = getPageSlug(page.getName())
     const settings = (page.get('settings') ?? {}) as Silex11tyPluginWebsiteSettings
     const languages = settings.silexLanguagesList?.split(',').map(lang => lang.trim()).filter(lang => !!lang)
 
@@ -299,7 +288,7 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
     if (pageData.type !== ClientSideFileType.HTML) throw new Error(`File for path ${path} is not HTML`)
     const dataFile = Object.keys(query).length > 0 ? {
       type: ClientSideFileType.OTHER,
-      path: transformPath(editor, `/${slugify(page.getName() || 'index')}.11tydata.mjs`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions),
+      path: transformPath(editor, `/${slug}.11tydata.mjs`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions),
       //path: `/${page.getName() || 'index'}.11tydata.mjs`,
       content: getDataFile(editor, page, null, query, options),
     } : null
