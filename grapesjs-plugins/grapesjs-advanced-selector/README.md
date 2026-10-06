@@ -1,4 +1,4 @@
-[![Documentation](https://img.shields.io/badge/docs-selector%20guide-blue?style=flat-square)](https://docs.silex.me/en/user/selectors#valid-selectors-guide)
+[![Documentation](https://img.shields.io/badge/docs-selector%20guide-blue?style=flat-square)](https://docs.silex.me/designer/styling/selectors/)
 
 # GrapesJS Advanced Selector Manager
 
@@ -102,7 +102,7 @@ Customize the plugin’s behavior by passing options:
 |-------------|----------------------------------------|------------------|
 | `i18n`      | Internationalization object see the files in `src/i18n` | The content of `src/i18n/en.ts` |
 | `helpLinks` | Links to help resources                | `{}`             |
-| `helpLinks.actionBar` | Link to help resources for the action bar | `https://docs.silex.me/en/user/selectors` |
+| `helpLinks.actionBar` | Link to help resources for the action bar | `https://docs.silex.me/designer/styling/selectors/` |
 
 ---
 

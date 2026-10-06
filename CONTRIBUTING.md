@@ -1,6 +1,6 @@
 # Contributing to Silex
 
-Thanks for your interest in contributing to Silex! This guide covers code contributions. For other ways to help (templates, documentation, testing, tutorials, financial support), see the [full contribute page](https://docs.silex.me/en/designer/contribute/).
+Thanks for your interest in contributing to Silex! This guide covers code contributions. For other ways to help (templates, documentation, testing, tutorials, financial support), see the [full contribute page](https://docs.silex.me/designer/contribute/).
 
 ## Discuss before coding
 
@@ -126,7 +126,7 @@ A maintenance branch (e.g. `v3-maintenance`) is created on demand only when an o
 
 ## Extending Silex with plugins
 
-If your change can work as a plugin rather than a core modification, that's preferred. See [Creating plugins](https://docs.silex.me/en/developer/plugins/creating/) for how to build and publish Silex plugins.
+If your change can work as a plugin rather than a core modification, that's preferred. See [Creating plugins](https://docs.silex.me/developer/plugins/creating/) for how to build and publish Silex plugins.
 
 ## Getting help
 

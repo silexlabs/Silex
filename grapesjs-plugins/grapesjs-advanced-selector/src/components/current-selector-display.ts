@@ -249,10 +249,10 @@ export class CurrentSelectorDisplay extends StylableElement {
       </main>
       <footer>
         ${ this.error ? html`
-          <p class="asm-display__error">${iconWarning} ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
+          <p class="asm-display__error">${iconWarning} ${ this.error } <a href="https://docs.silex.me/designer/styling/selectors/#avoiding-common-selector-pitfalls" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
         ` : ''}
         ${ this.warning ? html`
-          <p class="asm-display__warning">${iconWarning} ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
+          <p class="asm-display__warning">${iconWarning} ${ this.warning } <a href="https://docs.silex.me/designer/styling/selectors/#avoiding-common-selector-pitfalls" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
         ` : ''}
       </footer>
     `

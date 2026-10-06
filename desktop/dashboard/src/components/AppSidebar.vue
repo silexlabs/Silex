@@ -28,7 +28,7 @@ const home = computed(() => localized({ en: 'https://www.silex.me/', fr: 'https:
 const forum = { en: 'https://short.silex.me/community_en', fr: 'https://short.silex.me/community_fr' }
 
 const links = computed(() => [
-  { text: t('Documentation'), href: localized({ en: 'https://short.silex.me/docs', fr: 'https://docs.silex.me/fr/home' }) },
+  { text: t('Documentation'), href: localized({ en: 'https://short.silex.me/docs', fr: 'https://docs.silex.me/fr/' }) },
   { text: t('Videos'), href: localized({ en: 'https://short.silex.me/video_en', fr: 'https://short.silex.me/video_fr' }) },
   { text: t('Forum'), href: localized(forum) },
   { text: t('Roadmap'), href: 'https://short.silex.me/roadmap' },
