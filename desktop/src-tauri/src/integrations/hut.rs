@@ -14,7 +14,7 @@ use std::path::Path;
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
 use super::common::git;
-use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::pipeline::{ensure_pipeline_file, write_build_files};
 use super::common::remote::Remote;
 use super::common::run::{run, run_with_input};
 use super::integration::{
@@ -159,7 +159,7 @@ impl Integration for Hut {
             .and_then(Remote::host_of)
             .unwrap_or_else(|| default_site(&remote));
 
-        ensure_build_files(site)?;
+        write_build_files(site, &[])?;
         ensure_pipeline_file(
             site,
             Path::new(".build.yml"),

@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use silex_server::PublicationOptions;
 
 use super::common::git;
-use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
@@ -111,7 +111,11 @@ impl Integration for Glab {
         site: &Path,
         _options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        ensure_build_files(site)?;
+        // Without a unique domain the site is served from the folder CI_PAGES_URL ends with
+        write_build_files(
+            site,
+            &rebase_lines("$(echo \"$CI_PAGES_URL\" | sed -E 's#^https?://[^/]*##; s#/$##')/"),
+        )?;
         ensure_pipeline_file(
             site,
             Path::new(".gitlab-ci.yml"),
