@@ -16,7 +16,7 @@ use std::sync::Mutex;
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
 use super::common::git;
-use super::common::pipeline::{ensure_build_files, ensure_pipeline_file};
+use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
@@ -167,7 +167,13 @@ impl Integration for Tea {
         site: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        ensure_build_files(site)?;
+        // Only in the CI, so that a local build stays at the root
+        let after_build = match base_path(Remote::of(site).as_ref(), options) {
+            Some(path) if path == "/" => vec![],
+            Some(path) => rebase_lines(&format!("${{FORGEJO_REPOSITORY:+{path}}}")),
+            None => rebase_lines("${FORGEJO_REPOSITORY:+/${FORGEJO_REPOSITORY#*/}/}"),
+        };
+        write_build_files(site, &after_build)?;
         ensure_pipeline_file(
             site,
             Path::new(PIPELINE),
@@ -310,6 +316,42 @@ fn site_url(options: &PublicationOptions) -> String {
     }
 }
 
+/// The folder the site is served from, when Silex knows it
+///
+/// Otherwise it is the name of the repository, which the build reads from the
+/// CI so that it still holds after a rename.
+fn base_path(remote: Option<&Remote>, options: &PublicationOptions) -> Option<String> {
+    if let Some(named) = options.named(WEBSITE_URL) {
+        return Some(named_base_path(named));
+    }
+    match remote {
+        Some(remote) if remote.repo == PAGES_REPO => Some("/".to_string()),
+        _ => None,
+    }
+}
+
+/// The folder part of an address the user typed
+///
+/// It ends up in build.sh, so anything but plain path characters gives the root
+/// rather than a line of shell.
+fn named_base_path(url: &str) -> String {
+    let path = tauri::Url::parse(url)
+        .map(|url| url.path().to_string())
+        .unwrap_or_default();
+    let folder = match path.rsplit_once('/') {
+        Some((folder, file)) if file.contains('.') => format!("{folder}/"),
+        _ => path,
+    };
+    let plain = folder
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || "._~%/-".contains(c));
+    if plain && folder.starts_with('/') {
+        folder
+    } else {
+        "/".to_string()
+    }
+}
+
 /// git-pages serves a repository under the subdomain of its owner, except the
 /// one named `pages`, which sits at the root of that subdomain.
 fn website_url(remote: &Remote, options: &PublicationOptions) -> String {
@@ -407,4 +449,22 @@ fn repository(cli: &Path, site: &Path, remote: &Remote) -> Result<serde_json::Va
     )?;
     serde_json::from_str(&said)
         .map_err(|e| format!("Could not read what tea said of the repository: {}", e))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_base_path_of_a_typed_address() {
+        assert_eq!(named_base_path("https://example.com/blog/"), "/blog/");
+        assert_eq!(named_base_path("https://example.com/blog"), "/blog");
+        assert_eq!(
+            named_base_path("https://example.com/blog/index.html"),
+            "/blog/"
+        );
+        assert_eq!(named_base_path("https://example.com"), "/");
+        assert_eq!(named_base_path("https://example.com/$(id)/"), "/");
+        assert_eq!(named_base_path("not an address"), "/");
+    }
 }
