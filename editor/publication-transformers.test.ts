@@ -7,11 +7,12 @@ import {
   resetRenderCssRules,
   PublicationTransformer,
   transformFiles,
-  transformBgImage
+  transformBgImage,
+  publicationTransformerDefault,
 } from './publication-transformers'
 import { ClientConfig } from './config'
 import grapesjs, { Component, Editor, StyleProps, Page } from 'grapesjs'
-import { ClientSideFile, ClientSideFileType, PublicationData } from '~/common/types'
+import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '~/common/types'
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
@@ -203,5 +204,14 @@ describe('publication-transformers', () => {
     expect((transformPermalink.mock.calls[0][1])).toBe(ClientSideFileType.HTML)
     expect(html).not.toContain('href="./index.html"')
     expect(html).toContain(`href="${transformedPermalink}"`)
+  })
+  it('should link pages as folders', () => {
+    const link = (href: string, type = ClientSideFileType.HTML) => publicationTransformerDefault.transformPermalink!(href, type, Initiator.HTML)
+    expect(link('./index.html')).toBe('/')
+    expect(link('./about.html#team')).toBe('/about/#team')
+    expect(link('./docs/guide.pdf')).toBe('/docs/guide.pdf')
+    expect(link('./404.html')).toBe('/404.html')
+    expect(link('menu.html#booking')).toBe('/menu/#booking')
+    expect(link('./about.html', ClientSideFileType.ASSET)).toBe('./about.html')
   })
 })

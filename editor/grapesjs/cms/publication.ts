@@ -1,15 +1,14 @@
 import dedent from 'dedent'
 import { Component, Page, Editor } from 'grapesjs'
-import { BinaryOperator, Filter, GraphQLOptions, IDataSource, NOTIFICATION_GROUP, Properties, Property, State, StateId, StoredState, Token, UnariOperator, fromStored, getAllDataSources, getDataSource, getPageQuery, getPersistantId, getState, getStateIds, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Filter, GraphQLOptions, IDataSource, NOTIFICATION_GROUP, Properties, Property, State, StateId, StoredState, Token, UnariOperator, fromStored, getDataSource, getPageQuery, getPersistantId, getState, getStateIds, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
 import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { PublicationTransformer } from '../../publication-transformers'
 import { ClientConfig } from '../../config'
 import { UNWRAP_ID } from './traits'
-import { EleventyDataSourceId } from './DataSource'
 import { ClientEvent } from '../../events'
-import { getPageSlug } from '~/common/page'
-import { WebsiteSettings, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
+import { getPageSlug, getPageUrl } from '~/common/page'
+import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
 
 const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
 
@@ -42,38 +41,21 @@ export default function (editor: Editor, options: EleventyPluginOptions) {
   // Generate the liquid when the site is published
   config.addPublicationTransformers({
     // Render the components when they are published
-    // Will run even with enable11ty = false in order to enable HTML attributes
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, component, toHtml), editor, component.getId()),
-    // Transform the paths to be published according to options.urls
-    transformPermalink: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPermalink(editor, path, type, options), editor, null) : undefined,
-    // Transform the paths to be published according to options.dir
-    transformPath: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPath(editor, path, type, options), editor, null) : undefined,
-    // Transform the files content
-    //transformFile: (file) => transformFile(file),
+    transformPermalink: (link: string, type: ClientSideFileType) => type === ClientSideFileType.HTML ? linkToPermalink(editor, link) : link,
   })
 
-  if (options.enable11ty) {
-    // Generate 11ty data files
-    // FIXME: should this be in the publication transformers
-    editor.on('silex:publish:page', (data, ...args) => {
-      withNotification(() => transformPage(editor, data), editor, null)
-    })
-    editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }, ...args) => {
-      withNotification(() => transformFiles(editor, options, data, config), editor, null)
-    })
-    editor.on('silex:publish:end', (...args) => {
-      cache.clear()
-    })
-  }
-}
-
-/**
- * Check if the 11ty publication is enabled
- */
-function enable11ty(): boolean {
-  return getAllDataSources()
-    .filter(ds => ds.id !== EleventyDataSourceId)
-    .length > 0
+  // Generate 11ty data files
+  // FIXME: should this be in the publication transformers
+  editor.on('silex:publish:page', (data, ...args) => {
+    withNotification(() => transformPage(editor, data), editor, null)
+  })
+  editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }, ...args) => {
+    withNotification(() => transformFiles(editor, options, data), editor, null)
+  })
+  editor.on('silex:publish:end', (...args) => {
+    cache.clear()
+  })
 }
 
 /**
@@ -98,8 +80,17 @@ function ensureLeadingAndTrailingSlash(str: string): string {
   return s
 }
 
+// A page with a fixed permalink is published there, so links to it go there too
+export function linkToPermalink(editor: Editor, link: string): string {
+  const [, path, suffix] = link.match(/^([^?#]*)(.*)$/) ?? []
+  const page = editor.Pages.getAll().find(page => getPageUrl(getPageSlug(page.getName())) === path)
+  const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
+  const tokens = toExpression(settings?.eleventyPermalink) as Property[] | null
+  if (!tokens?.length || !tokens.every(token => token.type === 'property' && token.fieldId === 'fixed')) return link
+  return ensureLeadingAndTrailingSlash(tokens.map(token => token.options?.value ?? '').join('')) + suffix
+}
+
 export function getPermalink(page: Page, permalink: Token[], isCollectionPage: boolean, slug: string): string | null {
-  const isHome = slug === 'index'
   // User provided a permalink explicitely
   if (permalink && permalink.length > 0) {
     const body = page.getMainComponent() as Component
@@ -142,12 +133,11 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
   } else if (isCollectionPage) {
     // Let 11ty handle the permalink
     return null
-  } else if (isHome) {
-    // Normal home page
-    return '/index.html'
-  } else {
-    // Use the page name
-    return `/${slug}/index.html`
+  }
+  switch (slug) {
+  case 'index': return '/index.html'
+  case '404': return getPageUrl(slug)
+  default: return `/${slug}/index.html`
   }
 }
 
@@ -225,9 +215,6 @@ export function getBodyStates(page: Page): string {
 }
 
 export function transformPage(editor: Editor, data: { page: Page, siteSettings: WebsiteSettings, pageSettings: Silex11tyPluginWebsiteSettings }): void {
-  // Do nothing if there is no data source, just a static site
-  if(!enable11ty()) return
-
   const { pageSettings, page } = data
   const body = page.getMainComponent()
   if (pageSettings.eleventySeoTitle) {
@@ -261,10 +248,7 @@ export function transformPage(editor: Editor, data: { page: Page, siteSettings: 
  * This hook is called just before the files are written to the file system
  * Exported for unit tests
  */
-export function transformFiles(editor: Editor, options: EleventyPluginOptions, data: PublicationData, config: ClientConfig): void {
-  // Do nothing if there is no data source, just a static site
-  if(!enable11ty()) return
-
+export function transformFiles(editor: Editor, options: EleventyPluginOptions, data: PublicationData): void {
   editor.Pages.getAll().forEach(page => {
     // Get the page properties
     const slug = getPageSlug(page.getName())
@@ -282,14 +266,13 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
 
     // Find the page in the published data
     if (!data.files) throw new Error('No files in publication data')
-    const path = transformPath(editor, `/${slug}.html`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions)
+    const path = `/${slug}.html`
     const pageData = data.files.find(file => file.path === path) as ClientSideFileWithContent | undefined
     if (!pageData) throw new Error(`No file for path ${path}`)
     if (pageData.type !== ClientSideFileType.HTML) throw new Error(`File for path ${path} is not HTML`)
     const dataFile = Object.keys(query).length > 0 ? {
       type: ClientSideFileType.OTHER,
-      path: transformPath(editor, `/${slug}.11tydata.mjs`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions),
-      //path: `/${page.getName() || 'index'}.11tydata.mjs`,
+      path: `/${slug}.11tydata.mjs`,
       content: getDataFile(editor, page, null, query, options),
     } : null
 
@@ -653,78 +636,3 @@ function renderComponent(editor: Editor, component: Component, toHtml: () => str
     return html
   }
 }
-
-function toPath(path: (string | undefined)[]) {
-  return '/' + path
-    .filter(p => !!p)
-    .map(p => p?.replace(/(^\/|\/$)/g, ''))
-    .join('/')
-}
-
-function transformPermalink(editor: Editor, path: string, type: string, options: EleventyPluginOptions): string {
-  // Do nothing if there is no data source, just a static site
-  if(!enable11ty()) return path
-
-  switch (type) {
-  case 'html':
-    return toPath([
-      path
-    ])
-  case 'asset':
-    return toPath([
-      options.urls?.assets,
-      path.replace(/^\/?assets\//, ''),
-    ])
-  case 'css': {
-    return toPath([
-      options.urls?.css,
-      path.replace(/^\.?\/?css\//, ''),
-    ])
-  }
-  default:
-    console.warn('Unknown file type in transform permalink:', type)
-    return path
-  }
-}
-
-function transformPath(editor: Editor, path: string, type: string, options: EleventyPluginOptions): string {
-  // Do nothing if there is no data source, just a static site
-  if(!enable11ty()) return path
-
-  switch (type) {
-  case 'html':
-    return toPath([
-      options.dir?.input,
-      options.dir?.html,
-      path,
-    ])
-  case 'css':
-    return toPath([
-      options.dir?.input,
-      options.dir?.css,
-      path.replace(/^\/?css\//, ''),
-    ])
-  case 'asset':
-    return toPath([
-      options.dir?.input,
-      options.dir?.assets,
-      path.replace(/^\/?assets\//, ''),
-    ])
-  default:
-    console.warn('Unknown file type in transform path:', type)
-    return path
-  }
-}
-
-//function transformFile(file: ClientSideFile/*, options: EleventyPluginOptions*/): ClientSideFile {
-//  //const fileWithContent = file as ClientSideFileWithContent
-//  switch (file.type) {
-//  case 'html':
-//  case 'css':
-//  case 'asset':
-//    return file
-//  default:
-//    console.warn('Unknown file type in transform file:', file.type)
-//    return file
-//  }
-//}

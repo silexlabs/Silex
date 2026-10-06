@@ -11,7 +11,6 @@ import { createRef, ref } from 'lit-html/directives/ref.js'
  * Main function to add the settings to the page
  */
 export default function(editor: Editor, opts: EleventyPluginOptions): void {
-  if (!opts.enable11ty) return // Do not add the settings if 11ty is disabled
 
   editor.on(ClientEvent.SETTINGS_SAVE_END, handleSettingsSaveEnd(editor))
   editor.on(ClientEvent.SETTINGS_CLOSE, handleSettingsClose(editor))

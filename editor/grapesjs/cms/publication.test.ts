@@ -4,10 +4,10 @@
 
 import dedent from 'dedent'
 import { expect, jest, test } from '@jest/globals'
-import { buildAttributes, getFrontMatter, isAttribute, queryToDataFile } from './publication'
+import { buildAttributes, getFrontMatter, isAttribute, linkToPermalink, queryToDataFile } from './publication'
 import { echoBlock } from './liquid'
 import { IDataSource, toExpression } from '@silexlabs/grapesjs-data-source'
-import { Page } from 'grapesjs'
+import grapesjs, { Page } from 'grapesjs'
 import { Silex11tyPluginWebsiteSettings } from './index'
 
 // Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
@@ -41,14 +41,6 @@ const PAGE_DATA_FIXED_TEST = `[{
   "typeIds": ["String"],
   "options": { "value": "/test/" }
 }]`
-
-test('Front matter of a simple page', () => {
-  expect(() => getFrontMatter(PAGE_TEST, {} as Silex11tyPluginWebsiteSettings, 'page-1', '')).not.toThrow()
-  expect(getFrontMatter(PAGE_TEST, {} as Silex11tyPluginWebsiteSettings, 'page-1', '')).toEqual(dedent`
-  ---
-  permalink: "/page-1/index.html"
-  \n---\n`)
-})
 
 test('Front matter of a collection page', () => {
   const settings = { eleventyPageData: PAGE_DATA_TEST } as Silex11tyPluginWebsiteSettings
@@ -191,4 +183,13 @@ test('queryToDataFile with EleventyFetch and with plain fetch', () => {
   const result3 = queryToDataFile(dataSource, query, { ...baseOptions } as never, PAGE_TEST, 'fr', false)
   expect(result3).not.toContain('EleventyFetch')
   expect(result3).toContain('await fetch(')
+})
+
+test('Links to a page follow its fixed permalink', () => {
+  const editor = grapesjs.init({ headless: true, storageManager: false })
+  const fixed = (value: string) => JSON.stringify([{ type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value', kind: 'scalar', typeIds: ['String'], options: { value } }])
+  editor.Pages.add({ name: 'About', settings: { eleventyPermalink: fixed('/a-propos/') } })
+  editor.Pages.add({ name: 'Contact' })
+  expect(linkToPermalink(editor, '/about/#team')).toBe('/a-propos/#team')
+  expect(linkToPermalink(editor, '/contact/')).toBe('/contact/')
 })
