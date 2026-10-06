@@ -261,3 +261,15 @@ describe('transition', () => {
     }])
   })
 })
+
+describe('display', () => {
+  it('offers no grid option, Silex has no grid properties', () => {
+    const options = getProperty('general', 'display')
+      .getOptions()
+      .map((option: any) => option.id)
+    expect(options).not.toContain('grid')
+    expect(options).toEqual(expect.arrayContaining([
+      'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'none',
+    ]))
+  })
+})
