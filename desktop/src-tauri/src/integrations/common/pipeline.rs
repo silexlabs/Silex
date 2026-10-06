@@ -67,10 +67,17 @@ pub fn rebase_lines(prefix: &str) -> Vec<String> {
     ]
 }
 
+// TEMPORARY: remove after the 3.10 stable, only sites published with 3.10.0-canary.3 have this file
+const FAIL_ON_CANARY_DATA_FILE: &str =
+    "test -f public/public.11tydata.js && echo 'Delete public/public.11tydata.js' && exit 1";
+
 pub fn generate_build_sh(steps: &[BuildStep], after_build: &[String]) -> String {
-    let build_commands = format!(
-        "npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site\n{COPY_PUBLIC_FOLDERS}"
-    );
+    let build_commands = [
+        FAIL_ON_CANARY_DATA_FILE.to_string(),
+        format!("npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site"),
+        COPY_PUBLIC_FOLDERS.to_string(),
+    ]
+    .join("\n");
     let lines: Vec<String> = steps
         .iter()
         .map(|step| match step {

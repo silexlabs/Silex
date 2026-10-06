@@ -15,19 +15,17 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
     updateFilters(editor, opts)
   })
   updateFilters(editor, opts)
-  if(opts.enable11ty) {
-    // Add the 11ty data source using the new functional API
-    const ds = new EleventyDataSource()
-    editor.runCommand(cmdPauseAutoSave)
+  // Add the 11ty data source using the new functional API
+  const ds = new EleventyDataSource()
+  editor.runCommand(cmdPauseAutoSave)
 
-    // Add the data source
-    addDataSource(ds)
+  // Add the data source
+  addDataSource(ds)
 
-    // Wait for the next tick to avoid triggering a save
-    setTimeout(() => {
-      editor.stopCommand(cmdPauseAutoSave)
-    })
-  }
+  // Wait for the next tick to avoid triggering a save
+  setTimeout(() => {
+    editor.stopCommand(cmdPauseAutoSave)
+  })
 }
 
 function updateFilters(editor: Editor, opts: EleventyPluginOptions) {
