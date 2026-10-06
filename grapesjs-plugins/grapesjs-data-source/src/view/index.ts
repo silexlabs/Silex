@@ -70,7 +70,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
           Custom states are used to store data in the component.\n
           They are useful to store data that is not displayed in the page, but that is used in the expressions everywhere inside the element.
         "
-        help-link="https://docs.silex.me/en/user/cms-concepts#states"
+        help-link="https://docs.silex.me/designer/cms/overview/#states-reusable-values-on-components"
         >
         <style>
           ${options.styles}
@@ -91,7 +91,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
           HTML attributes of the element.\n
           For example you can set the 'href' attribute of a link, or the 'src' attribute of an image.
         "
-        help-link="https://docs.silex.me/en/user/cms-concepts#attributes"
+        help-link="https://docs.silex.me/designer/cms/binding-data/#binding-to-html-attributes-links-images-alt-text"
         >
         <style>
           ${options.styles}

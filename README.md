@@ -137,7 +137,7 @@ owes just as much to people whose work lives elsewhere: see [THANKS.md](THANKS.m
 - [Official website](https://www.silex.me/)
 - [Manifesto](https://www.silex.me/manifesto/) — our values and commitments
 - [User documentation](https://docs.silex.me/)
-- [Developer documentation](https://docs.silex.me/en/dev)
+- [Developer documentation](https://docs.silex.me/developer/self-hosting/overview/)
 - [Road map](https://roadmap.silex.me) — help define tasks and priorities
 - [Community forums](https://community.silex.me)
 - [Newsletter (EN)](https://short.silex.me/news_en) | [(FR)](https://short.silex.me/news_fr)

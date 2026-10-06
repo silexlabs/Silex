@@ -214,9 +214,9 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
         <p>Tip: Click the “?” icons to view inline help about pagination, expressions, and permalinks.</p>
         <p>Related links to the docs:
         <ul>
-          <li><a target="_blank" href="https://docs.silex.me/en/user/cms-concepts">documentation about Silex CMS concepts</a></li>
-          <li><a href="https://docs.silex.me/en/user/cms-concepts#expressions" target="_blank">Expressions</a></li>
-          <li><a href="https://docs.silex.me/en/user/cms-collection-pages" target="_blank">Collection pages</a></li>
+          <li><a target="_blank" href="https://docs.silex.me/designer/cms/overview/">documentation about Silex CMS concepts</a></li>
+          <li><a href="https://docs.silex.me/designer/cms/expressions/" target="_blank">Expressions</a></li>
+          <li><a href="https://docs.silex.me/designer/cms/collection-pages/" target="_blank">Collection pages</a></li>
           <li><a href="https://www.11ty.dev/docs/pagination/" target="_blank">11ty pagination</a></li>
         </ul>
         </p>
@@ -278,7 +278,7 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
                       <li>For collection pages, this is evaluated for each generated page.</li>
                     </ul>
                     <ul>
-                      <li><a href="https://docs.silex.me/en/user/cms-concepts#permalink" target="_blank">Permalinks in Silex</a></li>
+                      <li><a href="https://docs.silex.me/designer/cms/collection-pages/#permalink-structure" target="_blank">Permalinks in Silex</a></li>
                       <li><a href="https://www.11ty.dev/docs/pagination/#permalink" target="_blank">11ty permalink docs</a></li>
                     </ul>
                   </div>

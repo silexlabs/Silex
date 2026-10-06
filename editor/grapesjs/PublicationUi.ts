@@ -254,7 +254,7 @@ export class PublicationUi {
           @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
         >Connect</button>
       `: nothing}
-      <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+      <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -298,7 +298,7 @@ export class PublicationUi {
         </div>
       </main>
       <footer>
-        <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+        <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -317,7 +317,7 @@ export class PublicationUi {
         <p>Something went wrong: ${err.message}</p>
       </main>
       <footer>
-        <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+        <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"

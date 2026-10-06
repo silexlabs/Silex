@@ -79,8 +79,8 @@ __________________________________________________________
 
   Users are expected to contribute:
 
-  * Web designers: https://docs.silex.me/en/user/contribute
-  * Developers: https://docs.silex.me/en/dev/contribute
+  * Web designers: https://docs.silex.me/designer/contribute/
+  * Developers: https://docs.silex.me/developer/plugins/creating/
 
 __________________________________________________________
 `
