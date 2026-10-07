@@ -1,4 +1,4 @@
-import { createWriteStream, unlink } from 'fs'
+import { createWriteStream, unlink, readdir, stat } from 'fs'
 import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
 import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors.js'
 import { tmpdir } from 'os'
@@ -15,6 +15,52 @@ type DownloadConnectorOptions = object
 
 const ZIP_ICON = '/assets/download.png'
 
+// Generated download zips are named `${websiteId}-${Date.now()}-${random}.zip`
+// (see startPublishingInBackground). Only files matching this exact shape are
+// ever swept, so unrelated files in the OS temp dir are never touched.
+const GENERATED_ZIP_PATTERN = /-\d{13}-[a-z0-9]+\.zip$/
+// Zips not downloaded within this window are considered stale and removed.
+const STALE_ZIP_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24h
+// How often the leftover sweep runs after the initial startup pass.
+const SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000 // daily
+
+// Sweep never-downloaded zips from the OS temp dir: files matching the generated
+// name pattern whose mtime is older than STALE_ZIP_MAX_AGE_MS. Resolves to the
+// number of files deleted. Non-matching files are never stat'd or unlinked.
+export function sweepStaleDownloadZips(dir: string = tmpdir(), now: number = Date.now()): Promise<number> {
+  return new Promise<number>((resolve) => {
+    readdir(dir, (readErr, entries) => {
+      if (readErr) {
+        console.error('[DownloadConnector] Error while listing temp dir for sweep', readErr)
+        resolve(0)
+        return
+      }
+      const candidates = entries.filter(name => GENERATED_ZIP_PATTERN.test(name))
+      if (candidates.length === 0) {
+        resolve(0)
+        return
+      }
+      let pending = candidates.length
+      let deleted = 0
+      for (const name of candidates) {
+        const path = join(dir, name)
+        stat(path, (statErr, stats) => {
+          if (!statErr && now - stats.mtimeMs > STALE_ZIP_MAX_AGE_MS) {
+            unlink(path, (unlinkErr) => {
+              if (unlinkErr) console.error('[DownloadConnector] Error while sweeping stale zip', unlinkErr)
+              else deleted++
+              if (--pending === 0) resolve(deleted)
+            })
+          } else {
+            if (statErr) console.error('[DownloadConnector] Error while stating temp file for sweep', statErr)
+            if (--pending === 0) resolve(deleted)
+          }
+        })
+      }
+    })
+  })
+}
+
 export default class implements HostingConnector<DownloadConnectorSession> {
   connectorId = 'download-connector'
   displayName = 'Download zip file'
@@ -28,6 +74,19 @@ export default class implements HostingConnector<DownloadConnectorSession> {
   constructor(config: ServerConfig) {
     // Add a route to serve the zip file
     config.on(ServerEvent.STARTUP_END, ({app}) => {
+      // Sweep leftover zips that were generated but never downloaded. The
+      // per-download route deletes a zip after it is served, but zips that are
+      // never fetched would otherwise accumulate in the OS temp dir forever
+      // (this filled /tmp with ~18 GB on v3.silex.me). Run once at startup, then
+      // daily; .unref() so the timer never keeps the process alive.
+      sweepStaleDownloadZips()
+        .then(deleted => { if (deleted > 0) console.log(`[DownloadConnector] Swept ${deleted} stale download zip(s) from temp dir`) })
+      const sweepTimer = setInterval(() => {
+        sweepStaleDownloadZips()
+          .then(deleted => { if (deleted > 0) console.log(`[DownloadConnector] Swept ${deleted} stale download zip(s) from temp dir`) })
+      }, SWEEP_INTERVAL_MS)
+      sweepTimer.unref()
+
       app.get('/download/:tmpZipFile', async (req: Request, res: Response) => {
         const tmpZipFile = req.params.tmpZipFile as string
         if (basename(tmpZipFile) !== tmpZipFile) {
