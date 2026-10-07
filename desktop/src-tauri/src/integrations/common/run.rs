@@ -14,7 +14,8 @@
 //! amount of output kept, and no secret in what comes back.
 
 use std::env;
-use std::io::{Read, Write};
+use std::ffi::OsStr;
+use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{self, Receiver};
@@ -146,6 +147,31 @@ fn without_appimage_environment(command: &mut Command) {
             command.env(&name, value);
         }
     }
+}
+
+/// Opens a folder or a link with what the system chooses, which the
+/// environment of the AppImage would send to the wrong program: xdg-open
+/// falls back to a browser when the gio of the system loads the one of Silex
+pub fn open_detached(target: impl AsRef<OsStr>) -> io::Result<()> {
+    if env::var_os("APPDIR").is_none() {
+        return open::that_detached(target);
+    }
+    let mut last_error = None;
+    for mut command in open::commands(target) {
+        without_appimage_environment(&mut command);
+        command
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        match command.spawn() {
+            Ok(mut child) => {
+                std::thread::spawn(move || child.wait());
+                return Ok(());
+            }
+            Err(e) => last_error = Some(e),
+        }
+    }
+    Err(last_error.unwrap_or_else(|| io::Error::other("Nothing on this computer opens it")))
 }
 
 fn run_within(
