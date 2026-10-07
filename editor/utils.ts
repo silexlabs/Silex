@@ -69,6 +69,20 @@ export function isTextOrInputField(element: HTMLElement): boolean {
   return isInput || isOtherFormElement
 }
 
+const NON_TEXT_INPUT_TYPES = ['button', 'checkbox', 'color', 'file', 'hidden', 'image', 'radio', 'range', 'reset', 'submit']
+
+/**
+ * Checks if the element is a field where the browser has its own text undo (text inputs, textarea, contenteditable).
+ * Not isTextOrInputField: it also matches selects, buttons and checkboxes, which have no native undo.
+ * @param el The element to check.
+ */
+export function isTextField(el: Element | null): boolean {
+  if (!el) return false
+  if ((el as HTMLElement).isContentEditable) return true
+  if (el.tagName === 'TEXTAREA') return true
+  return el.tagName === 'INPUT' && !NON_TEXT_INPUT_TYPES.includes((el as HTMLInputElement).type)
+}
+
 /**
  * Makes every word in a string start with an uppercase letter.
  * @param str The string to title-case.
