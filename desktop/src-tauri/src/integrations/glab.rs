@@ -126,10 +126,7 @@ impl Integration for Glab {
         // GitLab Pages starts on a tag
         let tag = silex_tag();
         silex_server::tag(site, &tag)?;
-        Ok(Prepared {
-            tag: Some(tag),
-            ..Default::default()
-        })
+        Ok(Prepared { tag: Some(tag) })
     }
 
     /// GitLab says which ref each of its jobs ran on
