@@ -214,12 +214,6 @@ impl Integration for Tea {
                         .to_string(),
                 ));
             }
-            if repository["private"] == serde_json::Value::Bool(true) {
-                return Ok(Build::Refused(format!(
-                    "{} serves pages from public repositories only, so this website will not come online while its repository is private.",
-                    remote.host
-                )));
-            }
         }
 
         build_of(&prepared.before, || runs(cli, site))

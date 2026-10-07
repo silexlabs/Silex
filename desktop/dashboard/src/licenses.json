@@ -207,7 +207,7 @@
   },
   {
    "name": "@sentry/browser",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -216,7 +216,7 @@
   },
   {
    "name": "@sentry/browser-utils",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -225,7 +225,7 @@
   },
   {
    "name": "@sentry/conventions",
-   "version": "0.25.0",
+   "version": "0.26.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-conventions",
    "texts": [
@@ -234,7 +234,7 @@
   },
   {
    "name": "@sentry/core",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -243,7 +243,7 @@
   },
   {
    "name": "@sentry/feedback",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -252,7 +252,7 @@
   },
   {
    "name": "@sentry/replay",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -261,7 +261,7 @@
   },
   {
    "name": "@sentry/replay-canvas",
-   "version": "11.4.0",
+   "version": "11.5.0",
    "license": "MIT",
    "repository": "https://github.com/getsentry/sentry-javascript",
    "texts": [
@@ -4018,14 +4018,14 @@
   },
   {
    "name": "rmcp",
-   "version": "3.5.0",
+   "version": "3.5.1",
    "license": "Apache-2.0",
    "repository": "https://github.com/modelcontextprotocol/rust-sdk/",
    "texts": []
   },
   {
    "name": "rust-embed",
-   "version": "8.12.0",
+   "version": "8.13.0",
    "license": "MIT",
    "repository": "https://pyrossh.dev/repos/rust-embed",
    "texts": [
@@ -4034,7 +4034,7 @@
   },
   {
    "name": "rust-embed-utils",
-   "version": "8.12.0",
+   "version": "8.13.0",
    "license": "MIT",
    "repository": "https://pyrossh.dev/repos/rust-embed",
    "texts": [
@@ -5936,6 +5936,16 @@
   {
    "name": "windows-sys",
    "version": "0.52.0",
+   "license": "MIT OR Apache-2.0",
+   "repository": "https://github.com/microsoft/windows-rs",
+   "texts": [
+    350,
+    23
+   ]
+  },
+  {
+   "name": "windows-sys",
+   "version": "0.59.0",
    "license": "MIT OR Apache-2.0",
    "repository": "https://github.com/microsoft/windows-rs",
    "texts": [

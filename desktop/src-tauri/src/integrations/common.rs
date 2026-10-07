@@ -13,4 +13,4 @@ pub mod git;
 pub mod pipeline;
 pub mod programs;
 pub mod remote;
-pub(super) mod run;
+pub(crate) mod run;

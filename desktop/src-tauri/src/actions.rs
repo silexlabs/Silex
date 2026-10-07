@@ -689,6 +689,15 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
     let host = sent.host.as_str();
     let ask = || sent.integration.build(&sent.cli, site, &sent.prepared);
     let address = || sent.integration.address(&sent.cli, site, options);
+    let waiting = |build_url: &str| {
+        message::told(
+            &format!("Waiting for a build machine on {}", host),
+            &[
+                Button::secondary("See the build", build_url),
+                Button::secondary(FILES_ON_THIS_COMPUTER, files),
+            ],
+        )
+    };
     let building = |build_url: &str| {
         message::told(
             &format!("Building your website on {}", host),
@@ -699,7 +708,7 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
         )
     };
     let build_url = sent.build_url.clone().unwrap_or_default();
-    job.progress(building(&build_url));
+    job.progress(waiting(&build_url));
     job.step(format!("Waiting for {} to build your website", host));
 
     // A host that has nothing to show after a minute will never build it
@@ -742,6 +751,7 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
                 if !queued {
                     queued = true;
                     job.step("Waiting for a build machine");
+                    job.progress(waiting(&build_url));
                 }
                 answered = true;
             }
@@ -752,17 +762,22 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
                 could_not_ask = Some(e);
             }
         }
-        if started.elapsed() >= A_BUILD_STARTS_WITHIN {
-            if queued {
-                return job.failed(message::explained(
-                    &format!("Nothing on {} built your website.", host),
-                    "Silex asks for a build machine by name, and no machine there has that name. Publish again and change \"Build machine name\": on Codeberg it is codeberg-tiny, and on another server the person who runs it can tell you.",
-                    &[
-                        Button::secondary("See the build", &build_url),
-                        Button::secondary(FILES_ON_THIS_COMPUTER, files),
-                    ],
-                ));
-            }
+        // A busy forge and a wrong machine name look the same from here, so
+        // a queued build gets the time of a real one before Silex gives up
+        if queued && started.elapsed() >= A_BUILD_ENDS_WITHIN {
+            return job.failed(message::explained(
+                &format!("No machine on {} took the build of your website.", host),
+                &format!(
+                    "{} may be busy, or no machine there has the name in \"Build machine name\". See the build: if it is still waiting, it can start later. On Codeberg the name is codeberg-tiny, and on another server the person who runs it can tell you.",
+                    host
+                ),
+                &[
+                    Button::secondary("See the build", &build_url),
+                    Button::secondary(FILES_ON_THIS_COMPUTER, files),
+                ],
+            ));
+        }
+        if !queued && started.elapsed() >= A_BUILD_STARTS_WITHIN {
             // Never once got an answer: the host could not be asked, which is
             // not it having built nothing
             let never_answered = if answered { None } else { could_not_ask };
@@ -827,7 +842,7 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
             Build::Running(ref url) => job.progress(building(url.as_deref().unwrap_or(&build_url))),
             // A build that went back to waiting was taken and given up, which
             // a runner coming back picks up again
-            Build::Queued => job.progress(building(&build_url)),
+            Build::Queued => job.progress(waiting(&build_url)),
             // Asked again rather than drawn a conclusion from
             Build::Unknown | Build::NotStarted | Build::Refused(_) => {}
         }

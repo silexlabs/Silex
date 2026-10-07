@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.3.0",
-    "@sentry/browser": "^11.4.0",
+    "@sentry/browser": "^11.5.0",
     "@tauri-apps/api": "~2.12.1",
     "html2canvas": "^1.4.1",
     "reka-ui": "^2.11.0",
@@ -33,7 +33,7 @@
     "stylelint": "^17.16.0",
     "stylelint-config-standard-vue": "^2.0.0",
     "typescript": "6.0.3",
-    "vite": "^8.3.2",
+    "vite": "^8.3.3",
     "vue-tsc": "^3.3.12"
   }
 }

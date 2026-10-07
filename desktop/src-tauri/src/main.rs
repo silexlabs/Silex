@@ -10,6 +10,7 @@
 // Prevents an extra console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use integrations::common::run::open_detached;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -124,7 +125,7 @@ async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Res
         "http" | "https" => parsed.as_str().into(),
         _ => return Err(does_not_open()),
     };
-    open::that_detached(target).map_err(Said::raw)
+    open_detached(target).map_err(Said::raw)
 }
 
 #[tauri::command]
@@ -132,7 +133,7 @@ async fn show_website_folder(
     folder: tauri::State<'_, WebsitesFolder>,
     website_id: WebsiteId,
 ) -> Result<(), Said> {
-    open::that_detached(folder.website(&website_id)?).map_err(Said::raw)
+    open_detached(folder.website(&website_id)?).map_err(Said::raw)
 }
 
 #[derive(serde::Serialize)]

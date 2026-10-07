@@ -17,7 +17,7 @@ export const BUILD_SH_PATH = 'build.sh'
 export const DEFAULT_BUILD_STEPS: BuildStep[] = [{ type: 'build' }]
 
 // TEMPORARY: remove after the 3.10 stable, only sites published with 3.10.0-canary.3 have this file
-const FAIL_ON_CANARY_DATA_FILE = 'test -f public/public.11tydata.js && echo \'Delete public/public.11tydata.js\' && exit 1'
+const FAIL_ON_CANARY_DATA_FILE = 'test -f public/public.11tydata.js && echo \'Please delete public/public.11tydata.js\' && exit 1'
 
 // || true: sites without images have no assets/ folder in git
 const BUILD_COMMANDS = [
