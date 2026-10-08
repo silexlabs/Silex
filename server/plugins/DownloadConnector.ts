@@ -1,4 +1,5 @@
 import { createWriteStream, unlink } from 'fs'
+import { readdir, stat, unlink as unlinkAsync } from 'fs/promises'
 import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
 import { ConnectorFile, ConnectorSession, HostingConnector } from '~/server/connectors/connectors.js'
 import { tmpdir } from 'os'
@@ -15,6 +16,41 @@ type DownloadConnectorOptions = object
 
 const ZIP_ICON = '/assets/download.png'
 
+// Generated download zips are named `${websiteId}-${Date.now()}-${random}.zip`
+// (see startPublishingInBackground).
+const GENERATED_ZIP_PATTERN = /-\d{13}-[a-z0-9]+\.zip$/
+const STALE_ZIP_MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24h
+const SWEEP_INTERVAL_MS = 24 * 60 * 60 * 1000 // daily
+
+// Sweep never-downloaded zips from the OS temp dir: generated-pattern files whose
+// mtime is older than STALE_ZIP_MAX_AGE_MS. Resolves to the number of files deleted.
+export async function sweepStaleDownloadZips(dir: string = tmpdir(), now: number = Date.now()): Promise<number> {
+  let entries: string[]
+  try {
+    entries = await readdir(dir)
+  } catch (err) {
+    console.error('[DownloadConnector] Error while listing temp dir for sweep', err)
+    return 0
+  }
+  const candidates = entries.filter(name => GENERATED_ZIP_PATTERN.test(name))
+  const results = await Promise.allSettled(candidates.map(async name => {
+    const path = join(dir, name)
+    const stats = await stat(path)
+    if (now - stats.mtimeMs > STALE_ZIP_MAX_AGE_MS) {
+      await unlinkAsync(path)
+      return true
+    }
+    return false
+  }))
+  let deleted = 0
+  for (const result of results) {
+    if (result.status === 'rejected') console.error('[DownloadConnector] Error while sweeping stale zip', result.reason)
+    else if (result.value) deleted++
+  }
+  if (deleted > 0) console.log(`[DownloadConnector] Swept ${deleted} stale download zip(s) from temp dir`)
+  return deleted
+}
+
 export default class implements HostingConnector<DownloadConnectorSession> {
   connectorId = 'download-connector'
   displayName = 'Download zip file'
@@ -28,6 +64,13 @@ export default class implements HostingConnector<DownloadConnectorSession> {
   constructor(config: ServerConfig) {
     // Add a route to serve the zip file
     config.on(ServerEvent.STARTUP_END, ({app}) => {
+      // Zips that are generated but never downloaded would otherwise accumulate
+      // in the OS temp dir forever. Sweep once at startup, then daily; .unref()
+      // so the timer never keeps the process alive.
+      sweepStaleDownloadZips()
+      const sweepTimer = setInterval(() => sweepStaleDownloadZips(), SWEEP_INTERVAL_MS)
+      sweepTimer.unref()
+
       app.get('/download/:tmpZipFile', async (req: Request, res: Response) => {
         const tmpZipFile = req.params.tmpZipFile as string
         if (basename(tmpZipFile) !== tmpZipFile) {
