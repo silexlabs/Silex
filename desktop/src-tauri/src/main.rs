@@ -44,6 +44,10 @@ struct AppState {
     current_website_id: actions::CurrentWebsiteId,
     current_website_name: Mutex<Option<String>>,
     has_unsaved_changes: Mutex<bool>,
+    /// One editor command at a time, whatever the MCP session: an async command
+    /// would otherwise be cut by the next one. A command that times out releases it
+    /// while it may still run
+    editor_commands: tokio::sync::Mutex<()>,
 }
 
 impl Default for AppState {
@@ -52,6 +56,7 @@ impl Default for AppState {
             current_website_id: Arc::new(Mutex::new(None)),
             current_website_name: Mutex::new(None),
             has_unsaved_changes: Mutex::new(false),
+            editor_commands: tokio::sync::Mutex::new(()),
         }
     }
 }
