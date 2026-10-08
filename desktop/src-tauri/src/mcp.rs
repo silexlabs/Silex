@@ -413,27 +413,76 @@ fn tool_error(msg: impl Into<String>) -> CallToolResult {
 
 /// Sentry puts no Drop on its own spans, and one that is never finished is
 /// never sent
-struct ToolSpan(Option<sentry::TransactionOrSpan>);
+struct ToolSpan {
+    span: Option<sentry::TransactionOrSpan>,
+    answered: bool,
+}
 
 impl ToolSpan {
-    /// The failure travels in the result, and reaches the span from nowhere else
-    fn answers(self, result: Result<CallToolResult, McpError>) -> Result<CallToolResult, McpError> {
-        let failed = match &result {
-            Ok(call) => call.is_error == Some(true),
-            Err(_) => true,
-        };
-        if failed {
-            if let Some(span) = &self.0 {
-                span.set_status(sentry::protocol::SpanStatus::InternalError);
-            }
+    /// One per tool call, with only values chosen by Silex: never the arguments,
+    /// an error message, nor anything else of the website
+    fn start(tool: &str, action: Option<&str>, client: Option<&str>) -> Self {
+        let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool), "mcp.tool");
+        let transaction = sentry::start_transaction(tx_ctx);
+        if let Some(action) = action {
+            transaction.set_tag("action", action);
         }
-        result
+        if let Some(client) = client {
+            transaction.set_tag("client", client.chars().take(64).collect::<String>());
+        }
+        Self {
+            span: Some(transaction.into()),
+            answered: false,
+        }
+    }
+
+    fn answers(&mut self, result: &Result<CallToolResponse, McpError>) {
+        self.answered = true;
+        let Some(span) = &self.span else { return };
+        let outcome = match result {
+            Ok(CallToolResponse::Complete(call)) => {
+                let bytes: usize = call
+                    .content
+                    .iter()
+                    .map(|block| {
+                        block
+                            .as_text()
+                            .map(|text| text.text.len())
+                            .unwrap_or_default()
+                            + block
+                                .as_image()
+                                .map(|image| image.data.len())
+                                .unwrap_or_default()
+                    })
+                    .sum();
+                span.set_data("response_bytes", bytes.into());
+                if call.is_error == Some(true) {
+                    "tool_error"
+                } else {
+                    "ok"
+                }
+            }
+            Ok(CallToolResponse::InputRequired(_)) => "input_required",
+            Ok(_) => "task",
+            Err(e) => {
+                span.set_data("error_code", e.code.0.into());
+                "protocol_error"
+            }
+        };
+        span.set_tag("outcome", outcome);
+        if matches!(outcome, "tool_error" | "protocol_error") {
+            span.set_status(sentry::protocol::SpanStatus::InternalError);
+        }
     }
 }
 
 impl Drop for ToolSpan {
     fn drop(&mut self) {
-        if let Some(span) = self.0.take() {
+        if let Some(span) = self.span.take() {
+            if !self.answered {
+                span.set_tag("outcome", "cancelled");
+                span.set_status(sentry::protocol::SpanStatus::Cancelled);
+            }
             span.finish();
         }
     }
@@ -458,14 +507,6 @@ impl SilexMcp {
         }
     }
 
-    /// Start a Sentry transaction for an MCP tool call.
-    fn start_tool_transaction(tool_name: &str, action: &str) -> ToolSpan {
-        let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool_name), "mcp.tool");
-        let transaction = sentry::start_transaction(tx_ctx);
-        transaction.set_data("action", serde_json::Value::String(action.to_string()));
-        ToolSpan(Some(transaction.into()))
-    }
-
     // ----------------------------------------------------------------------
     // website — list, create, delete, rename, duplicate, open, dashboard
     // ----------------------------------------------------------------------
@@ -477,11 +518,6 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<WebsiteParams>,
     ) -> Result<CallToolResult, McpError> {
-        let span = Self::start_tool_transaction("website", &format!("{:?}", params.action));
-        span.answers(self.website_call(params).await)
-    }
-
-    async fn website_call(&self, params: WebsiteParams) -> Result<CallToolResult, McpError> {
         let base_url = self.get_base_url();
         let client = reqwest::Client::new();
 
@@ -703,12 +739,6 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let span =
-            Self::start_tool_transaction("screenshot", params.target.unwrap_or_default().as_str());
-        span.answers(self.screenshot_call(params).await)
-    }
-
-    async fn screenshot_call(&self, params: ScreenshotParams) -> Result<CallToolResult, McpError> {
         let target = params.target.unwrap_or_default().as_str();
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
@@ -873,52 +903,17 @@ RULES:
         context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<CallToolResponse, McpError>> + Send + '_ {
         async move {
-            // Check which router owns this tool before consuming request
-            if self.tool_router.get(&request.name).is_some() {
-                let may_change_tool_list = request.name.as_ref() == "website"
-                    && request
-                        .arguments
-                        .as_ref()
-                        .and_then(|args| args.get("action"))
-                        .and_then(|action| {
-                            serde_json::from_value::<WebsiteAction>(action.clone()).ok()
-                        })
-                        .is_some_and(|action| action.changes_tool_list());
-                let peer = context.peer.clone();
-
-                let tool_ctx =
-                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-                let result = self.tool_router.call(tool_ctx).await;
-
-                let succeeded = matches!(
-                    &result,
-                    Ok(CallToolResponse::Complete(done)) if done.is_error != Some(true)
-                );
-                if may_change_tool_list && succeeded {
-                    if let Err(e) = peer.notify_tool_list_changed().await {
-                        tracing::warn!("Failed to send tools/list_changed: {}", e);
-                    }
-                }
-
-                return result;
-            }
-
-            if self.dynamic_tools.read().await.has_route(&request.name) {
-                let tool_ctx =
-                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-                // Hold read lock across the async call — safe because writes
-                // only happen in load_capabilities() on a separate task.
-                let dynamic = self.dynamic_tools.read().await;
-                return dynamic.call(tool_ctx).await;
-            }
-
-            Err(McpError::invalid_params(
-                format!(
-                    "Tool '{}' not found. The editor tools are only available while a website is open.",
-                    request.name
-                ),
-                None,
-            ))
+            let known = self.get_tool(&request.name);
+            let tool = known.as_ref().map_or("unknown", |tool| tool.name.as_ref());
+            let action = known.as_ref().and_then(|tool| known_action(tool, &request));
+            let client = context
+                .peer
+                .peer_info()
+                .map(|info| info.client_info.name.clone());
+            let mut span = ToolSpan::start(tool, action.as_deref(), client.as_deref());
+            let result = self.route_call(request, context).await;
+            span.answers(&result);
+            result
         }
     }
 
@@ -927,6 +922,92 @@ RULES:
             .get(name)
             .cloned()
             .or_else(|| self.dynamic_tools.try_read().ok()?.get(name).cloned())
+    }
+}
+
+impl SilexMcp {
+    async fn route_call(
+        &self,
+        request: CallToolRequestParams,
+        context: RequestContext<RoleServer>,
+    ) -> Result<CallToolResponse, McpError> {
+        // Check which router owns this tool before consuming request
+        if self.tool_router.get(&request.name).is_some() {
+            let may_change_tool_list = request.name.as_ref() == "website"
+                && request
+                    .arguments
+                    .as_ref()
+                    .and_then(|args| args.get("action"))
+                    .and_then(|action| serde_json::from_value::<WebsiteAction>(action.clone()).ok())
+                    .is_some_and(|action| action.changes_tool_list());
+            let peer = context.peer.clone();
+
+            let tool_ctx =
+                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+            let result = self.tool_router.call(tool_ctx).await;
+
+            let succeeded = matches!(
+                &result,
+                Ok(CallToolResponse::Complete(done)) if done.is_error != Some(true)
+            );
+            if may_change_tool_list && succeeded {
+                if let Err(e) = peer.notify_tool_list_changed().await {
+                    tracing::warn!("Failed to send tools/list_changed: {}", e);
+                }
+            }
+
+            return result;
+        }
+
+        if self.dynamic_tools.read().await.has_route(&request.name) {
+            let tool_ctx =
+                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+            // Hold read lock across the async call — safe because writes
+            // only happen in load_capabilities() on a separate task.
+            let dynamic = self.dynamic_tools.read().await;
+            return dynamic.call(tool_ctx).await;
+        }
+
+        Err(McpError::invalid_params(
+            format!(
+                "Tool '{}' not found. The editor tools are only available while a website is open.",
+                request.name
+            ),
+            None,
+        ))
+    }
+}
+
+/// The action of a call, when it is one the tool declares: a free value could
+/// be anything of the website
+fn known_action(tool: &Tool, request: &CallToolRequestParams) -> Option<String> {
+    let args = request.arguments.as_ref()?;
+    match tool.name.as_ref() {
+        "website" => {
+            let action = args.get("action")?;
+            serde_json::from_value::<WebsiteAction>(action.clone()).ok()?;
+            action.as_str().map(String::from)
+        }
+        "take_screenshot" => {
+            let target = args.get("target").cloned().unwrap_or_default();
+            let target = if target.is_null() {
+                ScreenshotTarget::default()
+            } else {
+                serde_json::from_value::<ScreenshotTarget>(target).ok()?
+            };
+            Some(target.as_str().to_string())
+        }
+        _ => {
+            let action = args.get("action")?.as_str()?;
+            tool.input_schema
+                .get("properties")?
+                .get("action")?
+                .get("enum")?
+                .as_array()?
+                .iter()
+                .any(|allowed| allowed.as_str() == Some(action))
+                .then(|| action.to_string())
+        }
     }
 }
 
