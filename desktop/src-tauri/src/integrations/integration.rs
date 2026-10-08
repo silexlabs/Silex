@@ -276,30 +276,11 @@ pub trait Integration: Send + Sync {
     }
 }
 
-/// What this website had already built when a publication was pushed
-///
-/// For the integrations whose builds do not say which push they came from: a
-/// build newer than the one named here is this publication's. Without it, a
-/// build from last week would be read as this publication succeeding.
-#[derive(Default)]
-pub enum EarlierBuild {
-    /// The host had never built this website, or does not need telling apart
-    #[default]
-    Nothing,
-
-    /// The newest build at the time
-    Run(String),
-
-    /// The host could not be asked, so no build here can be called ours
-    CouldNotAsk,
-}
-
 /// What `deploy` left for the publication to send and for `build` to recognise
 #[derive(Default)]
 pub struct Prepared {
     /// The integrations that start their build on a tag put theirs here
     pub tag: Option<String>,
-    pub before: EarlierBuild,
 }
 
 /// The tag name the SaaS uses, so that a history reads the same everywhere

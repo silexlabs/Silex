@@ -20,7 +20,7 @@ use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_fi
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
-    silex_tag, Build, Capacity, EarlierBuild, Integration, Prepared, SyncError, Synced, Urls,
+    silex_tag, Build, Capacity, Integration, Prepared, SyncError, Synced, Urls,
 };
 use crate::held::held;
 
@@ -163,7 +163,7 @@ impl Integration for Tea {
 
     fn deploy(
         &self,
-        cli: &Path,
+        _cli: &Path,
         site: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
@@ -187,103 +187,73 @@ impl Integration for Tea {
         // The workflow runs on a tag
         let tag = silex_tag();
         silex_server::tag(site, &tag)?;
-        Ok(Prepared {
-            tag: Some(tag),
-            // Forgejo does not say which push a run came from: the run on top
-            // before this push is the mark that tells ours from the last one
-            before: match runs(cli, site) {
-                Ok(listed) => match listed.first().and_then(run_id) {
-                    Some(run) => EarlierBuild::Run(run),
-                    None => EarlierBuild::Nothing,
-                },
-                Err(e) => {
-                    tracing::warn!("Could not read the runs before publishing: {}", e);
-                    EarlierBuild::CouldNotAsk
-                }
-            },
-        })
+        Ok(Prepared { tag: Some(tag) })
     }
 
     fn build(&self, cli: &Path, site: &Path, prepared: &Prepared) -> Result<Build, String> {
-        let remote = Remote::of(site);
-        if let Some(remote) = &remote {
-            let repository = repository(cli, site, remote)?;
-            if repository["has_actions"] == serde_json::Value::Bool(false) {
-                return Ok(Build::Refused(
-                    "Actions are turned off for this repository, so nothing built your website. Turn them on in the repository settings, then publish again."
-                        .to_string(),
-                ));
-            }
+        // Nothing was tagged, so there is nothing to recognise a run by
+        let (Some(tag), Some(remote)) = (prepared.tag.as_deref(), Remote::of(site)) else {
+            return Ok(Build::Unknown);
+        };
+        let repository = repository(cli, site, &remote)?;
+        if repository["has_actions"] == serde_json::Value::Bool(false) {
+            return Ok(Build::Refused(
+                "Actions are turned off for this repository, so nothing built your website. Turn them on in the repository settings, then publish again."
+                    .to_string(),
+            ));
         }
 
-        build_of(&prepared.before, || runs(cli, site))
+        Ok(build_of(&runs(cli, site, &remote)?, tag))
     }
 }
 
-/// The build this publication started, among the runs of the repository
-///
-/// Without a mark to tell ours from the last publication's, the runs are not
-/// even asked for: the user is sent to look rather than promised a website.
-fn build_of(
-    before: &EarlierBuild,
-    runs: impl FnOnce() -> Result<Vec<serde_json::Value>, String>,
-) -> Result<Build, String> {
-    let mark = match before {
-        EarlierBuild::CouldNotAsk => return Ok(Build::Unknown),
-        EarlierBuild::Run(run) => Some(run.as_str()),
-        EarlierBuild::Nothing => None,
+/// The run of this publication, recognised by the tag it ran on
+fn build_of(runs: &[serde_json::Value], tag: &str) -> Build {
+    let Some(ours) = runs
+        .iter()
+        .find(|run| run["prettyref"].as_str() == Some(tag))
+    else {
+        return Build::NotStarted;
     };
-
-    let listed = runs()?;
-    let Some(ours) = listed.first() else {
-        return Ok(Build::NotStarted);
-    };
-
-    // Still the run that was on top before the push: this publication has not
-    // started building yet, and that one is the last publication's
-    if run_id(ours).as_deref() == mark {
-        return Ok(Build::NotStarted);
-    }
-
-    // No address for the run itself: Forgejo numbers it inside the repository
-    // and the API answers another number, so the user is sent to the list
-    Ok(match ours["status"].as_str().unwrap_or_default() {
+    let url = ours["html_url"].as_str().map(String::from);
+    match ours["status"].as_str().unwrap_or_default() {
         "waiting" => Build::Queued,
         "success" => Build::Built,
-        "failure" | "cancelled" | "canceled" | "skipped" | "blocked" => Build::Failed {
-            url: None,
-            reason: None,
-        },
+        "failure" | "cancelled" | "canceled" | "skipped" | "blocked" => {
+            Build::Failed { url, reason: None }
+        }
         // running, and whatever Forgejo adds next
-        _ => Build::Running(None),
-    })
+        _ => Build::Running(url),
+    }
 }
 
-/// The runs of this repository, newest first
-fn runs(cli: &Path, site: &Path) -> Result<Vec<serde_json::Value>, String> {
-    read_runs(&run(
+/// The latest runs of this repository
+///
+/// Through the API rather than `tea actions runs list`, which leaves out the
+/// address of each run and the tag it ran on.
+fn runs(cli: &Path, site: &Path, remote: &Remote) -> Result<Vec<serde_json::Value>, String> {
+    let Some(login) = login_for(cli, site, &remote.host)? else {
+        return Err(format!("Not signed in to {}", remote.host));
+    };
+    let said = run(
         cli,
         site,
-        &["actions", "runs", "list", "--limit", "5", "-o", "json"],
-    )?)
-}
-
-/// A repository nothing ever built answers a sentence rather than an empty list
-fn read_runs(listed: &str) -> Result<Vec<serde_json::Value>, String> {
-    if !listed.trim_start().starts_with('[') {
-        return Ok(Vec::new());
-    }
-    serde_json::from_str(listed).map_err(|e| format!("Could not read the runs of tea: {}", e))
-}
-
-/// The id comes back as a number on some Forgejo versions and as a string on
-/// others
-fn run_id(run: &serde_json::Value) -> Option<String> {
-    match run.get("id")? {
-        serde_json::Value::String(id) => Some(id.clone()),
-        serde_json::Value::Number(id) => Some(id.to_string()),
-        _ => None,
-    }
+        &[
+            "api",
+            "--login",
+            &login,
+            &format!(
+                "repos/{}/{}/actions/runs?limit=20",
+                remote.owner, remote.repo
+            ),
+        ],
+    )?;
+    let listed: serde_json::Value = serde_json::from_str(&said)
+        .map_err(|e| format!("Could not read what tea said of the runs: {}", e))?;
+    Ok(listed["workflow_runs"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default())
 }
 
 fn pages_domain(options: &PublicationOptions) -> &str {
@@ -448,6 +418,21 @@ fn repository(cli: &Path, site: &Path, remote: &Remote) -> Result<serde_json::Va
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_run_of_a_publication_is_the_one_on_its_tag() {
+        let runs = serde_json::json!([
+            {"prettyref": "_silex_2", "status": "failure", "html_url": "https://codeberg.org/a/b/actions/runs/7"},
+            {"prettyref": "_silex_1", "status": "success", "html_url": "https://codeberg.org/a/b/actions/runs/6"}
+        ]);
+        let runs = runs.as_array().unwrap();
+        assert!(matches!(build_of(runs, "_silex_1"), Build::Built));
+        assert!(matches!(
+            build_of(runs, "_silex_2"),
+            Build::Failed { url: Some(url), .. } if url.ends_with("/runs/7")
+        ));
+        assert!(matches!(build_of(runs, "_silex_3"), Build::NotStarted));
+    }
 
     #[test]
     fn the_base_path_of_a_typed_address() {

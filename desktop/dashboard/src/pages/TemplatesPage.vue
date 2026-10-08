@@ -8,7 +8,7 @@ import { dismiss, toast } from '../components/AppToasts.vue'
 import ExternalLink from '../components/ExternalLink.vue'
 import list from '../templates.json'
 
-type Localized = { description: string; preview: string }
+type Localized = { page: string; preview: string }
 type Template = { name: string; image: string; repo: string; paymentLink?: string; en: Localized; fr?: Localized }
 
 // The donation pages of the one pack there is so far
@@ -120,16 +120,22 @@ async function use(template: Template) {
           >
             {{ template.name }}
           </component>
-          <p class="template__description">
-            {{ localized(template).description }}
-          </p>
-          <ExternalLink
-            class="template__preview"
-            :href="localized(template).preview"
-            :name="$t('Live demo of {name}', { name: template.name })"
-          >
-            {{ $t('Live demo') }} <span aria-hidden="true">↗</span>
-          </ExternalLink>
+          <div class="template__links">
+            <ExternalLink
+              class="template__link"
+              :href="localized(template).page"
+              :name="$t('Learn more about {name}', { name: template.name })"
+            >
+              {{ $t('Learn more') }} <span aria-hidden="true">↗</span>
+            </ExternalLink>
+            <ExternalLink
+              class="template__link"
+              :href="localized(template).preview"
+              :name="$t('Live demo of {name}', { name: template.name })"
+            >
+              {{ $t('Live demo') }} <span aria-hidden="true">↗</span>
+            </ExternalLink>
+          </div>
           <div
             v-if="group.link"
             class="template__donate"
@@ -172,24 +178,23 @@ async function use(template: Template) {
   display: grid;
   flex: 1;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto 1fr;
   gap: var(--silex-space-2);
   padding-top: var(--silex-space-2);
 }
 
-.template__description {
-  margin: 0;
+.template__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--silex-space-4);
+}
+
+.template__link {
   color: var(--silex-text-secondary);
   font-size: 12px;
 }
 
-.template__preview {
-  justify-self: start;
-  color: var(--silex-text-secondary);
-  font-size: 12px;
-}
-
-.template__preview:hover {
+.template__link:hover {
   color: var(--silex-text-primary);
 }
 

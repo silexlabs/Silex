@@ -174,10 +174,7 @@ impl Integration for Hut {
         // Silex tag through
         let tag = silex_tag();
         silex_server::tag(site, &tag)?;
-        Ok(Prepared {
-            tag: Some(tag),
-            ..Default::default()
-        })
+        Ok(Prepared { tag: Some(tag) })
     }
 
     /// git.sr.ht tags the builds it starts with the repository, and writes the

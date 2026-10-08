@@ -123,7 +123,9 @@ export class PublicationManager {
     } as PublicationManagerOptions
     // Save the publication settings in the website settings
     editor.on('storage:start:store', (data: WebsiteData) => {
-      data.publication = this.settings
+      // The OAuth address carries the state of one login, nothing the website keeps
+      const { connector } = this.settings
+      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null } } : this.settings
     })
     // load publication settings from the website
     editor.on('storage:end:load', (data: WebsiteData) => {
