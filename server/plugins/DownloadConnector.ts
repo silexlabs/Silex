@@ -38,10 +38,9 @@ export default class implements HostingConnector<DownloadConnectorSession> {
         res.sendFile(path, {}, (err) => {
           if (err) {
             console.error('[DownloadConnector] Error while sending file', err)
-            if (!res.headersSent) res.status(500).send(`
+            if (!res.headersSent) res.status((err as NodeJS.ErrnoException).code === 'ENOENT' ? 404 : 500).send(`
               <h1>Error</h1>
               <p>There was an error while getting the zip file of your website</p>
-              <p>${err.message}</p>
             `)
             return
           }
