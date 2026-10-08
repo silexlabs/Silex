@@ -77,9 +77,26 @@ pub struct WebsiteParams {
 pub struct ScreenshotParams {
     /// What to capture: "ui" for the whole editor (default),
     /// or "canvas" for only the website preview.
-    pub target: Option<String>,
+    pub target: Option<ScreenshotTarget>,
     /// File path to save the screenshot PNG to (optional, also returned inline as image).
     pub output_file: Option<String>,
+}
+
+#[derive(Debug, Default, Clone, Copy, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ScreenshotTarget {
+    #[default]
+    Ui,
+    Canvas,
+}
+
+impl ScreenshotTarget {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Ui => "ui",
+            Self::Canvas => "canvas",
+        }
+    }
 }
 
 // ==========================================================================
@@ -655,12 +672,12 @@ impl SilexMcp {
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
         let span =
-            Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
+            Self::start_tool_transaction("screenshot", params.target.unwrap_or_default().as_str());
         span.answers(self.screenshot_call(params).await)
     }
 
     async fn screenshot_call(&self, params: ScreenshotParams) -> Result<CallToolResult, McpError> {
-        let target = params.target.as_deref().unwrap_or("ui");
+        let target = params.target.unwrap_or_default().as_str();
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
                 "Screenshot failed: html2canvas is not in the dashboard build",
