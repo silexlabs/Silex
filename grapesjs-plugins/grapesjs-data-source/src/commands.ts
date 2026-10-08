@@ -68,7 +68,7 @@ function validateExpression(tokens: unknown[]): void {
       if (token.dataSourceId) {
         const dsId = token.dataSourceId as string
         if (!dsIds.includes(dsId)) {
-          throw new Error(`${prefix}: data source "${dsId}" not found. Available: ${dsIds.join(', ') || '(none configured)'}. Use data-source_list to see connected sources.`)
+          throw new Error(`${prefix}: data source "${dsId}" not found. Available: ${dsIds.join(', ') || '(none configured)'}. Use cms(action:'list') to see connected sources.`)
         }
         // Validate that the field exists in the data source schema
         const ds = getDataSource(dsId)
@@ -80,7 +80,7 @@ function validateExpression(tokens: unknown[]): void {
           const fieldId = token.fieldId as string
           // Check if fieldId matches a queryable, a field, or a type
           if (!queryableFieldIds.includes(fieldId) && !allFieldIds.includes(fieldId) && !allTypeIds.includes(fieldId)) {
-            throw new Error(`${prefix}: field "${fieldId}" not found in data source "${dsId}". Available queryables: ${queryableFieldIds.slice(0, 15).join(', ') || '(none)'}. Use data-source_list for full schema.`)
+            throw new Error(`${prefix}: field "${fieldId}" not found in data source "${dsId}". Available queryables: ${queryableFieldIds.slice(0, 15).join(', ') || '(none)'}. Use cms(action:'schema') for the full schema.`)
           }
         }
       }
@@ -258,7 +258,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       if (!component) throw new Error('No component selected. Use components_select first.')
 
       const { stateId, exported } = options
-      if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use data-source_get-states to list existing states.')
+      if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use element(action:\'bindings\') to list existing bindings.')
 
       const isExported = exported !== false
       if (!getState(component, stateId, isExported)) {
