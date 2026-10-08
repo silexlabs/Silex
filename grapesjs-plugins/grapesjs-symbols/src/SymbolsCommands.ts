@@ -14,7 +14,11 @@ export const cmdList = 'symbols:list'
 export default function(editor: Editor) {
   editor.Commands.add(cmdList, {
     run() {
-      return getSymbols(editor)
+      return getSymbols(editor).map(({ main, instances }) => ({
+        id: main?.getId(),
+        label: main?.getName(),
+        instances: instances.length,
+      }))
     },
   })
   editor.Commands.add(cmdAdd, _addSymbol)
@@ -60,10 +64,8 @@ export function _addSymbol(
   // Give the component a name
   component.setName(label)
   if(icon) component.set('icon', icon)
-  // add the symbol
-  const s = createSymbol(editor, component)
-  // return the symbol to the caller
-  return s
+  const { main } = createSymbol(editor, component)!
+  return { created: [{ id: main!.getId(), label }] }
 }
 
 /**
@@ -96,14 +98,38 @@ export function _unlinkSymbolInstance(
   unbindSymbolInstance(editor, component)
 }
 
+const POSITIONS = ['inside', 'before', 'after']
+
+// From an agent: the symbol by its id, placed relative to the selected element
+function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside') {
+  const symbols = editor.Components.getSymbols()
+  const symbol = symbols.find(s => s.getId() === symbolId)
+  if (!symbol) {
+    throw new Error(`No symbol "${symbolId}". Nothing was changed. ${symbols.length ? `Symbols: ${symbols.map(s => `${s.getId()} (${s.getName()})`).join(', ')}.` : 'There is no symbol yet: create one with symbols_add.'}`)
+  }
+  if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
+  const target = editor.getSelected() ?? editor.getWrapper()!
+  const parent = position === 'inside' ? target : target.parent()
+  if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
+  const at = position === 'inside' ? undefined : target.index() + (position === 'after' ? 1 : 0)
+  if (!allowDrop(editor, parent)) throw new Error('A symbol can not go inside a symbol. Nothing was changed. Select an element outside of it with components_select, or change position.')
+  if (!editor.Components.canMove(parent, symbol, at).result) throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed. Select another element with components_select, or change position.`)
+  const [instance] = parent.append(editor.Components.addSymbol(symbol)!, { at })
+  editor.select(instance)
+  return editor.Commands.has('agent-ids:created')
+    ? editor.runCommand('agent-ids:created', { components: [instance] })
+    : { created: [{ id: instance.getId() }], parent_id: parent.getId() }
+}
+
 /**
  * @param {{index, indexEl, method}} pos Where to insert the component, as [defined by the Sorter](https://github.com/artf/grapesjs/blob/0842df7c2423300f772e9e6cdc88c6ae8141c732/src/utils/Sorter.js#L871)
  */
 export function _createSymbolInstance(
   editor: Editor,
   _: any,
-  { symbol, pos, target }: { symbol: Component, pos: any, target: HTMLElement | Component },
-): Component | null {
+  { symbol, pos, target, symbolId, position }: { symbol: Component, pos: any, target: HTMLElement | Component, symbolId?: string, position?: string },
+) {
+  if (symbolId) return insertSymbolInstance(editor, symbolId, position)
   if (!symbol || !pos || !target) {
     throw new Error('Can not create the symbol: missing param symbol or pos or target')
   }

@@ -15,18 +15,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
+import { agentId, created, findByAgentId } from './agent-ids'
 
 /**
  * Core GrapesJS commands for blocks, components, styles and classes.
  * Registered as AI capabilities via grapesjs-ai-capabilities.
  */
 
-function findComponentById(editor: Editor, id: string) {
-  const all: any[] = []
-  const collect = (c) => { all.push(c); c.components().forEach(collect) }
-  collect(editor.getWrapper())
-  return all.find(c => c.getId() === id)
+const POSITIONS = ['inside', 'before', 'after']
+const POSITION_SCHEMA = { type: 'string', enum: POSITIONS, description: 'Default: inside, as last child' }
+
+function describe(editor: Editor, component: Component): string {
+  const classes = component.getClasses().join(' ')
+  return `"${agentId(editor, component)}" <${component.get('tagName')}${classes ? ` class="${classes}"` : ''}>`
+}
+
+// Where an element goes, relative to the target: in it as its last child, or next to it
+function place(editor: Editor, target: Component, position = 'inside'): { parent: Component, at?: number } {
+  if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
+  if (position === 'inside') return { parent: target }
+  const parent = target.parent()
+  if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
+  return { parent, at: target.index() + (position === 'after' ? 1 : 0) }
 }
 
 export default (editor: Editor) => {
@@ -43,21 +54,27 @@ export default (editor: Editor) => {
     if (!blockId) throw new Error('Required: blockId. Use blocks_list to see available blocks.')
     const block = editor.BlockManager.get(blockId)
     if (!block) throw new Error(`Block "${blockId}" not found. Use blocks_list to see available blocks.`)
-    const selected = editor.getSelected() || editor.getWrapper()
-    return selected.append(block.getContent())?.[0]?.toHTML()
+    const { parent, at } = place(editor, editor.getSelected() || editor.getWrapper()!, options.position)
+    const content = block.getContent()
+    if (!editor.Components.canMove(parent, content as any, at).result) {
+      throw new Error(`The element ${describe(editor, parent)} can not contain block "${blockId}". Nothing was changed. Select another element with components_select, or change position.`)
+    }
+    return created(editor, parent.append(content as any, { at }), parent)
   })
 
   // Components
   editor.Commands.add('components:list', () => {
     const walk = (comp, depth = 0) => {
       const result: any[] = [{
-        id: comp.getId(),
+        id: agentId(editor, comp),
         tagName: comp.get('tagName'),
         type: comp.get('type'),
         name: comp.getName(),
         depth,
       }]
-      comp.components().forEach(c => result.push(...walk(c, depth + 1)))
+      comp.components()
+        .filter((c: Component) => c.get('type') !== 'textnode')
+        .forEach((c: Component) => result.push(...walk(c, depth + 1)))
       return result
     }
     return walk(editor.getWrapper())
@@ -65,12 +82,12 @@ export default (editor: Editor) => {
   editor.Commands.add('components:select', (_ed, _sender, options: any = {}) => {
     const { id } = options
     if (!id) throw new Error('Required: id. Use components_list to see all component ids.')
-    const found = findComponentById(editor, id)
+    const found = findByAgentId(editor, id)
     if (!found) throw new Error(`Component "${id}" not found. Use components_list to see all component ids.`)
     editor.select(found)
   })
   editor.Commands.add('components:remove', (_ed, _sender, options: any = {}) => {
-    const comp = options.id ? findComponentById(editor, options.id) : editor.getSelected()
+    const comp = options.id ? findByAgentId(editor, options.id) : editor.getSelected()
     if (!comp) throw new Error(options.id ? `Component "${options.id}" not found. Use components_list to see all component ids.` : 'No component selected. Use components_select first, or pass {id}.')
     if (comp === editor.getWrapper()) throw new Error('Cannot remove the body component.')
     comp.remove()
@@ -79,19 +96,28 @@ export default (editor: Editor) => {
     const { id, targetId, position } = options
     if (!id) throw new Error('Required: id — the component to move. Use components_list to see all ids.')
     if (!targetId) throw new Error('Required: targetId — the parent to move into. Use components_list to see all ids.')
-    const comp = findComponentById(editor, id)
+    const comp = findByAgentId(editor, id)
     if (!comp) throw new Error(`Component "${id}" not found. Use components_list to see all component ids.`)
-    const target = findComponentById(editor, targetId)
+    const target = findByAgentId(editor, targetId)
     if (!target) throw new Error(`Target "${targetId}" not found. Use components_list to see all component ids.`)
-    const idx = typeof position === 'number' ? position : undefined
-    target.append(comp.clone(), { at: idx })
-    comp.remove()
+    const { parent, at } = place(editor, target, position)
+    if ([parent, ...parent.parents()].includes(comp)) {
+      throw new Error(`Can not move ${describe(editor, comp)} into itself or one of its children. Nothing was changed. Choose a targetId outside of it.`)
+    }
+    if (!editor.Components.canMove(parent, comp, at).result) {
+      throw new Error(`${describe(editor, comp)} can not go into ${describe(editor, parent)}. Nothing was changed. Choose another targetId or position.`)
+    }
+    comp.move(parent, { at })
   })
   editor.Commands.add('components:update', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
     if (!selected) throw new Error('No component selected. Use components_select first.')
     const { content, tagName, attributes } = options
-    if (content !== undefined) selected.components(content)
+    let children: Component[] | undefined
+    if (content !== undefined) {
+      selected.empty()
+      children = content ? selected.append(content) : []
+    }
     if (tagName) selected.set('tagName', tagName)
     if (attributes && typeof attributes === 'object') {
       Object.entries(attributes).forEach(([k, v]) => selected.addAttributes({ [k]: v }))
@@ -99,6 +125,7 @@ export default (editor: Editor) => {
     if (content === undefined && !tagName && !attributes) {
       throw new Error('Required: at least one of {content, tagName, attributes}. Example: {content: "<b>Hello</b>"} or {tagName: "section"} or {attributes: {title: "My div"}}')
     }
+    if (children) return created(editor, children, selected, { select: false })
   })
 
   // CSS Classes
@@ -168,12 +195,13 @@ export default (editor: Editor) => {
     addCapability({
       id: 'blocks:add',
       command: 'blocks:add',
-      description: 'Insert a block into selected element',
+      description: 'Insert a block relative to the selected element (the body if none) and select it',
       inputSchema: {
         type: 'object',
         required: ['blockId'],
         properties: {
           blockId: { type: 'string' },
+          position: POSITION_SCHEMA,
         },
       },
       tags: ['blocks'],
@@ -214,14 +242,14 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:move',
       command: 'components:move',
-      description: 'Move an element into another parent',
+      description: 'Move an element relative to a target element',
       inputSchema: {
         type: 'object',
         required: ['id', 'targetId'],
         properties: {
-          id: { type: 'string' },
-          targetId: { type: 'string' },
-          position: { type: 'number', description: 'Index in target children' },
+          id: { type: 'string', description: 'Element to move' },
+          targetId: { type: 'string', description: 'Element it goes inside, before or after' },
+          position: POSITION_SCHEMA,
         },
       },
       tags: ['components'],
@@ -233,7 +261,7 @@ export default (editor: Editor) => {
       inputSchema: {
         type: 'object',
         properties: {
-          content: { type: 'string', description: 'HTML content' },
+          content: { type: 'string', description: 'HTML that replaces the children' },
           tagName: { type: 'string' },
           attributes: { type: 'object' },
         },

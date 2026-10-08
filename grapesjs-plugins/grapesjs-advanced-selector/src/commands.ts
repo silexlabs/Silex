@@ -65,14 +65,19 @@ function chosenSelector(editor: Editor): string {
   return selector
 }
 
-function describe(component: Component): string {
-  const classes = component.getClasses().join(' ')
-  return `"${component.getId()}" <${component.tagName}${classes ? ` class="${classes}"` : ''}>`
+// Silex names elements with ids of its own for agents
+function agentId(editor: Editor, component: Component): string {
+  return editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component }) : component.getId()
 }
 
-function listed(items: string[]): string {
+function describe(editor: Editor, component: Component): string {
+  const classes = component.getClasses().join(' ')
+  return `"${agentId(editor, component)}" <${component.tagName}${classes ? ` class="${classes}"` : ''}>`
+}
+
+function listed<T>(items: T[], name: (item: T) => string = String): string {
   const more = items.length - MAX_LISTED
-  return items.slice(0, MAX_LISTED).join(', ') + (more > 0 ? ` and ${more} more` : '')
+  return items.slice(0, MAX_LISTED).map(name).join(', ') + (more > 0 ? ` and ${more} more` : '')
 }
 
 // One object for all the elements: the style panel compares the stored selectors by reference.
@@ -88,9 +93,9 @@ function toStore(cs: ComplexSelector, components: Component[]): ComplexSelector 
 }
 
 function notMatching(editor: Editor, component: Component, selector: string, target: string): string {
-  const matching: string[] = []
+  const matching: Component[] = []
   const walk = (parent: Component) => parent.components().forEach((child: Component) => {
-    if (child.view?.el?.nodeType === Node.ELEMENT_NODE && matchSelectorAll(target, [child])) matching.push(child.getId())
+    if (child.view?.el?.nodeType === Node.ELEMENT_NODE && matchSelectorAll(target, [child])) matching.push(child)
     walk(child)
   })
   walk(editor.getWrapper()!)
@@ -101,9 +106,9 @@ function notMatching(editor: Editor, component: Component, selector: string, tar
   const htmlId = component.getAttributes().id
   if (htmlId) own.push(`#${htmlId}`)
   return [
-    `Selector "${selector}" does not match the selected element ${describe(component)}. ${NOTHING_CHANGED}`,
+    `Selector "${selector}" does not match the selected element ${describe(editor, component)}. ${NOTHING_CHANGED}`,
     own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with classes_add.',
-    `Elements on this page that match "${selector}": ${listed(matching)}. To style them, call components_select with one of these ids, then selector_set again.`,
+    `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, call components_select with one of these ids, then selector_set again.`,
   ].join(' ')
 }
 
@@ -185,7 +190,7 @@ export default function registerCommands(editor: Editor) {
       components.forEach(component => component.set('selector', stored))
       const left = components.filter(component => !matchSelectorAll(target, [component]))
       return left.length
-        ? { warning: `Selector "${selector}" is chosen, but styles_set will not change these selected elements: ${listed(left.map(component => component.getId()))}. To style them all, call selector_set with a selector they all match.` }
+        ? { warning: `Selector "${selector}" is chosen, but styles_set will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call selector_set with a selector they all match.` }
         : {}
     },
   })

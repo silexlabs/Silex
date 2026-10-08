@@ -9,7 +9,7 @@ import {
 
 jest.mock('./utils', () => ({
   allowDrop: jest.fn(() => true),
-  createSymbol: jest.fn((_, comp) => ({ instances: [comp, { id: 'inst2' }] })),
+  createSymbol: jest.fn((_, comp) => ({ main: { getId: () => 'symbolId' }, instances: [comp, { id: 'inst2' }] })),
   deleteSymbol: jest.fn(),
   unbindSymbolInstance: jest.fn()
 }))
@@ -57,7 +57,7 @@ describe('SymbolsCommands', () => {
       const result = _addSymbol(editor, null, { component, label: 'lbl', icon: 'ico' })
       expect(component.setName).toHaveBeenCalledWith('lbl')
       expect(component.set).toHaveBeenCalledWith('icon', 'ico')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ created: [{ id: 'symbolId', label: 'lbl' }] })
     })
 
     it('uses selected component if no component provided', () => {
@@ -65,14 +65,14 @@ describe('SymbolsCommands', () => {
       const result = _addSymbol(editor, null, { label: 'lbl', icon: 'ico' })
       expect(component.setName).toHaveBeenCalledWith('lbl')
       expect(component.set).toHaveBeenCalledWith('icon', 'ico')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ created: [{ id: 'symbolId', label: 'lbl' }] })
     })
 
     it('usees selected component and its name if no label provided', () => {
       editor.getSelected.mockReturnValue(component)
       const result = _addSymbol(editor, null, {})
       expect(component.setName).toHaveBeenCalledWith('compName')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ created: [{ id: 'symbolId', label: 'compName' }] })
     })
 
     it('throws if missing component', () => {
