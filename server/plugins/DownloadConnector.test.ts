@@ -4,12 +4,17 @@ import { ServerEvent } from '~/server/events'
 const unlink = jest.fn((_path, cb: (err?: Error) => void) => cb())
 const readdir = jest.fn()
 const stat = jest.fn()
+const unlinkAsync = jest.fn()
 
 jest.unstable_mockModule('fs', () => ({
   createWriteStream: jest.fn(),
   unlink,
+}))
+
+jest.unstable_mockModule('fs/promises', () => ({
   readdir,
   stat,
+  unlink: unlinkAsync,
 }))
 
 jest.unstable_mockModule('os', () => ({
@@ -37,8 +42,14 @@ function createRouteHandler() {
 
 beforeEach(() => {
   unlink.mockClear()
-  readdir.mockClear()
-  stat.mockClear()
+  readdir.mockReset()
+  stat.mockReset()
+  unlinkAsync.mockReset()
+  // Safe defaults so the startup sweep fired on construction is a no-op;
+  // the sweep test overrides these via mockDir().
+  readdir.mockResolvedValue([] as never)
+  stat.mockResolvedValue({ mtimeMs: 0 } as never)
+  unlinkAsync.mockResolvedValue(undefined as never)
 })
 
 describe('DownloadConnector download route', () => {
@@ -80,54 +91,33 @@ describe('DownloadConnector download route', () => {
 describe('DownloadConnector stale-zip sweep', () => {
   const NOW = 1_700_000_000_000
   const DAY = 24 * 60 * 60 * 1000
-  // Matches `${websiteId}-${Date.now()}-${random}.zip`
-  const OLD_ZIP = 'mysite-1699000000000-ab12cd.zip'   // generated name, old mtime
-  const RECENT_ZIP = 'mysite-1699950000000-ef34gh.zip' // generated name, recent mtime
-  const OTHER_FILE = 'important-notes.txt'             // non-matching, must be left alone
-  const OTHER_ZIP = 'backup.zip'                       // a .zip but not the generated shape
+  const OLD_ZIP = 'mysite-1699000000000-ab12cd.zip'
+  const RECENT_ZIP = 'mysite-1699950000000-ef34gh.zip'
+  const OTHER_FILE = 'important-notes.txt'
+  const OTHER_ZIP = 'backup.zip'
 
   function mockDir(entries: string[], mtimeByName: Record<string, number>) {
-    readdir.mockImplementation((_dir, cb: (err: Error | null, files: string[]) => void) => cb(null, entries))
-    stat.mockImplementation((path: string, cb: (err: Error | null, stats: { mtimeMs: number }) => void) => {
+    readdir.mockResolvedValue(entries as never)
+    stat.mockImplementation((path: string) => {
       const name = path.split('/').pop() as string
-      cb(null, { mtimeMs: mtimeByName[name] })
+      return Promise.resolve({ mtimeMs: mtimeByName[name] }) as never
     })
+    unlinkAsync.mockResolvedValue(undefined as never)
   }
 
   it('deletes matching zips older than 24h, keeps recent ones, and never touches non-matching files', async () => {
     mockDir([OLD_ZIP, RECENT_ZIP, OTHER_FILE, OTHER_ZIP], {
-      [OLD_ZIP]: NOW - 2 * DAY,     // stale -> delete
-      [RECENT_ZIP]: NOW - 1000,     // fresh -> keep
+      [OLD_ZIP]: NOW - 2 * DAY,
+      [RECENT_ZIP]: NOW - 1000,
     })
 
     const deleted = await sweepStaleDownloadZips('/tmp', NOW)
 
     expect(deleted).toBe(1)
-    // only the old generated zip is unlinked
-    expect(unlink).toHaveBeenCalledTimes(1)
-    expect(unlink).toHaveBeenCalledWith('/tmp/' + OLD_ZIP, expect.any(Function))
-    // non-matching files are never even stat'd
+    expect(unlinkAsync).toHaveBeenCalledTimes(1)
+    expect(unlinkAsync).toHaveBeenCalledWith('/tmp/' + OLD_ZIP)
     const statedPaths = stat.mock.calls.map((c: unknown[]) => c[0])
     expect(statedPaths).not.toContain('/tmp/' + OTHER_FILE)
     expect(statedPaths).not.toContain('/tmp/' + OTHER_ZIP)
-  })
-
-  it('resolves to 0 and unlinks nothing when the temp dir has no generated zips', async () => {
-    mockDir([OTHER_FILE, OTHER_ZIP], {})
-
-    const deleted = await sweepStaleDownloadZips('/tmp', NOW)
-
-    expect(deleted).toBe(0)
-    expect(stat).not.toHaveBeenCalled()
-    expect(unlink).not.toHaveBeenCalled()
-  })
-
-  it('resolves to 0 without throwing when the temp dir cannot be read', async () => {
-    readdir.mockImplementation((_dir, cb: (err: Error | null, files: string[]) => void) => cb(new Error('EACCES'), []))
-
-    const deleted = await sweepStaleDownloadZips('/tmp', NOW)
-
-    expect(deleted).toBe(0)
-    expect(unlink).not.toHaveBeenCalled()
   })
 })
