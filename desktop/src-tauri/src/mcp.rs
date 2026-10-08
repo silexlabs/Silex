@@ -59,6 +59,15 @@ pub enum WebsiteAction {
     Dashboard,
 }
 
+impl WebsiteAction {
+    fn changes_tool_list(&self) -> bool {
+        matches!(
+            self,
+            Self::Create | Self::Open | Self::Dashboard | Self::Delete
+        )
+    }
+}
+
 // ==========================================================================
 // Parameter structs (static tools only)
 // ==========================================================================
@@ -71,15 +80,6 @@ pub struct WebsiteParams {
     pub website_id: Option<String>,
     /// Website name (required for create, rename).
     pub name: Option<String>,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct ScreenshotParams {
-    /// What to capture: "ui" for the whole editor (default),
-    /// or "canvas" for only the website preview.
-    pub target: Option<ScreenshotTarget>,
-    /// File path to save the screenshot PNG to (optional, also returned inline as image).
-    pub output_file: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, Copy, Deserialize, JsonSchema)]
@@ -97,6 +97,15 @@ impl ScreenshotTarget {
             Self::Canvas => "canvas",
         }
     }
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ScreenshotParams {
+    /// What to capture: "ui" for the whole editor (default),
+    /// or "canvas" for only the website preview.
+    pub target: Option<ScreenshotTarget>,
+    /// File path to save the screenshot PNG to (optional, also returned inline as image).
+    pub output_file: Option<String>,
 }
 
 // ==========================================================================
@@ -147,6 +156,14 @@ impl SilexMcp {
         window
             .eval(&format!("window.location.href = {}", url_json))
             .map_err(|e| format!("Navigation failed: {}", e))
+    }
+
+    /// The dashboard forgets the website only once loaded: until then, the
+    /// `list_tools` that follows the notification would poll for editor tools for 30s.
+    async fn forget_website(&self) {
+        *self.dynamic_tools.write().await = ToolRouter::new();
+        self.capabilities_loaded.store(false, Ordering::Release);
+        crate::forget_project(&self.app_handle);
     }
 
     /// Check that a project is open.
@@ -454,7 +471,7 @@ impl SilexMcp {
     // ----------------------------------------------------------------------
 
     #[tool(
-        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, new editor tools are loaded dynamically — call list_tools to discover them. Use dashboard to return to the website list."
+        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, the editor tools are added to the tool list. Use dashboard to return to the website list."
     )]
     async fn website(
         &self,
@@ -499,17 +516,26 @@ impl SilexMcp {
                         match resp.text().await {
                             Ok(response_body) => {
                                 if status.is_success() {
-                                    // Auto-navigate to the new website
-                                    if let Some(id) =
+                                    let website_id =
                                         serde_json::from_str::<serde_json::Value>(&response_body)
                                             .ok()
                                             .and_then(|v| {
                                                 v.get("websiteId")
                                                     .and_then(|id| id.as_str().map(String::from))
-                                            })
+                                            });
+                                    let Some(id) = website_id else {
+                                        return Ok(tool_error(format!(
+                                            "Website created but the server sent no websiteId, so it was not opened. Do not create it again, find it with website(action:'list'): {}",
+                                            response_body
+                                        )));
+                                    };
+                                    if let Err(e) =
+                                        self.navigate_to(&format!("{}/?id={}", base_url, id))
                                     {
-                                        let _ =
-                                            self.navigate_to(&format!("{}/?id={}", base_url, id));
+                                        return Ok(tool_error(format!(
+                                            "Website '{}' created but could not be opened: {}",
+                                            id, e
+                                        )));
                                     }
                                     // Load capabilities synchronously so they're available immediately
                                     match self.load_capabilities().await {
@@ -521,7 +547,12 @@ impl SilexMcp {
                                         }
                                     }
                                     Ok(CallToolResult::success(vec![ContentBlock::text(
-                                        response_body,
+                                        serde_json::json!({
+                                            "success": true,
+                                            "websiteId": id,
+                                            "message": "Website created and opened in editor",
+                                        })
+                                        .to_string(),
                                     )]))
                                 } else {
                                     Ok(tool_error(format!(
@@ -549,10 +580,13 @@ impl SilexMcp {
                 match client.delete(&url).send().await {
                     Ok(resp) => {
                         if resp.status().is_success() {
-                            let _ = self.navigate_to(&format!("{}/", base_url));
-                            // Clear dynamic tools since we're back on dashboard
-                            *self.dynamic_tools.write().await = ToolRouter::new();
-                            self.capabilities_loaded.store(false, Ordering::Release);
+                            let was_open =
+                                held(&self.app_handle.state::<AppState>().current_website_id)
+                                    .as_deref()
+                                    == Some(wid);
+                            if was_open && self.navigate_to(&format!("{}/", base_url)).is_ok() {
+                                self.forget_website().await;
+                            }
                             Ok(CallToolResult::success(vec![ContentBlock::text(format!(
                                 "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
                                 wid
@@ -646,17 +680,15 @@ impl SilexMcp {
                 }
             }
 
-            WebsiteAction::Dashboard => {
-                // Clear dynamic tools since we're leaving the editor
-                *self.dynamic_tools.write().await = ToolRouter::new();
-                self.capabilities_loaded.store(false, Ordering::Release);
-                match self.navigate_to(&format!("{}/", base_url)) {
-                    Ok(_) => Ok(CallToolResult::success(vec![ContentBlock::text(
+            WebsiteAction::Dashboard => match self.navigate_to(&format!("{}/", base_url)) {
+                Ok(_) => {
+                    self.forget_website().await;
+                    Ok(CallToolResult::success(vec![ContentBlock::text(
                         "{\"success\":true,\"message\":\"Navigated to dashboard\"}",
-                    )])),
-                    Err(e) => Ok(tool_error(e)),
+                    )]))
                 }
-            }
+                Err(e) => Ok(tool_error(e)),
+            },
         }
     }
 
@@ -763,15 +795,19 @@ pub async fn eval_callback(
 
 impl ServerHandler for SilexMcp {
     fn get_info(&self) -> ServerConfig {
-        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
-            .with_protocol_version(ProtocolVersion::V_2024_11_05)
-            .with_instructions(
-                r#"Silex Desktop MCP — controls the Silex no-code visual website builder.
+        ServerConfig::new(
+            ServerCapabilities::builder()
+                .enable_tools()
+                .enable_tool_list_changed()
+                .build(),
+        )
+        .with_protocol_version(ProtocolVersion::V_2024_11_05)
+        .with_instructions(
+            r#"Silex Desktop MCP — controls the Silex no-code visual website builder.
 
 GETTING STARTED:
 1. Call website(action:'list') or website(action:'create', name:'My Site') to start.
-2. After opening/creating a project, call list_tools to discover editor tools.
-   Editor tools are loaded dynamically and won't appear until a project is open.
+2. The editor tools (pages, components, styles...) appear once a website is open.
 
 HIERARCHY (select each level before operating on deeper levels):
   Website → Breakpoint → Page → Component → Selector
@@ -784,7 +820,7 @@ RULES:
 - Autosave is active — no manual save needed.
 - After making visual changes, use take_screenshot to verify your work.
 "#,
-            )
+        )
     }
 
     fn list_tools(
@@ -839,19 +875,26 @@ RULES:
         async move {
             // Check which router owns this tool before consuming request
             if self.tool_router.get(&request.name).is_some() {
-                let is_website_tool = request.name.as_ref() == "website";
-                let caps_before = self.capabilities_loaded.load(Ordering::Acquire);
+                let may_change_tool_list = request.name.as_ref() == "website"
+                    && request
+                        .arguments
+                        .as_ref()
+                        .and_then(|args| args.get("action"))
+                        .and_then(|action| {
+                            serde_json::from_value::<WebsiteAction>(action.clone()).ok()
+                        })
+                        .is_some_and(|action| action.changes_tool_list());
                 let peer = context.peer.clone();
 
                 let tool_ctx =
                     rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
                 let result = self.tool_router.call(tool_ctx).await;
 
-                // If the website tool just loaded capabilities, notify the client
-                if is_website_tool
-                    && !caps_before
-                    && self.capabilities_loaded.load(Ordering::Acquire)
-                {
+                let succeeded = matches!(
+                    &result,
+                    Ok(CallToolResponse::Complete(done)) if done.is_error != Some(true)
+                );
+                if may_change_tool_list && succeeded {
                     if let Err(e) = peer.notify_tool_list_changed().await {
                         tracing::warn!("Failed to send tools/list_changed: {}", e);
                     }
@@ -871,7 +914,7 @@ RULES:
 
             Err(McpError::invalid_params(
                 format!(
-                    "Tool '{}' not found. Use list_tools to see available tools.",
+                    "Tool '{}' not found. The editor tools are only available while a website is open.",
                     request.name
                 ),
                 None,
