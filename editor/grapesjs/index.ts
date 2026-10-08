@@ -70,6 +70,7 @@ import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import aiCapabilitiesPlugin from '@silexlabs/grapesjs-ai-capabilities'
 import coreCommandsPlugin from './core-commands'
+import agentIdsPlugin from './agent-ids'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH, SILEX_VERSION } from '~/common/constants'
@@ -125,6 +126,7 @@ const plugins = [
   {name: './upload-progress', value: uploadProgress},
   {name: '@silexlabs/grapesjs-ai-capabilities', value: aiCapabilitiesPlugin},
   {name: './core-commands', value: coreCommandsPlugin},
+  {name: './agent-ids', value: agentIdsPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins

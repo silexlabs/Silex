@@ -11,9 +11,10 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: cmdAdd,
     command: cmdAdd,
-    description: 'Create symbol from element',
+    description: 'Turn the selected element into a symbol',
     inputSchema: {
       type: 'object',
+      required: ['label'],
       properties: {
         label: { type: 'string' },
         icon: { type: 'string' },
@@ -30,7 +31,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
       type: 'object',
       required: ['symbolId'],
       properties: {
-        symbolId: { type: 'string' },
+        symbolId: { type: 'string', description: 'id from symbols_list or symbols_add' },
       },
     },
     tags: ['symbols'],
@@ -44,7 +45,15 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: cmdCreate,
     command: cmdCreate,
-    description: 'Create symbol instance',
+    description: 'Insert an instance of a symbol relative to the selected element and select it',
+    inputSchema: {
+      type: 'object',
+      required: ['symbolId'],
+      properties: {
+        symbolId: { type: 'string', description: 'id from symbols_list or symbols_add' },
+        position: { type: 'string', enum: ['inside', 'before', 'after'], description: 'Default: inside, as last child' },
+      },
+    },
     tags: ['symbols'],
   })
 }

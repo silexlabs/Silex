@@ -63,7 +63,7 @@ impl WebsiteAction {
     fn changes_tool_list(&self) -> bool {
         matches!(
             self,
-            Self::Create | Self::Open | Self::Dashboard | Self::Delete
+            Self::Create | Self::Duplicate | Self::Open | Self::Dashboard | Self::Delete
         )
     }
 }
@@ -156,6 +156,31 @@ impl SilexMcp {
         window
             .eval(&format!("window.location.href = {}", url_json))
             .map_err(|e| format!("Navigation failed: {}", e))
+    }
+
+    /// A website just made by `create` or `duplicate` opens, as the user would expect
+    async fn open_new_website(&self, base_url: &str, id: &str, made: &str) -> CallToolResult {
+        let opened = reqwest::Url::parse_with_params(&format!("{}/", base_url), &[("id", id)])
+            .map_err(|e| e.to_string())
+            .and_then(|url| self.navigate_to(url.as_str()));
+        if let Err(e) = opened {
+            return tool_error(format!(
+                "Website '{}' {} but could not be opened: {}",
+                id, made, e
+            ));
+        }
+        match self.load_capabilities().await {
+            Ok(n) => tracing::info!("Loaded {} capabilities after the website was {}", n, made),
+            Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
+        }
+        CallToolResult::success(vec![ContentBlock::text(
+            serde_json::json!({
+                "success": true,
+                "websiteId": id,
+                "message": format!("Website {} and opened in editor", made),
+            })
+            .to_string(),
+        )])
     }
 
     /// The dashboard forgets the website only once loaded: until then, the
@@ -410,11 +435,15 @@ impl SilexMcp {
 /// The selection comes with the answer only when it changed or the command failed:
 /// repeated on every call, it was most of what the tools returned. Its selector
 /// comes from selector:get, the style panel follows the selection only later.
+/// Elements and pages are named by the ids the tools take.
 const COMMAND_JS: &str = r#"(async function(){
 var e=window.silex.getEditor();
 var selection=function(){
   var s=window.__silexMcp.getSelectionState(e);
   delete s.warnings;
+  var page=e.Pages.getSelected(),element=e.getSelected();
+  s.page=page?page.id:null;
+  s.component=element?e.runCommand('agent-ids:get',{component:element}):null;
   s.selector=null;
   if(s.component&&e.Commands.has('selector:get'))s.selector=e.runCommand('selector:get').selector;
   return s;
@@ -434,6 +463,18 @@ var after=selection();
 if(result.error||result.success===false||JSON.stringify(after)!==before)result.selection=after;
 return JSON.stringify(result);
 })()"#;
+
+/// The id the server gives a website it just made
+fn new_website_id(body: &str) -> Option<String> {
+    #[derive(Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct NewWebsite {
+        website_id: String,
+    }
+    serde_json::from_str::<NewWebsite>(body)
+        .ok()
+        .map(|made| made.website_id)
+}
 
 /// Create an error CallToolResult (is_error = true).
 fn tool_error(msg: impl Into<String>) -> CallToolResult {
@@ -545,7 +586,7 @@ impl SilexMcp {
     // ----------------------------------------------------------------------
 
     #[tool(
-        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, the editor tools are added to the tool list. Use dashboard to return to the website list."
+        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create, duplicate or open, the editor tools are added to the tool list. Use dashboard to return to the website list."
     )]
     async fn website(
         &self,
@@ -585,44 +626,13 @@ impl SilexMcp {
                         match resp.text().await {
                             Ok(response_body) => {
                                 if status.is_success() {
-                                    let website_id =
-                                        serde_json::from_str::<serde_json::Value>(&response_body)
-                                            .ok()
-                                            .and_then(|v| {
-                                                v.get("websiteId")
-                                                    .and_then(|id| id.as_str().map(String::from))
-                                            });
-                                    let Some(id) = website_id else {
+                                    let Some(id) = new_website_id(&response_body) else {
                                         return Ok(tool_error(format!(
                                             "Website created but the server sent no websiteId, so it was not opened. Do not create it again, find it with website(action:'list'): {}",
                                             response_body
                                         )));
                                     };
-                                    if let Err(e) =
-                                        self.navigate_to(&format!("{}/?id={}", base_url, id))
-                                    {
-                                        return Ok(tool_error(format!(
-                                            "Website '{}' created but could not be opened: {}",
-                                            id, e
-                                        )));
-                                    }
-                                    // Load capabilities synchronously so they're available immediately
-                                    match self.load_capabilities().await {
-                                        Ok(n) => {
-                                            tracing::info!("Loaded {} capabilities after create", n)
-                                        }
-                                        Err(e) => {
-                                            tracing::warn!("Failed to load capabilities: {}", e)
-                                        }
-                                    }
-                                    Ok(CallToolResult::success(vec![ContentBlock::text(
-                                        serde_json::json!({
-                                            "success": true,
-                                            "websiteId": id,
-                                            "message": "Website created and opened in editor",
-                                        })
-                                        .to_string(),
-                                    )]))
+                                    Ok(self.open_new_website(&base_url, &id, "created").await)
                                 } else {
                                     Ok(tool_error(format!(
                                         "Error creating website ({}): {}",
@@ -716,12 +726,24 @@ impl SilexMcp {
                 );
                 match client.post(&url).send().await {
                     Ok(resp) => {
-                        if resp.status().is_success() {
-                            let body = resp.text().await.unwrap_or_default();
-                            Ok(CallToolResult::success(vec![ContentBlock::text(body)]))
-                        } else {
-                            let body = resp.text().await.unwrap_or_default();
-                            Ok(tool_error(format!("Error duplicating website: {}", body)))
+                        let status = resp.status();
+                        match resp.text().await {
+                            Ok(body) if status.is_success() => {
+                                let Some(copy_id) = new_website_id(&body) else {
+                                    return Ok(tool_error(format!(
+                                        "Website duplicated but the server sent no websiteId, so the copy was not opened. Do not duplicate it again, find it with website(action:'list'): {}",
+                                        body
+                                    )));
+                                };
+                                Ok(self
+                                    .open_new_website(&base_url, &copy_id, "duplicated")
+                                    .await)
+                            }
+                            Ok(body) => Ok(tool_error(format!(
+                                "Error duplicating website ({}): {}",
+                                status, body
+                            ))),
+                            Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                         }
                     }
                     Err(e) => Ok(tool_error(format!("Error duplicating website: {}", e))),
@@ -880,9 +902,11 @@ An answer has a "selection" object only when the selection changed or the call f
 
 TO STYLE: components_select an element, selector_set a selector that matches it (for a new class, call classes_add first), then one styles_set with all the CSS.
 
+IDS: tools that create return the new ids in "created": use them, no need for components_list. blocks_add, symbols_create, pages_add and pages_clone also select what they create when it is one element or page. Element ids change when the website is reopened.
+
 RULES:
 - Use BEM class names. No inline styles. No CSS Grid (use Flexbox).
-- Homepage page name must be "index". Internal links start with "./".
+- The page with no name is the homepage. Internal links start with "./".
 - Autosave is active — no manual save needed.
 - After making visual changes, use take_screenshot to verify your work.
 "#,
