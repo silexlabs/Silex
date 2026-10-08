@@ -219,7 +219,7 @@ impl SilexMcp {
             .await
             .map_err(|_| {
                 held(&self.pending_evals).remove(&id);
-                format!("Timeout waiting for JS result ({}s)", timeout_secs)
+                format!("The editor did not answer within {timeout_secs}s.")
             })?
             .map_err(|_| {
                 "Internal error: JS callback channel closed unexpectedly. Retry the operation."
@@ -358,15 +358,20 @@ impl SilexMcp {
                     let cmd_js = serde_json::to_string(cmd.as_str()).unwrap();
                     let params_js_escaped = serde_json::to_string(&params_json).unwrap();
 
-                    // Build JS that runs the command via editor.runCommand() and wraps with selection state
-                    let js = format!(
-                        r#"(function(){{var e=window.silex.getEditor();var params=JSON.parse({params});var __result__;try{{__result__=e.runCommand({cmd},params)}}catch(ex){{return JSON.stringify({{error:ex.message||String(ex)}})}}var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='undefined'||__result__===null)__result__={{}};if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__))__result__={{result:__result__}};if(typeof __result__!=='object'||__result__===null)__result__={{result:__result__}};__result__.selection=__sel__;return JSON.stringify(__result__)}})()"#,
-                        params = params_js_escaped,
-                        cmd = cmd_js
-                    );
+                    let js = COMMAND_JS
+                        .replace("__CMD__", &cmd_js)
+                        .replace("__PARAMS__", &params_js_escaped);
 
                     mcp.require_project()
                         .map_err(|e| McpError::internal_error(e, None))?;
+                    let state = mcp.app_handle.state::<AppState>();
+                    // A call cancelled while it waits for its turn must not run later
+                    let _one_at_a_time = tokio::select! {
+                        guard = state.editor_commands.lock() => guard,
+                        _ = ctx.request_context.ct.cancelled() => {
+                            return Err(McpError::internal_error("The call was cancelled before it ran", None));
+                        }
+                    };
                     match mcp.eval_js_internal(&js, 10).await {
                         Ok(result) => {
                             let text = result.unwrap_or_else(|| "null".into());
@@ -401,6 +406,34 @@ impl SilexMcp {
         Ok(count)
     }
 }
+
+/// The selection comes with the answer only when it changed or the command failed:
+/// repeated on every call, it was most of what the tools returned. Its selector
+/// comes from selector:get, the style panel follows the selection only later.
+const COMMAND_JS: &str = r#"(async function(){
+var e=window.silex.getEditor();
+var selection=function(){
+  var s=window.__silexMcp.getSelectionState(e);
+  delete s.warnings;
+  s.selector=null;
+  if(s.component&&e.Commands.has('selector:get'))s.selector=e.runCommand('selector:get').selector;
+  return s;
+};
+var before=JSON.stringify(selection());
+var result;
+try{result=await e.runCommand(__CMD__,JSON.parse(__PARAMS__))}
+catch(ex){
+  var failed={error:ex.message||String(ex)};
+  try{failed.selection=selection()}catch(ex2){console.error(ex2)}
+  return JSON.stringify(failed);
+}
+if(typeof result==='undefined'||result===null)result={};
+if(typeof result==='string'){try{result=JSON.parse(result)}catch(_){result={raw:result}}}
+if(Array.isArray(result)||typeof result!=='object'||result===null)result={result:result};
+var after=selection();
+if(result.error||result.success===false||JSON.stringify(after)!==before)result.selection=after;
+return JSON.stringify(result);
+})()"#;
 
 /// Create an error CallToolResult (is_error = true).
 fn tool_error(msg: impl Into<String>) -> CallToolResult {
@@ -739,6 +772,8 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
+        let state = self.app_handle.state::<AppState>();
+        let _after_the_writes = state.editor_commands.lock().await;
         let target = params.target.unwrap_or_default().as_str();
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
@@ -833,16 +868,17 @@ impl ServerHandler for SilexMcp {
         )
         .with_protocol_version(ProtocolVersion::V_2024_11_05)
         .with_instructions(
-            r#"Silex Desktop MCP — controls the Silex no-code visual website builder.
+            r#"Silex Desktop MCP: controls Silex, a visual website builder.
 
 GETTING STARTED:
 1. Call website(action:'list') or website(action:'create', name:'My Site') to start.
 2. The editor tools (pages, components, styles...) appear once a website is open.
 
-HIERARCHY (select each level before operating on deeper levels):
-  Website → Breakpoint → Page → Component → Selector
-  Every tool response includes a 'selection' object showing the current state.
-  Check 'warnings' in the selection to see what needs to be selected next.
+SELECTION: website > page > element > selector. Choose each level before the next one.
+Screen size: device_set chooses it ("breakpoint" in the selection). Styles apply to that screen size only.
+An answer has a "selection" object only when the selection changed or the call failed.
+
+TO STYLE: components_select an element, selector_set a selector that matches it (for a new class, call classes_add first), then one styles_set with all the CSS.
 
 RULES:
 - Use BEM class names. No inline styles. No CSS Grid (use Flexbox).
