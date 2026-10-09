@@ -1,3 +1,6 @@
+// MCP helpers used by the Rust side (eval_js).
+// Tool names here must match the capability ids after ':' → '_' (mcp.rs).
+
 (() => {
   // Only activate in Tauri context
   if (!window.__TAURI__) return;
@@ -87,15 +90,15 @@
       const state = {
         breakpoint: dev?.get('name') ?? dev?.id ?? 'Desktop',
         page: page?.get('name') ?? page?.id ?? null,
-        component: sel?.ccid ?? null,
+        component: sel?.getId() ?? null,
         selector: rule?.selectorsToString?.() ?? null
       };
 
       // Add hierarchy warnings so SLMs know what is missing
       const warnings = [];
-      if (!state.page) warnings.push("No page selected — use page(action:'select') first");
-      if (!state.component) warnings.push("No element selected — use component(action:'select') before selector/style/symbol operations");
-      if (!state.selector) warnings.push("No selector active — use selector(action:'select') before style(action:'set')");
+      if (!state.page) warnings.push("No page selected — use pages_select first");
+      if (!state.component) warnings.push("No element selected — use components_select before selector/style/symbol operations");
+      if (!state.selector) warnings.push("No selector active — use selector_set before styles_set");
       if (warnings.length > 0) state.warnings = warnings;
 
       return state;

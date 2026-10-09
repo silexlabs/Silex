@@ -26,6 +26,7 @@ import { WebsiteData, WebsiteSettings } from '~/common/types'
 import { ClientEvent } from '../events'
 import { SILEX_VERSION } from '~/common/constants'
 import { Button, Editor } from 'grapesjs'
+import { renameOgSettingsKeys } from './settings-mcp-keys'
 
 const sectionsSite: SettingsSection[] = [...defaultSections]
 const sectionsPage: SettingsSection[] = [...defaultSections]
@@ -236,19 +237,20 @@ export const settingsDialog = (
       const p = typeof page === 'string'
         ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
         : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
-      return p.get('settings') || {}
+      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
+      return renameOgSettingsKeys((p.get('settings') || {}) as Record<string, unknown>)
     }
-    return editor.getModel().get('settings') || {}
+    return renameOgSettingsKeys((editor.getModel().get('settings') || {}) as Record<string, unknown>)
   })
   editor.Commands.add(cmdSetSettings, (_editor: Editor, _sender: Button, options: Record<string, unknown> = {}) => {
-    const { page, ...settings } = options
-    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key. Valid keys: title, description, favicon, lang, head, og:title, og:description, og:image')
+    const { page, ...incoming } = options
+    const settings = renameOgSettingsKeys(incoming)
+    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key.')
     if (page) {
       const p = typeof page === 'string'
         ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
         : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
+      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
       const current = (p.get('settings') || {}) as Record<string, unknown>
       p.set('settings', { ...current, ...settings })
     } else {
@@ -311,9 +313,9 @@ export const settingsDialog = (
           favicon: { type: 'string' },
           lang: { type: 'string' },
           head: { type: 'string' },
-          'og:title': { type: 'string' },
-          'og:description': { type: 'string' },
-          'og:image': { type: 'string' },
+          og_title: { type: 'string', description: 'Open Graph title (stored as og:title)' },
+          og_description: { type: 'string', description: 'Open Graph description (stored as og:description)' },
+          og_image: { type: 'string', description: 'Open Graph image URL (stored as og:image)' },
         },
       },
       tags: ['settings'],
