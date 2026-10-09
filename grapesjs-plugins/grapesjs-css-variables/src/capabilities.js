@@ -75,7 +75,7 @@ export function registerCommands(editor) {
     run(ed, sender, opts = {}) {
       const { name } = opts
       if (!name) {
-        throw new Error('Required: name. Example: {name: "primary"}. Use css-var:list to see existing variables.')
+        throw new Error('Required: name. Example: {name: "primary"}. Use css-var_list to see existing variables.')
       }
       requireVariable(editor, name)
       removeVariable(editor, { name })
@@ -90,7 +90,7 @@ export function registerCommands(editor) {
     run(ed, sender, opts = {}) {
       const { oldName, newName } = opts
       if (!oldName || !newName) {
-        throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var:list to see existing variables.')
+        throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var_list to see existing variables.')
       }
       const names = requireVariable(editor, oldName)
       if (oldName === newName) {

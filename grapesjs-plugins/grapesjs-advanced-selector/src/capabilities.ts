@@ -29,14 +29,14 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: 'styles:get',
     command: 'styles:get',
-    description: 'Get CSS styles from the active selector (set via selector:set)',
+    description: 'Get CSS styles from the active selector (set via selector_set)',
     readOnly: true,
     tags: ['styles'],
   })
   addCapability({
     id: 'styles:set',
     command: 'styles:set',
-    description: 'Set CSS style on the active selector (set via selector:set)',
+    description: 'Set CSS style on the active selector (set via selector_set)',
     inputSchema: {
       type: 'object',
       properties: {
@@ -49,7 +49,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: 'styles:remove',
     command: 'styles:remove',
-    description: 'Remove a CSS property from the active selector (set via selector:set)',
+    description: 'Remove a CSS property from the active selector (set via selector_set)',
     destructive: true,
     inputSchema: {
       type: 'object',

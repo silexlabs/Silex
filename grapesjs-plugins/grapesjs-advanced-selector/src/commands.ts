@@ -11,7 +11,7 @@ export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:get', {
     run() {
       const component = editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
       const cs = getComponentSelector(component)
       return {
         selector: complexSelectorToString(cs),
@@ -25,7 +25,7 @@ export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:set', {
     run(_ed: Editor, _sender: unknown, cmdOpts: { selector?: string } = {}) {
       const component = editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
       const { selector } = cmdOpts
       if (!selector) throw new Error('Required: selector (CSS selector string). Examples: ".my-class", "div.card:hover", ".parent > .child", ".card:has(.icon)"')
       try {
@@ -34,7 +34,7 @@ export default function registerCommands(editor: Editor) {
         editStyle(editor, selector)
       } catch(e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
-        throw new Error(`Invalid selector "${selector}". ${msg}. Valid formats: ".class", "#id", "tag", ".parent > .child", ".el:hover", ".el:has(.child)", ".el:not(.excluded)". Pseudo-classes: ${PSEUDO_CLASS_NAMES.slice(0, 10).join(', ')} (${PSEUDO_CLASS_NAMES.length} total — use selector:info for full list). Operators: ${OPERATOR_NAMES.join(', ')}`, { cause: e })
+        throw new Error(`Invalid selector "${selector}". ${msg}. Valid formats: ".class", "#id", "tag", ".parent > .child", ".el:hover", ".el:has(.child)", ".el:not(.excluded)". Pseudo-classes: ${PSEUDO_CLASS_NAMES.slice(0, 10).join(', ')} (${PSEUDO_CLASS_NAMES.length} total — use selector_info for full list). Operators: ${OPERATOR_NAMES.join(', ')}`, { cause: e })
       }
     },
   })
@@ -42,7 +42,7 @@ export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:list-rules', {
     run() {
       const component = editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
       const selectors = getSelectors(editor)
       return selectors.map(cs => ({
         selector: complexSelectorToString(cs),
@@ -59,9 +59,9 @@ export default function registerCommands(editor: Editor) {
   const activeRule = () => {
     const components = editor.getSelectedAll()
     const cs = getSelector(components)
-    if (!cs) throw new Error('No component selected. Use components:select first.')
+    if (!cs) throw new Error('No component selected. Use components_select first.')
     const selStr = complexSelectorToString(cs)
-    if (!selStr) throw new Error('No selector active. Use selector:set first.')
+    if (!selStr) throw new Error('No selector active. Use selector_set first.')
     const rule = getOrCreateRule(editor, selStr)
     editor.StyleManager.select(rule)
     return rule

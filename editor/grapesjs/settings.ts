@@ -26,7 +26,7 @@ import { WebsiteData, WebsiteSettings } from '~/common/types'
 import { ClientEvent } from '../events'
 import { SILEX_VERSION } from '~/common/constants'
 import { Button, Editor } from 'grapesjs'
-import { SETTINGS_MCP_VALID_KEYS, mergeSilexSettings, toMcpSettings, toSilexSettings } from './settings-mcp-keys'
+import { renameOgSettingsKeys } from './settings-mcp-keys'
 
 const sectionsSite: SettingsSection[] = [...defaultSections]
 const sectionsPage: SettingsSection[] = [...defaultSections]
@@ -237,25 +237,25 @@ export const settingsDialog = (
       const p = typeof page === 'string'
         ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
         : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
-      return toMcpSettings((p.get('settings') || {}) as Record<string, unknown>)
+      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
+      return renameOgSettingsKeys((p.get('settings') || {}) as Record<string, unknown>)
     }
-    return toMcpSettings((editor.getModel().get('settings') || {}) as Record<string, unknown>)
+    return renameOgSettingsKeys((editor.getModel().get('settings') || {}) as Record<string, unknown>)
   })
   editor.Commands.add(cmdSetSettings, (_editor: Editor, _sender: Button, options: Record<string, unknown> = {}) => {
     const { page, ...incoming } = options
-    const settings = toSilexSettings(incoming)
-    if (!Object.keys(settings).length) throw new Error(`Required: at least one setting key. Valid keys: ${SETTINGS_MCP_VALID_KEYS}`)
+    const settings = renameOgSettingsKeys(incoming)
+    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key.')
     if (page) {
       const p = typeof page === 'string'
         ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
         : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
+      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
       const current = (p.get('settings') || {}) as Record<string, unknown>
-      p.set('settings', mergeSilexSettings(current, incoming))
+      p.set('settings', { ...current, ...settings })
     } else {
       const current = (editor.getModel().get('settings') || {}) as Record<string, unknown>
-      editor.getModel().set('settings', mergeSilexSettings(current, incoming))
+      editor.getModel().set('settings', { ...current, ...settings })
     }
     editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
     updateDom(editor)

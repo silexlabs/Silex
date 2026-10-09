@@ -9,54 +9,23 @@
 
 /**
  * MCP clients reject ':' in schema property names. Settings still store the
- * Open Graph keys as `og:title` / `og:description` / `og:image`. These helpers
- * map the MCP-facing underscore names used by settings:get / settings:set.
+ * Open Graph keys as `og:title` / `og:description` / `og:image`. This renames
+ * the MCP-facing underscore names in both directions. All other keys
+ * (including CMS ones like `eleventyPermalink`) pass through untouched.
+ * A `Map` keeps keys like `constructor` safe. Returns a new object.
  */
-export const MCP_OG_SETTINGS_KEYS = {
-  og_title: 'og:title',
-  og_description: 'og:description',
-  og_image: 'og:image',
-} as const
+const OG_KEY_ALIASES = new Map([
+  ['og_title', 'og:title'],
+  ['og:title', 'og_title'],
+  ['og_description', 'og:description'],
+  ['og:description', 'og_description'],
+  ['og_image', 'og:image'],
+  ['og:image', 'og_image'],
+])
 
-export const SETTINGS_MCP_VALID_KEYS =
-  'title, description, favicon, lang, head, og_title, og_description, og_image'
-
-function cloneSettings(settings: Record<string, unknown>): Record<string, unknown> {
-  return { ...settings }
-}
-
-/** Map incoming MCP keys (`og_title`) to stored Silex keys (`og:title`). */
-export function toSilexSettings(settings: Record<string, unknown>): Record<string, unknown> {
-  const out = cloneSettings(settings)
-  for (const [mcpKey, silexKey] of Object.entries(MCP_OG_SETTINGS_KEYS)) {
-    if (Object.prototype.hasOwnProperty.call(out, mcpKey)) {
-      out[silexKey] = out[mcpKey]
-      delete out[mcpKey]
-    }
-  }
-  return out
-}
-
-/** Map stored Silex keys (`og:title`) to MCP keys (`og_title`) for settings:get. */
-export function toMcpSettings(settings: Record<string, unknown>): Record<string, unknown> {
-  const out = cloneSettings(settings)
-  for (const [mcpKey, silexKey] of Object.entries(MCP_OG_SETTINGS_KEYS)) {
-    if (Object.prototype.hasOwnProperty.call(out, silexKey)) {
-      out[mcpKey] = out[silexKey]
-      delete out[silexKey]
-    }
-  }
-  return out
-}
-
-/** Merge MCP settings into stored settings and drop leftover `og_*` keys. */
-export function mergeSilexSettings(
-  current: Record<string, unknown>,
-  incoming: Record<string, unknown>
-): Record<string, unknown> {
-  const next = { ...current, ...toSilexSettings(incoming) }
-  for (const mcpKey of Object.keys(MCP_OG_SETTINGS_KEYS)) {
-    delete next[mcpKey]
-  }
-  return next
+export function renameOgSettingsKeys(settings: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(settings).map(([key, value]): [string, unknown] => [
+    OG_KEY_ALIASES.get(key) ?? key,
+    value,
+  ]))
 }
