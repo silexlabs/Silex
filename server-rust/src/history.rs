@@ -66,7 +66,7 @@ pub fn version(site: &Path, message: &str) -> Result<Versioned, String> {
 /// Name this version, so that a build knows a publication when it sees one
 pub fn tag(site: &Path, tag: &str) -> Result<(), String> {
     patiently(|| {
-        let repo = open(site)?;
+        let repo = repository(site)?;
         let head = repo
             .head()
             .and_then(|head| head.peel(git2::ObjectType::Commit))?;
@@ -80,7 +80,7 @@ pub fn tag(site: &Path, tag: &str) -> Result<(), String> {
 /// git is asked rather than `.git/config` read: `[remote "origin"]` and
 /// `[remote.origin]` both name a remote and git honours both.
 pub fn drop_the_remotes(site: &Path) -> Result<(), String> {
-    let Ok(repo) = open(site) else {
+    let Ok(repo) = repository(site) else {
         return Ok(());
     };
 
@@ -102,9 +102,22 @@ pub fn drop_the_remotes(site: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// The remote of the template a website was made from
+///
+/// Not `origin`: publishing sends the website to `origin`, and must never send
+/// it over the template.
+pub const TEMPLATE_REMOTE: &str = "upstream";
+
+pub fn start_from_template(site: &Path, template_repo: &str) -> Result<(), String> {
+    let repo = open_or_start(site).map_err(words_of)?;
+    repo.remote(TEMPLATE_REMOTE, template_repo)
+        .map_err(words_of)?;
+    Ok(())
+}
+
 /// Take back a name given to a version nobody else ever saw
 pub fn untag(site: &Path, tag: &str) {
-    if let Ok(repo) = open(site) {
+    if let Ok(repo) = repository(site) {
         let _ = repo.tag_delete(tag);
     }
 }
@@ -112,13 +125,13 @@ pub fn untag(site: &Path, tag: &str) {
 /// The website's repository, without ever climbing out of its folder
 ///
 /// Searching upwards would version the repository the folder sits in.
-fn open(site: &Path) -> Result<Repository, git2::Error> {
+pub fn repository(site: &Path) -> Result<Repository, git2::Error> {
     let nowhere = std::iter::empty::<&std::ffi::OsStr>();
     Repository::open_ext(site, RepositoryOpenFlags::NO_SEARCH, nowhere)
 }
 
 fn open_or_start(site: &Path) -> Result<Repository, git2::Error> {
-    if let Ok(repo) = open(site) {
+    if let Ok(repo) = repository(site) {
         return Ok(repo);
     }
 
@@ -149,13 +162,13 @@ fn whoever(repo: &Repository) -> Result<git2::Signature<'static>, git2::Error> {
 ///
 /// A git the user started themselves knows nothing of the locks Silex takes,
 /// and neither does a tool watching the folder. git answers a code of its own
-/// for a held repository; its words differ from one lock to the next, the code
-/// does not.
+/// for a held repository, or for a ref moved by another while this one wrote;
+/// its words differ from one lock to the next, the code does not.
 fn patiently<T>(mut work: impl FnMut() -> Result<T, git2::Error>) -> Result<T, String> {
     let mut wait = Duration::from_millis(50);
     for _ in 0..4 {
         match work() {
-            Err(e) if e.code() == ErrorCode::Locked => {
+            Err(e) if matches!(e.code(), ErrorCode::Locked | ErrorCode::Modified) => {
                 std::thread::sleep(wait);
                 wait *= 2;
             }
@@ -206,7 +219,7 @@ mod tests {
         std::fs::write(site.join("index.html"), "source").unwrap();
 
         version(&site, "one").unwrap();
-        let repo = open(&site).unwrap();
+        let repo = repository(&site).unwrap();
         let tree = repo
             .head()
             .unwrap()
@@ -264,7 +277,7 @@ mod tests {
         version(&site, "one").unwrap();
 
         std::fs::write(site.join(".git/index.lock"), "").unwrap();
-        let repo = open(&site).unwrap();
+        let repo = repository(&site).unwrap();
         let mut index = repo.index().unwrap();
         let refused = index.write().unwrap_err();
 

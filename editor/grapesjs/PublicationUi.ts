@@ -19,7 +19,7 @@ import { html, nothing, render, TemplateResult } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import { live } from 'lit-html/directives/live.js'
 //import { map } from 'lit-html/directives/map.js'
-import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor, withConnectorOptions } from './PublicationManager'
+import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ConnectorData, ConnectorType, OptionsField, PublicationJobData, PublicationSettings } from '~/common/types'
 import { connectorList } from '../api'
 import { defaultKms } from './keymaps'
@@ -199,11 +199,10 @@ export class PublicationUi {
         ` : nothing}
         ${this.isReady(status) ? html`
           <p>Click on the button below to publish your website.</p>
-          ${this.listedOptions().length > 0 ? html`<p>Publication options:</p><ul>${ this.listedOptions().map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
         ` : nothing}
         ${this.isSuccess(status) && !job?.message ? html`
           <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
-          ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : nothing}
+          ${job?.url ? html`<p><a href="${job.url}" target="_blank">Click here to view the published website</a></p>` : nothing}
         ` : nothing}
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
@@ -255,7 +254,7 @@ export class PublicationUi {
           @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
         >Connect</button>
       `: nothing}
-      <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+      <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -272,9 +271,8 @@ export class PublicationUi {
       // `notice` says the server refused the hosting this website was saved
       // with, and the user then picks from the list themselves
       if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && !this.notice) {
-        this.settings.connector = loggedConnectors[0]
         // One hosting, already logged in: taken without the login step
-        this.settings.options = withConnectorOptions(this.settings, loggedConnectors[0])
+        this.settings.connector = loggedConnectors[0]
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
       //const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
@@ -300,7 +298,7 @@ export class PublicationUi {
         </div>
       </main>
       <footer>
-        <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+        <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -319,7 +317,7 @@ export class PublicationUi {
         <p>Something went wrong: ${err.message}</p>
       </main>
       <footer>
-        <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
+        <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -334,12 +332,6 @@ export class PublicationUi {
    *
    * An option the user is about to fill in is already in the field made for it.
    */
-  private listedOptions(): Array<[string, unknown]> {
-    const asked = (this.settings.connector?.optionsForm?.fields ?? []).map(field => field.name)
-    return Object.entries(this.settings.options ?? {})
-      .filter(([key]) => !asked.includes(key))
-  }
-
   /**
    * What the hosting needs to know and cannot find out on its own
    *
@@ -365,6 +357,7 @@ export class PublicationUi {
                 name=${field.name}
                 type=${field.type}
                 ?required=${field.required}
+                placeholder=${field.placeholder ?? nothing}
                 aria-describedby=${field.help ? helpId(field) : nothing}
                 .value=${live(options[field.name] ?? field.value ?? '')}
               />
@@ -485,7 +478,6 @@ export class PublicationUi {
     const sameOne = connectors.find(connector => connector.connectorId === saved.connectorId)
     if (sameOne) {
       this.settings.connector = sameOne
-      this.settings.options = withConnectorOptions(this.settings, sameOne)
       return
     }
 

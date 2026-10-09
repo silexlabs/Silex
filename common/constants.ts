@@ -58,10 +58,10 @@ export const API_WEBSITE_META_WRITE = '/meta'
 // Get env vars from webpack
 // @see webpack.config.js
 declare const SILEX_VERSION_ENV: string
-export let SILEX_VERSION
+export let SILEX_VERSION: string
 try { SILEX_VERSION = SILEX_VERSION_ENV } catch (e) {
   // fallback to default value
-  SILEX_VERSION = SILEX_VERSION || '3.0.0'
+  SILEX_VERSION = '3.0.0'
 }
 
 export const DEV_MESSAGE = `
@@ -78,8 +78,8 @@ __________________________________________________________
 
   Users are expected to contribute:
 
-  * Web designers: https://docs.silex.me/en/user/contribute
-  * Developers: https://docs.silex.me/en/dev/contribute
+  * Web designers: https://docs.silex.me/designer/contribute/
+  * Developers: https://docs.silex.me/developer/plugins/creating/
 
 __________________________________________________________
 `

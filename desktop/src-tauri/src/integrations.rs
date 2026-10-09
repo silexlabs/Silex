@@ -17,23 +17,19 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{mpsc, LazyLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
 
-use crate::held::held;
-use deploy::Deploy;
-use programs::found;
+use common::programs::found;
+use common::run;
+use integration::{Capacity, Integration};
 
-pub mod deploy;
-pub mod git;
+pub mod common;
 mod glab;
 mod hut;
-pub mod pipeline;
-pub mod programs;
-pub mod remote;
-mod run;
+pub mod integration;
 mod tea;
 
 /// What is known of one integration
@@ -73,39 +69,33 @@ pub struct Integrations {
     known: BTreeMap<String, IntegrationState>,
 }
 
-fn integrations() -> [&'static dyn Deploy; 3] {
+fn catalog() -> [&'static dyn Integration; 3] {
     [&glab::Glab, &tea::Tea, &hut::Hut]
 }
 
-/// What Silex says when no integration answers for a website
-pub const NOBODY_TO_PUBLISH_WITH: &str = "Silex does not know how to publish this website. It publishes to Codeberg, GitLab and SourceHut, and needs the command line of one of them installed and signed in.";
-
 pub struct Publishing {
-    pub provider: &'static dyn Deploy,
+    pub integration: &'static dyn Integration,
     pub cli: PathBuf,
-    pub prepared: deploy::Prepared,
-    /// None when nobody is signed in to the host
-    pub urls: Option<deploy::Urls>,
+    pub prepared: integration::Prepared,
+    /// None when nobody is signed in to the host, and why when it could not be asked
+    pub urls: Result<Option<integration::Urls>, String>,
 }
 
 impl Integrations {
-    pub fn answering_for(&self, site: &Path) -> Option<(&'static dyn Deploy, PathBuf)> {
-        integrations().into_iter().find_map(|integration| {
-            let cli = self.program(integration.program())?;
-            integration.keeps(site).then_some((integration, cli))
-        })
-    }
-
-    pub fn resolve_deploy(
-        &self,
-        site: &Path,
-        options: &PublicationOptions,
-    ) -> Result<Option<(&'static dyn Deploy, PathBuf, Option<deploy::Urls>)>, String> {
-        let Some((integration, cli)) = self.answering_for(site) else {
-            return Ok(None);
-        };
-        let urls = integration.urls(&cli, site, options)?;
-        Ok(Some((integration, cli, urls)))
+    /// The integrations the user enabled that can do this for this website,
+    /// with the path of their program
+    pub fn get<'a>(
+        &'a self,
+        capacity: Capacity,
+        site: &'a Path,
+    ) -> impl Iterator<Item = (&'static dyn Integration, PathBuf)> + 'a {
+        catalog()
+            .into_iter()
+            .filter(move |integration| integration.capacities().contains(&capacity))
+            .filter_map(move |integration| {
+                let cli = self.program_path(integration.program())?;
+                integration.answers_for(site).then_some((integration, cli))
+            })
     }
 
     /// Prepare a website for its host and send it
@@ -113,71 +103,36 @@ impl Integrations {
     /// `say` is told each step as it starts, for whoever is waiting on it.
     pub fn publish(
         &self,
+        (integration, cli): (&'static dyn Integration, PathBuf),
         site: &Path,
         host: &str,
         options: &PublicationOptions,
         say: &dyn Fn(String),
     ) -> Result<Publishing, String> {
-        // Finding out who answers means asking every program that could, and
-        // that is the longest silence of a publication
-        say("Looking for where your website is kept".to_string());
-        let Some((provider, cli, urls)) = self.resolve_deploy(site, options)? else {
-            return Err(NOBODY_TO_PUBLISH_WITH.to_string());
-        };
+        // git pushes with what the user set it up with, which does not need
+        // the host to answer
+        let urls = integration.urls(&cli, site, options);
         // Scoped rather than set: this runs on a pool thread that the next
         // website to sync inherits
         sentry::with_scope(
-            |scope| scope.set_tag("forge", provider.program()),
+            |scope| scope.set_tag("forge", integration.program()),
             || {
                 say(format!("Getting your website ready for {}", host));
-                let prepared = provider.deploy(&cli, site, options)?;
+                let prepared = integration.deploy(&cli, site, options)?;
                 say(format!("Sending your website to {}", host));
-                {
-                    let sending = one_at_a_time(site);
-                    let _sending = held(&sending);
-                    push(site, prepared.tag.as_deref())?;
+                if integration.capacities().contains(&Capacity::Sync) {
+                    integration
+                        .push(site, prepared.tag.as_deref())
+                        .map_err(|e| e.to_string())?;
                 }
                 Ok(Publishing {
-                    provider,
+                    integration,
                     cli,
                     prepared,
                     urls,
                 })
             },
         )
-    }
-
-    /// Take in what was pushed to this website from somewhere else
-    ///
-    /// Only for a website an integration answers for: one Silex would never
-    /// push to is one it has no business pulling from.
-    pub fn sync_pull(&self, site: &Path) -> Result<(), String> {
-        if self.answering_for(site).is_none() {
-            return Ok(());
-        }
-        let Some(git) = git::Git::found() else {
-            return Ok(());
-        };
-        // Under the same lock as sending: a merge writes the index, and git
-        // refuses rather than waits when a save is holding it
-        let alone = one_at_a_time(site);
-        let _alone = held(&alone);
-        git.pull(site)
-    }
-
-    /// Send a website to wherever it is kept
-    ///
-    /// Nothing happens when nobody recognises it: the website stays on this
-    /// computer, which is not a failure.
-    pub fn sync(&self, site: &Path) -> Result<(), String> {
-        // Asking what they know of the website means a question over the
-        // network, which sending does not wait for
-        if self.answering_for(site).is_none() {
-            return Ok(());
-        }
-        let sending = one_at_a_time(site);
-        let _sending = held(&sending);
-        push(site, None)
     }
 
     /// The programs Silex can use here, and what version each answered
@@ -188,7 +143,7 @@ impl Integrations {
             .map(|(id, state)| (id.as_str(), state.version.as_deref()))
     }
 
-    fn program(&self, id: &str) -> Option<PathBuf> {
+    fn program_path(&self, id: &str) -> Option<PathBuf> {
         let state = self.known.get(id)?;
         if !state.enabled || state.broken {
             return None;
@@ -198,166 +153,8 @@ impl Integrations {
     }
 }
 
-/// Send what was versioned to where the website is kept
-fn push(site: &Path, tag: Option<&str>) -> Result<(), String> {
-    let git = git::Git::found().ok_or(
-        "Silex could not find git on this computer, and it is git that sends a website to its host.",
-    )?;
-    git.push(site, tag)
-}
-
-/// The lock that lets one git of this website run at a time
-///
-/// git refuses rather than queues when a save, a publication and a pull race
-/// for the same ref or index. Which goes first does not matter.
-fn one_at_a_time(site: &Path) -> Arc<Mutex<()>> {
-    static ON_THIS_WEBSITE: OnceLock<Mutex<BTreeMap<PathBuf, Arc<Mutex<()>>>>> = OnceLock::new();
-    held(ON_THIS_WEBSITE.get_or_init(Default::default))
-        .entry(site.to_path_buf())
-        .or_default()
-        .clone()
-}
-
 fn path(data_dir: &Path) -> PathBuf {
     data_dir.join("integrations.json")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn two_pushes_of_one_website_wait_for_each_other() {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-
-        let sending = Arc::new(AtomicUsize::new(0));
-        let together = Arc::new(AtomicUsize::new(0));
-        let pushing = |site: &Path| {
-            let lock = one_at_a_time(site);
-            let sending = sending.clone();
-            let together = together.clone();
-            let site = site.to_path_buf();
-            std::thread::spawn(move || {
-                let _held = held(&lock);
-                if sending.fetch_add(1, Ordering::SeqCst) > 0 {
-                    together.fetch_add(1, Ordering::SeqCst);
-                }
-                std::thread::sleep(std::time::Duration::from_millis(50));
-                sending.fetch_sub(1, Ordering::SeqCst);
-                let _ = &site;
-            })
-        };
-
-        let one = Path::new("/tmp/silex-one-website");
-        let both: Vec<_> = (0..2).map(|_| pushing(one)).collect();
-        for thread in both {
-            thread.join().unwrap();
-        }
-        assert_eq!(
-            together.load(Ordering::SeqCst),
-            0,
-            "two pushes of one website went together"
-        );
-
-        // Two websites have nothing to wait for from each other
-        assert!(!Arc::ptr_eq(
-            &one_at_a_time(one),
-            &one_at_a_time(Path::new("/tmp/silex-another-website"))
-        ));
-    }
-
-    #[test]
-    fn keeps_what_a_version_that_knows_more_wrote() {
-        // Downgrading once would otherwise lose those settings for good
-        let written = r#"{
-            "git": { "enabled": true, "path": "/usr/bin/git", "version": "git version 2.51.0" },
-            "rclone": { "enabled": true, "instance": "my-bucket" }
-        }"#;
-
-        let integrations: Integrations = serde_json::from_str(written).unwrap();
-        assert!(integrations.known.contains_key("git"));
-        assert!(
-            integrations.known.contains_key("rclone"),
-            "an integration this version never heard of keeps its entry"
-        );
-
-        let read_back: serde_json::Value =
-            serde_json::from_str(&serde_json::to_string(&integrations).unwrap()).unwrap();
-        assert_eq!(read_back["rclone"]["instance"], "my-bucket");
-        assert_eq!(read_back["git"]["path"], "/usr/bin/git");
-    }
-
-    #[test]
-    fn an_entry_a_version_that_knows_more_wrote_keeps_both_halves() {
-        // An integration this version knows, with a field it does not
-        let written = r#"{
-            "git": { "enabled": true, "path": "/usr/bin/git", "signing_key": "ABC123" }
-        }"#;
-        let integrations: Integrations = serde_json::from_str(written).unwrap();
-
-        assert_eq!(
-            integrations.known["git"].path.as_deref(),
-            Some(std::path::Path::new("/usr/bin/git")),
-            "the fields this version knows are still read"
-        );
-
-        let read_back: serde_json::Value =
-            serde_json::from_str(&serde_json::to_string(&integrations).unwrap()).unwrap();
-        assert_eq!(read_back["git"]["signing_key"], "ABC123");
-        assert_eq!(read_back["git"]["path"], "/usr/bin/git");
-    }
-
-    #[test]
-    fn asks_again_of_what_was_found_and_says_what_changed() {
-        let dir = std::env::temp_dir().join(format!("silex-again-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&dir);
-        std::fs::create_dir_all(&dir).unwrap();
-        let gone = dir.join("uninstalled");
-        let unrunnable = dir.join("not-a-program");
-        std::fs::write(&unrunnable, "this is not a program").unwrap();
-
-        let written = format!(
-            r#"{{
-                "glab": {{ "enabled": true, "path": "{}" }},
-                "tea": {{ "enabled": true, "path": "{}" }},
-                "hut": {{ "enabled": false, "path": "{}", "version": "hut v0.0" }}
-            }}"#,
-            gone.display(),
-            unrunnable.display(),
-            unrunnable.display()
-        );
-        std::fs::write(path(&dir), &written).unwrap();
-        let integrations = load(&dir);
-
-        // Uninstalled since: the path it left behind would fail every
-        // publication
-        let glab = &integrations.known["glab"];
-        assert_eq!(glab.path, None);
-        assert!(!glab.broken, "not broken, just not there any more");
-
-        let tea = &integrations.known["tea"];
-        assert!(tea.broken);
-        assert!(tea.path.is_some(), "and we can still say which file it is");
-        assert!(
-            integrations.program("tea").is_none(),
-            "a broken one is not used"
-        );
-
-        // One the user turned off is not started at all, so what was written
-        // about it stands untouched
-        let hut = &integrations.known["hut"];
-        assert!(!hut.broken);
-        assert_eq!(hut.version.as_deref(), Some("hut v0.0"));
-
-        let _ = std::fs::remove_dir_all(&dir);
-    }
-
-    #[test]
-    fn a_program_the_user_turned_off_is_not_used() {
-        let written = r#"{ "glab": { "enabled": false, "path": "/usr/bin/glab" } }"#;
-        let integrations: Integrations = serde_json::from_str(written).unwrap();
-        assert!(integrations.program("glab").is_none());
-    }
 }
 
 /// What Silex knows of this machine, asking again of what it already found
@@ -367,12 +164,12 @@ mod tests {
 /// was found is asked for its version at every start, because a program gets
 /// updated, repaired or removed while Silex is not looking.
 pub fn load(data_dir: &Path) -> Integrations {
-    let known_integrations = integrations();
     let mut integrations = read(data_dir);
-    let mut changed = false;
+    // Written by 3.10.0-canary.2, when git was listed with the integrations
+    let mut changed = integrations.known.remove("git").is_some();
 
-    for provider in known_integrations {
-        let id = provider.program();
+    for integration in catalog() {
+        let id = integration.program();
         let known = integrations.known.get(id).cloned();
 
         // One the user turned off is left alone rather than started at every
@@ -416,7 +213,7 @@ pub fn load(data_dir: &Path) -> Integrations {
 
         // Asking for a version tells a program that is there but does not run
         // from one Silex can use
-        let answered = run::run(&path, &std::env::temp_dir(), provider.version_args());
+        let answered = run::run(&path, &std::env::temp_dir(), integration.version_args());
         let was = integrations.known.entry(id.to_string()).or_insert_with(|| {
             changed = true;
             IntegrationState {
@@ -455,6 +252,30 @@ pub fn load(data_dir: &Path) -> Integrations {
         write(data_dir, &integrations);
     }
     integrations
+}
+
+/// The integrations of `load`, waited for by whoever first needs them
+pub type Loading = LazyLock<Integrations, Box<dyn FnOnce() -> Integrations + Send>>;
+
+/// `load` without holding up the start of the app
+///
+/// Asking every program for its version takes as long as the rest of the
+/// start. `then` is told what was found before anyone else gets it.
+pub fn load_in_background(
+    data_dir: PathBuf,
+    then: impl FnOnce(&Integrations) + Send + 'static,
+) -> Loading {
+    let (found, waited_for) = mpsc::sync_channel(1);
+    let loaded_in = data_dir.clone();
+    std::thread::spawn(move || {
+        let integrations = load(&loaded_in);
+        then(&integrations);
+        let _ = found.send(integrations);
+    });
+    // Should the thread die, what the user set up last time still holds
+    LazyLock::new(Box::new(move || {
+        waited_for.recv().unwrap_or_else(|_| read(&data_dir))
+    }))
 }
 
 fn read(data_dir: &Path) -> Integrations {

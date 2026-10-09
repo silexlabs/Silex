@@ -1,9 +1,25 @@
+// MCP helpers used by the Rust side (eval_js).
+// Tool names here must match the capability ids after ':' → '_' (mcp.rs).
+
 (() => {
   // Only activate in Tauri context
   if (!window.__TAURI__) return;
 
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
+
+  // Not Tauri's zoom hotkeys: they count from 100% on every page, but WebKit keeps the zoom
+  // when the dashboard opens the editor, so the first key would jump the wrong way
+  const zoomSteps = { '-': -0.2, '=': 0.2, '+': 0.2, '0': 0 };
+  window.addEventListener('keydown', (event) => {
+    // By code too: on an AZERTY keyboard, the 0 key types à
+    const step = zoomSteps[event.key] ?? (event.code === 'Digit0' ? 0 : undefined);
+    if (step === undefined || !(navigator.userAgent.includes('Mac') ? event.metaKey : event.ctrlKey)) return;
+    event.preventDefault();
+    const zoom = step ? Math.min(Math.max((Number(sessionStorage.getItem('silex-zoom')) || 1) + step, 0.4), 3) : 1;
+    sessionStorage.setItem('silex-zoom', String(zoom));
+    invoke('plugin:webview|set_webview_zoom', { value: zoom });
+  });
 
   // Frontend error tracking (GlitchTip / Sentry-compatible).
   // Real version, channel, anonymous install id and OS/arch come from Rust so the
@@ -18,8 +34,8 @@
   invoke('get_telemetry_context').then((ctx) => {
     if (!ctx?.dsn) return;
     const script = document.createElement('script');
-    script.src = 'https://browser.sentry-cdn.com/10.74.0/bundle.tracing.min.js';
-    script.crossOrigin = 'anonymous';
+    script.type = 'module';
+    script.src = '/_dashboard/telemetry.js';
     script.onload = () => {
       if (!window.Sentry) return;
       window.Sentry.init({
@@ -47,7 +63,7 @@
       window.Sentry.setTag('context', 'webview');
     };
     document.head.appendChild(script);
-  }).catch(() => { /* no consent / DSN not set — telemetry disabled */ });
+  }).catch(() => {});
 
   // Wrap listen() so a rejected Tauri IPC (plugin:event|listen) becomes a breadcrumb +
   // handled capture with a culprit, instead of an UnhandledRejection with an empty one.
@@ -57,12 +73,9 @@
       // Tauri rejects with a string, which GlitchTip titles <unknown>
       const failure = err instanceof Error ? err : new Error(`tauri listen ${event}: ${String(err)}`);
       window.Sentry?.captureException?.(failure, { tags: { tauri_command: `plugin:event|listen:${event}` } });
+      console.error(failure);
     });
   };
-
-  // Expose debug logging for silex-lib client code
-  window.__silexDebug = (msg) => invoke('log_debug', { message: msg });
-  invoke('log_debug', { message: '[bridge] desktop-bridge loaded, page=' + window.location.href });
 
   // MCP helpers, called by the Rust side through eval_js.
   // Nothing else belongs here: a capability's own logic lives in its plugin.
@@ -77,15 +90,15 @@
       const state = {
         breakpoint: dev?.get('name') ?? dev?.id ?? 'Desktop',
         page: page?.get('name') ?? page?.id ?? null,
-        component: sel?.ccid ?? null,
+        component: sel?.getId() ?? null,
         selector: rule?.selectorsToString?.() ?? null
       };
 
       // Add hierarchy warnings so SLMs know what is missing
       const warnings = [];
-      if (!state.page) warnings.push("No page selected — use page(action:'select') first");
-      if (!state.component) warnings.push("No element selected — use component(action:'select') before selector/style/symbol operations");
-      if (!state.selector) warnings.push("No selector active — use selector(action:'select') before style(action:'set')");
+      if (!state.page) warnings.push("No page selected — use pages_select first");
+      if (!state.component) warnings.push("No element selected — use components_select before selector/style/symbol operations");
+      if (!state.selector) warnings.push("No selector active — use selector_set before styles_set");
       if (warnings.length > 0) state.warnings = warnings;
 
       return state;
@@ -119,18 +132,18 @@
     const link = e.target.closest('a');
     if (!link) return;
     // Prefer getAttribute (raw, unencoded) over .href (browser-resolved,
-    // percent-encodes spaces) so that file:// paths reach open_folder intact.
+    // percent-encodes spaces) so that file:// paths reach open_link intact.
     const url = link.getAttribute('href') || link.href || '';
     if (url.startsWith('file://')) {
       e.preventDefault();
-      invoke('open_folder', { path: url });
+      invoke('open_link', { url });
     } else if (url.startsWith('http://') || url.startsWith('https://')) {
       // External URLs open in OS default browser; same-origin URLs stay in webview
       try {
         const parsed = new URL(url);
         if (parsed.origin !== window.location.origin) {
           e.preventDefault();
-          invoke('open_folder', { path: url });
+          invoke('open_link', { url });
         }
       } catch { /* malformed URL, let browser handle */ }
     }
@@ -148,8 +161,51 @@
   // Track project_open: from navigation to editor ready
   const openStart = Date.now() / 1000;
 
+  const element = (tag, properties, ...children) => {
+    const created = Object.assign(document.createElement(tag), properties);
+    created.append(...children);
+    return created;
+  };
+  // Once per opening: every autosave pushes, and each refusal tells again
+  let told = false;
+  const syncFailed = (editor, { error, url, texts }) => {
+    // The bell takes HTML, the modal takes nodes: each builds its own
+    const link = () => url ? element('p', {}, element('a', { href: url, textContent: texts.openRepository })) : '';
+    const detail = () => element('details', {},
+      // The bell's style hides the marker that says it unfolds
+      element('summary', { textContent: texts.technicalDetails, style: 'display: list-item; list-style: revert' }),
+      element('pre', { textContent: error.why, style: 'white-space: pre-wrap; overflow-wrap: anywhere' }),
+    );
+    const bell = element('div', {}, element('p', { textContent: texts.whatHappened }), link(), detail());
+    // The bell renders its messages as HTML
+    editor.runCommand('notifications:add', { id: `sync-failed-${error.kind}`, type: 'error', message: bell.innerHTML });
+    if (error.kind !== 'changedElsewhere' || told || editor.Modal.isOpen()) return;
+    told = true;
+    const title = element('span', { id: 'sync-failed-title', textContent: texts.newCommits });
+    const continueEditing = element('button', { type: 'button', className: 'gjs-btn-prim', textContent: texts.continueEditing, style: 'margin-top: 1em' });
+    continueEditing.addEventListener('click', () => editor.Modal.close());
+    const content = element('div', {},
+      element('p', { id: 'sync-failed-message', textContent: texts.newCommitsDetail }),
+      link(),
+      detail(),
+      continueEditing,
+    );
+    const attributes = { role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': title.id, 'aria-describedby': 'sync-failed-message' };
+    const before = document.activeElement;
+    editor.Modal.open({ title, content, attributes }).onceClose(() => before?.focus());
+    // The editor shows in the same tick as silex:startup:end, and a hidden button takes no focus
+    if (document.querySelector('#gjs.silex-dialog-hide')) window.silex.config.once('silex:startup:end', () => setTimeout(() => continueEditing.focus()));
+    else continueEditing.focus();
+  };
+
+  const editorReady = new Promise(waitForEditor);
+  // Before the editor asks for the website, whose opening may fail already
+  safeListen('sync-failed', ({ payload }) => {
+    if (payload.websiteId === websiteId) editorReady.then((editor) => syncFailed(editor, payload));
+  });
+
   // On the editor page, wire up the bridge
-  waitForEditor((editor) => {
+  editorReady.then((editor) => {
     // Finish project_open transaction
     if (window.Sentry?.startInactiveSpan) {
       const span = window.Sentry.startInactiveSpan({ name: 'project_open', op: 'lifecycle', startTime: openStart, forceTransaction: true });
@@ -172,8 +228,25 @@
         });
       });
 
-    // Track unsaved changes
-    editor.on('change:changesCount', () => invoke('mark_unsaved'));
+    // GrapesJS zeroes its count of changes as soon as a save is asked, even
+    // one the rate-limit plugin only postponed: closing then would lose it
+    let unsaved = false;
+    let saveFailed = false;
+    const setUnsaved = (value) => {
+      unsaved = value;
+      invoke('set_unsaved', { unsaved });
+    };
+    // Loading counts changes, and it ends by resuming autosave. The `update`
+    // that zeroing the count fires is not a change.
+    editor.on('command:stop:pause-auto-save', () => setUnsaved(false));
+    editor.on('update', () => editor.getDirtyCount() > 0 && setUnsaved(true));
+    editor.on('storage:start:store', () => {
+      saveFailed = false;
+      setUnsaved(true);
+    });
+    // storage.ts tells a write that failed as a load error
+    editor.on('storage:error:store storage:error:load', () => { saveFailed = true; });
+    editor.on('storage:end:store', () => setUnsaved(saveFailed || editor.getDirtyCount() > 0));
 
     // Track project_save
     editor.on('storage:start:store', () => {
@@ -207,15 +280,19 @@
       if (editor.__publishSpan) { editor.__publishSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__publishSpan.end(); editor.__publishSpan = null; }
     });
 
-    // Listen for menu events from Tauri (triggered by MCP or quit dialog)
-    safeListen('menu-save', async () => {
-      try {
-        await editor.store();
-      } finally {
-        // Said even when the save failed: quitting waits on this, and silence
-        // would hold the app open until its own timeout
-        invoke('saved_everything');
-      }
+    // Save and quit: asking for a save here would only be postponed, so wait
+    // for the one already on its way
+    safeListen('menu-save', () => {
+      if (saveFailed) return invoke('save_ended', { failed: true });
+      if (!unsaved) return invoke('save_ended', { failed: false });
+      const done = () => {
+        clearTimeout(late);
+        editor.off('storage:end:store storage:error:store', done);
+        invoke('save_ended', { failed: saveFailed });
+      };
+      // Nothing comes for a change made during a write, or a save held back by a publication
+      const late = setTimeout(done, 10000);
+      editor.on('storage:end:store storage:error:store', done);
     });
     safeListen('menu-undo', () => editor.UndoManager.undo());
     safeListen('menu-redo', () => editor.UndoManager.redo());

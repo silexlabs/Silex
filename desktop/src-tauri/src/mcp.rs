@@ -169,12 +169,12 @@ impl SilexMcp {
         let (tx, rx) = oneshot::channel::<String>();
         held(&self.pending_evals).insert(id, tx);
 
-        let js_escaped =
-            serde_json::to_string(js_code).map_err(|e| format!("Failed to escape JS: {}", e))?;
-
-        let wrapped = r#"(async()=>{try{let __r=eval(__JS__);if(__r instanceof Promise)__r=await __r;const __s=(typeof __r==='undefined')?null:(typeof __r==='string')?__r:JSON.stringify(__r);await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:true,result:__s})})}catch(__e){await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:false,error:__e.message||String(__e)})})}})()"#
-            .replace("__JS__", &js_escaped)
-            .replace("__ID__", &id.to_string());
+        // The code goes in the script itself: the editor's CSP refuses eval(),
+        // and what Tauri runs here is not subject to it
+        let wrapped = r#"(async()=>{try{let __r=(__JS__
+);if(__r instanceof Promise)__r=await __r;const __s=(typeof __r==='undefined')?null:(typeof __r==='string')?__r:JSON.stringify(__r);await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:true,result:__s})})}catch(__e){await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:false,error:__e.message||String(__e)})})}})()"#
+            .replace("__ID__", &id.to_string())
+            .replace("__JS__", js_code);
 
         window.eval(&wrapped).map_err(|e| {
             held(&self.pending_evals).remove(&id);
@@ -661,18 +661,16 @@ impl SilexMcp {
 
     async fn screenshot_call(&self, params: ScreenshotParams) -> Result<CallToolResult, McpError> {
         let target = params.target.as_deref().unwrap_or("ui");
+        let Some(html2canvas) = crate::frontend::html2canvas() else {
+            return Ok(tool_error(
+                "Screenshot failed: html2canvas is not in the dashboard build",
+            ));
+        };
+        let html2canvas = serde_json::to_string(&html2canvas).unwrap_or_default();
 
         let screenshot_js = r#"
 (async function() {
-    if (!window.html2canvas) {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        await new Promise((resolve, reject) => {
-            s.onload = resolve;
-            s.onerror = () => reject(new Error('Failed to load html2canvas from CDN'));
-            document.head.appendChild(s);
-        });
-    }
+    const { default: html2canvas } = await import(__HTML2CANVAS__);
     let element;
     if ('__TARGET__' === 'canvas') {
         const frame = document.querySelector('.gjs-frame');
@@ -688,7 +686,8 @@ impl SilexMcp {
     return canvas.toDataURL('image/png');
 })()
 "#
-        .replace("__TARGET__", target);
+        .replace("__TARGET__", target)
+        .replace("__HTML2CANVAS__", &html2canvas);
 
         let data_url = match self.eval_js_internal(&screenshot_js, 30).await {
             Ok(Some(url)) => url,

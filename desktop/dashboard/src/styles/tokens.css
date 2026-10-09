@@ -1,0 +1,27 @@
+/* The dashboard's own, next to the editor's in ~/editor/css/tokens.css */
+:root {
+  color-scheme: dark;
+
+  --silex-border-color-visible: rgba(255, 255, 255, 0.16);
+
+  --silex-backdrop: rgba(0, 0, 0, 0.6);
+
+  /* White text is not readable enough on the editor's accent */
+  --silex-accent-strong: #6a55d9;
+  --silex-accent-strong-hover: #5a45c8;
+  --silex-danger: #c93c3c;
+  --silex-danger-hover: #b53333;
+
+  --silex-input-border: #666666;
+
+  --silex-font-family: 'Ubuntu', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --silex-space-1: 4px;
+  --silex-space-2: 8px;
+  --silex-space-3: 12px;
+  --silex-space-4: 16px;
+  --silex-space-6: 24px;
+  --silex-space-8: 32px;
+  --silex-radius-sm: 6px;
+  --silex-radius-md: 8px;
+}

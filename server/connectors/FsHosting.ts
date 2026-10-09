@@ -18,7 +18,7 @@
 import fs from 'fs/promises'
 import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors.js'
 import { join } from 'path'
-import { FsStorage } from './FsStorage.js'
+import { FsStorage, underPath } from './FsStorage.js'
 import { ConnectorType, JobData, JobStatus, PublicationJobData, WebsiteId } from '~/common/types.js'
 import { JobManager } from '../jobs.js'
 
@@ -59,7 +59,7 @@ export class FsHosting extends FsStorage implements HostingConnector<FsSession> 
   }
 
   async getUrl(session: FsSession, id: WebsiteId): Promise<string> {
-    const filePath = join(this.options.path, id, 'index.html')
+    const filePath = underPath(this.options.path, id, 'index.html')
     const fileUrl = new URL(filePath, 'file://')
     return fileUrl.toString()
   }

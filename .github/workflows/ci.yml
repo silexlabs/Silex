@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   # ── JS: build + lint + unit tests ────────────────────────────────
   js:
@@ -16,9 +23,9 @@ jobs:
       - name: Force LF line endings
         run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
 
@@ -26,31 +33,38 @@ jobs:
       # over node's bundled corepack shim (whose signing keys are stale and break
       # `pnpm` invocations). No cache:pnpm — it would call corepack during setup-node.
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      # App only (--filter): the grapesjs-plugins are workspace packages with their
-      # own heavy devDeps (grapesjs-cli, playwright), not needed to build/lint/test
-      # the Silex app. They get their own job below. Matches the Dockerfile.
+      # The app and the desktop dashboard only: the grapesjs-plugins are workspace
+      # packages with their own heavy devDeps (grapesjs-cli, playwright), not needed
+      # to build/lint/test the Silex app. They get their own job below.
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter @silexlabs/silex
+        run: pnpm install --frozen-lockfile --filter @silexlabs/silex --filter @silexlabs/silex-desktop-dashboard
 
-      - name: Build (single package)
-        run: pnpm build
+      - name: Build the app and the desktop dashboard
+        run: pnpm build:desktop
 
       - name: Verify build output
         run: |
           for f in dist/client/js/main.*.js dist/client/index.html dist/client/css/admin.*.css \
-                   dist/server/server/index.js; do
+                   dist/server/server/index.js desktop/dashboard/dist/index.html; do
             [ -f "$f" ] || { echo "::error::missing build output $f"; exit 1; }
           done
 
       # silex-desktop embeds dist/client at compile time, and this is the only
       # job that builds it. Handed over rather than built twice.
       - name: Keep the editor for the rust job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: editor
           path: dist/client
+          retention-days: 1
+
+      - name: Keep the dashboard for the rust job
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard
+          path: desktop/dashboard/dist
           retention-days: 1
 
       - name: Lint
@@ -59,33 +73,39 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Lint the desktop dashboard
+        run: pnpm --filter @silexlabs/silex-desktop-dashboard lint
+
   # ── Rust: server-rust library + desktop app ──────────────────────
   rust:
     name: rust (server-rust + desktop)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # silex-desktop compiles the editor and the dashboard into the binary, so
-    # this job needs both: the dashboard is a submodule, the editor is built by
-    # the job above.
+    # this job needs both, built by the job above.
     needs: js
     steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: true
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Take the editor built above
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: editor
           path: dist/client
 
+      - name: Take the dashboard built above
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: dashboard
+          path: desktop/dashboard/dist
+
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: clippy
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
       # silex-desktop links against Tauri, which needs the GTK/WebKitGTK
       # development packages: without them the build stops on gdk-sys with a
@@ -115,18 +135,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      # Full workspace install (plugin devDeps: grapesjs-cli, web-test-runner, …)
+      # Plugin devDeps (grapesjs-cli, web-test-runner, …), not the desktop app
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter '!@silexlabs/silex-desktop' --filter '!@silexlabs/silex-desktop-dashboard'
 
       # Browsers for the web-test-runner / lit plugins (e.g. expression-input)
       - name: Install Playwright browsers

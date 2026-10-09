@@ -27,18 +27,25 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 chrono = { version = "0.4", features = ["serde"] }
 
 # Versioning websites, without a git program on the machine
-git2 = { version = "0.21.0", default-features = false }
+git2.workspace = true
+
+# Websites made from a template come as the .tar.gz archive of its repository
+flate2 = "1"
+tar = "0.4"
 
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 mime_guess = "2"
 
 # Embedded frontend assets (optional, for single-binary distribution)
-rust-embed = { version = "8", optional = true }
+rust-embed = { version = "8", optional = true, features = ["include-exclude"] }
+# The hash of the editor's inline script, for its content security policy
+sha2 = { version = "0.11", optional = true }
+base64 = { version = "0.23", optional = true }
 
 [features]
 default = []
-embed-frontend = ["rust-embed"]
+embed-frontend = ["rust-embed", "sha2", "base64"]
 
 [dev-dependencies]
 # Calling the router in tests without opening a socket

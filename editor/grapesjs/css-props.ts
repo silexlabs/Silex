@@ -85,6 +85,7 @@ export default (editor: Editor, opts) => {
         { id: 'none', value: 'none', name: 'none' },
         { id: 'inherit', value: 'inherit', name: 'inherit' },
         { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'revert', value: 'revert', name: 'revert' },
         { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: '',
@@ -718,7 +719,8 @@ export default (editor: Editor, opts) => {
       info: 'The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.',
     })
     // Grapesjs only offers all, width, height, background-color, transform, box-shadow
-    // and opacity here, so re-add the property with a longer list of animatable properties
+    // and opacity here, so re-add the property with a longer list of animatable properties.
+    // The delay comes last because grapesjs reads the values of a layer by position
     editor.StyleManager.removeProperty('extra', 'transition')
     editor.StyleManager.addProperty('extra', {
       name: 'Transition',
@@ -743,6 +745,12 @@ export default (editor: Editor, opts) => {
           { id: 'filter', value: 'filter', name: 'filter' },
           { id: 'backdrop-filter', value: 'backdrop-filter', name: 'backdrop-filter' },
           { id: 'visibility', value: 'visibility', name: 'visibility' },
+          { id: 'padding', value: 'padding', name: 'padding' },
+          { id: 'margin', value: 'margin', name: 'margin' },
+          { id: 'top', value: 'top', name: 'top' },
+          { id: 'right', value: 'right', name: 'right' },
+          { id: 'bottom', value: 'bottom', name: 'bottom' },
+          { id: 'left', value: 'left', name: 'left' },
         ],
         info: 'The transition-property CSS property sets the CSS properties to which a transition effect should be applied.',
       }, {
@@ -765,8 +773,17 @@ export default (editor: Editor, opts) => {
           { id: 'ease-in', value: 'ease-in', name: 'ease-in' },
           { id: 'ease-out', value: 'ease-out', name: 'ease-out' },
           { id: 'ease-in-out', value: 'ease-in-out', name: 'ease-in-out' },
+          { id: 'cubic-bezier(0.34, 1.56, 0.64, 1)', value: 'cubic-bezier(0.34, 1.56, 0.64, 1)', name: 'ease-out-back' },
         ],
         info: 'The transition-timing-function CSS property sets how intermediate values are calculated for CSS properties being affected by a transition effect.',
+      }, {
+        id: 'transition-delay-sub',
+        name: 'Delay',
+        property: 'transition-delay',
+        type: 'number',
+        default: '0s',
+        units: ['s', 'ms'],
+        info: 'The transition-delay CSS property specifies the duration to wait before starting a property\'s transition effect when its value changes.',
       }],
     }, { at: 1 })
     editor.StyleManager.addProperty('extra', {

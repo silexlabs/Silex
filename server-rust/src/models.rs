@@ -149,12 +149,14 @@ pub struct File {
     pub content: Vec<u8>,
 }
 
-/// Data of a brand new website, mirrors `EMPTY_WEBSITE` in `common/types.ts`.
+/// Data of a brand new website, `EMPTY_WEBSITE` in `common/types.ts` plus the
+/// mark of a website never published, which only Silex Desktop reads.
 /// The empty page is what GrapesJS needs to create a first page.
 pub fn empty_website() -> serde_json::Value {
     serde_json::json!({
         "pages": [{}],
         "pagesFolder": WEBSITE_PAGES_FOLDER,
+        "publication": { "lastPublication": null },
     })
 }
 

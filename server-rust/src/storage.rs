@@ -39,6 +39,7 @@ use crate::models::{
     empty_website, names_one_folder, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, ASSETS_FOLDER,
     PUBLIC_FOLDER, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE,
 };
+use crate::said::{self, Said};
 
 // ==================
 // Paths
@@ -193,7 +194,7 @@ pub async fn read_website(data_path: &Path, website_id: &WebsiteId) -> Result<se
 
     let content = fs::read_to_string(&path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
-            Error::NotFound(format!("Website '{}' not found", website_id))
+            Error::NoWebsite(website_id.clone())
         } else {
             Error::Io(e)
         }
@@ -211,6 +212,139 @@ pub async fn create_website(data_path: &Path, meta: &WebsiteMetaFileContent) -> 
     update_website(data_path, &website_id, &empty_website()).await?;
 
     Ok(website_id)
+}
+
+/// The repository is the website as is, `website.json` and `pages/` at its
+/// root, in the folder every archive puts its files in. The template's history
+/// is left out: the website starts its own, as a blank one does.
+pub async fn create_website_from_template(
+    data_path: &Path,
+    name: String,
+    archive: Vec<u8>,
+    template_repo: String,
+) -> Result<WebsiteId> {
+    let website_id = WebsiteId::fresh();
+    let site = website_path(data_path, &website_id);
+
+    let created = async {
+        let into = site.clone();
+        tokio::task::spawn_blocking(move || unpack_template(&archive, &into))
+            .await
+            .map_err(std::io::Error::other)??;
+
+        if !fs::metadata(site.join(WEBSITE_DATA_FILE))
+            .await
+            .is_ok_and(|m| m.is_file())
+        {
+            return Err(Error::Said(
+                Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
+            ));
+        }
+        forget_where_the_original_is_published(&site).await?;
+
+        let meta = WebsiteMetaFileContent {
+            name,
+            image_url: None,
+        };
+        set_website_meta(data_path, &website_id, &meta).await?;
+        history::start_from_template(&site, &template_repo)
+            .map_err(|why| Error::Said(Said::raw(why)))
+    }
+    .await;
+
+    if created.is_err() {
+        // Left there, a half made copy shows in the list as one more website
+        let _ = fs::remove_dir_all(&site).await;
+    }
+    created.map(|()| website_id)
+}
+
+/// Far above the templates of today, which are all under 2 MB once unpacked
+const MAX_TEMPLATE_BYTES: u64 = 200 * 1024 * 1024;
+const MAX_TEMPLATE_ENTRIES: usize = 10_000;
+
+/// Only the content of the files is written: rights noted in the archive
+/// could leave the website read only.
+fn unpack_template(archive: &[u8], site: &Path) -> Result<()> {
+    let unwritable =
+        |e: std::io::Error| std::io::Error::new(e.kind(), format!("{}: {}", site.display(), e));
+    let too_large = || {
+        Error::Said(
+            Said::new(said::TEMPLATE_TOO_LARGE)
+                .with_number("mb", MAX_TEMPLATE_BYTES / 1024 / 1024)
+                .with_number("files", MAX_TEMPLATE_ENTRIES),
+        )
+    };
+
+    let mut left = MAX_TEMPLATE_BYTES;
+    let mut archive = tar::Archive::new(flate2::read::GzDecoder::new(archive));
+    for (index, entry) in archive.entries()?.enumerate() {
+        if index >= MAX_TEMPLATE_ENTRIES {
+            return Err(too_large());
+        }
+        let mut entry = entry?;
+        let kind = entry.header().entry_type();
+        // A link could lead the next files out of the website folder
+        if kind.is_symlink() || kind.is_hard_link() {
+            return Err(Error::Said(Said::new(said::TEMPLATE_LINKS)));
+        }
+        if !kind.is_file() {
+            continue;
+        }
+        let path: PathBuf = entry.path()?.components().skip(1).collect();
+        if path.as_os_str().is_empty() {
+            continue;
+        }
+        if !path
+            .components()
+            .all(|c| matches!(c, Component::Normal(name) if writable_everywhere(name)))
+        {
+            return Err(Error::Said(
+                Said::new(said::TEMPLATE_FILE).with("file", path.display()),
+            ));
+        }
+
+        let target = site.join(&path);
+        if let Some(parent) = target.parent() {
+            std::fs::create_dir_all(parent).map_err(unwritable)?;
+        }
+        // `create_new` also stops two names that only differ by case on Windows and macOS
+        let mut file = std::fs::File::create_new(&target).map_err(unwritable)?;
+        let written = std::io::copy(&mut std::io::Read::take(&mut entry, left + 1), &mut file)?;
+        if written > left {
+            return Err(too_large());
+        }
+        left -= written;
+    }
+    // HFS+ reads names that differ by an ignored character, as `.g\u{200c}it`, as `.git`
+    if site.join(".git").try_exists()? {
+        return Err(Error::Said(
+            Said::new(said::TEMPLATE_FILE).with("file", ".git"),
+        ));
+    }
+    Ok(())
+}
+
+/// A file name every system Silex runs on can write, and not one that git reads as its own
+fn writable_everywhere(name: &std::ffi::OsStr) -> bool {
+    let Some(name) = name.to_str() else {
+        return false;
+    };
+    let stem = name
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .to_ascii_uppercase();
+    let reserved_on_windows = matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (stem.len() == 4
+            && (stem.starts_with("COM") || stem.starts_with("LPT"))
+            && stem.as_bytes()[3].is_ascii_digit());
+    !name.eq_ignore_ascii_case(".git")
+        && !reserved_on_windows
+        && !name.ends_with(['.', ' '])
+        && !name
+            .chars()
+            .any(|c| c.is_control() || r#"<>:"/\|?*"#.contains(c))
 }
 
 /// Write a website: `website.json` plus one file per page
@@ -269,37 +403,46 @@ pub async fn delete_website(data_path: &Path, website_id: &WebsiteId) -> Result<
         .await
         .map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
-                Error::NotFound(format!("Website '{}' not found", website_id))
+                Error::NoWebsite(website_id.clone())
             } else {
                 Error::Io(e)
             }
         })
 }
 
-/// Copy a website, name it "<name> copy", and return the id of the copy
-pub async fn duplicate_website(data_path: &Path, website_id: &WebsiteId) -> Result<WebsiteId> {
+/// Copy a website, name it `name` or else "<name> copy", and return the id of the copy
+pub async fn duplicate_website(
+    data_path: &Path,
+    website_id: &WebsiteId,
+    name: Option<String>,
+) -> Result<WebsiteId> {
     let new_website_id = WebsiteId::fresh();
 
     let source_path = website_path(data_path, website_id);
     if fs::metadata(&source_path).await.is_err() {
-        return Err(Error::NotFound(format!(
-            "Website '{}' not found",
-            website_id
-        )));
+        return Err(Error::NoWebsite(website_id.clone()));
     }
 
     let copy_path = website_path(data_path, &new_website_id);
-    copy_dir_recursive(source_path, copy_path.clone()).await?;
-    keep_the_history_drop_the_remotes(&copy_path)?;
+    let copied = async {
+        copy_dir_recursive(source_path, copy_path.clone()).await?;
+        keep_the_history_drop_the_remotes(&copy_path)?;
+        forget_where_the_original_is_published(&copy_path).await?;
 
-    let meta = get_website_meta(data_path, website_id).await?;
-    let new_meta = WebsiteMetaFileContent {
-        name: format!("{} copy", meta.name),
-        image_url: meta.image_url,
-    };
-    set_website_meta(data_path, &new_website_id, &new_meta).await?;
+        let meta = get_website_meta(data_path, website_id).await?;
+        let new_meta = WebsiteMetaFileContent {
+            name: name.unwrap_or_else(|| format!("{} copy", meta.name)),
+            image_url: meta.image_url,
+        };
+        set_website_meta(data_path, &new_website_id, &new_meta).await
+    }
+    .await;
 
-    Ok(new_website_id)
+    if copied.is_err() {
+        // Left there, a half made copy shows in the list as one more website
+        let _ = fs::remove_dir_all(&copy_path).await;
+    }
+    copied.map(|()| new_website_id)
 }
 
 /// Take the remotes out of the repository a copy inherited
@@ -307,12 +450,26 @@ pub async fn duplicate_website(data_path: &Path, website_id: &WebsiteId) -> Resu
 /// A duplicated website keeps its history but must not keep where it was sent,
 /// or publishing it would push over the website it was copied from.
 fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
-    history::drop_the_remotes(site).map_err(|why| {
-        Error::Told(format!(
-            "Silex copied your website, but could not take out of the copy where the first one is published. Publishing the copy would replace the first one. {}",
-            why
-        ))
-    })
+    history::drop_the_remotes(site)
+        .map_err(|why| Error::Said(Said::new(said::COPY_PUBLISHED_OVER).because(why)))
+}
+
+/// Take out of a copy the publication settings it inherited, and say it was
+/// never published
+///
+/// Otherwise the copy shows the destination of the website it was copied
+/// from, and publishing it would replace that website.
+async fn forget_where_the_original_is_published(site: &Path) -> Result<()> {
+    let path = site.join(WEBSITE_DATA_FILE);
+    let mut data: serde_json::Value = parse_file(&path, &fs::read_to_string(&path).await?)?;
+    let Some(object) = data.as_object_mut() else {
+        return Ok(());
+    };
+    object.insert(
+        "publication".to_string(),
+        serde_json::json!({ "lastPublication": null }),
+    );
+    write_file(&path, serialize_json(&data)?).await
 }
 
 // ==================
@@ -377,7 +534,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
 
     let metadata = fs::metadata(&website_path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
-            Error::NotFound(format!("Website '{}' not found", website_id))
+            Error::NoWebsite(website_id.clone())
         } else {
             Error::Io(e)
         }
@@ -573,12 +730,13 @@ async fn merge_website_data(
 
 /// Parse one file of a website, naming it when it cannot be read
 fn parse_file<T: serde::de::DeserializeOwned>(path: &Path, content: &str) -> Result<T> {
-    serde_json::from_str(content).map_err(|e| {
-        Error::InvalidWebsite(format!(
-            "Could not read '{}'. This file of your website is damaged. {}",
-            path.display(),
-            e
-        ))
+    serde_json::from_str(content).map_err(|e| Error::Damaged {
+        file: path
+            .file_name()
+            .unwrap_or(path.as_os_str())
+            .to_string_lossy()
+            .into_owned(),
+        why: format!("{}: {}", path.display(), e),
     })
 }
 
@@ -727,7 +885,9 @@ mod tests {
             "the website has a remote to lose"
         );
 
-        let copy_id = duplicate_website(&data_path, &website_id).await.unwrap();
+        let copy_id = duplicate_website(&data_path, &website_id, None)
+            .await
+            .unwrap();
         let copy = website_path(&data_path, &copy_id);
 
         assert!(
@@ -823,5 +983,46 @@ mod tests {
             written,
             "{\n  \"imageUrl\": \"cover.png\",\n  \"name\": \"A website\"\n}"
         );
+    }
+
+    #[test]
+    fn a_template_writes_nothing_out_of_the_website_nor_in_git() {
+        let archive = |name: &[u8]| {
+            let mut header = tar::Header::new_old();
+            header.as_old_mut().name[..name.len()].copy_from_slice(name);
+            header.set_size(2);
+            header.set_mode(0o444);
+            header.set_cksum();
+            let mut tar = tar::Builder::new(flate2::write::GzEncoder::new(
+                Vec::new(),
+                flate2::Compression::fast(),
+            ));
+            tar.append(&header, &b"{}"[..]).unwrap();
+            tar.into_inner().unwrap().finish().unwrap()
+        };
+        let data_path = a_data_path("template");
+        let site = data_path.join("site");
+
+        for refused in [
+            &b"root/../../outside"[..],
+            b"root/.GIT/config",
+            b"root/aux.json",
+        ] {
+            assert!(unpack_template(&archive(refused), &site).is_err());
+        }
+        assert!(!data_path.join("outside").exists());
+        assert!(!site.join(".GIT").exists());
+
+        unpack_template(&archive(b"root/website.json"), &site).unwrap();
+        let written = std::fs::metadata(site.join(WEBSITE_DATA_FILE)).unwrap();
+        assert!(
+            !written.permissions().readonly(),
+            "the rights in the archive are not kept"
+        );
+
+        // What HFS+ makes of `.g\u{200c}it`
+        std::fs::create_dir(site.join(".git")).unwrap();
+        assert!(unpack_template(&archive(b"root/index.html"), &site).is_err());
+        let _ = std::fs::remove_dir_all(&data_path);
     }
 }

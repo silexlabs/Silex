@@ -11,7 +11,8 @@
 //!
 //! The hosted Silex has a dashboard of its own, so the server crate knows
 //! nothing about this one: `/` is the dashboard, `/?id=<website id>` the
-//! editor.
+//! editor. `/silex.js`, the client config the editor loads, is the desktop's
+//! too, built with the dashboard.
 
 use std::collections::HashMap;
 
@@ -20,31 +21,48 @@ use axum::routing::get;
 use axum::Router;
 
 use rust_embed::Embed;
-use silex_server::frontend::{serve, try_serve, EditorAssets};
+use silex_server::frontend::{if_none_match, serve, serve_editor, try_serve, EditorAssets};
 
 /// Path relative to this crate's Cargo.toml
 #[derive(Embed)]
-#[folder = "../../silex-dashboard-2026/public/"]
+#[folder = "../dashboard/dist/"]
 struct DashboardAssets;
 
 /// Serve the dashboard, leaving the editor everything it does not hold
 pub fn configure(app: Router) -> Router {
     app.route(
         "/",
-        get(|Query(params): Query<HashMap<String, String>>| async move {
-            if params.contains_key("id") {
-                serve::<EditorAssets>("index.html")
-            } else {
-                serve::<DashboardAssets>("index.html")
-            }
-        }),
+        get(
+            |Query(params): Query<HashMap<String, String>>, req: Request| async move {
+                let if_none_match = if_none_match(&req);
+                if params.contains_key("id") {
+                    serve_editor::<EditorAssets>(if_none_match)
+                } else {
+                    serve::<DashboardAssets>("index.html", if_none_match)
+                }
+            },
+        ),
+    )
+    .route(
+        "/silex.js",
+        get(
+            |req: Request| async move { serve::<DashboardAssets>("silex.js", if_none_match(&req)) },
+        ),
     )
     // Dashboard assets take priority, the editor serves everything else
     .fallback(|req: Request| async move {
         let path = req.uri().path().trim_start_matches('/');
-        match try_serve::<DashboardAssets>(path) {
+        let if_none_match = if_none_match(&req);
+        match try_serve::<DashboardAssets>(path, if_none_match) {
             Some(response) => response,
-            None => serve::<EditorAssets>(path),
+            None => serve::<EditorAssets>(path, if_none_match),
         }
     })
+}
+
+/// The dashboard's own copy, which the screenshots of the MCP load too
+pub fn html2canvas() -> Option<String> {
+    DashboardAssets::iter()
+        .find(|path| path.starts_with("_dashboard/html2canvas-"))
+        .map(|path| format!("/{path}"))
 }

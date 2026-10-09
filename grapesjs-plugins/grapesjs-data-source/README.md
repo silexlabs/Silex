@@ -479,7 +479,7 @@ grapesjs.init({
 
 ## Configuration examples
 
-You can find examples in [Silex CMS documentation](https://docs.silex.me/en/user/cms)
+You can find examples in [Silex CMS documentation](https://docs.silex.me/designer/cms/overview/)
 
 Here are examples of APIs I tested:
 

@@ -1,0 +1,124 @@
+[
+  {
+    "name": "Open Source Docs",
+    "repo": "https://gitlab.com/silex-templates/silex_openforge-cli",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/open-source-docs-screenshot-768x2261.png",
+    "en": {
+      "page": "https://www.silex.me/templates/open-source-docs/",
+      "preview": "https://silex-openforge-cli-d85c9d.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/open-source-docs-2/",
+      "preview": "https://silex-openforge-cli-d85c9d.gitlab.io/"
+    }
+  },
+  {
+    "name": "Docs First",
+    "repo": "https://gitlab.com/silex-templates/silex_devdocs-template",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/docs-first-screenshot-768x943.png",
+    "en": {
+      "page": "https://www.silex.me/templates/docs-first/",
+      "preview": "https://silex-devdocs-template-a60bc2.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/docs-first-2/",
+      "preview": "https://silex-devdocs-template-a60bc2.gitlab.io/"
+    }
+  },
+  {
+    "name": "Bold Folio",
+    "repo": "https://gitlab.com/silex-templates/silex_bold-folio",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/02/Accueil-Bold-Folio-768x2974.jpg",
+    "en": {
+      "page": "https://www.silex.me/templates/bold-folio/",
+      "preview": "https://silex-bold-folio-bba920.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/bold-folio-2/",
+      "preview": "https://silex-bold-folio-bba920.gitlab.io/"
+    }
+  },
+  {
+    "name": "Green Hope",
+    "repo": "https://gitlab.com/silex-templates/silex_green-hope",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2025/12/green-hope-screenshot-768x1035.png",
+    "en": {
+      "page": "https://www.silex.me/templates/green-hope/",
+      "preview": "https://silex-green-hope-ea4118.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/green-hope-2/",
+      "preview": "https://silex-green-hope-ea4118.gitlab.io/"
+    }
+  },
+  {
+    "name": "Local commerce",
+    "repo": "https://gitlab.com/silex-templates/silex_la-table-dor-restaurant",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-la-table-dor-restaurant-1-768x3166.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "page": "https://www.silex.me/templates/local-commerce/",
+      "preview": "https://silex-la-table-dor-restaurant-f2c61e.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/local-commerce-fr/",
+      "preview": "https://silex-la-table-dor-restaurant-f2c61e.gitlab.io/"
+    }
+  },
+  {
+    "name": "Pro services local",
+    "repo": "https://gitlab.com/silex-templates/silex_pro-services-local",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-pro-services-local-83a21b-gitlab-io--768x2621.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "page": "https://www.silex.me/templates/pro-services-local/",
+      "preview": "https://silex-pro-services-local-83a21b.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/pro-services-local-fr/",
+      "preview": "https://silex-pro-services-local-83a21b.gitlab.io/"
+    }
+  },
+  {
+    "name": "Privacy First",
+    "repo": "https://gitlab.com/silex-templates/silex_privacy-guard",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/Privacy-Guard-Ethical-Privacy-First-Technology-768x2990.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "page": "https://www.silex.me/templates/privacy-first/",
+      "preview": "https://silex-privacy-guard-82f0e8.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/privacy-first-2/",
+      "preview": "https://silex-privacy-guard-82f0e8.gitlab.io/"
+    }
+  },
+  {
+    "name": "Apex Consulting",
+    "repo": "https://gitlab.com/silex-templates/silex_apex-consulting",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/01/silex-apex-consulting-opt-768x3283.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "page": "https://www.silex.me/templates/apex-consulting/",
+      "preview": "https://silex-apex-consulting-7253c5.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/apex-consulting-2/",
+      "preview": "https://silex-apex-consulting-7253c5.gitlab.io/"
+    }
+  },
+  {
+    "name": "Startup Tech",
+    "repo": "https://gitlab.com/silex-templates/startup-tech-template",
+    "image": "https://silex2026.wp.cms.blue/wp-content/uploads/sites/5/2026/02/startup-tech-template-20283d-gitlab-io--768x3318.jpg",
+    "paymentLink": "https://roadmap.silex.me/posts/61/templates-for-agencies-and-freelancers-tempalte-pack-1",
+    "en": {
+      "page": "https://www.silex.me/templates/startup-tech/",
+      "preview": "https://startup-tech-template-bfa05b.gitlab.io/"
+    },
+    "fr": {
+      "page": "https://www.silex.me/fr/templates/startup-tech-2/",
+      "preview": "https://startup-tech-template-bfa05b.gitlab.io/"
+    }
+  }
+]

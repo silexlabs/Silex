@@ -220,13 +220,14 @@ describe('transform-origin', () => {
 })
 
 describe('transition', () => {
-  it('keeps the three sub properties of the grapesjs stack', () => {
+  it('keeps the grapesjs sub properties and adds the delay last', () => {
     const prop = getProperty('extra', 'transition')
     expect(prop.getType()).toBe('stack')
     expect(prop.getProperties().map((sub: any) => sub.getId())).toEqual([
       'transition-property-sub',
       'transition-duration-sub',
       'transition-timing-function-sub',
+      'transition-delay-sub',
     ])
   })
 
@@ -251,13 +252,23 @@ describe('transition', () => {
       'transition-duration-sub': '2s',
       'transition-timing-function-sub': 'ease-in-out',
     }, { at: 0 })
-    expect(rule.getStyle()).toEqual({ transition: 'filter 2s ease-in-out' })
+    // The delay is not set, so it is written with its default
+    expect(rule.getStyle()).toEqual({ transition: 'filter 2s ease-in-out 0s' })
     // Reload: the layer is still in the panel
     selectNewRule(rule.getStyle() as Record<string, string>)
     expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
       'transition-property-sub': 'filter',
       'transition-duration-sub': '2s',
       'transition-timing-function-sub': 'ease-in-out',
+      'transition-delay-sub': '0s',
+    }])
+    // A site saved before the delay was added still loads, with the default delay
+    selectNewRule({ transition: 'filter 2s ease-in-out' })
+    expect(getProperty('extra', 'transition').getLayers().map((layer: any) => layer.getValues())).toEqual([{
+      'transition-property-sub': 'filter',
+      'transition-duration-sub': '2s',
+      'transition-timing-function-sub': 'ease-in-out',
+      'transition-delay-sub': '0s',
     }])
   })
 })

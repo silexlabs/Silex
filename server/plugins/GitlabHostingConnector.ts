@@ -276,6 +276,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           const result = await this.waitForGitlabJobCompletion(session, websiteId, job, adminUrl, successTag, gitlabUrl, pageUrl)
 
           if (result.success) {
+            job.url = gitlabUrl
             jobSuccess(job.jobId, result.message)
           } else {
             jobError(job.jobId, result.message)

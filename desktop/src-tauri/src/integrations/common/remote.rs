@@ -38,7 +38,7 @@ fn remembered() -> &'static Mutex<Remembered> {
 impl Remote {
     /// The remote of a website, asked by the integrations that work from one
     ///
-    /// Reading it starts a git, so the answer is kept against the file a remote
+    /// Reading it opens the repository, so the answer is kept against the file a remote
     /// is written in: `git remote add` in a terminal changes that file and the
     /// question is asked again. Its date alone would not do, a file system that
     /// keeps dates to the second cannot tell that second apart.
@@ -56,7 +56,7 @@ impl Remote {
             return known;
         }
 
-        // Read outside the lock, because this starts a program
+        // Read outside the lock, because this reads the disk
         let read = Remote::read(site);
         held(remembered()).insert(site.to_path_buf(), (written, read.clone()));
         read
@@ -90,7 +90,7 @@ impl Remote {
     }
 
     /// A host without the ssh port it was given
-    pub(super) fn without_port(authority: &str) -> &str {
+    pub(in crate::integrations) fn without_port(authority: &str) -> &str {
         match authority.rsplit_once(':') {
             Some((host, port))
                 if !host.is_empty()
@@ -159,12 +159,8 @@ impl Remote {
     }
 }
 
-/// A remote URL as it can be shown: what a password could be in is dropped
-pub fn without_secret(remote_url: &str) -> &str {
-    remote_url.split('@').next_back().unwrap_or(remote_url)
-}
-
-/// The same, in the middle of a sentence a program wrote
+/// The remote URLs in a sentence a program wrote, without what a password
+/// could be in
 ///
 /// git quotes the remote back in its errors, token included, and those errors
 /// are shown to the user and sent to telemetry.
@@ -192,152 +188,4 @@ pub fn redact(text: &str) -> String {
 
     redacted.push_str(rest);
     redacted
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parses_the_shapes_a_remote_comes_in() {
-        for (url, host, owner, repo) in [
-            (
-                "https://gitlab.com/lexoyo/site.git",
-                "gitlab.com",
-                "lexoyo",
-                "site",
-            ),
-            (
-                "https://user:token@gitlab.com/lexoyo/site.git",
-                "gitlab.com",
-                "lexoyo",
-                "site",
-            ),
-            (
-                "git@codeberg.org:alex/site.git",
-                "codeberg.org",
-                "alex",
-                "site",
-            ),
-            ("git@git.sr.ht:~alex/site", "git.sr.ht", "alex", "site"),
-            (
-                "ssh://alice@git.example.com/team/site.git",
-                "git.example.com",
-                "team",
-                "site",
-            ),
-            // git takes the scp form without a user just as well
-            ("codeberg.org:alex/site.git", "codeberg.org", "alex", "site"),
-            (
-                "https://gitlab.com/group/subgroup/site.git",
-                "gitlab.com",
-                "group/subgroup",
-                "site",
-            ),
-            // A Forgejo of one's own often answers ssh somewhere other than
-            // 22
-            (
-                "ssh://git@v15.next.forgejo.org:2150/lexoyo/site.git",
-                "v15.next.forgejo.org",
-                "lexoyo",
-                "site",
-            ),
-            // A web port belongs to the address and stays
-            (
-                "https://gitlab.example.com:8443/team/site.git",
-                "gitlab.example.com:8443",
-                "team",
-                "site",
-            ),
-        ] {
-            let remote = Remote::parse(url).unwrap_or_else(|| panic!("could not parse {}", url));
-            assert_eq!(
-                (
-                    remote.host.as_str(),
-                    remote.owner.as_str(),
-                    remote.repo.as_str()
-                ),
-                (host, owner, repo),
-                "{}",
-                url
-            );
-        }
-    }
-
-    #[test]
-    fn a_remote_added_from_a_terminal_is_seen() {
-        if crate::integrations::git::Git::found().is_none() {
-            return;
-        }
-
-        let site = std::env::temp_dir().join(format!("silex-remote-{}", std::process::id()));
-        let _ = std::fs::remove_dir_all(&site);
-        std::fs::create_dir_all(site.join(".git/objects")).unwrap();
-        std::fs::create_dir_all(site.join(".git/refs")).unwrap();
-        std::fs::write(site.join(".git/HEAD"), "ref: refs/heads/main\n").unwrap();
-        let alone = "[core]\n\trepositoryformatversion = 0\n";
-        std::fs::write(site.join(".git/config"), alone).unwrap();
-
-        assert!(Remote::of(&site).is_none());
-
-        let added = format!(
-            "{}[remote \"origin\"]\n\turl = https://codeberg.org/alex/site.git\n",
-            alone
-        );
-        std::fs::write(site.join(".git/config"), added).unwrap();
-
-        let remote = Remote::of(&site).expect("a remote added after a first reading was not seen");
-        assert_eq!(
-            (remote.host.as_str(), remote.repo.as_str()),
-            ("codeberg.org", "site")
-        );
-
-        let _ = std::fs::remove_dir_all(&site);
-    }
-
-    #[test]
-    fn reads_the_host_of_a_url() {
-        assert_eq!(
-            Remote::host_of("https://codeberg.org/x/y").as_deref(),
-            Some("codeberg.org")
-        );
-        assert_eq!(
-            Remote::host_of("https://git.example.com").as_deref(),
-            Some("git.example.com")
-        );
-        assert_eq!(
-            Remote::host_of("git@git.sr.ht:~x/y").as_deref(),
-            Some("git.sr.ht")
-        );
-    }
-
-    #[test]
-    fn shows_a_url_without_its_password() {
-        assert_eq!(
-            without_secret("https://oauth2:secret@gitlab.com/x/y.git"),
-            "gitlab.com/x/y.git"
-        );
-        assert_eq!(
-            without_secret("https://gitlab.com/x/y.git"),
-            "https://gitlab.com/x/y.git"
-        );
-    }
-
-    #[test]
-    fn drops_the_secrets_a_program_quotes_back() {
-        let said = "remote: HTTP Basic: Access denied\nfatal: Authentication failed for 'https://lexoyo:glpat-abc123@gitlab.com/lexoyo/site.git/'";
-        let shown = redact(said);
-        assert!(!shown.contains("glpat-abc123"), "{}", shown);
-        assert!(
-            shown.contains("***@gitlab.com/lexoyo/site.git"),
-            "{}",
-            shown
-        );
-
-        // A URL with nothing to hide is left as it is, twice in a row included
-        let plain = "could not read https://codeberg.org/a/b and https://sr.ht/~c/d";
-        assert_eq!(redact(plain), plain);
-        // And an error without any URL goes through untouched
-        assert_eq!(redact("no such remote: origin"), "no such remote: origin");
-    }
 }

@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '~/common/page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ConnectorOptions, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -26,8 +26,6 @@ import { resetRenderComponents, resetRenderCssRules, transformPermalink, transfo
 import { hashString } from '../utils'
 import { displayedToStored, isExternalUrl } from '../assetUrl'
 import { t } from '../i18n'
-import { getAllDataSources } from '@silexlabs/grapesjs-data-source'
-import { EleventyDataSourceId } from './cms/DataSource'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -66,13 +64,6 @@ export type PublicationManagerOptions = {
 // plugin init cod
 export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
-}
-
-// What the user filled in wins, anything else comes from the host, which knows better than an old copy
-export function withConnectorOptions(settings: PublicationSettings, connector: ConnectorData): ConnectorOptions {
-  const asked = new Set(connector.optionsForm?.fields.map(field => field.name))
-  const filledIn = Object.fromEntries(Object.entries(settings.options ?? {}).filter(([name]) => asked.has(name)))
-  return { ...settings.options, ...connector.options, ...filledIn }
 }
 
 function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
@@ -133,7 +124,9 @@ export class PublicationManager {
     } as PublicationManagerOptions
     // Save the publication settings in the website settings
     editor.on('storage:start:store', (data: WebsiteData) => {
-      data.publication = this.settings
+      // The OAuth address carries the state of one login, nothing the website keeps
+      const { connector } = this.settings
+      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null } } : this.settings
     })
     // load publication settings from the website
     editor.on('storage:end:load', (data: WebsiteData) => {
@@ -143,7 +136,7 @@ export class PublicationManager {
         .then((user) => {})
         .catch((err) => {
           this.status = PublicationStatus.STATUS_LOGGED_OUT
-          this.settings = {}
+          this.forgetHosting()
           this.dialog && this.dialog.displayError('Please login', this.job, this.status)
         })
     })
@@ -184,7 +177,6 @@ export class PublicationManager {
       this.settings = {
         ...this.settings,
         connector,
-        options: withConnectorOptions(this.settings, connector),
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
@@ -194,7 +186,7 @@ export class PublicationManager {
       this.dialog && this.dialog.displayPending(this.job, this.status)
       return
     }
-    this.settings = {}
+    this.forgetHosting()
     this.status = PublicationStatus.STATUS_LOGGED_OUT
     this.dialog && this.dialog.displayPending(this.job, this.status)
     const params: ApiConnectorLoginQuery = {
@@ -209,7 +201,7 @@ export class PublicationManager {
           window.removeEventListener('message', onMessage)
           if (data.error) {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.settings = {}
+            this.forgetHosting()
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
             reject(new Error(data.message))
           } else {
@@ -240,49 +232,13 @@ export class PublicationManager {
       if (this.settings.connector.connectorId !== storageId) {
         await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
       }
-      this.settings = {}
+      this.forgetHosting()
       this.dialog && this.dialog.displayPending(this.job, this.status)
     } catch (e) {
       console.error('logout error', e)
       this.status = PublicationStatus.STATUS_ERROR
       this.dialog && this.dialog.displayError(e.message, this.job, this.status)
     }
-  }
-
-  /**
-   * The 11ty directory data file, published with every website
-   *
-   * Publishing runs 11ty on the whole site, whether or not it reads data. On a
-   * site that does not, 11ty would rename `about.html` to `about/index.html`,
-   * which breaks every link in the site, and read the pages as Liquid
-   * templates, which empties anything between double braces and fails the
-   * build on anything between brace and percent. This file tells it to keep
-   * the file names and to leave the pages alone.
-   *
-   * On a site that reads a data source, the front matter of each page says
-   * what to do, so this says nothing and lets them.
-   */
-  eleventyDirectoryData(): ClientSideFile {
-    const readsData = getAllDataSources()
-      .filter(dataSource => dataSource.id !== EleventyDataSourceId)
-      .length > 0
-    const content = readsData
-      ? 'export default {}\n'
-      : `export default {
-  // Keep the name and the place of every page: \`about.html\` stays
-  // \`about.html\`, so the links inside the site keep working
-  permalink: data => \`\${data.page.filePathStem}.html\`,
-  // The pages are already what they should be, not templates to render
-  templateEngineOverride: false,
-}
-`
-    return {
-      // Named after the folder it sits in, which is how 11ty reads a directory
-      // data file
-      path: '/public.11tydata.js',
-      content,
-      type: ClientSideFileType.OTHER,
-    } as ClientSideFile
   }
 
   async getPublicationData(projectData, siteSettings, preventDefault: () => void): Promise<PublicationData> {
@@ -309,13 +265,8 @@ export class PublicationManager {
           return true
         })
         .map(asset => {
-          // TODO: is this needed?
-          // // Remove /assets that is added by grapesjs
-          // const initialPath = asset.src
-          //   .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
-          //const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
           // This is done in transformPermalink and transformPath but other transformers may change it
           // So we do this only using displayedToStored for the path
           // As path is used to download the asset
@@ -329,7 +280,6 @@ export class PublicationManager {
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
-    files.push(this.eleventyDirectoryData())
     // Create the data to send to the server
     const data: PublicationData = {
       ...projectData,
@@ -365,6 +315,7 @@ export class PublicationManager {
       if(preventDefaultStart) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // Get the data to publish
@@ -373,6 +324,8 @@ export class PublicationManager {
       if(preventDefaultData) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        // A save that came in meanwhile waits for this
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // User and where to publish
@@ -403,7 +356,7 @@ export class PublicationManager {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings = {}
+        this.forgetHosting()
         this.dialog && this.dialog.displayError('Please login.', this.job, this.status)
       } else {
         this.status = PublicationStatus.STATUS_ERROR
@@ -670,9 +623,21 @@ ${htmlContent}
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
+      if (this.job.url) this.saveLastPublication(this.job.url)
       this.editor.trigger(ClientEvent.PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
+  }
+
+  // Kept in the website, so that its card tells whether it is online without asking anyone
+  private saveLastPublication(url: string) {
+    this.settings.lastPublication = { url }
+    this.editor.store()
+  }
+
+  // What the last publication gave stays: the website is still where it was put
+  private forgetHosting() {
+    this.settings = { lastPublication: this.settings?.lastPublication }
   }
 
   private setPublicationTransformers() {

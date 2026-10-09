@@ -28,12 +28,19 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # MCP (Model Context Protocol) support
 reqwest = { version = "0.13", features = ["json"] }
-rmcp = { version = "3.4", features = ["server", "transport-streamable-http-server", "transport-io"] }
+rmcp = { version = "3.5", features = ["server", "transport-streamable-http-server", "transport-io"] }
 # Required as a direct dependency: the JsonSchema derive expands to ::schemars paths
 schemars = "1"
 
 # Open files/folders in the OS default application
 open = "5"
+
+# Deleting a website moves it to the trash of this computer
+trash = "5"
+
+# The language of this computer, for the dialogs that open before, or
+# without, the dashboard
+sys-locale = "0.3"
 
 # Platform-specific directories (for telemetry consent before Tauri init)
 dirs = "7"
@@ -55,6 +62,9 @@ strip-ansi-escapes = "0.2"
 # Silex server as a library, with the editor compiled into it
 silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
 
+# Reading the remotes of a website at every save without starting a git
+git2.workspace = true
+
 # The dashboard, compiled into the binary. The one the hosted Silex serves is
 # not this one, so the server crate has no reason to carry it
 rust-embed = "8"
@@ -63,3 +73,6 @@ rust-embed = "8"
 # the ssh it started behind
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2"

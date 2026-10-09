@@ -41,7 +41,7 @@ ENV GITLAB2_CLIENT_SECRET=
 # root captain-definition: dockerfilePath ./server/deploy/Dockerfile).
 COPY . /silex
 WORKDIR /silex
-RUN npm install -g pnpm@9.14.1 \
+RUN npm install -g "$(node -p "require('./package.json').packageManager")" \
   && pnpm install --frozen-lockfile --filter @silexlabs/silex \
   && pnpm build
 

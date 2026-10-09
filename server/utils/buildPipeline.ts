@@ -16,8 +16,12 @@ export const BUILD_SH_PATH = 'build.sh'
 
 export const DEFAULT_BUILD_STEPS: BuildStep[] = [{ type: 'build' }]
 
+// TEMPORARY: remove after the 3.10 stable, only sites published with 3.10.0-canary.3 have this file
+const FAIL_ON_CANARY_DATA_FILE = 'test -f public/public.11tydata.js && echo \'Please delete public/public.11tydata.js\' && exit 1'
+
 // || true: sites without images have no assets/ folder in git
 const BUILD_COMMANDS = [
+  FAIL_ON_CANARY_DATA_FILE,
   `npx @11ty/eleventy@${ELEVENTY_VERSION} --input=public --output=_site`,
   'cp -R public/css public/assets _site/ 2>/dev/null || true',
 ]
@@ -32,6 +36,7 @@ export function parseBuildSteps(content: string): BuildStep[] {
   })
   return steps
 }
+
 
 export function generateBuildSh(steps: BuildStep[]): string {
   const lines = steps.flatMap(step => step.type === 'build' ? BUILD_COMMANDS : [step.value])

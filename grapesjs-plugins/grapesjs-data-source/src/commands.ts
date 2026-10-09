@@ -68,7 +68,7 @@ function validateExpression(tokens: unknown[]): void {
       if (token.dataSourceId) {
         const dsId = token.dataSourceId as string
         if (!dsIds.includes(dsId)) {
-          throw new Error(`${prefix}: data source "${dsId}" not found. Available: ${dsIds.join(', ') || '(none configured)'}. Use data-source:list to see connected sources.`)
+          throw new Error(`${prefix}: data source "${dsId}" not found. Available: ${dsIds.join(', ') || '(none configured)'}. Use data-source_list to see connected sources.`)
         }
         // Validate that the field exists in the data source schema
         const ds = getDataSource(dsId)
@@ -80,7 +80,7 @@ function validateExpression(tokens: unknown[]): void {
           const fieldId = token.fieldId as string
           // Check if fieldId matches a queryable, a field, or a type
           if (!queryableFieldIds.includes(fieldId) && !allFieldIds.includes(fieldId) && !allTypeIds.includes(fieldId)) {
-            throw new Error(`${prefix}: field "${fieldId}" not found in data source "${dsId}". Available queryables: ${queryableFieldIds.slice(0, 15).join(', ') || '(none)'}. Use data-source:list for full schema.`)
+            throw new Error(`${prefix}: field "${fieldId}" not found in data source "${dsId}". Available queryables: ${queryableFieldIds.slice(0, 15).join(', ') || '(none)'}. Use data-source_list for full schema.`)
           }
         }
       }
@@ -203,7 +203,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(CMD_DS_GET_STATES, {
     run(editor: Editor, sender: any, options: any = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
 
       const exported = options.exported !== false
       const ids = getStateIds(component, exported)
@@ -223,7 +223,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(CMD_DS_SET_STATE, {
     run(editor: Editor, sender: any, options: any = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
 
       const { stateId, expression, label, exported } = options
       if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href")')
@@ -253,14 +253,20 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
 
   // Remove a state from the selected component
   editor.Commands.add(CMD_DS_REMOVE_STATE, {
-    run(editor: Editor, sender: any, options: any = {}) {
+    run(editor: Editor, sender: unknown, options: { component?: Component; stateId?: string; exported?: boolean } = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components:select first.')
+      if (!component) throw new Error('No component selected. Use components_select first.')
 
       const { stateId, exported } = options
-      if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use data-source:get-states to list existing states.')
+      if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use data-source_get-states to list existing states.')
 
       const isExported = exported !== false
+      if (!getState(component, stateId, isExported)) {
+        const ids = getStateIds(component, isExported)
+        throw new Error(ids.length
+          ? `State "${stateId}" not found on the selected component. Existing states: ${ids.join(', ')}.`
+          : `State "${stateId}" not found on the selected component. It has no states.`)
+      }
       removeState(component, stateId, isExported)
 
       if (isPreviewActive) forceRender(editor)

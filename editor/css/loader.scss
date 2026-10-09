@@ -7,7 +7,7 @@
   color: variables.$secondaryColor;
   justify-content: center;
   align-items: center;
-  background-color: variables.$primaryColor;
+  background-color: var(--silex-bg-darker);
   z-index: variables.$z-loader;
   opacity: 1;
   font-size: 1.25rem;
@@ -21,7 +21,7 @@
       width: 0;
       height: 0;
       position: absolute;
-      background-color: variables.$primaryColor;
+      background-color: var(--silex-bg-darker);
       outline: 1px solid grey;
       border: none;
       border-radius: 0.125rem;
@@ -29,7 +29,7 @@
       transition: all 0.3s 0.3s ease;
       /* CHROME */
       &::-webkit-progress-bar {
-        background-color: variables.$primaryColor; // dark background (track)
+        background-color: var(--silex-bg-darker); // dark background (track)
       }
 
       &::-webkit-progress-value {

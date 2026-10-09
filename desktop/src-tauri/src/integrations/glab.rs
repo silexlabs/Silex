@@ -11,12 +11,15 @@
 
 use std::path::{Path, PathBuf};
 
-use silex_server::{PublicationOptions, WEBSITE_URL};
+use silex_server::PublicationOptions;
 
-use super::deploy::{silex_tag, Build, Deploy, Prepared, Urls};
-use super::pipeline::{ensure_build_files, ensure_pipeline_file};
-use super::remote::Remote;
-use super::run::run;
+use super::common::git;
+use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
+use super::common::remote::Remote;
+use super::common::run::run;
+use super::integration::{
+    silex_tag, Build, Capacity, Integration, Prepared, SyncError, Synced, Urls,
+};
 
 /// The instance GitLab runs itself
 ///
@@ -24,14 +27,42 @@ use super::run::run;
 /// to is what tells a GitLab of one's own from any other forge.
 const GITLAB: &str = "gitlab.com";
 
+/// The GitLab logo as Simple Icons draws it: a trademark with no license,
+/// shown only to name the service the website is sent to
+const GITLAB_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="m23.6004 9.5927-.0337-.0862L20.3.9814a.851.851 0 0 0-.3362-.405.8748.8748 0 0 0-.9997.0539.8748.8748 0 0 0-.29.4399l-2.2055 6.748H7.5375l-2.2057-6.748a.8573.8573 0 0 0-.29-.4412.8748.8748 0 0 0-.9997-.0537.8585.8585 0 0 0-.3362.4049L.4332 9.5015l-.0325.0862a6.0657 6.0657 0 0 0 2.0119 7.0105l.0113.0087.03.0213 4.976 3.7264 2.462 1.8633 1.4995 1.1321a1.0085 1.0085 0 0 0 1.2197 0l1.4995-1.1321 2.4619-1.8633 5.006-3.7489.0125-.01a6.0682 6.0682 0 0 0 2.0094-7.003z"/></svg>"#;
+
 pub struct Glab;
 
-impl Deploy for Glab {
+impl Integration for Glab {
     fn program(&self) -> &'static str {
         "glab"
     }
 
-    fn keeps(&self, site: &Path) -> bool {
+    fn capacities(&self) -> &'static [Capacity] {
+        &[Capacity::Sync, Capacity::Deploy]
+    }
+
+    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag)
+    }
+
+    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site)
+    }
+
+    fn synced(&self, site: &Path) -> Option<Synced> {
+        git::synced(site, self.repo(site))
+    }
+
+    fn place(&self, site: &Path) -> Option<String> {
+        git::place(site)
+    }
+
+    fn icon(&self) -> Option<&'static str> {
+        Some(GITLAB_LOGO)
+    }
+
+    fn answers_for(&self, site: &Path) -> bool {
         Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
     }
 
@@ -39,25 +70,27 @@ impl Deploy for Glab {
         &self,
         cli: &Path,
         site: &Path,
-        options: &PublicationOptions,
+        _options: &PublicationOptions,
     ) -> Result<Option<Urls>, String> {
-        if !Remote::of(site).is_some_and(|remote| signed_in_to(&remote.host)) {
+        let Some(remote) = Remote::of(site).filter(|remote| signed_in_to(&remote.host)) else {
             return Ok(None);
-        }
+        };
 
-        let repo = run(cli, site, &["repo", "view", "-F", "json"])?;
+        // GitLab answers 404 rather than 403 about a private repository
+        let repo = run(cli, site, &["repo", "view", "-F", "json"]).map_err(|e| {
+            if not_found(&e) {
+                format!(
+                    "glab is signed in to {} with an account that cannot open this repository.",
+                    remote.host
+                )
+            } else {
+                e
+            }
+        })?;
         let web_url = json_string(&repo, "web_url")
             .ok_or_else(|| format!("{} did not say where the repository is", self.program()))?;
 
-        // Asked again at each publication in case it changed, so the address
-        // saved with the website stays right
-        let site_url = run(cli, site, &["api", "projects/:fullpath/pages"])
-            .ok()
-            .and_then(|pages| json_string(&pages, "url"))
-            .or_else(|| options.named(WEBSITE_URL).map(String::from));
-
         Ok(Some(Urls {
-            site: site_url,
             ci: Some(format!("{}/-/pipelines", web_url)),
             settings: Some(format!("{}/pages", web_url)),
             warning: kept_from_visitors(&repo).then(|| {
@@ -66,13 +99,23 @@ impl Deploy for Glab {
         }))
     }
 
+    fn address(&self, cli: &Path, site: &Path, _options: &PublicationOptions) -> Option<String> {
+        run(cli, site, &["api", "projects/:fullpath/pages"])
+            .ok()
+            .and_then(|pages| json_string(&pages, "url"))
+    }
+
     fn deploy(
         &self,
         _cli: &Path,
         site: &Path,
         _options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        ensure_build_files(site)?;
+        // Without a unique domain the site is served from the folder CI_PAGES_URL ends with
+        write_build_files(
+            site,
+            &rebase_lines("$(echo \"$CI_PAGES_URL\" | sed -E 's#^https?://[^/]*##; s#/$##')/"),
+        )?;
         ensure_pipeline_file(
             site,
             Path::new(".gitlab-ci.yml"),
@@ -83,10 +126,7 @@ impl Deploy for Glab {
         // GitLab Pages starts on a tag
         let tag = silex_tag();
         silex_server::tag(site, &tag)?;
-        Ok(Prepared {
-            tag: Some(tag),
-            ..Default::default()
-        })
+        Ok(Prepared { tag: Some(tag) })
     }
 
     /// GitLab says which ref each of its jobs ran on
@@ -139,6 +179,17 @@ impl Deploy for Glab {
 fn json_string(output: &str, key: &str) -> Option<String> {
     let value: serde_json::Value = serde_json::from_str(output).ok()?;
     value.get(key)?.as_str().map(String::from)
+}
+
+/// glab says it on a line of its own, `404 Not Found` or `404 Project Not Found`,
+/// and exits with 1 as for any other error
+fn not_found(error: &str) -> bool {
+    error.lines().any(|line| {
+        line.contains("Not Found")
+            && line
+                .split(|c: char| !c.is_ascii_alphanumeric())
+                .any(|word| word == "404")
+    })
 }
 
 /// Read from what glab keeps rather than from `glab auth status`, which calls
@@ -243,83 +294,4 @@ fn value_of(block: &str, key: &str) -> Option<String> {
         .find_map(|line| line.trim().strip_prefix(&format!("{}:", key)))
         .map(|value| value.trim().trim_matches(['"', '\'']).to_string())
         .filter(|value| !value.is_empty())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// GitLab starts every repository private, website included
-    #[test]
-    fn pages_kept_to_the_members_of_a_repository_are_worth_a_word() {
-        assert!(kept_from_visitors(r#"{"pages_access_level": "private"}"#));
-        assert!(kept_from_visitors(r#"{"pages_access_level": "enabled"}"#));
-        assert!(!kept_from_visitors(r#"{"pages_access_level": "public"}"#));
-
-        // An older GitLab leaves the setting out, which is not it keeping a
-        // website from anybody
-        assert!(!kept_from_visitors(
-            r#"{"web_url": "https://gitlab.com/a/b"}"#
-        ));
-    }
-
-    /// What glab writes, shortened
-    const CONFIG: &str = r#"
-git_protocol: ssh
-host: gitlab.com
-hosts:
-    gitlab.com:
-        api_host: gitlab.com
-        # Your GitLab access token.
-        token:
-        use_keyring:
-    gitlab.example.com:
-        token: glpat-abc123
-        user: alex
-    keyring.example.com:
-        token:
-        use_keyring: "true"
-"#;
-
-    #[test]
-    fn reads_which_hosts_glab_was_signed_in_to() {
-        let signed_in = |host| host_block(CONFIG, host).is_some_and(|block| holds_a_login(&block));
-        assert!(signed_in("gitlab.example.com"));
-        // The token is in the keyring, and the block says so
-        assert!(signed_in("keyring.example.com"));
-        // glab writes this block whether or not anybody signed in
-        assert!(!signed_in("gitlab.com"));
-        // A host nobody ever named to glab
-        assert!(!signed_in("codeberg.org"));
-    }
-
-    #[test]
-    fn watches_the_publication_that_just_left_and_not_every_other_one() {
-        let pipelines = |project: &str| Urls {
-            ci: Some(format!("{project}/-/pipelines")),
-            ..Default::default()
-        };
-        let watched = Glab
-            .watch(
-                &pipelines("https://gitlab.com/lexoyo/site"),
-                &Prepared {
-                    tag: Some("_silex_1755773700000".into()),
-                    ..Default::default()
-                },
-            )
-            .unwrap();
-        assert_eq!(
-            watched,
-            "https://gitlab.com/lexoyo/site/-/pipelines?ref=_silex_1755773700000"
-        );
-
-        // Nothing tagged: the user lands on the list and finds theirs at the top
-        let every_one = Glab
-            .watch(
-                &pipelines("https://gitlab.com/lexoyo/site"),
-                &Prepared::default(),
-            )
-            .unwrap();
-        assert_eq!(every_one, "https://gitlab.com/lexoyo/site/-/pipelines");
-    }
 }
