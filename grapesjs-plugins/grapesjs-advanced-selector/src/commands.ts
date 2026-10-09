@@ -1,4 +1,4 @@
-import { Component, CssRule, Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { getSelectors, getOrCreateRule, matchSelectorAll, ruleOptions } from './model/GrapesJsSelectors'
 import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
 import { CompoundSelector } from './model/CompoundSelector'
@@ -19,8 +19,25 @@ const PSEUDO_ELEMENTS = new Set<string>([
 
 function selectedElements(editor: Editor): Component[] {
   const components = editor.getSelectedAll()
-  if (!components.length) throw new Error('No element selected. Call element(action:\'select\') first.')
+  if (!components.length) throw new Error('No element selected: set element_id, or call element(action:\'select\') first.')
   return components
+}
+
+// The element named by the id the agent was given, or the selected ones
+function elementsOf(editor: Editor, id?: string): Component[] {
+  if (!id) return selectedElements(editor)
+  const found = editor.Commands.has('agent-ids:find')
+    ? editor.runCommand('agent-ids:find', { id })
+    : editor.Components.allById()[id]
+  if (!found) throw new Error(`No element "${id}". ${NOTHING_CHANGED}`)
+  return [found]
+}
+
+interface StyleOptions {
+  element_id?: string
+  selector?: string
+  css?: string
+  property?: string
 }
 
 // null until style(action:'select'), or the style panel, chose a selector for every selected element
@@ -48,19 +65,19 @@ function withoutStates(cs: ComplexSelector): ComplexSelector {
   return { ...cs, mainSelector: strip(cs.mainSelector), relatedSelector: cs.relatedSelector && strip(cs.relatedSelector) }
 }
 
-function chosenSelector(editor: Editor): string {
-  const components = selectedElements(editor)
+function chosenSelector(editor: Editor, components: Component[]): string {
   const cs = storedSelector(components)
   const selector = cs && complexSelectorToString(cs)
   if (!selector) {
     if (components.length > 1 && components.every(component => component.get('selector'))) {
       throw new Error(`The selected elements have no selector in common. ${NOTHING_CHANGED} Call style(action:'select') with a selector that matches them all, or element(action:'select') to select one.`)
     }
-    throw new Error(`No selector chosen. ${NOTHING_CHANGED} Call style(action:'select') first.`)
+    const own = components[0].getClasses().map((name: string) => `.${name}`)
+    throw new Error(`No selector chosen for ${describe(editor, components[0])}. ${NOTHING_CHANGED} Set selector${own.length ? `, like "${own[0]}"` : ''}, or call style(action:'select') first.`)
   }
   // The classes can have changed since the selector was chosen
   if (!matchSelectorAll(complexSelectorToString(withoutStates(cs)), components)) {
-    throw new Error(`Selector "${selector}" does not match the selected element anymore: its classes changed. ${NOTHING_CHANGED} Call style(action:'select') again, or element(action:'update', add_class) to put the class back.`)
+    throw new Error(`Selector "${selector}" does not match the element anymore: its classes changed. ${NOTHING_CHANGED} Set selector, or element(action:'update', add_class) to put the class back.`)
   }
   return selector
 }
@@ -100,15 +117,15 @@ function notMatching(editor: Editor, component: Component, selector: string, tar
   })
   walk(editor.getWrapper()!)
   if (!matching.length) {
-    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the selected element with element(action:'update', add_class), then call style(action:'select') again.`
+    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the element with element(action:'update', add_class) first.`
   }
   const own = component.getClasses().map((name: string) => `.${name}`)
   const htmlId = component.getAttributes().id
   if (htmlId) own.push(`#${htmlId}`)
   return [
-    `Selector "${selector}" does not match the selected element ${describe(editor, component)}. ${NOTHING_CHANGED}`,
+    `Selector "${selector}" does not match the element ${describe(editor, component)}. ${NOTHING_CHANGED}`,
     own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with element(action:\'update\', add_class).',
-    `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, call element(action:'select') with one of these ids, then style(action:'select') again.`,
+    `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, set element_id to one of these ids.`,
   ].join(' ')
 }
 
@@ -151,6 +168,56 @@ function parseDeclarations(css: string): Record<string, string> {
   return style
 }
 
+/**
+ * A selector the elements can be styled with: one relation and one state at most,
+ * matching them as they are now. Never changes their classes
+ */
+function checkedSelector(editor: Editor, text: string | undefined, components: Component[]): { cs: ComplexSelector, target: string } {
+  const selector = text?.trim()
+  if (!selector) throw new Error('Required: selector. Example: ".card" or ".card:hover".')
+  const outside = selector.replace(/\([^)]*\)|\[[^\]]*\]/g, '')
+  if (outside.includes(',') || outside.startsWith('@')) {
+    throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a breakpoint, call breakpoint(action:'select').`)
+  }
+  const invalid = `Invalid selector "${selector}". ${NOTHING_CHANGED} Examples: ".card", ".card:hover", ".list > .card".`
+  const states = PSEUDO_CLASSES.filter(pseudo => !PSEUDO_ELEMENTS.has(pseudo.type)).map(pseudo => `:${pseudo.type}`)
+  const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most, like ".list > .card", and one state at most among ${states.join(' ')}.`
+  try {
+    document.createDocumentFragment().querySelector(selector)
+  } catch (e) {
+    throw new Error(invalid, { cause: e })
+  }
+  let cs: ComplexSelector
+  try {
+    cs = complexSelectorFromString(selector, '')
+  } catch (e) {
+    throw new Error(unsupported, { cause: e })
+  }
+  const target = complexSelectorToString(withoutStates(cs))
+  if (!target) throw new Error(`Selector "${selector}" has no class, tag or id. ${NOTHING_CHANGED} Put one before the state, like ".card:hover".`)
+  if (!fitsModel(selector, cs)) throw new Error(unsupported)
+  // Despite its name, matchSelectorAll is true when some of the elements match
+  if (!matchSelectorAll(target, components)) throw new Error(notMatching(editor, components[0], selector, target))
+  return { cs, target }
+}
+
+// With element_id or selector, a call writes there without changing what is
+// selected: the user may be working on another element
+function styleTarget(editor: Editor, opts: StyleOptions): string {
+  const components = elementsOf(editor, opts.element_id)
+  if (!opts.selector?.trim()) return chosenSelector(editor, components)
+  const { cs, target } = checkedSelector(editor, opts.selector, components)
+  if (components.length > 1 && components.some(component => !matchSelectorAll(target, [component]))) {
+    throw new Error(`Selector "${opts.selector}" does not match all the selected elements. ${NOTHING_CHANGED} Set element_id, or a selector they all match.`)
+  }
+  return complexSelectorToString(cs)
+}
+
+function breakpointOf(editor: Editor, atRule: string | undefined): string {
+  const device = atRule && editor.Devices.getDevices().find(d => d.get('widthMedia') && atRule.includes(`(max-width: ${d.get('widthMedia')})`))
+  return device ? ` (breakpoint ${device.getName()})` : atRule ? ` (${atRule})` : ''
+}
+
 export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:get', {
     run() {
@@ -160,53 +227,29 @@ export default function registerCommands(editor: Editor) {
   })
 
   editor.Commands.add('selector:set', {
-    run(_ed: Editor, _sender: unknown, cmdOpts: { selector?: string } = {}) {
+    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
       const components = selectedElements(editor)
-      const selector = cmdOpts.selector?.trim()
-      if (!selector) throw new Error('Required: selector. Example: ".card" or ".card:hover".')
-      const outside = selector.replace(/\([^)]*\)|\[[^\]]*\]/g, '')
-      if (outside.includes(',') || outside.startsWith('@')) {
-        throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a breakpoint, call breakpoint(action:'select').`)
-      }
-      const invalid = `Invalid selector "${selector}". ${NOTHING_CHANGED} Examples: ".card", ".card:hover", ".list > .card".`
-      const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most and a state from style(action:'states'), like ".list > .card" or ".card:hover".`
-      try {
-        document.createDocumentFragment().querySelector(selector)
-      } catch (e) {
-        throw new Error(invalid, { cause: e })
-      }
-      let cs: ComplexSelector
-      try {
-        cs = complexSelectorFromString(selector, '')
-      } catch (e) {
-        throw new Error(unsupported, { cause: e })
-      }
-      const target = complexSelectorToString(withoutStates(cs))
-      if (!target) throw new Error(`Selector "${selector}" has no class, tag or id. ${NOTHING_CHANGED} Put one before the state, like ".card:hover".`)
-      if (!fitsModel(selector, cs)) throw new Error(unsupported)
-      // Despite its name, matchSelectorAll is true when some of the elements match
-      if (!matchSelectorAll(target, components)) throw new Error(notMatching(editor, components[0], selector, target))
+      const { cs, target } = checkedSelector(editor, cmdOpts.selector, components)
       const stored = toStore(cs, components)
       components.forEach(component => component.set('selector', stored))
       const left = components.filter(component => !matchSelectorAll(target, [component]))
       return left.length
-        ? { warning: `Selector "${selector}" is chosen, but style(action:'set') will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call style(action:'select') with a selector they all match.` }
+        ? { warning: `Selector "${cmdOpts.selector?.trim()}" is chosen, but style(action:'set') will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call style(action:'select') with a selector they all match.` }
         : {}
     },
   })
 
   editor.Commands.add('selector:list-rules', {
-    run() {
-      selectedElements(editor)
-      return getSelectors(editor).map(cs => complexSelectorToString(cs))
+    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
+      const lines = getSelectors(editor, elementsOf(editor, cmdOpts.element_id))
+        .map(cs => complexSelectorToString(cs) + breakpointOf(editor, cs.atRule))
+      return lines.length ? [...new Set(lines)].join('\n') : 'No style applies to this element yet.'
     },
   })
 
-  const chosenRule = (): CssRule => getOrCreateRule(editor, chosenSelector(editor))
-
   editor.Commands.add('styles:get', {
-    run() {
-      const selector = chosenSelector(editor)
+    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
+      const selector = styleTarget(editor, cmdOpts)
       return {
         selector,
         media: media(editor),
@@ -216,16 +259,16 @@ export default function registerCommands(editor: Editor) {
   })
 
   editor.Commands.add('styles:set', {
-    run(_ed: Editor, _sender: unknown, cmdOpts: { css?: string } = {}) {
+    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
       const style = typeof cmdOpts.css === 'string' ? parseDeclarations(cmdOpts.css) : {}
       if (!Object.keys(style).length) throw new Error('Required: css. Example: {"css": "display: flex; gap: 16px"}.')
-      chosenRule().addStyle(style)
+      getOrCreateRule(editor, styleTarget(editor, cmdOpts)).addStyle(style)
     },
   })
 
   editor.Commands.add('styles:remove', {
-    run(_ed: Editor, _sender: unknown, cmdOpts: { property?: string } = {}) {
-      const selector = chosenSelector(editor)
+    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
+      const selector = styleTarget(editor, cmdOpts)
       const { property } = cmdOpts
       if (!property) throw new Error('Required: property. Example: "color".')
       const rule = editor.CssComposer.getRule(selector, ruleOptions(editor))
@@ -236,15 +279,6 @@ export default function registerCommands(editor: Editor) {
         throw new Error(`Property "${property}" is not set on "${selector}"${screen}. ${set.length ? `Set properties: ${set.join(', ')}.` : 'It has no properties set.'} ${NOTHING_CHANGED}`)
       }
       rule.removeStyle(property)
-    },
-  })
-
-  editor.Commands.add('selector:info', {
-    run() {
-      return {
-        states: PSEUDO_CLASSES.filter(pseudo => !PSEUDO_ELEMENTS.has(pseudo.type)).map(pseudo => pseudo.type),
-        examples: ['.card', '.card:hover', '.list > .card', '.list .card', '.card + .card', '.card:has(img)', '.btn:not(.off)', '.item:nth-child(2n)'],
-      }
     },
   })
 }

@@ -1326,7 +1326,7 @@ The user may have selected an element before asking you to change it: website(ac
 An answer shows the selection (a "selection" object, or a last line "selection: ...") only when it is new to you or the call failed.
 breakpoint(action:'select') chooses the breakpoint that styles are written for.
 
-TO STYLE: element(action:'select') an element, style(action:'select') a selector that matches it (for a new class, element(action:'update', add_class) first), then one style(action:'set') with all the CSS.
+TO STYLE: one style(action:'set', element_id, selector, css) with all the CSS; the selector must match the element (for a new class, element(action:'update', add_class) first). Nothing changes if a step fails.
 
 IDS: element(action:'insert') returns the new ids in "created": use them, no need to list. Creating one element or page selects it.
 
