@@ -426,7 +426,14 @@ export default function(editor: Editor): Filter[] {
       label: 'slice',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
-      apply: (arr, options) => (arr as unknown[]).slice(options.start as number, options.end as number),
+      // `end` is a length, not an end index, to match the Liquid `slice: start, length`
+      // filter used on the published site. The option key stays `end` so that sites
+      // saved before this change keep publishing the same Liquid.
+      apply: (arr, options) => {
+        const start = options.start as number
+        const length = options.end as number
+        return (arr as unknown[]).slice(start, start + length)
+      },
       options: {
         start: 0,
         end: 0,
@@ -455,7 +462,7 @@ export default function(editor: Editor): Filter[] {
           value=${options.end || []}
           name="end"
         >
-          <label slot="label">End index</label>
+          <label slot="label">Length</label>
         </state-editor>
       `,
     }, {
