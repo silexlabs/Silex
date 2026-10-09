@@ -193,3 +193,18 @@ test('Links to a page follow its fixed permalink', () => {
   expect(linkToPermalink(editor, '/about/#team')).toBe('/a-propos/#team')
   expect(linkToPermalink(editor, '/contact/')).toBe('/contact/')
 })
+
+test('Permalink of a collection page: fixed text around a field of the item of the page', () => {
+  const fixed = (value: string) => ({ type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value', kind: 'scalar', typeIds: ['String'], options: { value } })
+  const settings = {
+    eleventyPageData: PAGE_DATA_TEST,
+    eleventyPermalink: JSON.stringify([
+      { type: 'state', storedStateId: 'items', componentId: 'body', exposed: true, label: 'Pagination items' },
+      { type: 'filter', id: 'first', label: 'first', options: {} },
+      { type: 'property', propType: 'field', fieldId: 'slug', label: 'slug', kind: 'scalar', typeIds: ['String'], dataSourceId: 'datasourceIdTest' },
+      { type: 'filter', id: 'prepend', label: 'prepend', options: { value: JSON.stringify([fixed('blog/')]) } },
+    ]),
+  } as Silex11tyPluginWebsiteSettings
+  expect(getFrontMatter(PAGE_TEST, settings, 'post', '')).toMatch(
+    /permalink: "\/{% assign (var_\w+) = pagination\.items \| first %}{% assign (var_\w+) = \1\.slug \| prepend: \\"blog\/\\" %}{{ \2 }}\/"/)
+})

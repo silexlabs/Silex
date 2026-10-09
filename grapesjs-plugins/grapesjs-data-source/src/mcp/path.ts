@@ -182,14 +182,41 @@ export function resolvePath(segments: Segment[], from: Field | null, start: stri
   return { tokens, field: current! }
 }
 
-export function expressionToPath(expression: StoredToken[], sourceOf: (token: StoredProperty) => string | null): string {
+export function expressionToPath(expression: StoredToken[], sourceOf: (token: StoredProperty) => string | null, pageBodyId?: string): string {
+  // Text added at the end, like ./blog/{item.slug}/, is shown around the path
+  const textOf = (token: StoredToken): string | null => {
+    if (token.type !== 'filter' || (token.id !== 'prepend' && token.id !== 'append')) return null
+    const option = (token as { options?: { value?: string } }).options?.value
+    try {
+      const parts = option ? JSON.parse(option) : []
+      return parts.length === 1 && parts[0]?.fieldId === 'fixed' ? String(parts[0].options?.value ?? '') : null
+    } catch {
+      return null
+    }
+  }
+  let end = expression.length
+  while (end > 0 && textOf(expression[end - 1]) !== null) end--
+  let before = ''
+  let after = ''
+  for (const token of expression.slice(end)) {
+    if ((token as { id: string }).id === 'prepend') before = textOf(token) + before
+    else after += textOf(token)
+  }
   let path = ''
-  for (const token of expression) {
+  let pageItems = false
+  for (const token of expression.slice(0, end)) {
     switch (token.type) {
     case 'state':
+      pageItems = token.storedStateId === 'items' && !!token.exposed && token.componentId === pageBodyId
       path = token.storedStateId === '__data' && !token.exposed ? 'item' : `state ${token.label || token.storedStateId}`
       break
     case 'filter':
+      // The items of a collection page, then the first one: the item of the page
+      if (pageItems && token.id === 'first') {
+        pageItems = false
+        path = 'item'
+        break
+      }
       path += ` | ${token.id}`
       break
     case 'property': {
@@ -203,5 +230,5 @@ export function expressionToPath(expression: StoredToken[], sourceOf: (token: St
     }
     }
   }
-  return path
+  return before || after ? `${before}{${path}}${after}` : path
 }

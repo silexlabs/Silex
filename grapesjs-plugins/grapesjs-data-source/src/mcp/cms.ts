@@ -309,13 +309,48 @@ interface Resolved {
   ds: IDataSource
 }
 
+// Text around one path, like ./blog/{item.slug}/: the text goes in the published
+// Liquid and JavaScript, so it keeps to the characters of an address
+const TEMPLATE = /^([^{}]*)\{([^{}]+)\}([^{}]*)$/
+const TEMPLATE_TEXT = /^[A-Za-z0-9/_.#?=&:~-]*$/
+
+function fixedText(value: string): StoredToken {
+  return { type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value', kind: 'scalar', typeIds: ['String'], options: { value } } as StoredToken
+}
+
+function textFilter(id: 'prepend' | 'append', value: string): StoredToken {
+  return { type: 'filter', id, label: id, options: { value: JSON.stringify([fixedText(value)]) } } as unknown as StoredToken
+}
+
+function templateExpression(editor: Editor, component: Component | undefined, path: string, ownLoopIsItem: boolean, link = false): Resolved {
+  if (!path.includes('{') && !path.includes('}')) return pathExpression(editor, component, path, ownLoopIsItem)
+  const [, before, inner, after] = TEMPLATE.exec(path) ?? []
+  if (inner === undefined) throw new Error(`Write text around one path in braces, like ./blog/{item.slug}/. Got "${path}".`)
+  if (!TEMPLATE_TEXT.test(before) || !TEMPLATE_TEXT.test(after)) {
+    throw new Error('Outside the braces, only letters, digits and / _ . # ? = & : ~ - are allowed.')
+  }
+  // The value comes from the CMS: it must not end up after javascript: in a link
+  const scheme = link ? /^([a-z][a-z0-9+.-]*):/i.exec(before)?.[1].toLowerCase() : undefined
+  if (scheme && !['http', 'https', 'mailto', 'tel'].includes(scheme)) throw new Error(`A link can start with http:, https:, mailto: or tel:, not ${scheme}:.`)
+  const resolved = pathExpression(editor, component, inner.trim(), ownLoopIsItem)
+  if (resolved.field.kind !== 'scalar') throw new Error(`${inner.trim()} is not a value: text can only go around a value, like item.slug.`)
+  return {
+    ...resolved,
+    expression: [
+      ...resolved.expression,
+      ...(before ? [textFilter('prepend', before)] : []),
+      ...(after ? [textFilter('append', after)] : []),
+    ],
+  }
+}
+
 // The loop of an element is item for its own content, not for its own loop
 function pathExpression(editor: Editor, component: Component | undefined, path: string, ownLoopIsItem: boolean): Resolved {
   const [first, ...rest] = parsePath(path)
   if (first.args) throw new Error(`A path starts with a source id or item, without arguments: ${first.name}.${rest[0]?.name ?? 'field'}.`)
   if (first.name === 'item') {
     const loop = component && loopAround(component, ownLoopIsItem)
-    if (!loop) throw new Error('No loop around the selected element. Select the element to repeat, bind it with bind_to "loop", then bind its children with item.<field>.')
+    if (!loop) return pageItemExpression(editor, component, rest)
     const loopField = getExpressionResultType(getState(loop, Properties.__data, false)!.expression, loop)
     const ds = loopField?.dataSourceId === undefined ? undefined : getAllDataSources().find(d => d.id === loopField.dataSourceId)
     if (!loopField || !ds) throw new Error(`The loop on element ${elementId(editor, loop)} has an unknown type. Bind it again with bind_to "loop".`)
@@ -338,6 +373,33 @@ function pathExpression(editor: Editor, component: Component | undefined, path: 
   const lookup = lookupFor(ds)
   const { tokens, field } = resolvePath(rest, null, first.name, lookup)
   return { expression: tokens, field, lookup, ds }
+}
+
+// On a collection page, item is the item of the page: Silex keeps the items of the
+// page in a state of the body (cms/states.ts)
+const PAGE_ITEMS = 'items'
+
+function pageItemExpression(editor: Editor, component: Component | undefined, rest: ReturnType<typeof parsePath>): Resolved {
+  const body = (component ? component.parents().pop() ?? component : undefined) ?? editor.Pages.getSelected()?.getMainComponent()
+  const items = body && getState(body, PAGE_ITEMS, true)
+  const itemsField = items?.expression?.length ? getExpressionResultType(items.expression, body!) : null
+  if (!body || !itemsField) {
+    throw new Error('No loop around the element, and this page is not a collection page. Bind an element with bind_to "loop", or the page with page(action:\'bind\', bind_to:\'collection\').')
+  }
+  const ds = itemsField.dataSourceId === undefined ? undefined : getAllDataSources().find(d => d.id === itemsField.dataSourceId)
+  if (!ds) throw new Error('The collection of this page has an unknown type. Bind the page again with bind_to "collection".')
+  const state: State = {
+    type: 'state',
+    storedStateId: PAGE_ITEMS,
+    componentId: getOrCreatePersistantId(body),
+    exposed: true,
+    label: 'Pagination items',
+  }
+  const firstItem = { type: 'filter', id: 'first', label: 'first', options: {} } as unknown as StoredToken
+  const lookup = lookupFor(ds)
+  const item: Field = { ...itemsField, kind: 'object' }
+  const { tokens, field } = rest.length ? resolvePath(rest, item, 'item', lookup) : { tokens: [], field: item }
+  return { expression: [state, firstItem, ...tokens], field, lookup, ds }
 }
 
 function checkKind(target: BindTo, path: string, field: Field, lookup: SchemaLookup) {
@@ -387,7 +449,8 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
   const attribute = target === 'attribute' ? attributeName(opts.attribute) : null
   const operator = opts.operator ?? UnariOperator.TRUTHY
   if (target === 'condition' && operator !== UnariOperator.TRUTHY && operator !== UnariOperator.FALSY) throw new Error('operator must be truthy or falsy.')
-  const { expression, field, lookup, ds } = pathExpression(editor, component, opts.path, target !== 'loop')
+  if ((target === 'loop' || target === 'condition') && /[{}]/.test(opts.path)) throw new Error(`A ${target} takes a path, without text around it.`)
+  const { expression, field, lookup, ds } = templateExpression(editor, component, opts.path, target !== 'loop', target === 'attribute')
   checkKind(target, opts.path, field, lookup)
   if (target === 'loop') {
     const last = expression[expression.length - 1] as StoredProperty
@@ -431,7 +494,7 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
     throw undo(why ? `The data query failed with this binding: ${sentence(why)}. Check the arguments in path.` : `Source "${ds.id}" sent no data for this page.`)
   }
 
-  const inLoop = expression[0]?.type === 'state'
+  const inLoop = expression[0]?.type === 'state' && (expression[0] as State).storedStateId === Properties.__data
   switch (target) {
   case 'loop': {
     const value = getValue(expression, component, false)
@@ -477,7 +540,7 @@ function bindings(editor: Editor, opts: CmsOptions): string {
   const lines = getStateIds(component, false).flatMap(id => {
     const state = getState(component, id, false)
     if (!state?.expression?.length) return []
-    const path = expressionToPath(state.expression as StoredToken[], sourceOf)
+    const path = expressionToPath(state.expression as StoredToken[], sourceOf, getPersistantId(component.parents().pop() ?? component) ?? undefined)
     switch (id) {
     case Properties.innerHTML: return [`content: ${path}`]
     case Properties.__data: return [`loop: ${path}`]
@@ -490,6 +553,21 @@ function bindings(editor: Editor, opts: CmsOptions): string {
 }
 
 export default (editor: Editor) => {
+  // For the page tool of Silex: the same paths as the bindings of an element
+  editor.Commands.add(`${CMD_CMS}:resolve`, {
+    run(_editor: Editor, _sender: unknown, { path, list }: { path?: string, list?: boolean }) {
+      if (!path) throw new Error('Set path.')
+      const body = editor.Pages.getSelected()?.getMainComponent()
+      const { expression, field, lookup } = list ? pathExpression(editor, body, path, false) : templateExpression(editor, body, path, false)
+      checkKind(list ? 'loop' : 'content', path, field, lookup)
+      return { expression, fields: list ? itemFields(lookup.type(field.typeIds[0]), lookup) : [] }
+    },
+  })
+  editor.Commands.add(`${CMD_CMS}:path-of`, {
+    run(_editor: Editor, _sender: unknown, { expression, body }: { expression: StoredToken[], body: Component }) {
+      return expressionToPath(expression, token => token.dataSourceId === undefined ? null : String(token.dataSourceId), getPersistantId(body) ?? undefined)
+    },
+  })
   const run: Record<Action, (opts: CmsOptions) => unknown> = {
     list: () => list(),
     add: opts => add(editor, opts),

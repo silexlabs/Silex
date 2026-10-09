@@ -35,6 +35,18 @@ test('paths become the tokens the editor stores, and back', () => {
   expect(resolvePath(parsePath('item.featuredImage.node.sourceUrl').slice(1), item, 'item', lookup).tokens.map(t => t.fieldId))
     .toEqual(['featuredImage', 'node', 'sourceUrl'])
   expect(resolvePath(parsePath('item.author.model').slice(1), item, 'item', lookup).tokens[0].typeIds).toEqual(['Bot'])
+
+  const pageItem = [
+    { type: 'state', storedStateId: 'items', componentId: 'body', exposed: true, label: 'Pagination items' },
+    { type: 'filter', id: 'first', label: 'first', options: {} },
+    ...resolvePath(parsePath('item.title').slice(1), item, 'item', lookup).tokens,
+  ] as unknown as Parameters<typeof expressionToPath>[0]
+  expect(expressionToPath(pageItem, t => String(t.dataSourceId), 'body')).toBe('item.title')
+  expect(expressionToPath(pageItem, t => String(t.dataSourceId), 'other')).toBe('state Pagination items | first.title')
+  expect(expressionToPath(pageItem.slice(0, 1), t => String(t.dataSourceId), 'body')).toBe('state Pagination items')
+  const fixed = (value: string) => JSON.stringify([{ type: 'property', fieldId: 'fixed', options: { value } }])
+  const link = [...pageItem, { type: 'filter', id: 'prepend', options: { value: fixed('./blog/') } }, { type: 'filter', id: 'append', options: { value: fixed('/') } }] as unknown as Parameters<typeof expressionToPath>[0]
+  expect(expressionToPath(link, t => String(t.dataSourceId), 'body')).toBe('./blog/{item.title}/')
 })
 
 test('paths that cannot work say what to do', () => {
