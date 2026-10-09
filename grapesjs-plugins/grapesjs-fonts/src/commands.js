@@ -1,4 +1,4 @@
-import { getHtml, refresh, getAvailableFonts, getApiUrl, loadFontList } from './fonts'
+import { getHtml, refresh, getAvailableFonts, getApiUrl, loadFontList, fontValue } from './fonts'
 
 export const cmdGetCss = 'get-fonts-css'
 export const cmdGetHtml = 'get-fonts-html'
@@ -76,7 +76,7 @@ export default function (editor, opts) {
       name: fontData.family,
       category: fontData.category,
       variants: fontData.variants,
-      value: `"${fontData.family}", ${fontData.category}`,
+      value: fontValue(fontData),
     }
     fonts.push(newFont)
     editor.getModel().set('fonts', [...fonts])
