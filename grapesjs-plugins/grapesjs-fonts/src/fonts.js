@@ -105,6 +105,13 @@ export function getApiUrl() {
   return fontApi
 }
 
+// Google's handwriting and display categories are not CSS generic families
+const GENERIC = { serif: 'serif', 'sans-serif': 'sans-serif', monospace: 'monospace', handwriting: 'cursive', display: 'sans-serif' }
+
+export function fontValue(font) {
+  return `"${font.family}", ${GENERIC[font.category] ?? 'sans-serif'}`
+}
+
 /**
  * Load the available fonts from google
  */
@@ -359,7 +366,7 @@ function installFont(editor, opts, font, fontsList) {
       name: font.family,  // Ensure the font family name is set for both 'family' and 'name'
       category: font.category,
       variants: font.variants,
-      value: `"${font.family}", ${font.category}`
+      value: fontValue(font),
     })
   }
   saveFonts(editor, opts)
