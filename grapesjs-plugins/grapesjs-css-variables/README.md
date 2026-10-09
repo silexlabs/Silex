@@ -95,6 +95,7 @@ Customize the plugin by passing options:
 | `enableSizes` | Enable size variables | `true` |
 | `enableTypography` | Enable font-family variables | `true` |
 | `presets` | Pre-defined variables for first load (array of `{name, value, type}`) | `[]` |
+| `properties` | Extra variable-enabled Style Manager targets merged into the defaults (array of `{sector, property, subProperty?, type}`) | `[]` |
 | `i18n` | Internationalization overrides | `{}` |
 
 Variable names are simple CSS custom properties: `--primary`, `--spacing`, etc.
@@ -113,6 +114,46 @@ pluginsOpts: {
   },
 },
 ```
+
+---
+
+## Variable-enabled properties
+
+The plugin ships with defaults covering the standard GrapesJS properties, so it
+works standalone. Host apps declare their own properties where they create them:
+
+```js
+// Top-level property
+editor.CssVariables.addVariableProperty({
+  sector: 'typography',
+  property: 'text-underline-offset',
+  type: 'size', // 'color' | 'size' | 'font-family' (aliases: 'font', 'typo', 'typography')
+})
+
+// Sub-property of a composite: the parent is part of the key, so identical
+// names in different parents (e.g. `border-color` under `border` vs `border-top`)
+// stay distinct
+editor.CssVariables.addVariableProperty({
+  sector: 'extra',
+  property: 'transform-origin',
+  subProperty: 'transform-origin-x',
+  type: 'size',
+})
+
+// Remove again (type optional: omit to remove all types on that target)
+editor.CssVariables.removeVariableProperty({
+  sector: 'extra',
+  property: 'transform-origin',
+  subProperty: 'transform-origin-x',
+  type: 'size',
+})
+
+editor.CssVariables.getVariableProperties() // copy of the registry
+```
+
+The same descriptors can be passed as the `properties` plugin option. The calls
+are idempotent and refresh the Style Manager, so they can run right after
+`StyleManager.addProperty`, e.g. in Silex `editor/grapesjs/css-props.ts`.
 
 ---
 
