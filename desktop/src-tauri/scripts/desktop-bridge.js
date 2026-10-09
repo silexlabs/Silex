@@ -80,35 +80,28 @@
   // MCP helpers, called by the Rust side through eval_js.
   // Nothing else belongs here: a capability's own logic lives in its plugin.
   window.__silexMcp = {
-    // Context joined to every dynamic tool response, so the agent knows what is selected.
+    // Named by the ids the tools take, in the order they are chosen
     getSelectionState(editor) {
-      const dev = editor.Devices.getSelected();
-      const page = editor.Pages.getSelected();
-      const sel = editor.getSelected();
-      const rule = editor.StyleManager?.getSelected?.();
-
+      const element = editor.getSelected();
       const state = {
-        breakpoint: dev?.get('name') ?? dev?.id ?? 'Desktop',
-        page: page?.get('name') ?? page?.id ?? null,
-        component: sel?.getId() ?? null,
-        selector: rule?.selectorsToString?.() ?? null
+        page: editor.Pages.getSelected()?.id ?? null,
+        device: editor.Devices.getSelected()?.getName() ?? null,
+        element: element && editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component: element }) : null,
       };
-
-      // Add hierarchy warnings so SLMs know what is missing
-      const warnings = [];
-      if (!state.page) warnings.push("No page selected — use pages_select first");
-      if (!state.component) warnings.push("No element selected — use components_select before selector/style/symbol operations");
-      if (!state.selector) warnings.push("No selector active — use selector_set before styles_set");
-      if (warnings.length > 0) state.warnings = warnings;
-
+      // A change inside a symbol instance changes it on every page
+      for (let c = element; c; c = c.parent()) {
+        const symbol = editor.Components.getSymbolInfo(c);
+        if (symbol?.isRoot) {
+          state.symbol = symbol.main?.getId() ?? null;
+          break;
+        }
+      }
+      state.selector = element && editor.Commands.has('selector:get') ? editor.runCommand('selector:get').selector : null;
       return state;
     },
 
-    // Capabilities the current page exposes, turned into MCP tools by the Rust side.
-    getCapabilities() {
-      const caps = window.grapesjsAiCapabilities;
-      if (!caps?.getAllCapabilities) return [];
-      return caps.getAllCapabilities();
+    getTools() {
+      return window.grapesjsAiCapabilities?.getTools?.() ?? [];
     },
   };
 

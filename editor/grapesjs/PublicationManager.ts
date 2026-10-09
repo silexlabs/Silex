@@ -146,11 +146,11 @@ export class PublicationManager {
     // Register AI capabilities
     editor.on('ai-capabilities:ready', (addCapability) => {
       addCapability({
-        id: cmdPublicationStart,
+        tool: 'website',
+        action: 'publish',
         command: cmdPublicationStart,
-        description: 'Publish the website',
+        description: 'publish the open website.',
         openWorld: true,
-        tags: ['publication'],
       })
     })
     // Add the publication dialog to the editor

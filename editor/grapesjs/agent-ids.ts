@@ -95,14 +95,14 @@ export function findByAgentId(editor: Editor, id: string): Component | undefined
   const reg = registry(editor)
   const generation = /^([a-z]{1,2})\d+$/.exec(id)?.[1]
   if (generation && generation !== reg.generation) {
-    throw new Error(`No element "${id}": element ids change each time the website is opened. Call components_list to get the current ids.`)
+    throw new Error(`No element "${id}": element ids change each time the website is opened. Call element(action:'list') to get the current ids.`)
   }
   const component = reg.components.get(id)
   if (!component) return undefined
   const page = pageOf(editor, component)
-  if (!page) throw new Error(`Element "${id}" was removed. Call components_list to get the current ids.`)
+  if (!page) throw new Error(`Element "${id}" was removed. Call element(action:'list') to get the current ids.`)
   if (page !== editor.Pages.getSelected()) {
-    throw new Error(`Element "${id}" is on another page. Call pages_select with id "${page.id}" first.`)
+    throw new Error(`Element "${id}" is on another page. Call page(action:'select', page_id:"${page.id}") first.`)
   }
   return component
 }

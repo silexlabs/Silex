@@ -1,5 +1,5 @@
-import { cmsCapability } from './mcp/cms'
+import { cmsCapabilities } from './mcp/cms'
 
 export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
-  addCapability(cmsCapability)
+  cmsCapabilities.forEach(capability => addCapability(capability))
 }

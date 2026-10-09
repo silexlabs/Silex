@@ -105,15 +105,15 @@ function insertSymbolInstance(editor: Editor, symbolId: string, position = 'insi
   const symbols = editor.Components.getSymbols()
   const symbol = symbols.find(s => s.getId() === symbolId)
   if (!symbol) {
-    throw new Error(`No symbol "${symbolId}". Nothing was changed. ${symbols.length ? `Symbols: ${symbols.map(s => `${s.getId()} (${s.getName()})`).join(', ')}.` : 'There is no symbol yet: create one with symbols_add.'}`)
+    throw new Error(`No symbol "${symbolId}". Nothing was changed. ${symbols.length ? `Symbols: ${symbols.map(s => `${s.getId()} (${s.getName()})`).join(', ')}.` : 'There is no symbol yet: create one with symbol(action:\'create\').'}`)
   }
   if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
   const target = editor.getSelected() ?? editor.getWrapper()!
   const parent = position === 'inside' ? target : target.parent()
   if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
   const at = position === 'inside' ? undefined : target.index() + (position === 'after' ? 1 : 0)
-  if (!allowDrop(editor, parent)) throw new Error('A symbol can not go inside a symbol. Nothing was changed. Select an element outside of it with components_select, or change position.')
-  if (!editor.Components.canMove(parent, symbol, at).result) throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed. Select another element with components_select, or change position.`)
+  if (!allowDrop(editor, parent)) throw new Error('A symbol can not go inside a symbol. Nothing was changed. Select an element outside of it with element(action:\'select\'), or change position.')
+  if (!editor.Components.canMove(parent, symbol, at).result) throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed. Select another element with element(action:'select'), or change position.`)
   const [instance] = parent.append(editor.Components.addSymbol(symbol)!, { at })
   editor.select(instance)
   return editor.Commands.has('agent-ids:created')

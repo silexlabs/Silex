@@ -203,7 +203,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(CMD_DS_GET_STATES, {
     run(editor: Editor, sender: any, options: any = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components_select first.')
+      if (!component) throw new Error('No component selected. Use element(action:\'select\') first.')
 
       const exported = options.exported !== false
       const ids = getStateIds(component, exported)
@@ -223,7 +223,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(CMD_DS_SET_STATE, {
     run(editor: Editor, sender: any, options: any = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components_select first.')
+      if (!component) throw new Error('No component selected. Use element(action:\'select\') first.')
 
       const { stateId, expression, label, exported } = options
       if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href")')
@@ -255,7 +255,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(CMD_DS_REMOVE_STATE, {
     run(editor: Editor, sender: unknown, options: { component?: Component; stateId?: string; exported?: boolean } = {}) {
       const component = options.component || editor.getSelected()
-      if (!component) throw new Error('No component selected. Use components_select first.')
+      if (!component) throw new Error('No component selected. Use element(action:\'select\') first.')
 
       const { stateId, exported } = options
       if (!stateId) throw new Error('Required: stateId (e.g. "innerHTML", "src", "href"). Use element(action:\'bindings\') to list existing bindings.')
