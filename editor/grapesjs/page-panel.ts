@@ -18,6 +18,7 @@
 import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
+import { getPageSlug } from '~/common/page'
 
 const pluginName = 'page-panel'
 let open
@@ -37,12 +38,26 @@ export const cmdRenamePage = 'pages:rename'
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
 }
-function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }) {
+function assertNameFree(editor: Editor, name: string, renamed?: Page) {
+  if (!name) throw new Error('Required: name. Nothing was changed.')
+  if (!getPageSlug(name).replace(/-/g, '')) throw new Error(`Name "${name}" gives an empty address: use letters or digits. Nothing was changed.`)
+  const taken = editor.Pages.getAll().find(p => p !== renamed && getPageSlug(p.getName()) === getPageSlug(name))
+  if (taken) {
+    throw new Error(`Name "${name}" gives the same address as page "${taken.getName() || '(home, no name)'}". Choose another name. Nothing was changed.`)
+  }
+}
+
+function created(page: Page) {
+  return { created: [{ id: page.id, name: page.getName() }] }
+}
+
+function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }, name?: string) {
+  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
   const newPageName = config.newPageName || 'New page'
-  let pageName = newPageName
+  let pageName = name || newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
@@ -51,15 +66,17 @@ function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDi
   // Select the new page
   editor.Pages.select(page)
   // Open page settings to edit the name
-  editor.runCommand(config.cmdOpenNewPageDialog, {page})
+  if (name === undefined) editor.runCommand(config.cmdOpenNewPageDialog, {page})
+  return created(page!)
 }
 
-function clonePage(editor: Editor, page: Page) {
+function clonePage(editor: Editor, page: Page, name?: string) {
+  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
   const newPageName = (page.getName() || 'main') + ' copy'
-  let pageName = newPageName
+  let pageName = name || newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
@@ -86,6 +103,7 @@ function clonePage(editor: Editor, page: Page) {
 
   // Select the new page
   editor.Pages.select(newPage)
+  return created(newPage!)
 }
 
 function removePage(editor, page) {
@@ -315,9 +333,9 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     // document.addEventListener('mousedown', close)
 
     // add useful commands
-    editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
+    editor.Commands.add(cmdAddPage, (_editor: Editor, _sender: any, options: { name?: string } = {}) => addPage(editor, opts, options.name))
     editor.Commands.add(cmdRemovePage, () => removePageWithConfirm(editor, editor.Pages.getSelected()))
-    editor.Commands.add(cmdClonePage, () => clonePage(editor, editor.Pages.getSelected()))
+    editor.Commands.add(cmdClonePage, (_editor: Editor, _sender: any, options: { name?: string } = {}) => clonePage(editor, editor.Pages.getSelected(), options.name))
     editor.Commands.add(cmdSelectNextPage, () => selectNextPage(editor))
     editor.Commands.add(cmdSelectPrevPage, () => selectPrevPage(editor))
     editor.Commands.add(cmdSelectFirstPage, () => selectPage(editor, editor.Pages.getAll()[0]))
@@ -354,6 +372,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
         ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
         : editor.Pages.getSelected()
       if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages_list to see all pages.`)
+      assertNameFree(editor, newName, page)
       page.set('name', newName)
     })
 
@@ -382,13 +401,26 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
       addCapability({
         id: cmdAddPage,
         command: cmdAddPage,
-        description: 'Create a new page',
+        description: 'Create a new page and select it',
+        inputSchema: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', description: 'Unique. The page with no name is the homepage' },
+          },
+        },
         tags: ['pages'],
       })
       addCapability({
         id: cmdClonePage,
         command: cmdClonePage,
-        description: 'Clone the selected page',
+        description: 'Clone the selected page and select the copy',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: 'Name of the copy' },
+          },
+        },
         tags: ['pages'],
       })
       addCapability({

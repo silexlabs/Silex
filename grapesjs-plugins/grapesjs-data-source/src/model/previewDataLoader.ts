@@ -29,6 +29,9 @@ interface PreviewDataLoaderState {
   editor: Editor
   currentUpdatePid: number
   lastQueries: Record<DataSourceId, string>
+  // The load in progress: a load with the same queries waits for it instead of answering stale data
+  running: Promise<unknown> | null
+  errors: Record<DataSourceId, string>
 }
 
 // Global loader instance
@@ -42,6 +45,8 @@ export function initializePreviewDataLoader(editor: Editor): void {
     editor,
     currentUpdatePid: 0,
     lastQueries: {},
+    running: null,
+    errors: {},
   }
 }
 
@@ -96,6 +101,7 @@ export async function loadPreviewData(forceRefresh: boolean = false): Promise<vo
   if (!forceRefresh && !queriesChanged) {
     // Queries haven't changed, no need to refresh data sources
     // But still trigger load end to maintain expected event flow
+    while (loader.running) await loader.running
     loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, getPreviewDataFromManager())
     return
   }
@@ -104,7 +110,10 @@ export async function loadPreviewData(forceRefresh: boolean = false): Promise<vo
   loader.lastQueries = { ...currentQueries }
 
   loader.currentUpdatePid++
-  const data = await fetchPagePreviewData(page)
+  const running = fetchPagePreviewData(page)
+  loader.running = running
+  const data = await running
+  if (loader.running === running) loader.running = null
 
   if (data !== 'interrupted') {
     loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, data)
@@ -126,6 +135,7 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
 
   // Reset preview data
   setPreviewDataInManager({})
+  loader.errors = {}
 
   try {
     const results = await Promise.all(
@@ -146,11 +156,14 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
 
           try {
             const value = await ds.fetchValues(query)
+            if (myPid !== loader.currentUpdatePid) return
             const currentData = getPreviewDataFromManager()
             setPreviewDataInManager({ ...currentData, [dataSourceId]: value })
             return { dataSourceId, value }
           } catch (err) {
             console.error(`Error fetching preview data for data source ${dataSourceId}:`, err)
+            if (myPid !== loader.currentUpdatePid) return
+            loader.errors[dataSourceId] = (err as Error).message ?? String(err)
             loader.editor.runCommand('notifications:add', {
               type: 'error',
               group: NOTIFICATION_GROUP,
@@ -179,6 +192,13 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
     })
     return {}
   }
+}
+
+/**
+ * Why the last load got no data from a source
+ */
+export function getPreviewErrors(): Record<DataSourceId, string> {
+  return getLoader().errors
 }
 
 /**
