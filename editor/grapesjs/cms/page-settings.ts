@@ -108,7 +108,7 @@ const bodyStateKeys: (keyof Silex11tyPluginWebsiteSettings)[] = [
   'eleventyPermalink',
 ]
 
-function updateBodyStates(editor: Editor, page: Page): void {
+export function updateBodyStates(editor: Editor, page: Page): void {
   if (page) {
     const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
     if (settings) {

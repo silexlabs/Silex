@@ -20,6 +20,7 @@ import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
 import { getPageSlug } from '~/common/page'
 import { getSettingsOf, setSettingsOf, SETTINGS_SCHEMA } from './settings'
+import { pageOf } from './pages'
 
 const pluginName = 'page-panel'
 let open
@@ -42,12 +43,17 @@ interface PageOptions {
   name?: string
 }
 
-function pageOf(editor: Editor, id?: string): Page {
-  if (!id) return editor.Pages.getSelected()!
-  const page = editor.Pages.get(id)
-  if (!page) throw new Error(`No page "${id}". Pages: ${editor.Pages.getAll().map(p => `${p.id} (${p.getName() || 'home, no name'})`).join(', ')}.`)
-  return page
+// The CMS keeps the collection and the permalink as expressions: the page tool shows paths
+const CMS_SETTINGS = /^eleventy(PageData|Permalink)$/
+
+function cmsBindingsOf(editor: Editor, page: Page): Record<string, string> {
+  return editor.Commands.has('pages:cms-bindings') ? editor.runCommand('pages:cms-bindings', { page }) : {}
 }
+
+function pick(object: Record<string, string>, key: string): Record<string, string> {
+  return object[key] ? { [key]: object[key] } : {}
+}
+
 
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
@@ -358,6 +364,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
         id: p.id,
         name: p.getName(),
         selected: editor.Pages.getSelected() === p,
+        ...pick(cmsBindingsOf(editor, p), 'collection'),
       }))
     })
     editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
@@ -371,7 +378,8 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     })
     editor.Commands.add(cmdGetPage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
       const page = pageOf(editor, options.page_id)
-      return { id: page.id, name: page.getName(), ...getSettingsOf(page) }
+      const settings = Object.fromEntries(Object.entries(getSettingsOf(page)).filter(([key]) => !CMS_SETTINGS.test(key)))
+      return { id: page.id, name: page.getName(), ...settings, ...cmsBindingsOf(editor, page) }
     })
     editor.Commands.add(cmdUpdatePage, (_editor: Editor, _sender: any, options: PageOptions & Record<string, unknown> = {}) => {
       const { page_id, name, ...settings } = options
