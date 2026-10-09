@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /**
  * Extracts translatable strings from `t(editor, '...')` call sites in
- * editor/**\/*.ts and `msg('...')` call sites in server/**\/*.ts, and merges
- * them into editor/locales/en.json as identity keys (English string
- * used as its own key, matching the project's i18n house style).
+ * editor/**\/*.ts and merges them into editor/locales/en.json as identity keys
+ * (English string used as its own key, matching the project's i18n house style).
  *
  * Usage:
- *   node scripts/extract-i18n.js          Add missing keys, report unused ones
- *   node scripts/extract-i18n.js --prune  Also remove keys no longer referenced
- *   node scripts/extract-i18n.js --check  Fail (exit 1) if any key is missing,
+ *   node scripts/extract-i18n.mjs          Add missing keys, report unused ones
+ *   node scripts/extract-i18n.mjs --prune  Also remove keys no longer referenced
+ *   node scripts/extract-i18n.mjs --check  Fail (exit 1) if any key is missing,
  *                                         without writing anything
  */
 import { readFileSync, writeFileSync, readdirSync } from 'fs'
@@ -25,7 +24,6 @@ const STRING_LITERAL = '(`(?:[^`\\\\]|\\\\.)*`|\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\
 // `editor`, `this.editor`, `config.getEditor()`, etc.
 const EDITOR_ARG = '(?:[\\w.]+(?:\\([^()]*\\))?)'
 const T_CALL_RE = new RegExp(`\\bt\\(\\s*${EDITOR_ARG}\\s*,\\s*${STRING_LITERAL}`, 'g')
-const MSG_CALL_RE = new RegExp(`\\bmsg\\(\\s*${STRING_LITERAL}`, 'g')
 
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true, recursive: true })
@@ -56,12 +54,8 @@ function extractKeys(files, pattern) {
 
 const editorFiles = walk(path.join(root, 'editor'))
   .filter(f => !f.includes(`${path.sep}src${path.sep}locales${path.sep}`))
-const serverFiles = walk(path.join(root, 'server'))
 
-const foundKeys = new Set([
-  ...extractKeys(editorFiles, T_CALL_RE),
-  ...extractKeys(serverFiles, MSG_CALL_RE),
-])
+const foundKeys = extractKeys(editorFiles, T_CALL_RE)
 
 const existing = JSON.parse(readFileSync(localeFile, 'utf8'))
 const existingKeys = new Set(Object.keys(existing))
