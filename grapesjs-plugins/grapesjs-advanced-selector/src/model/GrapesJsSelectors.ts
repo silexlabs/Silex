@@ -42,8 +42,8 @@ export function getUntranslatedKeys(): string[] {
  * Get all selectors that match the selected component
  * Don't take pseudo class into account
  */
-export function getSelectors(editor: Editor): ComplexSelector[] {
-  return editor.getSelectedAll()
+export function getSelectors(editor: Editor, components: Component[] = editor.getSelectedAll()): ComplexSelector[] {
+  return components
     .flatMap((component: Component) => {
       return editor
         .CssComposer
