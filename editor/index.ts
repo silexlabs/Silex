@@ -78,9 +78,6 @@ export async function start(options = {}): Promise<void> {
   // Notify plugins
   config.emit(ClientEvent.GRAPESJS_END, { editor })
 
-  // Init internationalization module
-  editor.I18n.setLocale(config.lang)
-
   // Add default plugins
   await config.addDefaultPlugins()
 
