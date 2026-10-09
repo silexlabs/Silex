@@ -33,6 +33,8 @@ export default (editor: Editor, opts) => {
     // Override with provided config
     ...opts,
   }
+  // Label for the "decorative image" checkbox trait (#1891)
+  const labelDecorative = opts.labelDecorative || 'Decorative image'
 
   const domc = editor.DomComponents
   const imgType = domc.getType('image')
@@ -67,6 +69,40 @@ export default (editor: Editor, opts) => {
     },
   })
 
+  // A decorative image is published with an empty alt attribute (screen
+  // readers skip it). The state is derived from the alt attribute itself, so
+  // nothing extra is stored and it survives storage round-trips as-is.
+  // Grey out the alt text field while decorative is on. Best effort: the alt
+  // trait input lives in the same traits panel.
+  const setAltDisabled = (el: HTMLElement, disabled: boolean) => {
+    const panel = el.closest('.gjs-traits-cs, .gjs-traits')
+    const input = panel?.querySelector('.gjs-trt-trait__wrp-alt input')
+    if (input instanceof HTMLInputElement) input.disabled = disabled
+  }
+  editor.TraitManager.addType('decorative', {
+    createInput() {
+      const el = document.createElement('label')
+      const input = document.createElement('input')
+      input.type = 'checkbox'
+      el.append(input, document.createTextNode(labelDecorative))
+      return el
+    },
+    onEvent({ component, event }) {
+      const checked = (event.target as HTMLInputElement).checked
+      // Checked: publish alt="". Unchecked: leave the alt attribute alone so
+      // the field keeps working as before.
+      if (checked) component.addAttributes({ alt: '' })
+      const el = (event.target as HTMLElement).closest('label')
+      if (el instanceof HTMLElement) setAltDisabled(el, checked)
+    },
+    onUpdate({ elInput, component }) {
+      const decorative = (component as Component).getAttributes()?.alt === ''
+      const input = elInput.querySelector('input')
+      if (input instanceof HTMLInputElement) input.checked = decorative
+      setAltDisabled(elInput, decorative)
+    },
+  })
+
   // Add the trait to the image component
   editor.DomComponents.addType('image', {
     model: {
@@ -79,6 +115,11 @@ export default (editor: Editor, opts) => {
           // Also remove src trait in case it exists already
             .filter((trait) => !['href', 'tag-name', 'src'].includes(trait.name)),
           'src',
+          {
+            type: 'decorative',
+            name: 'decorative',
+            label: labelDecorative,
+          },
         ],
       },
     },
