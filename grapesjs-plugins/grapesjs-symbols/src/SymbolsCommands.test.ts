@@ -40,6 +40,8 @@ describe('SymbolsCommands', () => {
     }
     editor = {
       getSelected: jest.fn(() => component),
+      getSelectedAll: jest.fn(() => [component]),
+      Commands: { has: jest.fn(() => false) },
       Components: {
         getSymbols: jest.fn(() => [symbol]),
         allById: jest.fn(() => ({ parentId: symbol })),
@@ -76,7 +78,7 @@ describe('SymbolsCommands', () => {
     })
 
     it('throws if missing component', () => {
-      editor.getSelected.mockReturnValue(null)
+      editor.getSelectedAll.mockReturnValue([])
       expect(() => _addSymbol(editor, null, { component: undefined })).toThrow()
     })
   })
@@ -110,12 +112,17 @@ describe('SymbolsCommands', () => {
     it('uses the selected component when no component is provided', async () => {
       const { unbindSymbolInstance } = await import('./utils')
       expect(() => _unlinkSymbolInstance(editor, null, {})).not.toThrow()
-      expect(editor.getSelected).toHaveBeenCalled()
       expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
     })
 
+    it('refuses an unknown element_id or several selected elements, instead of acting on another element', () => {
+      expect(() => _unlinkSymbolInstance(editor, null, { element_id: 'nope' })).toThrow(/No element "nope"/)
+      editor.getSelectedAll.mockReturnValue([component, symbol])
+      expect(() => _unlinkSymbolInstance(editor, null, {})).toThrow(/Several elements/)
+    })
+
     it('throws if no component is selected', () => {
-      editor.getSelected.mockReturnValue(null)
+      editor.getSelectedAll.mockReturnValue([])
       expect(() => _unlinkSymbolInstance(editor, null, {})).toThrow('missing param component')
     })
   })

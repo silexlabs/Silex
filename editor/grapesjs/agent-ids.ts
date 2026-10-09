@@ -25,6 +25,7 @@ import { Component, Editor, Page } from 'grapesjs'
 
 const cmdAgentId = 'agent-ids:get'
 const cmdCreated = 'agent-ids:created'
+const cmdFind = 'agent-ids:find'
 
 const GENERATION_KEY = 'silex-agent-ids-generation'
 // Two letters at most: a..z, then aa..zz
@@ -132,6 +133,11 @@ export function created(editor: Editor, components: Component[], parent: Compone
 export default (editor: Editor) => {
   // For the plugins published on their own, and the desktop selection echo
   editor.Commands.add(cmdAgentId, (_ed, _sender, { component }: { component: Component }) => agentId(editor, component))
+  editor.Commands.add(cmdFind, (_ed, _sender, { id }: { id: string }) => {
+    const component = findByAgentId(editor, id)
+    if (!component) throw new Error(`No element "${id}" on this page. Use element(action:'list') to see the ids.`)
+    return component
+  })
   editor.Commands.add(cmdCreated, (_ed, _sender, { components }: { components: Component[] }) => {
     const parent = components[0]?.parent()
     if (!parent) throw new Error(`${cmdCreated} needs created components that are in the page`)

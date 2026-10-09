@@ -36,13 +36,13 @@ describe('agent ids', () => {
     const editor = open()
     const [section] = editor.getWrapper()!.components().models
     const idOf = component => editor.runCommand('agent-ids:get', { component })
-    const { id } = editor.runCommand('components:list').find(item => item.tagName === 'section')
+    const [id] = editor.runCommand('element:list').split('\n').find(line => line.includes('<section')).trim().split(' ')
     expect(id).not.toBe('hero')
 
     const [footer] = editor.getWrapper()!.append('<footer class="footer"></footer>')
-    editor.runCommand('components:move', { id, targetId: idOf(footer), position: 'after' })
+    editor.runCommand('element:move', { element_id: id, target_id: idOf(footer), position: 'after' })
     expect(section.index()).toBe(1)
-    editor.runCommand('components:select', { id })
+    editor.runCommand('element:select', { element_id: id })
     expect(editor.getSelected()).toBe(section)
 
     editor.runCommand('core:copy')
@@ -54,11 +54,11 @@ describe('agent ids', () => {
     const main = editor.Components.addSymbol(section)!
     const [instance] = editor.getWrapper()!.append(editor.Components.addSymbol(main)!)
     expect(idOf(instance)).not.toBe(id)
-    editor.runCommand('components:select', { id })
+    editor.runCommand('element:select', { element_id: id })
     expect(editor.getSelected()).toBe(section)
 
     const reopened = open()
-    expect(() => reopened.runCommand('components:select', { id }))
+    expect(() => reopened.runCommand('element:select', { element_id: id }))
       .toThrow(/change each time the website is opened/)
   })
 })

@@ -38,6 +38,7 @@ const BIND_TO = ['content', 'loop', 'attribute', 'condition'] as const
 type BindTo = typeof BIND_TO[number]
 
 interface CmsOptions {
+  element_id?: string
   source?: string
   url?: string
   backend?: string
@@ -56,35 +57,45 @@ const STATE_OF: Record<Exclude<BindTo, 'attribute'>, string> = {
   condition: Properties.condition,
 }
 
-const PARAMETERS = {
+const SOURCE = {
   source: { type: 'string', description: 'Source id, like "wp". Paths start with it' },
   url: { type: 'string', description: 'GraphQL endpoint, like https://name.wp.cms.blue/graphql' },
   backend: { type: 'string', enum: [...BACKENDS], description: 'default detected' },
   authorization: { type: 'string', description: 'Authorization header, like "Bearer <token>". Empty removes it. Never shown back' },
   type: { type: 'string', description: 'a type name from a previous answer, like Post' },
   text: { type: 'string', description: 'part of a type or field name' },
-  bind_to: { type: 'string', enum: [...BIND_TO], description: 'loop repeats the selected element for each item of a list' },
-  path: { type: 'string', description: 'wp.posts(first: 3).nodes for a loop, item.title inside a loop (item = the closest loop). schema: lists the fields of what the path leads to' },
+  path: { type: 'string', description: 'lists the fields of what the path leads to, like wp.posts.nodes' },
+}
+
+const BINDING = {
+  element_id: { type: 'string', description: 'Element id, like "ab12". Default: the selected element' },
+  bind_to: { type: 'string', enum: [...BIND_TO], description: 'loop repeats the element for each item of a list' },
+  path: { type: 'string', description: 'wp.posts(first: 3).nodes for a loop, item.title inside a loop (item = the closest loop)' },
   attribute: { type: 'string', description: 'bind_to attribute: src, href, alt…' },
   operator: { type: 'string', enum: [UnariOperator.TRUTHY, UnariOperator.FALSY], description: 'bind_to condition: show the element when the value is truthy (default) or falsy' },
 }
 
-const ACTION_OF: Record<Action, { description: string, parameters: (keyof typeof PARAMETERS)[], required?: (keyof typeof PARAMETERS)[], readOnly?: boolean }> = {
-  list: { description: 'the sources.', parameters: [], readOnly: true },
-  add: { description: 'tests the connection to a GraphQL API, adds it and lists its collections.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source', 'url'] },
-  update: { description: 'change a source, tested like add.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source'] },
-  remove: { description: 'remove a source no element uses.', parameters: ['source'], required: ['source'] },
-  schema: { description: 'the collections of a source, the fields of a type or of a path. Source optional when there is one.', parameters: ['source', 'type', 'path'], readOnly: true },
-  search: { description: 'fields and types whose name contains text.', parameters: ['source', 'text'], required: ['text'], readOnly: true },
-  bind: { description: 'bind the selected element to data.', parameters: ['bind_to', 'path', 'attribute', 'operator'], required: ['bind_to', 'path'] },
-  unbind: { description: 'remove a binding of the selected element.', parameters: ['bind_to', 'attribute'], required: ['bind_to'] },
-  bindings: { description: 'the bindings of the selected element.', parameters: [], readOnly: true },
+interface ActionDef { tool: 'cms' | 'element', description: string, parameters: string[], required?: string[], readOnly?: boolean }
+
+const ACTION_OF: Record<Action, ActionDef> = {
+  list: { tool: 'cms', description: 'the sources.', parameters: [], readOnly: true },
+  add: { tool: 'cms', description: 'tests the connection to a GraphQL API, adds it and lists its collections.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source', 'url'] },
+  update: { tool: 'cms', description: 'change a source, tested like add.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source'] },
+  remove: { tool: 'cms', description: 'remove a source no element uses.', parameters: ['source'], required: ['source'] },
+  schema: { tool: 'cms', description: 'the collections of a source, the fields of a type or of a path. Source optional when there is one.', parameters: ['source', 'type', 'path'], readOnly: true },
+  search: { tool: 'cms', description: 'fields and types whose name contains text.', parameters: ['source', 'text'], required: ['text'], readOnly: true },
+  bind: { tool: 'element', description: 'show data from a CMS source (cms tool) in the element: its content, an attribute, a loop or a condition.', parameters: ['element_id', 'bind_to', 'path', 'attribute', 'operator'], required: ['bind_to', 'path'] },
+  unbind: { tool: 'element', description: 'remove a binding of the element.', parameters: ['element_id', 'bind_to', 'attribute'], required: ['bind_to'] },
+  bindings: { tool: 'element', description: 'the bindings of the element.', parameters: ['element_id'], readOnly: true },
 }
 
+export const CMS_DESCRIPTION = 'Data from a CMS (GraphQL API, like WordPress headless): connect a source and explore its schema.'
+
 export const cmsCapabilities = ACTIONS.map(action => {
-  const { description, parameters, required, readOnly } = ACTION_OF[action]
+  const { tool, description, parameters, required, readOnly } = ACTION_OF[action]
+  const schemas: Record<string, unknown> = tool === 'cms' ? SOURCE : BINDING
   return {
-    tool: 'cms',
+    tool,
     action,
     command: `${CMD_CMS}:${action}`,
     description,
@@ -94,7 +105,7 @@ export const cmsCapabilities = ACTIONS.map(action => {
     inputSchema: {
       type: 'object',
       required,
-      properties: Object.fromEntries(parameters.map(key => [key, PARAMETERS[key]])),
+      properties: Object.fromEntries(parameters.map(key => [key, schemas[key]])),
     },
   }
 })
@@ -218,7 +229,7 @@ function remove(editor: Editor, opts: CmsOptions): string {
     const here = elements.filter(({ page }) => page === editor.Pages.getSelected()).map(({ component }) => component)
     const elsewhere = [...new Set(elements.filter(({ page }) => page !== editor.Pages.getSelected()).map(({ page }) => page.id))]
     const where = [here.length ? `elements ${listIds(editor, here)}` : '', elsewhere.length ? `pages ${elsewhere.join(', ')}` : ''].filter(Boolean).join(' and ')
-    throw new Error(`Source "${ds.id}" is used by ${where}. Unbind them first with action "unbind". Nothing was removed.`)
+    throw new Error(`Source "${ds.id}" is used by ${where}. Unbind them first with element(action:'unbind'). Nothing was removed.`)
   }
   setDataSources(getAllDataSources().filter(other => other !== ds))
   markChanged(editor)
@@ -255,9 +266,14 @@ function search(opts: CmsOptions): string {
 }
 
 
-function selectedElement(editor: Editor): Component {
+function targetElement(editor: Editor, id: string | undefined): Component {
+  if (id) {
+    return editor.Commands.has('agent-ids:find')
+      ? editor.runCommand('agent-ids:find', { id })
+      : editor.Components.allById()[id] ?? (() => { throw new Error(`No element "${id}".`) })()
+  }
   const all = editor.getSelectedAll()
-  if (all.length === 0) throw new Error('No element selected. Call element(action:\'select\') first.')
+  if (all.length === 0) throw new Error('No element selected: set element_id, or select one with element(action:\'select\').')
   if (all.length > 1) throw new Error('Several elements are selected. Select only one with element(action:\'select\').')
   return all[0]
 }
@@ -365,7 +381,7 @@ function writer(component: Component, target: BindTo, attribute: string | null):
 }
 
 async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
-  const component = selectedElement(editor)
+  const component = targetElement(editor, opts.element_id)
   const target = bindTo(opts.bind_to)
   if (!opts.path) throw new Error('Set path, like wp.posts.nodes for a loop or item.title inside a loop.')
   const attribute = target === 'attribute' ? attributeName(opts.attribute) : null
@@ -434,11 +450,11 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
 }
 
 function unbind(editor: Editor, opts: CmsOptions): string {
-  const component = selectedElement(editor)
+  const component = targetElement(editor, opts.element_id)
   const target = bindTo(opts.bind_to)
   const attribute = target === 'attribute' ? attributeName(opts.attribute) : null
   const id = attribute ? attributeStateId(component, attribute) : STATE_OF[target as Exclude<BindTo, 'attribute'>]
-  if (!id || !getState(component, id, false)) throw new Error(`This element has no ${attribute ? `attribute ${attribute}` : target} binding. ${bindings(editor)}`)
+  if (!id || !getState(component, id, false)) throw new Error(`This element has no ${attribute ? `attribute ${attribute}` : target} binding. ${bindings(editor, opts)}`)
   if (target === 'loop') {
     const loopId = getPersistantId(component)
     const usesItem = (c: Component) => [false, true].some(exported => getStateIds(c, exported)
@@ -455,8 +471,8 @@ function unbind(editor: Editor, opts: CmsOptions): string {
   return `${attribute ? `Attribute ${attribute}` : target[0].toUpperCase() + target.slice(1)} binding removed.`
 }
 
-function bindings(editor: Editor): string {
-  const component = selectedElement(editor)
+function bindings(editor: Editor, opts: CmsOptions): string {
+  const component = targetElement(editor, opts.element_id)
   const sourceOf = (token: StoredProperty) => token.dataSourceId === undefined ? null : String(token.dataSourceId)
   const lines = getStateIds(component, false).flatMap(id => {
     const state = getState(component, id, false)
@@ -483,7 +499,7 @@ export default (editor: Editor) => {
     search: opts => search(opts),
     bind: opts => bind(editor, opts),
     unbind: opts => unbind(editor, opts),
-    bindings: () => bindings(editor),
+    bindings: opts => bindings(editor, opts),
   }
   for (const action of ACTIONS) {
     editor.Commands.add(`${CMD_CMS}:${action}`, {

@@ -10,7 +10,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     tool: 'style',
     action: 'select',
     command: 'selector:set',
-    description: 'Choose the selector that style(action:\'set\') writes to. It must match the selected element (for a new class, call element(action:\'add_class\') first). One relation and one state at most, like ".card:hover" or ".list > .card". For a screen size, call device(action:\'select\')',
+    description: 'Choose the selector that style(action:\'set\') writes to. It must match the selected element (for a new class, call element(action:\'update\', add_class) first). One relation and one state at most, like ".card:hover" or ".list > .card". For a breakpoint, call breakpoint(action:\'select\')',
     inputSchema: {
       type: 'object',
       required: ['selector'],
@@ -37,7 +37,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     tool: 'style',
     action: 'set',
     command: 'styles:set',
-    description: 'Add or change CSS properties on the selector chosen with style(action:\'select\'), for the current screen size (device(action:\'select\')). Other properties stay. Set all the properties in one call',
+    description: 'Add or change CSS properties on the selector chosen with style(action:\'select\'), for the selected breakpoint (breakpoint(action:\'select\')). Other properties stay. Set all the properties in one call',
     inputSchema: {
       type: 'object',
       required: ['css'],
