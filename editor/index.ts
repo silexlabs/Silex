@@ -27,7 +27,6 @@ import { DEV_MESSAGE } from '~/common/constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
-import { initI18n } from './i18n'
 
 // Expose API to calling app as window.silex
 export * from './expose'
@@ -78,10 +77,6 @@ export async function start(options = {}): Promise<void> {
 
   // Notify plugins
   config.emit(ClientEvent.GRAPESJS_END, { editor })
-
-  // Init internationalization module
-  initI18n(editor)
-  editor.I18n.setLocale(config.lang)
 
   // Add default plugins
   await config.addDefaultPlugins()

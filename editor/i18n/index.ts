@@ -22,11 +22,9 @@
  * Locale files are plain JSON identity maps (English string -> translation),
  * one full, standalone file per language or BCP-47 locale, loaded as-is with no
  * merge/overlay step. Strings are registered under the `silex` namespace in
- * GrapesJS I18n, added once here, to keep them isolated from GrapesJS core and
- * plugin messages.
+ * GrapesJS I18n, to keep them isolated from GrapesJS core and plugin messages.
  */
 
-import { Editor } from 'grapesjs'
 import en from '../locales/en.json'
 import fr from '../locales/fr.json'
 
@@ -40,10 +38,10 @@ const localeMessages: Record<string, Record<string, Record<string, string>>> = {
 const SOURCE_LOCALE = 'en'
 
 /**
- * Register every locale file found in editor/locales with GrapesJS I18n.
+ * Return the locale messages for GrapesJS' initial configuration.
  */
-export function initI18n(editor: Editor): void {
-  editor.I18n.addMessages(localeMessages)
+export function getLocaleMessages(): typeof localeMessages {
+  return localeMessages
 }
 
 export function getAvailableLocales(): string[] {
