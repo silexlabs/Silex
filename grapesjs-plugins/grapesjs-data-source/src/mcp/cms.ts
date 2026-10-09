@@ -33,11 +33,11 @@ import { BACKENDS, checkAuthorization, checkSourceId, checkUrl, connectSource, w
 export const CMD_CMS = 'data-source:cms'
 
 const ACTIONS = ['list', 'add', 'update', 'remove', 'schema', 'search', 'bind', 'unbind', 'bindings'] as const
+type Action = typeof ACTIONS[number]
 const BIND_TO = ['content', 'loop', 'attribute', 'condition'] as const
 type BindTo = typeof BIND_TO[number]
 
 interface CmsOptions {
-  action?: string
   source?: string
   url?: string
   backend?: string
@@ -56,35 +56,48 @@ const STATE_OF: Record<Exclude<BindTo, 'attribute'>, string> = {
   condition: Properties.condition,
 }
 
-export const cmsCapability = {
-  id: 'cms',
-  command: CMD_CMS,
-  description: 'Data from a CMS (GraphQL API, like WordPress headless): connect a source, explore its schema, bind the selected element to its data.',
-  openWorld: true,
-  destructive: true,
-  tags: ['data'],
-  inputSchema: {
-    type: 'object',
-    required: ['action'],
-    properties: {
-      action: {
-        type: 'string',
-        enum: [...ACTIONS],
-        description: 'list/add/update/remove: sources (add tests the connection). schema/search: explore a source. bind/unbind/bindings: data of the selected element.',
-      },
-      source: { type: 'string', description: 'Source id, like "wp". Paths start with it. Optional for schema and search when there is one source.' },
-      url: { type: 'string', description: 'add/update: GraphQL endpoint, like https://name.wp.cms.blue/graphql' },
-      backend: { type: 'string', enum: [...BACKENDS], description: 'add/update: default detected' },
-      authorization: { type: 'string', description: 'add/update: Authorization header, like "Bearer <token>". Empty removes it. Never shown back.' },
-      type: { type: 'string', description: 'schema: a type name from a previous answer, like Post' },
-      text: { type: 'string', description: 'search: part of a type or field name' },
-      bind_to: { type: 'string', enum: [...BIND_TO], description: 'bind/unbind: loop repeats the selected element for each item of a list' },
-      path: { type: 'string', description: 'bind: wp.posts(first: 3).nodes for a loop, item.title inside a loop (item = the closest loop). schema: lists the fields of what the path leads to' },
-      attribute: { type: 'string', description: 'bind_to attribute: src, href, alt…' },
-      operator: { type: 'string', enum: [UnariOperator.TRUTHY, UnariOperator.FALSY], description: 'bind_to condition: show the element when the value is truthy (default) or falsy' },
-    },
-  },
+const PARAMETERS = {
+  source: { type: 'string', description: 'Source id, like "wp". Paths start with it' },
+  url: { type: 'string', description: 'GraphQL endpoint, like https://name.wp.cms.blue/graphql' },
+  backend: { type: 'string', enum: [...BACKENDS], description: 'default detected' },
+  authorization: { type: 'string', description: 'Authorization header, like "Bearer <token>". Empty removes it. Never shown back' },
+  type: { type: 'string', description: 'a type name from a previous answer, like Post' },
+  text: { type: 'string', description: 'part of a type or field name' },
+  bind_to: { type: 'string', enum: [...BIND_TO], description: 'loop repeats the selected element for each item of a list' },
+  path: { type: 'string', description: 'wp.posts(first: 3).nodes for a loop, item.title inside a loop (item = the closest loop). schema: lists the fields of what the path leads to' },
+  attribute: { type: 'string', description: 'bind_to attribute: src, href, alt…' },
+  operator: { type: 'string', enum: [UnariOperator.TRUTHY, UnariOperator.FALSY], description: 'bind_to condition: show the element when the value is truthy (default) or falsy' },
 }
+
+const ACTION_OF: Record<Action, { description: string, parameters: (keyof typeof PARAMETERS)[], required?: (keyof typeof PARAMETERS)[], readOnly?: boolean }> = {
+  list: { description: 'the sources.', parameters: [], readOnly: true },
+  add: { description: 'tests the connection to a GraphQL API, adds it and lists its collections.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source', 'url'] },
+  update: { description: 'change a source, tested like add.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source'] },
+  remove: { description: 'remove a source no element uses.', parameters: ['source'], required: ['source'] },
+  schema: { description: 'the collections of a source, the fields of a type or of a path. Source optional when there is one.', parameters: ['source', 'type', 'path'], readOnly: true },
+  search: { description: 'fields and types whose name contains text.', parameters: ['source', 'text'], required: ['text'], readOnly: true },
+  bind: { description: 'bind the selected element to data.', parameters: ['bind_to', 'path', 'attribute', 'operator'], required: ['bind_to', 'path'] },
+  unbind: { description: 'remove a binding of the selected element.', parameters: ['bind_to', 'attribute'], required: ['bind_to'] },
+  bindings: { description: 'the bindings of the selected element.', parameters: [], readOnly: true },
+}
+
+export const cmsCapabilities = ACTIONS.map(action => {
+  const { description, parameters, required, readOnly } = ACTION_OF[action]
+  return {
+    tool: 'cms',
+    action,
+    command: `${CMD_CMS}:${action}`,
+    description,
+    openWorld: action === 'add' || action === 'update' || action === 'bind',
+    destructive: action === 'remove' || action === 'unbind',
+    readOnly,
+    inputSchema: {
+      type: 'object',
+      required,
+      properties: Object.fromEntries(parameters.map(key => [key, PARAMETERS[key]])),
+    },
+  }
+})
 
 function lookupFor(ds: IDataSource): SchemaLookup {
   const wordpress = ds instanceof GraphQL && ds.backendType === 'wordpress'
@@ -244,8 +257,8 @@ function search(opts: CmsOptions): string {
 
 function selectedElement(editor: Editor): Component {
   const all = editor.getSelectedAll()
-  if (all.length === 0) throw new Error('No element selected. Call components_select first.')
-  if (all.length > 1) throw new Error('Several elements are selected. Select only one with components_select.')
+  if (all.length === 0) throw new Error('No element selected. Call element(action:\'select\') first.')
+  if (all.length > 1) throw new Error('Several elements are selected. Select only one with element(action:\'select\').')
   return all[0]
 }
 
@@ -461,20 +474,22 @@ function bindings(editor: Editor): string {
 }
 
 export default (editor: Editor) => {
-  editor.Commands.add(CMD_CMS, {
-    async run(_editor: Editor, _sender: unknown, opts: CmsOptions = {}) {
-      switch (opts.action) {
-      case 'list': return list()
-      case 'add': return add(editor, opts)
-      case 'update': return update(editor, opts)
-      case 'remove': return remove(editor, opts)
-      case 'schema': return schema(editor, opts)
-      case 'search': return search(opts)
-      case 'bind': return bind(editor, opts)
-      case 'unbind': return unbind(editor, opts)
-      case 'bindings': return bindings(editor)
-      default: throw new Error(`Set action to one of ${ACTIONS.join(', ')}.`)
-      }
-    },
-  })
+  const run: Record<Action, (opts: CmsOptions) => unknown> = {
+    list: () => list(),
+    add: opts => add(editor, opts),
+    update: opts => update(editor, opts),
+    remove: opts => remove(editor, opts),
+    schema: opts => schema(editor, opts),
+    search: opts => search(opts),
+    bind: opts => bind(editor, opts),
+    unbind: opts => unbind(editor, opts),
+    bindings: () => bindings(editor),
+  }
+  for (const action of ACTIONS) {
+    editor.Commands.add(`${CMD_CMS}:${action}`, {
+      async run(_editor: Editor, _sender: unknown, opts: CmsOptions = {}) {
+        return run[action](opts)
+      },
+    })
+  }
 }

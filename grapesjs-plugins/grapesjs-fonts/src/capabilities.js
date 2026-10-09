@@ -1,22 +1,16 @@
-import { cmdGetHtml, cmdFontsInstalled, cmdFontsAvailable, cmdFontsInstall, cmdFontsRemove } from './commands.js'
+import { cmdFontsInstalled, cmdFontsAvailable, cmdFontsInstall, cmdFontsRemove } from './commands.js'
 
 export function registerCapabilities(addCapability) {
   addCapability({
-    id: cmdGetHtml,
-    command: cmdGetHtml,
-    description: 'Get HTML imports for installed fonts',
-    readOnly: true,
-    tags: ['fonts'],
-  })
-  addCapability({
-    id: cmdFontsInstalled,
+    tool: 'font',
+    action: 'list',
     command: cmdFontsInstalled,
     description: 'List installed fonts',
     readOnly: true,
-    tags: ['fonts'],
   })
   addCapability({
-    id: cmdFontsAvailable,
+    tool: 'font',
+    action: 'search',
     command: cmdFontsAvailable,
     description: 'List available Google Fonts',
     readOnly: true,
@@ -28,10 +22,10 @@ export function registerCapabilities(addCapability) {
         category: { type: 'string', enum: ['serif', 'sans-serif', 'display', 'handwriting', 'monospace'] },
       },
     },
-    tags: ['fonts'],
   })
   addCapability({
-    id: cmdFontsInstall,
+    tool: 'font',
+    action: 'install',
     command: cmdFontsInstall,
     description: 'Install a Google Font by family name',
     openWorld: true,
@@ -42,10 +36,10 @@ export function registerCapabilities(addCapability) {
         family: { type: 'string' },
       },
     },
-    tags: ['fonts'],
   })
   addCapability({
-    id: cmdFontsRemove,
+    tool: 'font',
+    action: 'remove',
     command: cmdFontsRemove,
     description: 'Remove an installed font',
     destructive: true,
@@ -56,6 +50,5 @@ export function registerCapabilities(addCapability) {
         family: { type: 'string' },
       },
     },
-    tags: ['fonts'],
   })
 }

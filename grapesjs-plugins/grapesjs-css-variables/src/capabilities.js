@@ -75,7 +75,7 @@ export function registerCommands(editor) {
     run(ed, sender, opts = {}) {
       const { name } = opts
       if (!name) {
-        throw new Error('Required: name. Example: {name: "primary"}. Use css-var_list to see existing variables.')
+        throw new Error('Required: name. Example: {name: "primary"}. Use variable(action:\'list\') to see existing variables.')
       }
       requireVariable(editor, name)
       removeVariable(editor, { name })
@@ -90,7 +90,7 @@ export function registerCommands(editor) {
     run(ed, sender, opts = {}) {
       const { oldName, newName } = opts
       if (!oldName || !newName) {
-        throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var_list to see existing variables.')
+        throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use variable(action:\'list\') to see existing variables.')
       }
       const names = requireVariable(editor, oldName)
       if (oldName === newName) {
@@ -106,15 +106,16 @@ export function registerCommands(editor) {
 
 export function registerCapabilities(addCapability) {
   addCapability({
-    id: cmdListVars,
+    tool: 'variable',
+    action: 'list',
     command: cmdListVars,
     description: 'List CSS variables',
     readOnly: true,
-    tags: ['css'],
   })
 
   addCapability({
-    id: cmdSetVar,
+    tool: 'variable',
+    action: 'set',
     command: cmdSetVar,
     description: 'Set CSS variable',
     inputSchema: {
@@ -126,11 +127,11 @@ export function registerCapabilities(addCapability) {
         type: { type: 'string', enum: [...VARIABLE_TYPES, 'font', 'typo', 'typography'], description: 'color, size, or font-family. Aliases accepted: font, typo, typography' },
       },
     },
-    tags: ['css'],
   })
 
   addCapability({
-    id: cmdRemoveVar,
+    tool: 'variable',
+    action: 'remove',
     command: cmdRemoveVar,
     description: 'Remove CSS variable',
     destructive: true,
@@ -141,11 +142,11 @@ export function registerCapabilities(addCapability) {
         name: { type: 'string' },
       },
     },
-    tags: ['css'],
   })
 
   addCapability({
-    id: cmdRenameVar,
+    tool: 'variable',
+    action: 'rename',
     command: cmdRenameVar,
     description: 'Rename CSS variable',
     inputSchema: {
@@ -156,6 +157,5 @@ export function registerCapabilities(addCapability) {
         newName: { type: 'string' },
       },
     },
-    tags: ['css'],
   })
 }

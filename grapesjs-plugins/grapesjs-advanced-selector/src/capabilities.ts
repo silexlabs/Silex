@@ -1,15 +1,16 @@
 export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
   addCapability({
-    id: 'selector:get',
+    tool: 'style',
+    action: 'get_selector',
     command: 'selector:get',
-    description: 'Get the selector that styles_set writes to, for the selected element',
+    description: 'Get the selector that style(action:\'set\') writes to, for the selected element',
     readOnly: true,
-    tags: ['selectors'],
   })
   addCapability({
-    id: 'selector:set',
+    tool: 'style',
+    action: 'select',
     command: 'selector:set',
-    description: 'Choose the selector that styles_set writes to. It must match the selected element (for a new class, call classes_add first). One relation and one state at most, like ".card:hover" or ".list > .card". For a screen size, call device_set',
+    description: 'Choose the selector that style(action:\'set\') writes to. It must match the selected element (for a new class, call element(action:\'add_class\') first). One relation and one state at most, like ".card:hover" or ".list > .card". For a screen size, call device(action:\'select\')',
     inputSchema: {
       type: 'object',
       required: ['selector'],
@@ -17,26 +18,26 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
         selector: { type: 'string', description: 'CSS selector that matches the selected element' },
       },
     },
-    tags: ['selectors'],
   })
   addCapability({
-    id: 'selector:list-rules',
+    tool: 'style',
+    action: 'list',
     command: 'selector:list-rules',
     description: 'List the selectors with styles that apply to the selected element',
     readOnly: true,
-    tags: ['selectors'],
   })
   addCapability({
-    id: 'styles:get',
+    tool: 'style',
+    action: 'get',
     command: 'styles:get',
-    description: 'Get the CSS of the selector chosen with selector_set',
+    description: 'Get the CSS of the selector chosen with style(action:\'select\')',
     readOnly: true,
-    tags: ['styles'],
   })
   addCapability({
-    id: 'styles:set',
+    tool: 'style',
+    action: 'set',
     command: 'styles:set',
-    description: 'Add or change CSS properties on the selector chosen with selector_set, for the current screen size (device_set). Other properties stay. Set all the properties in one call',
+    description: 'Add or change CSS properties on the selector chosen with style(action:\'select\'), for the current screen size (device(action:\'select\')). Other properties stay. Set all the properties in one call',
     inputSchema: {
       type: 'object',
       required: ['css'],
@@ -44,12 +45,12 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
         css: { type: 'string', description: 'CSS declarations, like "display: flex; gap: 16px; color: #222"' },
       },
     },
-    tags: ['styles'],
   })
   addCapability({
-    id: 'styles:remove',
+    tool: 'style',
+    action: 'remove',
     command: 'styles:remove',
-    description: 'Remove a CSS property from the selector chosen with selector_set',
+    description: 'Remove a CSS property from the selector chosen with style(action:\'select\')',
     destructive: true,
     inputSchema: {
       type: 'object',
@@ -58,13 +59,12 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
         property: { type: 'string', description: 'CSS property name, like "color"' },
       },
     },
-    tags: ['styles'],
   })
   addCapability({
-    id: 'selector:info',
+    tool: 'style',
+    action: 'states',
     command: 'selector:info',
-    description: 'List the states you can use in selector_set, with examples',
+    description: 'List the states you can use in style(action:\'select\'), with examples',
     readOnly: true,
-    tags: ['selectors'],
   })
 }

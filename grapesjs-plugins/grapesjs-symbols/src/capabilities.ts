@@ -2,14 +2,15 @@ import { cmdList, cmdAdd, cmdRemove, cmdUnlink, cmdCreate } from './SymbolsComma
 
 export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
   addCapability({
-    id: cmdList,
+    tool: 'symbol',
+    action: 'list',
     command: cmdList,
     description: 'List all symbols',
     readOnly: true,
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdAdd,
+    tool: 'symbol',
+    action: 'create',
     command: cmdAdd,
     description: 'Turn the selected element into a symbol',
     inputSchema: {
@@ -20,10 +21,10 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
         icon: { type: 'string' },
       },
     },
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdRemove,
+    tool: 'symbol',
+    action: 'remove',
     command: cmdRemove,
     description: 'Delete a symbol',
     destructive: true,
@@ -31,29 +32,28 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
       type: 'object',
       required: ['symbolId'],
       properties: {
-        symbolId: { type: 'string', description: 'id from symbols_list or symbols_add' },
+        symbolId: { type: 'string', description: 'id from symbol(action:\'list\') or symbol(action:\'create\')' },
       },
     },
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdUnlink,
+    tool: 'symbol',
+    action: 'unlink',
     command: cmdUnlink,
     description: 'Unlink element from symbol',
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdCreate,
+    tool: 'symbol',
+    action: 'insert',
     command: cmdCreate,
     description: 'Insert an instance of a symbol relative to the selected element and select it',
     inputSchema: {
       type: 'object',
       required: ['symbolId'],
       properties: {
-        symbolId: { type: 'string', description: 'id from symbols_list or symbols_add' },
+        symbolId: { type: 'string', description: 'id from symbol(action:\'list\') or symbol(action:\'create\')' },
         position: { type: 'string', enum: ['inside', 'before', 'after'], description: 'Default: inside, as last child' },
       },
     },
-    tags: ['symbols'],
   })
 }

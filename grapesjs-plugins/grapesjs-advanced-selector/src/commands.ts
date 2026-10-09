@@ -19,18 +19,18 @@ const PSEUDO_ELEMENTS = new Set<string>([
 
 function selectedElements(editor: Editor): Component[] {
   const components = editor.getSelectedAll()
-  if (!components.length) throw new Error('No element selected. Call components_select first.')
+  if (!components.length) throw new Error('No element selected. Call element(action:\'select\') first.')
   return components
 }
 
-// null until selector_set, or the style panel, chose a selector for every selected element
+// null until style(action:'select'), or the style panel, chose a selector for every selected element
 function storedSelector(components: Component[]): ComplexSelector | null {
   if (!components.length || components.some(component => !component.get('selector'))) return null
   return getSelector(components)
 }
 
 /**
- * The selector styles_set writes to
+ * The selector style(action:'set') writes to
  */
 function currentSelector(editor: Editor): string | null {
   const cs = storedSelector(editor.getSelectedAll())
@@ -54,13 +54,13 @@ function chosenSelector(editor: Editor): string {
   const selector = cs && complexSelectorToString(cs)
   if (!selector) {
     if (components.length > 1 && components.every(component => component.get('selector'))) {
-      throw new Error(`The selected elements have no selector in common. ${NOTHING_CHANGED} Call selector_set with a selector that matches them all, or components_select to select one.`)
+      throw new Error(`The selected elements have no selector in common. ${NOTHING_CHANGED} Call style(action:'select') with a selector that matches them all, or element(action:'select') to select one.`)
     }
-    throw new Error(`No selector chosen. ${NOTHING_CHANGED} Call selector_set first.`)
+    throw new Error(`No selector chosen. ${NOTHING_CHANGED} Call style(action:'select') first.`)
   }
   // The classes can have changed since the selector was chosen
   if (!matchSelectorAll(complexSelectorToString(withoutStates(cs)), components)) {
-    throw new Error(`Selector "${selector}" does not match the selected element anymore: its classes changed. ${NOTHING_CHANGED} Call selector_set again, or classes_add to put the class back.`)
+    throw new Error(`Selector "${selector}" does not match the selected element anymore: its classes changed. ${NOTHING_CHANGED} Call style(action:'select') again, or element(action:'add_class') to put the class back.`)
   }
   return selector
 }
@@ -100,15 +100,15 @@ function notMatching(editor: Editor, component: Component, selector: string, tar
   })
   walk(editor.getWrapper()!)
   if (!matching.length) {
-    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the selected element with classes_add, then call selector_set again.`
+    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the selected element with element(action:'add_class'), then call style(action:'select') again.`
   }
   const own = component.getClasses().map((name: string) => `.${name}`)
   const htmlId = component.getAttributes().id
   if (htmlId) own.push(`#${htmlId}`)
   return [
     `Selector "${selector}" does not match the selected element ${describe(editor, component)}. ${NOTHING_CHANGED}`,
-    own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with classes_add.',
-    `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, call components_select with one of these ids, then selector_set again.`,
+    own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with element(action:\'add_class\').',
+    `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, call element(action:'select') with one of these ids, then style(action:'select') again.`,
   ].join(' ')
 }
 
@@ -145,7 +145,7 @@ function parseDeclarations(css: string): Record<string, string> {
     const property = name.startsWith('--') ? name : name.toLowerCase()
     const value = declaration.slice(colon + 1).trim()
     if (colon < 1 || !/^(--[\w-]+|-?[a-zA-Z][\w-]*)$/.test(property)) throw invalid(declaration)
-    if (!value) throw new Error(`No value for "${property}". ${NOTHING_CHANGED} To remove a property, call styles_remove.`)
+    if (!value) throw new Error(`No value for "${property}". ${NOTHING_CHANGED} To remove a property, call style(action:'remove').`)
     style[property] = value
   }
   return style
@@ -166,10 +166,10 @@ export default function registerCommands(editor: Editor) {
       if (!selector) throw new Error('Required: selector. Example: ".card" or ".card:hover".')
       const outside = selector.replace(/\([^)]*\)|\[[^\]]*\]/g, '')
       if (outside.includes(',') || outside.startsWith('@')) {
-        throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a screen size, call device_set.`)
+        throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a screen size, call device(action:'select').`)
       }
       const invalid = `Invalid selector "${selector}". ${NOTHING_CHANGED} Examples: ".card", ".card:hover", ".list > .card".`
-      const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most and a state from selector_info, like ".list > .card" or ".card:hover".`
+      const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most and a state from style(action:'states'), like ".list > .card" or ".card:hover".`
       try {
         document.createDocumentFragment().querySelector(selector)
       } catch (e) {
@@ -190,7 +190,7 @@ export default function registerCommands(editor: Editor) {
       components.forEach(component => component.set('selector', stored))
       const left = components.filter(component => !matchSelectorAll(target, [component]))
       return left.length
-        ? { warning: `Selector "${selector}" is chosen, but styles_set will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call selector_set with a selector they all match.` }
+        ? { warning: `Selector "${selector}" is chosen, but style(action:'set') will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call style(action:'select') with a selector they all match.` }
         : {}
     },
   })

@@ -1,5 +1,4 @@
 import { Editor } from 'grapesjs'
-import { registerCapabilities } from './capabilities'
 import en from './locale/en'
 import {
   NotificationManager,
@@ -109,11 +108,6 @@ export default (editor: Editor, opts: Partial<NotificationManagerOptions> = {}) 
     storage?.save(allNotifications)
     // Render notifications
     view(editor, options.container, allNotifications, options)
-  })
-
-  // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
   })
 
   // Public API accessible via commands and events only
