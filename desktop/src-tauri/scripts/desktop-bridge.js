@@ -85,7 +85,7 @@
       const element = editor.getSelected();
       const state = {
         page: editor.Pages.getSelected()?.id ?? null,
-        device: editor.Devices.getSelected()?.getName() ?? null,
+        breakpoint: editor.Devices.getSelected()?.getName() ?? null,
         element: element && editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component: element }) : null,
       };
       // A change inside a symbol instance changes it on every page

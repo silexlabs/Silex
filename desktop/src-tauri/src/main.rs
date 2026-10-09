@@ -27,6 +27,7 @@ use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
+mod asset_import;
 mod frontend;
 mod held;
 mod integrations;

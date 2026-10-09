@@ -93,8 +93,8 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   })
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }
 

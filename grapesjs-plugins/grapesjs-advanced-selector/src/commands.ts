@@ -60,7 +60,7 @@ function chosenSelector(editor: Editor): string {
   }
   // The classes can have changed since the selector was chosen
   if (!matchSelectorAll(complexSelectorToString(withoutStates(cs)), components)) {
-    throw new Error(`Selector "${selector}" does not match the selected element anymore: its classes changed. ${NOTHING_CHANGED} Call style(action:'select') again, or element(action:'add_class') to put the class back.`)
+    throw new Error(`Selector "${selector}" does not match the selected element anymore: its classes changed. ${NOTHING_CHANGED} Call style(action:'select') again, or element(action:'update', add_class) to put the class back.`)
   }
   return selector
 }
@@ -100,14 +100,14 @@ function notMatching(editor: Editor, component: Component, selector: string, tar
   })
   walk(editor.getWrapper()!)
   if (!matching.length) {
-    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the selected element with element(action:'add_class'), then call style(action:'select') again.`
+    return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the selected element with element(action:'update', add_class), then call style(action:'select') again.`
   }
   const own = component.getClasses().map((name: string) => `.${name}`)
   const htmlId = component.getAttributes().id
   if (htmlId) own.push(`#${htmlId}`)
   return [
     `Selector "${selector}" does not match the selected element ${describe(editor, component)}. ${NOTHING_CHANGED}`,
-    own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with element(action:\'add_class\').',
+    own.length ? `Selectors that match this element: ${listed(own)}.` : 'This element has no class: add one with element(action:\'update\', add_class).',
     `Elements on this page that match "${selector}": ${listed(matching, child => agentId(editor, child))}. To style them, call element(action:'select') with one of these ids, then style(action:'select') again.`,
   ].join(' ')
 }
@@ -166,7 +166,7 @@ export default function registerCommands(editor: Editor) {
       if (!selector) throw new Error('Required: selector. Example: ".card" or ".card:hover".')
       const outside = selector.replace(/\([^)]*\)|\[[^\]]*\]/g, '')
       if (outside.includes(',') || outside.startsWith('@')) {
-        throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a screen size, call device(action:'select').`)
+        throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a breakpoint, call breakpoint(action:'select').`)
       }
       const invalid = `Invalid selector "${selector}". ${NOTHING_CHANGED} Examples: ".card", ".card:hover", ".list > .card".`
       const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most and a state from style(action:'states'), like ".list > .card" or ".card:hover".`
@@ -232,7 +232,7 @@ export default function registerCommands(editor: Editor) {
       const style = rule?.getStyle() ?? {}
       if (!rule || !Object.prototype.hasOwnProperty.call(style, property)) {
         const set = Object.keys(style)
-        const screen = media(editor) ? ` for the screen size ${media(editor)}` : ''
+        const screen = media(editor) ? ` for breakpoint ${editor.Devices.getSelected()?.getName()}` : ''
         throw new Error(`Property "${property}" is not set on "${selector}"${screen}. ${set.length ? `Set properties: ${set.join(', ')}.` : 'It has no properties set.'} ${NOTHING_CHANGED}`)
       }
       rule.removeStyle(property)
