@@ -502,13 +502,14 @@ export class PublicationManager {
       const pageId = page.getId()
 
       const imagesMissingAlt = bodyComponent ? this.getImagesMissingAlt(bodyComponent) : []
-      if (imagesMissingAlt.length) {
+      for (const img of imagesMissingAlt) {
+        const imgId = img.getId()
         this.editor.runCommand('notifications:add', {
-          id: `accessibility-validation-alt-${pageId}`,
+          id: `seo-validation-alt-${imgId}`,
           type: 'warning',
-          message: `Page "${pageName}": ${imagesMissingAlt.length} image${imagesMissingAlt.length === 1 ? '' : 's'} ${imagesMissingAlt.length === 1 ? 'is' : 'are'} missing an alt attribute. Add alt text, or use alt="" for decorative images.`,
-          componentId: imagesMissingAlt[0].getId(),
-          group: 'accessibility-validation',
+          message: `Page "${pageName}": Image is missing an alt attribute. Add alt text, or use alt="" for decorative images.`,
+          componentId: imgId,
+          group: 'seo-validation',
         })
       }
 
