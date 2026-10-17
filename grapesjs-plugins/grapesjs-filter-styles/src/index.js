@@ -12,11 +12,19 @@ export default (editor, opts = {}) => {
     const container = document.createElement('div')
     container.innerHTML = `
       <style>
+        #${id}-row {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin: 6px 5px;
+        }
         #${id}-container {
+          flex: 1;
+          min-width: 120px;
           position: relative;
           display: flex;
           align-items: center;
-          margin: 6px 5px;
         }
         #${id}-icon {
           position: absolute;
@@ -40,7 +48,7 @@ export default (editor, opts = {}) => {
         #${id}:focus {
           border-color: var(--gjs-tertiary-color, #8873FE);
         }
-        #${id}-btn, #${id}-modified-btn {
+        #${id}-btn {
           position: absolute;
           border: none;
           padding: 0;
@@ -58,40 +66,58 @@ export default (editor, opts = {}) => {
           right: 10px;
         }
         #${id}-modified-btn {
-          right: 32px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          min-height: 24px;
+          padding: 4px 10px;
+          border: 1px solid var(--gjs-border-color, #262626);
+          border-radius: 9999px;
+          background: var(--gjs-primary-darker, #111);
+          color: inherit;
+          font-size: 11px;
+          white-space: nowrap;
+          cursor: pointer;
+        }
+        #${id}-modified-btn:hover {
+          border-color: currentColor;
+        }
+        #${id}-modified-btn:focus-visible {
+          outline: 2px solid var(--gjs-tertiary-color, #8873FE);
+          outline-offset: 1px;
         }
         #${id}-modified-btn svg {
-          width: 14px;
-          height: 14px;
+          width: 12px;
+          height: 12px;
           display: block;
           pointer-events: none;
-        }
-        #${id}-container #${id}-modified-btn {
-          opacity: .4;
         }
         #${id}-container:not(.empty) #${id}-btn {
           opacity: .5;
         }
-        #${id}-btn:hover, #${id}-modified-btn:hover {
+        #${id}-btn:hover {
           opacity: 1;
         }
         #${id}-modified-btn.active {
           color: var(--gjs-tertiary-color, #8873FE);
-          opacity: 1;
+          border-color: var(--gjs-tertiary-color, #8873FE);
         }
       </style>
 
-      <div id="${id}-container" class="empty">
-        <span id="${id}-icon">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </span>
-        <input id="${id}" type="text" placeholder="${options.placeholder}" />
-        <button id="${id}-modified-btn" title="Show modified only">
+      <div id="${id}-row">
+        <button id="${id}-modified-btn" type="button" title="Show modified properties only" aria-pressed="false">
           <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19 6h-14c-1.1 0-1.4.6-.6 1.4l4.2 4.2c.8.8 1.4 2.3 1.4 3.4v5l4-2v-3.5c0-.8.6-2.1 1.4-2.9l4.2-4.2c.8-.8.5-1.4-.6-1.4z"/>
           </svg>
+          Modified only
         </button>
-        <button id="${id}-btn">&times;</button>
+        <div id="${id}-container" class="empty">
+          <span id="${id}-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input id="${id}" type="text" placeholder="${options.placeholder}" />
+          <button id="${id}-btn">&times;</button>
+        </div>
       </div>
     `
     const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`)
@@ -117,7 +143,8 @@ export default (editor, opts = {}) => {
     }
 
     modBtn.onclick = () => {
-      modBtn.classList.toggle('active')
+      const active = modBtn.classList.toggle('active')
+      modBtn.setAttribute('aria-pressed', String(active))
       refresh(editor, input, searchContainer, modBtn)
     }
 
