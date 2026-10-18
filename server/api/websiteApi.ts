@@ -19,7 +19,7 @@ import { Router } from 'express'
 import formidable, { PersistentFile } from 'formidable'
 import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE, API_WEBSITE_FORK } from '~/common/constants.js'
 import { createReadStream } from 'fs'
-import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '~/common/types.js'
+import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse, ApiWebsiteDuplicateQuery, ApiWebsiteDuplicateResponse, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '~/common/types.js'
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors.js'
 import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation.js'
@@ -138,12 +138,11 @@ export default function (config: ServerConfig, opts = {}): Router {
       if(!connector) {
         throw new ApiError(`Connector ${connectorId} not found`, 500)
       }
-      // Create website
-      await connector.createWebsite(
+      const websiteId = await connector.createWebsite(
         session,
         websiteMeta,
       )
-      res.json({ message: 'Website meta saved' } as ApiWebsiteMetaWriteResponse)
+      res.json({ websiteId, message: 'Website created' } as ApiWebsiteCreateResponse)
     } catch (e) {
       console.error('Error saving website meta', e)
       if (e.httpStatusCode) {
@@ -230,8 +229,8 @@ export default function (config: ServerConfig, opts = {}): Router {
     try {
       const query: ApiWebsiteDuplicateQuery = req.query as any
       const websiteId= requiredParam<WebsiteId>(query.websiteId, 'New website id')
-      await duplicateWebsite(req['session'], websiteId, query.connectorId)
-      res.status(200).json({ message: 'Website duplicated' } as ApiError)
+      const copyId = await duplicateWebsite(req['session'], websiteId, query.connectorId)
+      res.status(200).json({ websiteId: copyId, message: 'Website duplicated' } as ApiWebsiteDuplicateResponse)
     } catch (e) {
       console.error('Error duplicating website data', e)
       if (e.httpStatusCode) {
@@ -427,7 +426,7 @@ export default function (config: ServerConfig, opts = {}): Router {
   /**
    * Duplicate a website
    */
-  async function duplicateWebsite(session: any, websiteId: string, connectorId?: string): Promise<void> {
+  async function duplicateWebsite(session: any, websiteId: string, connectorId?: string): Promise<WebsiteId> {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 

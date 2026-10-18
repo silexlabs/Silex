@@ -1,0 +1,32 @@
+# silexOverwrite: true
+# Written by Silex at every publication. Change what is built in build.json.
+# To change anything else here, the size of the runner or when it runs, remove
+# the line above: Silex then leaves this file to you.
+# Only a publication builds: a save is a commit, not a website going online
+submitter:
+  git.sr.ht:
+    enabled: true
+    allow-refs:
+      - "refs/tags/_silex_*"
+image: alpine/latest
+oauth: pages.sr.ht/PAGES:RW
+packages:
+  - hut
+  - nodejs
+  - npm
+# Named so that the manifest can also be sent on its own, with
+# `hut builds submit .build.yml`, to publish again without going through Silex.
+# A build started by a push gets this replaced by the commit that was pushed.
+sources:
+  - {clone_url}
+environment:
+  site: {site_host}
+tasks:
+  - build: |
+      cd {repo}
+      sh build.sh
+  - package: |
+      cd {repo}/_site
+      tar -cz . > ../../site.tar.gz
+  - upload: |
+      hut pages publish -d $site site.tar.gz

@@ -123,7 +123,9 @@ export class PublicationManager {
     } as PublicationManagerOptions
     // Save the publication settings in the website settings
     editor.on('storage:start:store', (data: WebsiteData) => {
-      data.publication = this.settings
+      // The OAuth address carries the state of one login, nothing the website keeps
+      const { connector } = this.settings
+      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null } } : this.settings
     })
     // load publication settings from the website
     editor.on('storage:end:load', (data: WebsiteData) => {
@@ -133,7 +135,7 @@ export class PublicationManager {
         .then((user) => {})
         .catch((err) => {
           this.status = PublicationStatus.STATUS_LOGGED_OUT
-          this.settings = {}
+          this.forgetHosting()
           this.dialog && this.dialog.displayError('Please login', this.job, this.status)
         })
     })
@@ -172,7 +174,7 @@ export class PublicationManager {
     // Check if the user is already logged in
     if(connector.isLoggedIn) {
       this.settings = {
-        ...this.settings, // In case there are options
+        ...this.settings,
         connector,
       }
       this.status = PublicationStatus.STATUS_NONE
@@ -183,7 +185,7 @@ export class PublicationManager {
       this.dialog && this.dialog.displayPending(this.job, this.status)
       return
     }
-    this.settings = {}
+    this.forgetHosting()
     this.status = PublicationStatus.STATUS_LOGGED_OUT
     this.dialog && this.dialog.displayPending(this.job, this.status)
     const params: ApiConnectorLoginQuery = {
@@ -198,7 +200,7 @@ export class PublicationManager {
           window.removeEventListener('message', onMessage)
           if (data.error) {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.settings = {}
+            this.forgetHosting()
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
             reject(new Error(data.message))
           } else {
@@ -229,7 +231,7 @@ export class PublicationManager {
       if (this.settings.connector.connectorId !== storageId) {
         await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
       }
-      this.settings = {}
+      this.forgetHosting()
       this.dialog && this.dialog.displayPending(this.job, this.status)
     } catch (e) {
       console.error('logout error', e)
@@ -262,19 +264,14 @@ export class PublicationManager {
           return true
         })
         .map(asset => {
-          // TODO: is this needed?
-          // // Remove /assets that is added by grapesjs
-          // const initialPath = asset.src
-          //   .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
-          //const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
           // This is done in transformPermalink and transformPath but other transformers may change it
           // So we do this only using displayedToStored for the path
           // As path is used to download the asset
           const src = displayedToStored(asset.src)
-            // Remove the /asset prefix to keep only the file name
-            .replace(/^\/assets\//, '')
+            // Remove the assets prefix to keep only the file name
+            .replace(/^\/?assets\//, '')
           return {
             ...asset,
             path,
@@ -317,6 +314,7 @@ export class PublicationManager {
       if(preventDefaultStart) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // Get the data to publish
@@ -325,6 +323,8 @@ export class PublicationManager {
       if(preventDefaultData) {
         this.status = PublicationStatus.STATUS_NONE
         this.dialog && this.dialog.displayPending(this.job, this.status)
+        // A save that came in meanwhile waits for this
+        this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: '' })
         return
       }
       // User and where to publish
@@ -346,22 +346,16 @@ export class PublicationManager {
       console.info('Gitlab url: ', url)
       // could be used in an future UI
 
-      if (job) {
-        this.job = job
-        this.status = jobStatusToPublicationStatus(this.job.status)
-        this.trackProgress()
-      } else {
-        // No job to poll: the publication was over before the server answered,
-        // which is how Silex Desktop publishes to a local folder
-        this.status = PublicationStatus.STATUS_SUCCESS
-        this.editor.trigger(ClientEvent.PUBLISH_END, { success: true, message: 'Publication success' })
-        this.dialog && this.dialog.displayPending(this.job, this.status)
-      }
+      // The job is what says how the publication ended: pushing a website to
+      // a forge is not that forge having built and served it
+      this.job = job
+      this.status = jobStatusToPublicationStatus(this.job.status)
+      this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
       if(e.code === 401 || e.httpStatusCode === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings = {}
+        this.forgetHosting()
         this.dialog && this.dialog.displayError('Please login.', this.job, this.status)
       } else {
         this.status = PublicationStatus.STATUS_ERROR
@@ -663,9 +657,21 @@ ${htmlContent}
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
+      if (this.job.url) this.saveLastPublication(this.job.url)
       this.editor.trigger(ClientEvent.PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
+  }
+
+  // Kept in the website, so that its card tells whether it is online without asking anyone
+  private saveLastPublication(url: string) {
+    this.settings.lastPublication = { url }
+    this.editor.store()
+  }
+
+  // What the last publication gave stays: the website is still where it was put
+  private forgetHosting() {
+    this.settings = { lastPublication: this.settings?.lastPublication }
   }
 
   private setPublicationTransformers() {

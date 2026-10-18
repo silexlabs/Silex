@@ -102,6 +102,10 @@ function removePage(editor, page) {
 }
 
 function removePageWithConfirm(editor, page) {
+  if (editor.Pages.getAll().length <= 1) {
+    console.error('can not delete the only page')
+    return
+  }
   const content = document.createElement('div')
   const modal = editor.Modal.open({
     title: 'Are you sure?',
@@ -272,10 +276,10 @@ function renderPages(editor, config) {
                ></i>
                ${ name }
              </div>
-             <i class="pages__icon pages__remove-btn fa fa-trash" @click=${e => removePage(editor, getPageFromEvent(e))}></i>
-             <i class="pages__icon pages__clone-btn fa fa-clone" @click=${e => clonePage(editor, getPageFromEvent(e))}></i>
-             <i class="pages__icon fa fa-cog" @click=${e => settingsPage(editor, config, getPageFromEvent(e))}></i>
-           </div>
+              <i class="pages__icon pages__clone-btn fa fa-clone" title="Clone page" @click=${(e: Event) => { e.stopPropagation(); clonePage(editor, getPageFromEvent(e)) }}></i>
+              <i class="pages__icon fa fa-cog" title="Page settings" @click=${(e: Event) => { e.stopPropagation(); settingsPage(editor, config, getPageFromEvent(e)) }}></i>
+              <i class="pages__icon pages__remove-btn fa fa-trash" title="Delete page" @click=${(e: Event) => { e.stopPropagation(); removePageWithConfirm(editor, getPageFromEvent(e)) }}></i>
+            </div>
           </div>
           `
   })}
@@ -326,11 +330,11 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     })
     editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: any = {}) => {
       const { name, id } = options
-      if (!name && !id) throw new Error('Required: name or id. Use pages:list to see all pages.')
+      if (!name && !id) throw new Error('Required: name or id. Use pages_list to see all pages.')
       const page = id
         ? editor.Pages.get(id)
         : editor.Pages.getAll().find((p: Page) => p.getName() === name)
-      if (!page) throw new Error(`Page not found: "${name || id}". Use pages:list to see all pages.`)
+      if (!page) throw new Error(`Page not found: "${name || id}". Use pages_list to see all pages.`)
       selectPage(editor, page)
     })
 
@@ -339,7 +343,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
       const page = name || id
         ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
         : editor.Pages.getSelected()
-      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages:list to see all pages.`)
+      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages_list to see all pages.`)
       if (editor.Pages.getAll().length === 1) throw new Error('Cannot delete the only page. At least one page must exist.')
       removePage(editor, page)
     })
@@ -349,7 +353,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
       const page = name || id
         ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
         : editor.Pages.getSelected()
-      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages:list to see all pages.`)
+      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages_list to see all pages.`)
       page.set('name', newName)
     })
 

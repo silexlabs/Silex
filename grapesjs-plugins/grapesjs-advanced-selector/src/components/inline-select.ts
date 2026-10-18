@@ -37,60 +37,58 @@ export default class InlineSelectComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+  ${ FOCUS_VISIBLE }
   :host {
-    ${ FOCUS_VISIBLE }
-    & {
-      display: block;
-      text-align: left;
-      padding: 0 0.5rem;
-      margin: 0.5rem 0;
-    }
-    button:hover, a:hover {
-      transform: translateY(1px);
-      color: var(--gjs-primary-color, #333);
-    }
-    input, select, button, inline-select {
-      font-family: inherit;
-      font-size: inherit;
-      color: var(--gjs-secondary-color, #333);
-      margin: 0;
-      padding: 0;
-    }
-    section {
-      display: flex;
-    }
-    ${ customizeSelect('select') }
-    select {
-      border-bottom: 1px dashed;
-    }
-    aside {
-      flex: 0 0 auto;
-    }
-    ${ customizeInput('input') }
-    input {
-      text-align: center;
-    }
-    .asm-inline-select__btn {
-      font-size: 0.8rem;
-      text-decoration: none;
-      border-radius: 50%;
-      color: var(--gjs-secondary-color, #333);
-      /* make the link a circle */
-      display: inline-block;
-      width: .5rem;
-      height: .5rem;
-      text-align: center;
-      line-height: .7rem;
-      font-size: .7rem;
-      padding: 4px;
-      &:hover {
-        background-color: var(--gjs-secondary-color, #fff);
-      }
-    }
-    .unbreakable {
-      white-space: nowrap;
-      margin: 0 0.4rem;
-    }
+    display: block;
+    text-align: left;
+    padding: 0 0.5rem;
+    margin: 0.5rem 0;
+  }
+  :host button:hover, :host a:hover {
+    transform: translateY(1px);
+    color: var(--gjs-primary-color, #333);
+  }
+  :host input, :host select, :host button, :host inline-select {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--gjs-secondary-color, #333);
+    margin: 0;
+    padding: 0;
+  }
+  :host section {
+    display: flex;
+  }
+  ${ customizeSelect(':host select') }
+  :host select {
+    border-bottom: 1px dashed;
+  }
+  :host aside {
+    flex: 0 0 auto;
+  }
+  ${ customizeInput(':host input') }
+  :host input {
+    text-align: center;
+  }
+  :host .asm-inline-select__btn {
+    font-size: 0.8rem;
+    text-decoration: none;
+    border-radius: 50%;
+    color: var(--gjs-secondary-color, #333);
+    /* make the link a circle */
+    display: inline-block;
+    width: .5rem;
+    height: .5rem;
+    text-align: center;
+    line-height: .7rem;
+    font-size: .7rem;
+    padding: 4px;
+  }
+  :host .asm-inline-select__btn:hover {
+    background-color: var(--gjs-secondary-color, #fff);
+  }
+  :host .unbreakable {
+    white-space: nowrap;
+    margin: 0 0.4rem;
   }
   `
 

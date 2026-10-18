@@ -9,6 +9,33 @@ function isPlainObject(v) {
   return proto === Object.prototype || proto === null
 }
 
+// MCP clients require property names to match ^[a-zA-Z0-9_.-]{1,64} (see desktop mcp.rs).
+export const MCP_SCHEMA_PROPERTY_NAME = /^[a-zA-Z0-9_.-]{1,64}$/
+
+function assertValidSchemaPropertyNames(schema, path) {
+  if (!isPlainObject(schema)) return
+  if (isPlainObject(schema.properties)) {
+    for (const key of Object.keys(schema.properties)) {
+      if (!MCP_SCHEMA_PROPERTY_NAME.test(key)) {
+        throw new Error(
+          `${path} property name "${key}" is invalid: MCP property names must match ^[a-zA-Z0-9_.-]{1,64} (use _ instead of :)`
+        )
+      }
+      assertValidSchemaPropertyNames(schema.properties[key], `${path}.properties.${key}`)
+    }
+  }
+  if (schema.items !== undefined) {
+    assertValidSchemaPropertyNames(schema.items, `${path}.items`)
+  }
+  for (const combo of ['anyOf', 'oneOf', 'allOf']) {
+    if (Array.isArray(schema[combo])) {
+      schema[combo].forEach((entry, i) => {
+        assertValidSchemaPropertyNames(entry, `${path}.${combo}[${i}]`)
+      })
+    }
+  }
+}
+
 export const EVENT_READY = 'ai-capabilities:ready'
 
 export default (editor) => {
@@ -50,6 +77,9 @@ export function addCapability(def, options = {}) {
   }
   if (def.outputSchema !== undefined && !isPlainObject(def.outputSchema)) {
     throw new Error('outputSchema must be an object')
+  }
+  if (def.inputSchema !== undefined) {
+    assertValidSchemaPropertyNames(def.inputSchema, 'inputSchema')
   }
 
   const capability = {

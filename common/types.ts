@@ -25,6 +25,11 @@ import { Page } from 'grapesjs'
 export interface PublicationSettings {
   connector?: ConnectorData, // Set by the postMessage from the login callback page
   options?: ConnectorOptions, // Options for the publication connector saved with the site
+  lastPublication?: LastPublication | null, // Null from the desktop when it makes a website, then written by the editor when a publication puts it online
+}
+
+export interface LastPublication {
+  url: string // Where the last publication that worked put the website online
 }
 
 export interface WebsiteFile {
@@ -46,8 +51,13 @@ export class ApiError extends Error {
 export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
-// A server which publishes synchronously answers no job, and no url until something serves the files
-export type ApiPublicationPublishResponse = { url: string | null, job?: PublicationJobData }
+/**
+ * What publishing answers
+ *
+ * Always a job: turning the files into a website somebody can visit takes
+ * longer than a request. `url` is null until something serves them.
+ */
+export type ApiPublicationPublishResponse = { url: string | null, job: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
@@ -59,9 +69,10 @@ export type ApiWebsiteWriteBody = WebsiteData
 export type ApiWebsiteWriteResponse = { message: string }
 export type ApiWebsiteCreateQuery = { connectorId?: ConnectorId }
 export type ApiWebsiteCreateBody = WebsiteMetaFileContent
-export type ApiWebsiteCreateResponse = { message: string }
+export type ApiWebsiteCreateResponse = { websiteId: WebsiteId, message: string }
 export type ApiWebsiteDeleteQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
 export type ApiWebsiteDuplicateQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteDuplicateResponse = { websiteId: WebsiteId, message: string }
 export type ApiWebsiteForkQuery = { connectorId?: ConnectorId }
 export type ApiWebsiteForkBody = { gitlabUrl: string }
 export type ApiWebsiteForkResponse = { websiteId: WebsiteId, message: string }
@@ -133,6 +144,11 @@ export interface WebsiteSettings {
   'og:description'?: string,
   'og:image'?: string,
 }
+
+/**
+ * A step of the site's build.json, `build` = the Silex build commands of the moment
+ */
+export type BuildStep = { type: 'build' } | { type: 'sh', value: string }
 
 export interface Font {
   name: string,
@@ -267,6 +283,35 @@ export interface ConnectorData {
   oauthUrl: string | null
   color: string
   background: string
+  /**
+   * What to ask the user before publishing, when the host cannot say where the
+   * website is served. Only Silex Desktop sends this.
+   */
+  optionsForm?: OptionsForm
+}
+
+/**
+ * A form the publication dialog shows before the publish button
+ *
+ * Sent by Silex Desktop only: a forge does not always know which address
+ * serves which repository, and what it cannot say is asked of the user.
+ */
+export interface OptionsForm {
+  title: string
+  fields: OptionsField[]
+}
+
+/** One thing the user is asked for, kept in the options under `name` */
+export interface OptionsField {
+  name: string
+  type: 'text' | 'url' | 'checkbox' | 'select'
+  label: string
+  /** What to start from, until the user writes something of their own */
+  value?: string
+  help?: string
+  /** What the field holds when left empty */
+  placeholder?: string
+  required: boolean
 }
 
 /**
@@ -298,8 +343,9 @@ export interface WebsiteMetaFileContent {
  */
 export interface WebsiteMeta extends WebsiteMetaFileContent {
   websiteId: WebsiteId
-  createdAt?: Date
-  updatedAt?: Date
+  /** ISO 8601, as JSON carries a date */
+  createdAt?: string
+  updatedAt?: string
 
   /** Visibility string: 'private', 'public', 'internal', etc. */
   visibility?: string
@@ -366,4 +412,5 @@ export interface PublicationJobData extends JobData {
   errors: string[][]
   startTime?: number
   endTime?: number
+  url?: string // Where the website is online, set only once the host said it built it
 }

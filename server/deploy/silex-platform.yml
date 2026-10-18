@@ -59,12 +59,12 @@ caproverOneClickApp:
             Silex is also known as the HTML5 editor.
 
             More details: https://silex.me/
-            For environment variables definition, see https://docs.silex.me/en/dev/options
+            For environment variables definition, see https://docs.silex.me/developer/configuration/server/
 
             NB: 
             You can selfhost your gitlab instance too so that you will have a full selfhosted web builder.
             You probably want to use a CMS like Wordpress or others, you can also selfhost it.
-            See https://docs.silex.me/en/user/cms
+            See https://docs.silex.me/designer/cms/overview/
 
         end: |-
             silex-platform has been successfully deployed!

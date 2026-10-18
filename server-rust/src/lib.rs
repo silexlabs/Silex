@@ -9,24 +9,33 @@
 
 //! Silex server
 //!
-//! Serves the Silex frontend and the API it needs, on top of a directory of
+//! Serves the Silex editor and the API it needs, on top of a directory of
 //! websites. It knows nothing about the machine it runs on: it starts no
 //! process and never leaves its data path.
 
 mod actions;
 mod config;
 mod error;
-mod frontend;
+pub mod frontend;
+mod held;
+mod history;
+mod jobs;
+pub mod message;
 mod models;
 mod publish;
 mod routes;
+pub mod said;
 mod storage;
 
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
-pub use actions::Actions;
+pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 pub use config::{Config, PORT};
+pub use history::{repository, tag, untag, version, Versioned, TEMPLATE_REMOTE};
+pub use jobs::{Job, JobData, JobStatus, Jobs};
+pub use models::{WebsiteId, WEBSITE_DATA_FILE};
+pub use storage::{create_website_from_template, published_files_url};
 
 /// Build the application router, ready to be served
 pub async fn build_app(config: Config) -> (Router, u16) {
@@ -35,7 +44,7 @@ pub async fn build_app(config: Config) -> (Router, u16) {
     }
 
     let app = Router::new()
-        .nest("/api", routes::api_routes())
+        .nest("/api", routes::api_routes(config.body_limit))
         .with_state(routes::AppState::new(&config));
 
     let app = frontend::configure(app).layer(TraceLayer::new_for_http());

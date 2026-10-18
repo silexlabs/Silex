@@ -29,19 +29,8 @@ export function getZeroConfig(editor: Editor): EleventyPluginOptions {
     // Default data source
     dataSources: [],
     // Enable 11ty publication and filters
-    enable11ty: true,
     // 11ty plugins
     // fetchPlugin: { cache: 'no-cache' },
     // i18nPlugin: true,
-    // Default publication paths
-    dir: {
-      input: '',
-      assets: 'assets',
-      css: 'css',
-    },
-    urls: {
-      assets: '/assets',
-      css: '/css',
-    },
   }
 }

@@ -545,7 +545,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     this.closeClient(ftp)
   }
 
-  async duplicateWebsite(session: FtpSession, websiteId: string): Promise<void> {
+  async duplicateWebsite(session: FtpSession, websiteId: string): Promise<WebsiteId> {
     const newWebsiteId = uuid()
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
@@ -555,6 +555,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     await ftp.downloadToDir(websitePath, tempDir)
     await ftp.uploadFromDir(tempDir, newWebsitePath)
     this.closeClient(ftp)
+    return newWebsiteId
   }
 
   async writeAssets(
@@ -665,6 +666,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       job.message = message
       job.logs[0].push(message)
       if(status === JobStatus.SUCCESS) {
+        job.url = this.sessionData(session).websiteUrl || undefined
         jobSuccess(job.jobId, message)
       } else if(status === JobStatus.ERROR) {
         job.errors[0].push(message)

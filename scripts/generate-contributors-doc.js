@@ -45,6 +45,8 @@ function resolveViaGh(email) {
     execSync('sleep 2.2'); // GitHub commit search: 30 requests/min
     return out || null;
   } catch (e) {
+    // Silently dropping the links would rewrite the README with fewer of them
+    if (/rate limit/i.test(`${e.stderr ?? ''}${e}`)) throw new Error('GitHub search rate limit reached, run again in a minute')
     if (/command not found|not found in PATH|executable file not found/i.test(String(e))) {
       ghAvailable = false;
       console.error('[contributors] gh CLI not available — profile links limited to noreply emails');
@@ -56,10 +58,12 @@ function resolveViaGh(email) {
 // Co-authors are credited too: a squashed PR keeps its real author in a
 // `Co-authored-by` trailer, so `%aN` alone would drop them. Records are NUL separated
 // because a commit can carry several trailers, each one on its own line.
+// HEAD and tags, not --all: fetched PR branches would credit work that was never merged,
+// and the pre-monorepo tag keeps the history lost in the rewrite.
 function getContributors(dir) {
   try {
     const output = execSync(
-      'git log --format="%aN|%aE|%aI|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)%x00" --all',
+      'git log --format="%aN|%aE|%aI|%(trailers:key=Co-authored-by,valueonly,separator=%x1F)%x00" HEAD --tags',
       {
         cwd: dir,
         encoding: 'utf-8',

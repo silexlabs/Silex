@@ -238,135 +238,135 @@ export const PROPERTY_STYLES = `
     border-radius: 2px;
     margin-right: 5px;
   }
-  .ds-section {
-    &:last-child {
-      margin-bottom: 100px;
-    }
-    details {
-      margin: 2px;
-      padding: 2px;
-      background-color: transparent;
-      border-radius: 2px;
-      color: var(--ds-secondary);
-      text-align: left;
-    }
-    details[open] {
-      background-color: var(--ds-tertiary);
-    }
-    details summary {
-      color: var(--ds-secondary);
-      cursor: pointer;
-      padding: 10px 0;
-    }
-    .ds-states__help summary {
-      list-style: none;
-      padding: 0;
-      width: 16px;
-      height: 16px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1px solid var(--ds-button-border);
-      font-size: 0.65rem;
-      opacity: 0.6;
-    }
-    .ds-states__help summary::-webkit-details-marker { display: none; }
-    .ds-states__help summary:hover { opacity: 1; }
-    details a {
-      color: var(--ds-link-color);
-    }
-    details .ds-states__help-link {
-      display: block;
-    }
-    details .ds-states__help--tooltip {
-      position: absolute;
-      left: 50%;
-      background: var(--ds-secondary);
-      color: var(--ds-tertiary);
-      padding: 10px;
-    }
-    .gjs-traits-label {
-      background-color: var(--ds-lowlight);
-      span {
-        display: flex;
-        align-items: center;
-      }
-    }
-    main {
-      display: flex;
-      flex-direction: column;
-    }
-    .ds-slot-fixed {
-      width: 100%;
-    }
-    select {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
-      width: 150px;
-      flex: 0;
-      margin: 2px;
-      padding: 2px 4px;
-      font-size: 0.8rem;
-      line-height: 1.4;
-      background-color: var(--ds-button-bg);
-      border-radius: 2px;
-      color: var(--ds-secondary);
-      border: 1px solid var(--ds-tertiary);
-      cursor: pointer;
-    }
-    input.ds-expression-input__fixed {
-      color: var(--ds-secondary);
-      width: 98%;
-      box-sizing: border-box;
-      border: none;
-      outline: none;
-      border-radius: 4px;
-      appearance: none;
-      padding: 5px var(--gjs-input-padding);
-      margin: 1px;
-      background: var(--ds-input-bg);
-    }
-    .ds-expression-input__add {
-      width: 24px;
-      min-width: 24px;
-      height: 24px;
-      padding: 0;
-      text-align: center;
-      font-size: 0.8rem;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-    }
-    .ds-expression-input__add {
-      optgroup option {
-        text-align: left;
-      }
-    }
-    .ds-expression-input__options-button {
-      background-color: transparent;
-      border: none;
-      color: var(--ds-secondary);
-      cursor: pointer;
-      padding: 0;
-      margin: 6px;
-      margin-left: 0;
-    }
-    label.ds-label {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      color: var(--ds-secondary);
-    }
-    label.ds-label--disabled {
-      justify-content: space-between;
-    }
-    label.ds-label--disabled .ds-label__message {
-      opacity: .5;
-    }
-    select.ds-visibility__condition-operator {
-      margin: 10px;
-    }
+  .ds-section:last-child {
+    margin-bottom: 100px;
+  }
+  .ds-section details {
+    margin: 2px;
+    padding: 2px;
+    background-color: transparent;
+    border-radius: 2px;
+    color: var(--ds-secondary);
+    text-align: left;
+  }
+  .ds-section details[open] {
+    background-color: var(--ds-tertiary);
+  }
+  .ds-section details summary {
+    color: var(--ds-secondary);
+    cursor: pointer;
+    padding: 10px 0;
+  }
+  .ds-section .ds-states__help summary {
+    list-style: none;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid var(--ds-button-border);
+    font-size: 0.65rem;
+    opacity: 0.6;
+  }
+  .ds-section .ds-states__help summary::-webkit-details-marker {
+    display: none;
+  }
+  .ds-section .ds-states__help summary:hover {
+    opacity: 1;
+  }
+  .ds-section details a {
+    color: var(--ds-link-color);
+  }
+  .ds-section details .ds-states__help-link {
+    display: block;
+  }
+  .ds-section details .ds-states__help--tooltip {
+    position: absolute;
+    left: 50%;
+    background: var(--ds-secondary);
+    color: var(--ds-tertiary);
+    padding: 10px;
+  }
+  .ds-section .gjs-traits-label {
+    background-color: var(--ds-lowlight);
+  }
+  .ds-section .gjs-traits-label span {
+    display: flex;
+    align-items: center;
+  }
+  .ds-section main {
+    display: flex;
+    flex-direction: column;
+  }
+  .ds-section .ds-slot-fixed {
+    width: 100%;
+  }
+  .ds-section select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 150px;
+    flex: 0;
+    margin: 2px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    background-color: var(--ds-button-bg);
+    border-radius: 2px;
+    color: var(--ds-secondary);
+    border: 1px solid var(--ds-tertiary);
+    cursor: pointer;
+  }
+  .ds-section input.ds-expression-input__fixed {
+    color: var(--ds-secondary);
+    width: 98%;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    appearance: none;
+    padding: 5px var(--gjs-input-padding);
+    margin: 1px;
+    background: var(--ds-input-bg);
+  }
+  .ds-section .ds-expression-input__add {
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  .ds-section .ds-expression-input__add optgroup option {
+    text-align: left;
+  }
+  .ds-section .ds-expression-input__options-button {
+    background-color: transparent;
+    border: none;
+    color: var(--ds-secondary);
+    cursor: pointer;
+    padding: 0;
+    margin: 6px;
+    margin-left: 0;
+  }
+  .ds-section label.ds-label {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: var(--ds-secondary);
+  }
+  .ds-section label.ds-label--disabled {
+    justify-content: space-between;
+  }
+  .ds-section label.ds-label--disabled .ds-label__message {
+    opacity: .5;
+  }
+  .ds-section select.ds-visibility__condition-operator {
+    margin: 10px;
   }
   /* States CSS Styles */
   .ds-states {
@@ -405,9 +405,9 @@ export const PROPERTY_STYLES = `
       background: var(--ds-input-bg);
       border: 1px solid var(--ds-input-border);
       opacity: 0.75;
-      &:hover {
-        opacity: 1;
-      }
+    }
+    .ds-states__add-button:hover {
+      opacity: 1;
     }
     .ds-states__button--disabled {
       opacity: 0.5;
@@ -417,16 +417,14 @@ export const PROPERTY_STYLES = `
       margin-left: 1em;
     }
   /* real data */
-  .ds-real-data {
-    code {
-      overflow: hidden;
-      text-wrap: nowrap;
-      display: block;
-      padding: 0 10px;
-      text-overflow: ellipsis;
-      margin-top: -5px;
-      margin-bottom: 10px;
-      text-align: right;
-    }
+  .ds-real-data code {
+    overflow: hidden;
+    text-wrap: nowrap;
+    display: block;
+    padding: 0 10px;
+    text-overflow: ellipsis;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    text-align: right;
   }
 `

@@ -19,6 +19,7 @@ import { Component, CssRule, StyleProps, Editor } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '~/common/types'
 import { onAll } from './utils'
 import { isExternalUrl } from './assetUrl'
+import { getPageUrl } from '~/common/page'
 
 /**
  * @fileoverview Silex publication transformers are used to control how the site is rendered and published
@@ -74,7 +75,7 @@ export const publicationTransformerDefault: PublicationTransformer = {
     }
     switch(initiator) {
     case Initiator.HTML:
-      return link
+      return type === ClientSideFileType.HTML ? toFolderLink(link) : link
     case Initiator.CSS:
       // In case of a link from a CSS file, we need to go up one level
       return `../${link.replace(/^\//, '')}`
@@ -86,6 +87,16 @@ export const publicationTransformerDefault: PublicationTransformer = {
   transformFile(file: ClientSideFile): ClientSideFile {
     return file
   }
+}
+
+// Older sites link pages without the leading ./
+const PAGE_LINK = /^(?:\.?\/)?([^/?#:]+)\.html([?#].*)?$/
+
+function toFolderLink(link: string): string {
+  const match = link.match(PAGE_LINK)
+  if (!match) return link.replace(/^\.\//, '/')
+  const [, slug, suffix = ''] = match
+  return getPageUrl(slug) + suffix
 }
 
 export function validatePublicationTransformer(transformer: PublicationTransformer): void {
@@ -128,7 +139,7 @@ export function renderComponents(editor: Editor) {
       const initialGetStyle = c.getStyle.bind(c)
       c[ATTRIBUTE_METHOD_STORE_INLINE_CSS] = c.getStyle
       const href = c.get('attributes').href as string | undefined
-      if(href?.startsWith('./')) {
+      if(href && (href.startsWith('./') || PAGE_LINK.test(href))) {
         c[ATTRIBUTE_METHOD_STORE_HREF] = href
         c.set('attributes', {
           ...c.get('attributes'),
@@ -230,8 +241,7 @@ export function transformBgImage(editor: Editor, style: StyleProps): StyleProps 
 export function transformFiles(editor: Editor, data: PublicationData) {
   const config = editor.getModel().get('config')
   data.files = config.publicationTransformers.reduce((files: ClientSideFile[], transformer: PublicationTransformer) => {
-    return files.map((file, idx) => {
-      const page = data.pages[idx] ?? null
+    return files.map(file => {
       return transformer.transformFile ? transformer.transformFile(file) as ClientSideFile ?? file : file
     })
   }, data.files)

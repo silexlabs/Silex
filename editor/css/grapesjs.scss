@@ -5,6 +5,10 @@
   flex: 1 1 auto;
 }
 
+// Fix for webview / silex desktop
+.gjs-block {
+  cursor: grab;
+}
 
 // GrapesJS color utility classes - using CSS custom properties
 .#{$prefix} {

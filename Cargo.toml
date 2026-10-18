@@ -4,3 +4,7 @@ members = [
     "desktop/src-tauri",
 ]
 resolver = "2"
+
+# The desktop app opens the repositories of the server's websites: one version for both
+[workspace.dependencies]
+git2 = { version = "0.21.0", default-features = false }

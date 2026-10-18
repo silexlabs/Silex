@@ -108,7 +108,7 @@ export class PropertiesEditor extends LitElement {
               <summary title="Help">?</summary>
               <div class="ds-states__help--tooltip">
                 Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-                <a target="_blank" href="https://docs.silex.me/en/user/cms-concepts#properties">Learn more about element properties</a>
+                <a target="_blank" href="https://docs.silex.me/designer/cms/binding-data/#understanding-state-types">Learn more about element properties</a>
               </div>
             </details>
         </div>

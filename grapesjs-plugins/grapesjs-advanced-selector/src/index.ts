@@ -19,7 +19,7 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
     ...opts,
     i18n: {},
     helpLinks: {
-      actionBar: 'https://docs.silex.me/en/user/selectors',
+      actionBar: 'https://docs.silex.me/designer/styling/selectors/',
       ...opts.helpLinks,
     },
   } as AdvancedSelectorOptions

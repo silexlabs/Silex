@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-sync-places"
+description = "Enables the sync_places command without any pre-configured scope."
+commands.allow = ["sync_places"]
+
+[[permission]]
+identifier = "deny-sync-places"
+description = "Denies the sync_places command without any pre-configured scope."
+commands.deny = ["sync_places"]

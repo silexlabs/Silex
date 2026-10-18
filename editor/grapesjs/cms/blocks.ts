@@ -7,6 +7,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   editor.BlockManager.add('eleventy-shortcode', {
     label: 'Shortcode',
     category: 'Eleventy',
+    select: true,
     content: { type: 'eleventy-shortcode' },
     media: '<span style="font-size: 50px;">{%</span>',
   })
@@ -79,6 +80,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   editor.BlockManager.add('eleventy-select', {
     label: 'select',
     category: 'Eleventy',
+    select: true,
     media: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 9c0-.6-.5-1-1.3-1H3.4C2.5 8 2 8.4 2 9v6c0 .6.5 1 1.3 1h17.4c.8 0 1.3-.4 1.3-1V9zm-1 6H3V9h18v6z"></path><path d="M18.5 13l1.5-2h-3zM4 11.5h11v1H4z"></path></svg>',
     content: { type: 'eleventy-select' },
   })
@@ -101,6 +103,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   editor.BlockManager.add('eleventy-option', {
     label: 'option',
     category: 'Eleventy',
+    select: true,
     media: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>',
     content: { type: 'eleventy-option' },
   })

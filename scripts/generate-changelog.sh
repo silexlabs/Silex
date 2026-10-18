@@ -1,17 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
-# Generate GitHub Release Notes with submodule support
+# Generate GitHub Release Notes
 #
 # Usage:
 #   ./scripts/generate-changelog.sh FROM_TAG..TO_TAG
 #
 # Output: GitHub-flavored markdown suitable for release pages
 # Features:
-#   - Traverses git submodules to collect all commits
 #   - Groups by conventional commit type (feat/fix/chore)
 #   - Deduplicates and filters out version bumps
-#   - Detects new contributors (across monorepo + submodules)
+#   - Detects new contributors
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
@@ -44,17 +43,6 @@ OTHER_SKIP_PATTERNS=(
 # ASCII Unit Separator — safe delimiter unlikely to appear in commit messages
 SEP=$'\x1f'
 
-# --- Submodule name → GitHub URL mapping ---
-declare -A PACKAGE_URL
-for _dir in packages/*; do
-  [ -f "$_dir/.git" ] || continue
-  _name=$(basename "$_dir")
-  _remote=$(cd "$_dir" && git remote get-url origin 2>/dev/null || true)
-  # Convert git@github.com:org/repo.git → https://github.com/org/repo
-  _remote=$(echo "$_remote" | sed -E 's|^git@github\.com:|https://github.com/|; s|\.git$||')
-  PACKAGE_URL[$_name]="$_remote"
-done
-
 # --- Parse arguments ---
 TAG_RANGE="${1:-}"
 
@@ -74,21 +62,6 @@ for tag in "$FROM_TAG" "$TO_TAG"; do
   fi
 done
 
-# --- Helper: iterate submodules with changes between two monorepo tags ---
-# Usage: for_each_submodule <callback_function>
-# Callback receives: $1=dir, $2=from_sha, $3=to_sha
-for_each_submodule() {
-  local callback="$1"
-  for dir in packages/*; do
-    [ -f "$dir/.git" ] || continue
-    local from_sha to_sha
-    from_sha=$(git ls-tree "$FROM_TAG" "$dir" 2>/dev/null | awk '{print $3}')
-    to_sha=$(git ls-tree "$TO_TAG" "$dir" 2>/dev/null | awk '{print $3}')
-    [[ -z "$from_sha" || -z "$to_sha" || "$from_sha" == "$to_sha" ]] && continue
-    "$callback" "$dir" "$from_sha" "$to_sha"
-  done
-}
-
 # --- Helper: check if subject matches any pattern in an array ---
 matches_any() {
   local subject="$1"
@@ -101,41 +74,8 @@ matches_any() {
   return 1
 }
 
-# --- Helper: format package name as markdown link if URL available ---
-format_package() {
-  local pkg="$1"
-  local url="${PACKAGE_URL[$pkg]:-}"
-  if [[ -n "$url" ]]; then
-    echo "[$pkg]($url)"
-  else
-    echo "$pkg"
-  fi
-}
-
-# --- Collect all commits (monorepo + submodules) ---
-ALL_COMMITS=""
-
-collect_submodule_commits() {
-  local dir="$1" from_sha="$2" to_sha="$3"
-  local name
-  name=$(basename "$dir")
-  cd "$dir"
-  while IFS= read -r line; do
-    [[ -z "$line" ]] && continue
-    ALL_COMMITS+="${line}${SEP}${name}"$'\n'
-  # tformat (not format): terminates the last record with \n, otherwise `read` drops it
-  done < <(git --no-pager log "${from_sha}..${to_sha}" --pretty=tformat:"%s${SEP}%an" 2>/dev/null || true)
-  cd "$REPO_ROOT"
-}
-
-# Monorepo-level commits
-while IFS= read -r line; do
-  [[ -z "$line" ]] && continue
-  ALL_COMMITS+="${line}${SEP}monorepo"$'\n'
 # tformat (not format): terminates the last record with \n, otherwise `read` drops it
-done < <(git --no-pager log "${FROM_TAG}..${TO_TAG}" --pretty=tformat:"%s${SEP}%an" 2>/dev/null || true)
-
-for_each_submodule collect_submodule_commits
+ALL_COMMITS=$(git --no-pager log "${FROM_TAG}..${TO_TAG}" --pretty=tformat:"%s${SEP}%an" 2>/dev/null || true)
 
 # --- Filter, deduplicate, and categorize ---
 declare -A SEEN
@@ -143,27 +83,24 @@ FEATURES=""
 FIXES=""
 OTHER=""
 
-while IFS="$SEP" read -r subject author package; do
+while IFS="$SEP" read -r subject author; do
   [[ -z "$subject" ]] && continue
 
   # Skip noise
   matches_any "$subject" "${SKIP_PATTERNS[@]}" && continue
 
-  # Extract conventional commit type
-  pkg_link=$(format_package "$package")
-
   if [[ "$subject" =~ ^feat(\(.+\))?:\ (.+) ]]; then
     msg="${BASH_REMATCH[2]}"
     [[ -n "${SEEN[$msg]+x}" ]] && continue
     SEEN[$msg]=1
-    FEATURES+="- $msg ($pkg_link) - $author"$'\n'
+    FEATURES+="- $msg - $author"$'\n'
 
   elif [[ "$subject" =~ ^fix(\(.+\))?:\ (.+) ]]; then
     msg="${BASH_REMATCH[2]}"
     matches_any "$msg" "${FIX_SKIP_PATTERNS[@]}" && continue
     [[ -n "${SEEN[$msg]+x}" ]] && continue
     SEEN[$msg]=1
-    FIXES+="- $msg ($pkg_link) - $author"$'\n'
+    FIXES+="- $msg - $author"$'\n'
 
   elif [[ "$subject" =~ ^chore(\(.+\))?:\ (.+) ]]; then
     continue
@@ -172,46 +109,14 @@ while IFS="$SEP" read -r subject author package; do
     matches_any "$subject" "${OTHER_SKIP_PATTERNS[@]}" && continue
     [[ -n "${SEEN[$subject]+x}" ]] && continue
     SEEN[$subject]=1
-    OTHER+="- $subject ($pkg_link) - $author"$'\n'
+    OTHER+="- $subject - $author"$'\n'
   fi
 done <<< "$ALL_COMMITS"
 
 # --- Detect new contributors ---
-RELEASE_AUTHORS=""
-PREV_AUTHORS=""
-
-collect_release_authors() {
-  local dir="$1" from_sha="$2" to_sha="$3"
-  cd "$dir"
-  RELEASE_AUTHORS+=$(git --no-pager log "${from_sha}..${to_sha}" --pretty=format:"%an" 2>/dev/null)$'\n'
-  cd "$REPO_ROOT"
-}
-
-collect_prev_authors() {
-  local dir="$1" from_sha="$2"
-  cd "$dir"
-  # Limit history depth to avoid traversing entire repo
-  PREV_AUTHORS+=$(git --no-pager log "$from_sha" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
-  cd "$REPO_ROOT"
-}
-
-# Release authors
-RELEASE_AUTHORS+=$(git log "${FROM_TAG}..${TO_TAG}" --pretty=format:"%an" 2>/dev/null)$'\n'
-for_each_submodule collect_release_authors
-RELEASE_AUTHORS=$(echo "$RELEASE_AUTHORS" | sort -u | grep -v '^$' || true)
-
-# Previous authors (with depth limit)
-PREV_AUTHORS+=$(git log "$FROM_TAG" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
-# For prev authors we need all submodules that existed at FROM_TAG, not just changed ones
-for dir in packages/*; do
-  [ -f "$dir/.git" ] || continue
-  from_sha=$(git ls-tree "$FROM_TAG" "$dir" 2>/dev/null | awk '{print $3}')
-  [[ -z "$from_sha" ]] && continue
-  cd "$dir"
-  PREV_AUTHORS+=$(git --no-pager log "$from_sha" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
-  cd "$REPO_ROOT"
-done
-PREV_AUTHORS=$(echo "$PREV_AUTHORS" | sort -u | grep -v '^$' || true)
+RELEASE_AUTHORS=$(git log "${FROM_TAG}..${TO_TAG}" --pretty=format:"%an" 2>/dev/null | sort -u | grep -v '^$' || true)
+# Limit history depth to avoid traversing entire repo
+PREV_AUTHORS=$(git log "$FROM_TAG" --max-count=500 --pretty=format:"%an" 2>/dev/null | sort -u | grep -v '^$' || true)
 
 NEW_CONTRIBUTORS=""
 while IFS= read -r author; do

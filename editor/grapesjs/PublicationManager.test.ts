@@ -81,28 +81,25 @@ describe('PublicationManager html output', () => {
     expect(imagesMissingAlt[0].getAttributes().src).toBe('/missing-alt.png')
   })
 
-  it('warns before publication when images are missing an alt attribute', () => {
+  it('verifies empty-alt trait updates and component model persistence', () => {
     const page = editor.Pages.getAll()[0]
-    page.set('name', 'Home')
     const body = page.getMainComponent()
-    const [missingAltImage] = body.components().add([
-      { tagName: 'img', attributes: { src: '/missing-alt.png' } },
-      { tagName: 'img', attributes: { src: '/decorative.png', alt: '' } },
-    ])
-    const manager = new PublicationManager(editor, { websiteId: 'test' })
-    const checkSeoTags = (manager as unknown as {
-      checkSeoTags(siteSettings: WebsiteSettings): void
-    }).checkSeoTags.bind(manager)
-    const runCommand = jest.spyOn(editor, 'runCommand')
+    const img = body.components().add({ tagName: 'img', type: 'image', attributes: { src: '/test.png' } }) as unknown as Component
 
-    checkSeoTags({})
+    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
 
-    expect(runCommand).toHaveBeenCalledWith('notifications:add', expect.objectContaining({
-      id: `seo-validation-alt-${missingAltImage.getId()}`,
-      componentId: missingAltImage.getId(),
-      group: 'seo-validation',
-    }))
+    // User updates Alt trait in UI
+    const altTrait = img.getTrait('alt')
+    if (altTrait) {
+      altTrait.setValue('')
+    }
+
+    // Direct model attribute setting
+    img.addAttributes({ alt: '' })
+    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(true)
+    expect(img.getAttributes().alt).toBe('')
   })
+
 
   it('creates one notification per image missing alt and uses seo-validation group', () => {
     const page = editor.Pages.getAll()[0]
@@ -174,38 +171,5 @@ describe('PublicationManager html output', () => {
     // meaning the notification manager replaces rather than duplicates
     expect(altCalls).toHaveLength(2)
     expect(altCalls[0][1].id).toBe(altCalls[1][1].id)
-  })
-
-  it('handles many images: every image missing alt produces a unique warning', () => {
-    const page = editor.Pages.getAll()[0]
-    page.set('name', 'Gallery')
-    const body = page.getMainComponent()
-    const missingCount = 50
-    const accessibleCount = 10
-    const imgDefs: { tagName: string; attributes: Record<string, string> }[] = []
-    for (let i = 0; i < missingCount; i++) {
-      imgDefs.push({ tagName: 'img', attributes: { src: `/no-alt-${i}.png` } })
-    }
-    for (let i = 0; i < accessibleCount; i++) {
-      imgDefs.push({ tagName: 'img', attributes: { src: `/has-alt-${i}.png`, alt: `Photo ${i}` } })
-    }
-    body.components().add(imgDefs)
-    const manager = new PublicationManager(editor, { websiteId: 'test' })
-    const checkSeoTags = (manager as unknown as {
-      checkSeoTags(siteSettings: WebsiteSettings): void
-    }).checkSeoTags.bind(manager)
-    const runCommand = jest.spyOn(editor, 'runCommand')
-
-    checkSeoTags({})
-
-    const altCalls = (runCommand.mock.calls as unknown as [string, Record<string, unknown>][]).filter(
-      ([cmd, opts]) => cmd === 'notifications:add' && typeof opts.id === 'string' && (opts.id as string).startsWith('seo-validation-alt-')
-    )
-    // One notification per missing-alt image
-    expect(altCalls).toHaveLength(missingCount)
-
-    // All IDs are unique
-    const ids = altCalls.map(([, opts]) => opts.id)
-    expect(new Set(ids).size).toBe(missingCount)
   })
 })

@@ -41,6 +41,7 @@ export const blocksPlugin = (editor, opts) => {
   editor.BlockManager.add(containerId, {
     label: 'Container',
     category: 'Basics',
+    select: true,
     attributes: { class: 'container-png' },
     content: {
       type: containerId,

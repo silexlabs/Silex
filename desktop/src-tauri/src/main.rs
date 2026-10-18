@@ -10,76 +10,38 @@
 // Prevents an extra console window on Windows in release builds
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use integrations::common::run::open_detached;
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, SystemTime};
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use silex_server::Config;
+use crate::held::held;
+use crate::locales::{button, tr};
+use silex_server::said::{self, Said};
+use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
+mod frontend;
+mod held;
 mod integrations;
+mod locales;
 mod mcp;
-
-// ==================
-// Telemetry consent
-// ==================
-
-fn telemetry_consent_path(data_dir: &PathBuf) -> PathBuf {
-    data_dir.join("telemetry_consent")
-}
-
-/// Returns Some(true) if opted in, Some(false) if opted out, None if never asked.
-fn read_telemetry_consent(data_dir: &PathBuf) -> Option<bool> {
-    std::fs::read_to_string(telemetry_consent_path(data_dir))
-        .ok()
-        .map(|s| s.trim() == "true")
-}
-
-fn write_telemetry_consent(data_dir: &PathBuf, accepted: bool) {
-    let _ = std::fs::create_dir_all(data_dir);
-    let _ = std::fs::write(
-        telemetry_consent_path(data_dir),
-        if accepted { "true" } else { "false" },
-    );
-}
-
-/// Prompt the user for telemetry consent (non-blocking, saves result for next launch).
-fn prompt_telemetry_consent(app: &tauri::AppHandle, data_dir: PathBuf) {
-    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
-
-    app.dialog()
-        .message(
-            "Help improve Silex by sending anonymous crash reports and basic usage data?\n\n\
-             No personal data or website content is ever collected.\n\
-             You can change this later in Settings.",
-        )
-        .title("Telemetry")
-        .kind(MessageDialogKind::Info)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            "Yes, help improve Silex".into(),
-            "No thanks".into(),
-        ))
-        .show(move |accepted| {
-            write_telemetry_consent(&data_dir, accepted);
-            if accepted {
-                tracing::info!("Telemetry opted in");
-            } else {
-                tracing::info!("Telemetry opted out");
-            }
-        });
-}
+mod templates;
 
 // ==================
 // App State
 // ==================
 
 struct AppState {
-    current_website_id: Mutex<Option<String>>,
+    /// Shared with the actions of the server, which answer about the website
+    /// the editor has open without being told which one that is
+    current_website_id: actions::CurrentWebsiteId,
     current_website_name: Mutex<Option<String>>,
     has_unsaved_changes: Mutex<bool>,
 }
@@ -87,10 +49,18 @@ struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            current_website_id: Mutex::new(None),
+            current_website_id: Arc::new(Mutex::new(None)),
             current_website_name: Mutex::new(None),
             has_unsaved_changes: Mutex::new(false),
         }
+    }
+}
+
+struct WebsitesFolder(PathBuf);
+
+impl WebsitesFolder {
+    fn website(&self, website_id: &WebsiteId) -> Result<PathBuf, Said> {
+        actions::site_path(&self.0, website_id.as_str()).ok_or_else(|| Said::new(said::NO_WEBSITE))
     }
 }
 
@@ -105,9 +75,9 @@ fn set_current_project(
     website_id: String,
     website_name: String,
 ) {
-    *state.current_website_id.lock().unwrap() = Some(website_id);
-    *state.current_website_name.lock().unwrap() = Some(website_name.clone());
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *held(&state.current_website_id) = Some(website_id);
+    *held(&state.current_website_name) = Some(website_name.clone());
+    *held(&state.has_unsaved_changes) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title(&format!("{} \u{2014} Silex", website_name));
@@ -116,9 +86,9 @@ fn set_current_project(
 
 #[tauri::command]
 fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.current_website_id.lock().unwrap() = None;
-    *state.current_website_name.lock().unwrap() = None;
-    *state.has_unsaved_changes.lock().unwrap() = false;
+    *held(&state.current_website_id) = None;
+    *held(&state.current_website_name) = None;
+    *held(&state.has_unsaved_changes) = false;
 
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_title("Silex");
@@ -126,26 +96,136 @@ fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState
 }
 
 #[tauri::command]
-fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
-    *state.has_unsaved_changes.lock().unwrap() = true;
+fn set_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>, unsaved: bool) {
+    *held(&state.has_unsaved_changes) = unsaved;
 
-    if let Some(name) = state.current_website_name.lock().unwrap().as_ref() {
+    if let Some(name) = held(&state.current_website_name).as_ref() {
         if let Some(window) = app.get_webview_window("main") {
-            let _ = window.set_title(&format!("\u{2022} {} \u{2014} Silex", name));
+            let mark = if unsaved { "\u{2022} " } else { "" };
+            let _ = window.set_title(&format!("{mark}{name} \u{2014} Silex"));
         }
     }
 }
 
+/// A file could be a program, which the system would run: only folders open
 #[tauri::command]
-fn open_folder(path: String) {
-    // Strip file:// prefix if present
-    let path = path.strip_prefix("file://").unwrap_or(&path);
-    let _ = open::that(path);
+async fn open_link(folder: tauri::State<'_, WebsitesFolder>, url: String) -> Result<(), Said> {
+    let does_not_open = || Said::new(said::DOES_NOT_OPEN).with("url", &url);
+    let parsed = tauri::Url::parse(&url).map_err(|_| does_not_open())?;
+    let target = match parsed.scheme() {
+        "file" => {
+            let path = parsed.to_file_path().map_err(|()| does_not_open())?;
+            let path = std::fs::canonicalize(path).map_err(Said::raw)?;
+            let websites = std::fs::canonicalize(&folder.0).map_err(Said::raw)?;
+            if !path.is_dir() || !path.starts_with(websites) {
+                return Err(Said::new(said::NOT_IN_A_WEBSITE).with("path", path.display()));
+            }
+            path.into_os_string()
+        }
+        "http" | "https" => parsed.as_str().into(),
+        _ => return Err(does_not_open()),
+    };
+    open_detached(target).map_err(Said::raw)
 }
 
 #[tauri::command]
-fn log_debug(message: String) {
-    tracing::debug!("[webview] {message}");
+async fn show_website_folder(
+    folder: tauri::State<'_, WebsitesFolder>,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    open_detached(folder.website(&website_id)?).map_err(Said::raw)
+}
+
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LastPublication {
+    /// Silex made the website and nothing published it since
+    never_published: bool,
+    /// Where the last publication that worked put it online
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<String>,
+}
+
+/// None for a website made before Silex kept this, which may well be online:
+/// the editor keeps how publishing went in the website, read on this computer
+#[tauri::command]
+async fn last_publication(
+    folder: tauri::State<'_, WebsitesFolder>,
+    website_id: WebsiteId,
+) -> Result<Option<LastPublication>, Said> {
+    let data = std::fs::read(folder.website(&website_id)?.join(WEBSITE_DATA_FILE)).ok();
+    let data = data.and_then(|data| serde_json::from_slice::<serde_json::Value>(&data).ok());
+    let last = data
+        .as_ref()
+        .and_then(|data| data.pointer("/publication/lastPublication"));
+    Ok(last.map(|last| LastPublication {
+        never_published: last.is_null(),
+        url: last["url"]
+            .as_str()
+            .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+            .map(String::from),
+    }))
+}
+
+#[tauri::command]
+async fn sync_places(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<Vec<actions::SyncPlace>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.sync_places(website_id.as_str()))
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn sync_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    actions.sync_now(website_id.as_str()).await
+}
+
+/// Unlike the DELETE route, which the hosted server shares, the user can get the website back
+#[tauri::command]
+async fn trash_website(
+    folder: tauri::State<'_, WebsitesFolder>,
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    // git holds its files while it sends them, and the send would then fail on a website that is gone
+    if actions
+        .sync_statuses()
+        .borrow()
+        .get(website_id.as_str())
+        .is_some_and(actions::SyncStatus::on_its_way)
+    {
+        return Err(Said::new(said::SENDING));
+    }
+    to_trash(folder.website(&website_id)?).map_err(Said::raw)
+}
+
+/// Through Finder, the default, macOS asks the user to let Silex control Finder
+#[cfg(target_os = "macos")]
+fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
+    use trash::macos::{DeleteMethod, TrashContextExtMacos};
+    let mut context = trash::TrashContext::default();
+    context.set_delete_method(DeleteMethod::NsFileManager);
+    context.delete(path)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn to_trash(path: PathBuf) -> Result<(), trash::Error> {
+    trash::delete(path)
+}
+
+/// Told by the editor once it has finished saving
+///
+/// Called even when it had nothing to save: quitting waits on this to tell an
+/// empty queue from one whose save is still on its way.
+#[tauri::command]
+fn save_ended(saves: tauri::State<'_, actions::SaveEnds>, failed: bool) {
+    saves.send_replace(failed);
 }
 
 /// The GlitchTip DSN is read from the glitchtip.dsn bundle resource, not compiled
@@ -161,9 +241,49 @@ fn glitchtip_dsn(resource_dir: Option<PathBuf>) -> Option<String> {
     }
 }
 
+/// How this copy of Silex was installed, which is what a bug report leaves out
+fn package_kind() -> &'static str {
+    if cfg!(debug_assertions) {
+        return "dev";
+    }
+    for (variable, kind) in [
+        ("APPIMAGE", "appimage"),
+        ("FLATPAK_ID", "flatpak"),
+        ("SNAP", "snap"),
+    ] {
+        if std::env::var_os(variable).is_some() {
+            return kind;
+        }
+    }
+    let Ok(program) = std::env::current_exe() else {
+        return "unknown";
+    };
+    if cfg!(target_os = "macos") {
+        return "app";
+    }
+    if cfg!(target_os = "windows") {
+        return "exe";
+    }
+    if !program.starts_with("/usr") {
+        return "portable";
+    }
+    // deb and rpm install the same files in the same places, so what tells them
+    // apart is which package manager the machine keeps
+    if PathBuf::from("/var/lib/dpkg/status").exists() {
+        "deb"
+    } else if PathBuf::from("/var/lib/rpm").exists() {
+        "rpm"
+    } else {
+        "linux-package"
+    }
+}
+
+/// The version the repository carries, until `scripts/set-version.sh` stamps a release
+const UNRELEASED_VERSION: &str = "0.0.0-dev";
+
 /// Map a release version to a GlitchTip environment channel (canary/alpha/beta/stable).
 fn telemetry_environment(version: &str) -> &'static str {
-    if cfg!(debug_assertions) {
+    if cfg!(debug_assertions) || version == UNRELEASED_VERSION {
         "development"
     } else if version.contains("canary") {
         "canary"
@@ -200,15 +320,12 @@ struct TelemetryContext {
     user_id: String,
     os: String,
     arch: String,
+    package: String,
 }
 
 #[tauri::command]
 fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
-    // Only expose telemetry config to the frontend if the user has opted in
     let data_dir = dirs::data_dir()?.join("org.silex.desktop");
-    if read_telemetry_consent(&data_dir) != Some(true) {
-        return None;
-    }
     let dsn = glitchtip_dsn(app.path().resource_dir().ok())?;
     let version = app.package_info().version.to_string();
     Some(TelemetryContext {
@@ -218,35 +335,161 @@ fn get_telemetry_context(app: tauri::AppHandle) -> Option<TelemetryContext> {
         user_id: get_or_create_install_id(&data_dir),
         os: std::env::consts::OS.to_string(),
         arch: std::env::consts::ARCH.to_string(),
+        package: package_kind().to_string(),
     })
 }
 
-fn show_quit_dialog(app: &tauri::AppHandle) {
+/// The longest "Save and quit" keeps the app running after the save is asked for
+///
+/// The website still has to reach its repository, over a network that answers
+/// when it answers. Past this the app closes and says what is left.
+const SAVE_AND_QUIT_WAIT: Duration = Duration::from_secs(15);
+
+/// Wait for the websites on their way to their repository to get there
+///
+/// An empty queue means two opposite things, nothing to send or a save that
+/// has not arrived yet, and only the editor tells them apart.
+///
+/// False when the wait ran out with some still on their way.
+async fn everything_left(
+    sync_statuses: &mut actions::SyncStatuses,
+    save_ended: &mut actions::SaveEnded,
+) -> bool {
+    let wait_until = tokio::time::Instant::now() + SAVE_AND_QUIT_WAIT;
+
+    // Err is the editor gone rather than a save: nobody is going to say it now
+    if tokio::time::timeout_at(wait_until, save_ended.changed())
+        .await
+        .is_err()
+    {
+        return false;
+    }
+
+    loop {
+        if !sync_statuses
+            .borrow_and_update()
+            .values()
+            .any(actions::SyncStatus::on_its_way)
+        {
+            return true;
+        }
+        match tokio::time::timeout_at(wait_until, sync_statuses.changed()).await {
+            Err(_) => return false,
+            Ok(Err(_)) => return true,
+            Ok(Ok(())) => {}
+        }
+    }
+}
+
+/// Say what has not left yet, on the one occasion it is worth saying
+///
+/// Their work is saved on this computer either way: only the repository is
+/// behind, until the next change or the next opening of the website sends it.
+fn says_what_is_left(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
-    let app_handle = app.clone();
     app.dialog()
-        .message("Do you want to save changes before quitting?")
+        .message(tr(locales::NOT_SENT_YET))
         .title("Silex")
         .kind(MessageDialogKind::Warning)
-        .buttons(MessageDialogButtons::OkCancelCustom(
-            "Save & Quit".into(),
-            "Quit".into(),
+        .buttons(MessageDialogButtons::Ok)
+        .blocking_show();
+}
+
+/// The editor has no catalog for what the desktop says
+fn tells_the_editor(
+    app_handle: tauri::AppHandle,
+) -> impl Fn(&str, &actions::Failure) + Send + Sync {
+    move |website_id, failure| {
+        let host = &failure.place;
+        let with_host = |key| {
+            host.as_deref()
+                .map(|host| said::fill(&tr(key), [("host", host)]))
+        };
+        let what_happened = failure.what_happened();
+        let params = what_happened
+            .params
+            .iter()
+            .filter_map(|(name, value)| Some((*name, value.as_str()?)));
+        let what_happened = what_happened
+            .sentence
+            .map(|sentence| said::fill(&tr(sentence), params));
+        let _ = app_handle.emit(
+            "sync-failed",
+            serde_json::json!({
+                "websiteId": website_id,
+                "error": failure.error,
+                "url": host.as_ref().and(failure.url.as_ref()),
+                "texts": {
+                    "whatHappened": what_happened,
+                    "newCommits": tr(locales::NEW_COMMITS),
+                    "newCommitsDetail": tr(locales::NEW_COMMITS_DETAIL),
+                    "technicalDetails": tr(locales::TECHNICAL_DETAILS),
+                    "openRepository": with_host(locales::OPEN_REPOSITORY),
+                    "continueEditing": tr(locales::CONTINUE_EDITING),
+                },
+            }),
+        );
+    }
+}
+
+fn show_quit_dialog(app: &tauri::AppHandle) {
+    use tauri_plugin_dialog::{
+        DialogExt, MessageDialogButtons, MessageDialogKind, MessageDialogResult,
+    };
+
+    let app_handle = app.clone();
+    let save_and_quit = button(locales::SAVE_AND_QUIT);
+    let quit_without_saving = button(locales::QUIT_WITHOUT_SAVING);
+    app.dialog()
+        .message(tr(locales::SAVE_BEFORE_QUITTING))
+        .title("Silex")
+        .kind(MessageDialogKind::Warning)
+        .buttons(MessageDialogButtons::YesNoCancelCustom(
+            save_and_quit.clone(),
+            quit_without_saving.clone(),
+            button(locales::CANCEL),
         ))
-        .show(move |result| {
-            if result {
+        .show_with_result(move |result| match result {
+            MessageDialogResult::Custom(chosen) if chosen == save_and_quit => {
+                // Subscribed before the editor is asked, so that the save it
+                // is about to confirm cannot be missed
+                let saves = app_handle.state::<actions::SaveEnds>();
+                saves.send_replace(false);
+                let save_ended = saves.subscribe();
                 let _ = app_handle.emit("menu-save", ());
-                // Give a moment for save, then close
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.set_title(&format!("{} \u{2014} Silex", tr(locales::SAVING)));
+                }
                 let handle = app_handle.clone();
                 std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_secs(2));
+                    let mut sync_statuses =
+                        handle.state::<Arc<actions::SilexActions>>().sync_statuses();
+                    let mut save_ended = save_ended;
+                    let left = tauri::async_runtime::block_on(everything_left(
+                        &mut sync_statuses,
+                        &mut save_ended,
+                    ));
+                    let failed = *save_ended.borrow();
+                    // The editor shows why, and closing would hide it
+                    if failed {
+                        return;
+                    }
+                    if !left {
+                        says_what_is_left(&handle);
+                    }
                     if let Some(window) = handle.get_webview_window("main") {
                         let _ = window.destroy();
                     }
                 });
-            } else if let Some(window) = app_handle.get_webview_window("main") {
-                let _ = window.destroy();
             }
+            MessageDialogResult::Custom(chosen) if chosen == quit_without_saving => {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.destroy();
+                }
+            }
+            // Cancel, Escape and the close button of the dialog keep the editor open
+            _ => {}
         });
 }
 
@@ -259,22 +502,29 @@ fn check_for_updates(app: tauri::AppHandle) {
 
     tauri::async_runtime::spawn(async move {
         tracing::info!("Checking for updates...");
-        match app.updater().expect("updater not configured").check().await {
+        let updater = match app.updater() {
+            Ok(updater) => updater,
+            Err(error) => {
+                tracing::warn!("Cannot check for updates: {error}");
+                return;
+            }
+        };
+        match updater.check().await {
             Ok(Some(update)) => {
                 let version = update.version.clone();
                 tracing::info!("Update available: v{}", version);
                 let app_clone = app.clone();
 
                 app.dialog()
-                    .message(format!(
-                        "Silex {} is available. Do you want to update now?",
-                        version
+                    .message(said::fill(
+                        &tr(locales::UPDATE_NOW),
+                        [("version", version.as_str())],
                     ))
-                    .title("Update Available")
+                    .title(tr(locales::UPDATE_AVAILABLE))
                     .kind(MessageDialogKind::Info)
                     .buttons(MessageDialogButtons::OkCancelCustom(
-                        "Update & Restart".into(),
-                        "Later".into(),
+                        button(locales::UPDATE_AND_RESTART),
+                        button(locales::LATER),
                     ))
                     .show(move |accepted| {
                         if accepted {
@@ -307,21 +557,158 @@ fn check_for_updates(app: tauri::AppHandle) {
 // Server
 // ==================
 
+/// A path under the home folder names the user
+fn without_home(text: &str) -> String {
+    match dirs::home_dir().and_then(|home| home.to_str().map(String::from)) {
+        Some(home) => text.replace(&home, "~"),
+        None => text.to_string(),
+    }
+}
+
+/// The Linux distribution, in the fields Sentry defines for it, read where its
+/// Python SDK reads them: a bug can hang on the libraries of one distribution
+fn distribution() -> &'static [(&'static str, String)] {
+    static RELEASE: std::sync::OnceLock<Vec<(&'static str, String)>> = std::sync::OnceLock::new();
+    RELEASE.get_or_init(|| {
+        let text = std::fs::read_to_string("/etc/os-release")
+            .or_else(|_| std::fs::read_to_string("/usr/lib/os-release"))
+            .unwrap_or_default();
+        [
+            ("ID", "distribution_name"),
+            ("VERSION_ID", "distribution_version"),
+            ("PRETTY_NAME", "distribution_pretty_name"),
+        ]
+        .into_iter()
+        .filter_map(|(key, field)| {
+            text.lines()
+                .find_map(|line| line.strip_prefix(key)?.strip_prefix('='))
+                .map(|value| (field, value.trim_matches('"').to_string()))
+        })
+        .collect()
+    })
+}
+
+/// Sentry itself only says "Linux" and the kernel
+fn with_distribution(event: &mut sentry::protocol::Event<'static>) {
+    if let Some(sentry::protocol::Context::Os(os)) = event.contexts.get_mut("os") {
+        for (field, value) in distribution() {
+            os.other.insert(field.to_string(), value.clone().into());
+        }
+    }
+}
+
+/// The query of an API call carries what the user typed to publish
+fn without_query(request: &sentry::protocol::Request) -> sentry::protocol::Request {
+    let mut url = request.url.clone();
+    if let Some(url) = url.as_mut() {
+        url.set_query(None);
+    }
+    sentry::protocol::Request {
+        method: request.method.clone(),
+        url,
+        ..Default::default()
+    }
+}
+
+/// The tracing layer attaches the whole request to the transaction, and sentry
+/// offers no hook to change a transaction before it is sent
+async fn trace_without_query(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    sentry::configure_scope(|scope| {
+        if let Some(span) = scope.get_span() {
+            span.set_request(sentry::protocol::Request {
+                method: Some(request.method().to_string()),
+                url: format!("http://localhost{}", request.uri().path())
+                    .parse()
+                    .ok(),
+                ..Default::default()
+            });
+        }
+    });
+    next.run(request).await
+}
+
+fn is_local_authority(authority: &str) -> bool {
+    axum::http::uri::Authority::try_from(authority).is_ok_and(|a| {
+        let host = a.host().trim_start_matches('[').trim_end_matches(']');
+        ["localhost", "127.0.0.1", "::1"]
+            .iter()
+            .any(|local| host.eq_ignore_ascii_case(local))
+    })
+}
+
+// A web page can point its own domain at 127.0.0.1 (DNS rebinding) and then
+// call this API as same-origin; only the Host header gives it away.
+// A plain cross-site form POST keeps a local Host, but not a local Origin
+async fn reject_foreign_host(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::http::{header, Method};
+    use axum::response::IntoResponse;
+
+    let headers = request.headers();
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("");
+    let safe_method = matches!(*request.method(), Method::GET | Method::HEAD);
+    let same_origin = match headers.get(header::ORIGIN) {
+        None => true,
+        Some(origin) => origin
+            .to_str()
+            .ok()
+            .and_then(|o| o.strip_prefix("http://"))
+            .is_some_and(|o| o.eq_ignore_ascii_case(host)),
+    };
+    if is_local_authority(host) && (safe_method || same_origin) {
+        next.run(request).await
+    } else {
+        axum::http::StatusCode::FORBIDDEN.into_response()
+    }
+}
+
 async fn start_server(
     pending_evals: mcp::PendingEvals,
     data_path: std::path::PathBuf,
     app_data_dir: PathBuf,
-) -> u16 {
-    // SILEX_DATA_PATH lets the user store the websites somewhere else
-    let data_path = std::env::var("SILEX_DATA_PATH")
-        .map(std::path::PathBuf::from)
-        .unwrap_or(data_path);
-
+    current_website_id: actions::CurrentWebsiteId,
+    dashboard_in_development: bool,
+    asking_integrations: sentry::Span,
+    app_handle: tauri::AppHandle,
+) -> Result<(u16, Arc<actions::SilexActions>), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
-    let integrations = integrations::load(&app_data_dir);
-    let actions = actions::SilexActions::new(data_path.clone(), integrations);
+    let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
+        asking_integrations.finish();
+        // Names as a tag, versions beside them: a version string as a tag would
+        // make an indexed value of its own out of every machine
+        sentry::Hub::main().configure_scope(|scope| {
+            let names: Vec<&str> = integrations.at_hand().map(|(id, _)| id).collect();
+            scope.set_tag("integrations", names.join(","));
+            let versions = integrations
+                .at_hand()
+                .filter_map(|(id, version)| Some((id.to_string(), version?.into())))
+                .collect();
+            scope.set_context("integrations", sentry::protocol::Context::Other(versions));
+        });
+        // The one event every launch produces is where the integrations are
+        // worth having
+        sentry::Hub::main().capture_event(sentry::protocol::Event {
+            message: Some("app_started".into()),
+            level: sentry::Level::Info,
+            ..Default::default()
+        });
+    });
+    let actions = Arc::new(actions::SilexActions::new(
+        data_path.clone(),
+        integrations,
+        current_website_id,
+        tells_the_editor(app_handle),
+    ));
 
-    let config = Config::new(data_path).with_actions(std::sync::Arc::new(actions));
+    let config = Config::new(data_path).with_actions(actions.clone());
 
     let (app, port) = silex_server::build_app(config).await;
 
@@ -333,42 +720,119 @@ async fn start_server(
         )
         .layer(axum::Extension(pending_evals));
 
+    let app = app
+        .layer(axum::middleware::from_fn(trace_without_query))
+        .layer(axum::middleware::from_fn(reject_foreign_host))
+        .layer(sentry::integrations::tower::SentryHttpLayer::new().enable_transaction());
+
+    let app = frontend::configure(app);
+
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = match TcpListener::bind(addr).await {
         Ok(l) => l,
+        Err(e) if dashboard_in_development => {
+            return Err(format!(
+                "Silex cannot listen on port {port}, where the dashboard in development sends its requests: {e}"
+            )
+            .into());
+        }
         Err(_) => {
-            // Port taken (another instance running) — bind to OS-assigned port
+            // The port belongs to another program on this machine
             let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
-            TcpListener::bind(fallback).await.unwrap()
+            TcpListener::bind(fallback).await?
         }
     };
-    let addr = listener.local_addr().unwrap();
+    let addr = listener.local_addr()?;
     let port = addr.port();
     tracing::info!("Silex server listening on http://{}", addr);
 
+    // A hub per request, or the layer above stacks an event processor on the one
+    // shared scope at every request and never takes one off. Made from the main
+    // hub: the integrations reach its scope after a worker has taken its copy
+    let served = tower::ServiceBuilder::new()
+        .layer(sentry::integrations::tower::SentryLayer::<
+            _,
+            _,
+            axum::extract::Request,
+        >::new(|_: &axum::extract::Request| {
+            Arc::new(sentry::Hub::new_from_top(sentry::Hub::main()))
+        }))
+        .service(app);
+
     tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
+        if let Err(error) = axum::serve(listener, tower::make::Shared::new(served)).await {
+            tracing::error!("Silex server stopped: {error}");
+        }
     });
 
-    port
+    Ok((port, actions))
+}
+
+/// Every card reads where its website stands again, on the disk: the watch
+/// keeps only the last state, which can equal the one before a push
+fn tells_the_dashboard(app_handle: tauri::AppHandle, mut sync_statuses: actions::SyncStatuses) {
+    tauri::async_runtime::spawn(async move {
+        while sync_statuses.changed().await.is_ok() {
+            let _ = app_handle.emit("sync-status", ());
+        }
+    });
+}
+
+/// Only debug builds read it: a leftover variable cannot redirect a release
+fn dashboard_in_development() -> Option<String> {
+    if cfg!(debug_assertions) {
+        std::env::var("SILEX_DASHBOARD_URL").ok()
+    } else {
+        None
+    }
+}
+
+/// On a laptop with two graphics cards, the one the screen starts on draws
+/// unless the user asks for the NVIDIA one
+#[cfg(target_os = "linux")]
+fn renders_on_nvidia() -> bool {
+    let asked = std::env::var("__NV_PRIME_RENDER_OFFLOAD").is_ok_and(|v| v == "1")
+        || std::env::var("__GLX_VENDOR_LIBRARY_NAME").is_ok_and(|v| v == "nvidia");
+    asked
+        || std::fs::read_dir("/sys/class/drm")
+            .into_iter()
+            .flatten()
+            .flatten()
+            .any(|card| {
+                let device = card.path().join("device");
+                let read = |file| std::fs::read_to_string(device.join(file)).unwrap_or_default();
+                read("boot_vga").trim() == "1" && read("vendor").trim() == "0x10de"
+            })
 }
 
 // ==================
 // Main
 // ==================
 
+/// A step of the start that is over already
+fn took(startup: &sentry::Transaction, step: &str, from: SystemTime, to: SystemTime) {
+    startup
+        .start_child_with_details("app.start", step, Default::default(), from)
+        .finish_with_timestamp(to);
+}
+
 fn main() {
-    // Fix EGL crash on Linux with certain GPU/Wayland configurations
-    // (especially NVIDIA + recent WebKitGTK). Must be set before any
-    // WebKit/GTK initialization. See: https://github.com/tauri-apps/tauri/issues/11988
+    // What the user waits for starts here, not once telemetry can measure it
+    let launched = SystemTime::now();
+
+    // WebKitGTK crashes with NVIDIA under Wayland (Gdk Error 71), and turning
+    // the renderer off draws everything on the CPU, which makes the editor
+    // crawl: only pay for it where it crashes. Must be set before any WebKit/GTK
+    // initialization. See: https://github.com/tauri-apps/tauri/issues/11988
     #[cfg(target_os = "linux")]
+    if std::env::var_os("WEBKIT_DISABLE_DMABUF_RENDERER").is_none()
+        && std::env::var_os("WAYLAND_DISPLAY").is_some()
+        && renders_on_nvidia()
     {
-        if std::env::var("WEBKIT_DISABLE_DMABUF_RENDERER").is_err() {
-            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-        }
+        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
     }
 
-    // Resolve the app data dir early so we can check telemetry consent before Tauri starts.
+    // Resolved before Tauri starts, for the install id of the telemetry.
     // This mirrors the path Tauri uses: ~/.local/share/org.silex.desktop (Linux),
     // ~/Library/Application Support/org.silex.desktop (macOS),
     // %APPDATA%/org.silex.desktop (Windows).
@@ -386,59 +850,120 @@ fn main() {
     let dsn = glitchtip_dsn(
         tauri::utils::platform::resource_dir(context.package_info(), &tauri::Env::default()).ok(),
     );
-    let dsn_available = dsn.is_some();
 
-    // Initialize error tracking (GlitchTip / Sentry-compatible).
-    // Sentry is always initialized when GLITCHTIP_DSN is set, but events are only
-    // sent if the user has opted in. This way consent takes effect immediately
-    // (no need to restart after opting in on first launch).
-    let consent_dir_for_send = app_data_dir.clone();
-    let consent_dir_for_traces = app_data_dir.clone();
-    let _sentry_guard = sentry::init(sentry::ClientOptions {
-        dsn: dsn.as_deref().and_then(|s| s.parse().ok()),
-        release: Some(app_version.clone().into()),
-        environment: Some(telemetry_environment(&app_version).into()),
-        before_send: Some(std::sync::Arc::new(move |event| {
-            if read_telemetry_consent(&consent_dir_for_send) == Some(true) {
-                Some(event)
-            } else {
-                None
-            }
-        })),
-        // Sample 100% of transactions (volume is low for a desktop app),
-        // but only if the user has opted in.
-        traces_sampler: Some(std::sync::Arc::new(move |_ctx| {
-            if read_telemetry_consent(&consent_dir_for_traces) == Some(true) {
-                1.0
-            } else {
+    let mut options = sentry::ClientOptions::new()
+        .release(app_version.clone())
+        .environment(telemetry_environment(&app_version))
+        // The editor asks for the status of a publication every second
+        .traces_sampler(|ctx| {
+            if ctx.name().contains("/publication/status") {
                 0.0
+            } else {
+                1.0
             }
-        })),
-        // Track sessions for user count and crash-free rate
-        auto_session_tracking: true,
-        session_mode: sentry::SessionMode::Application,
-        ..Default::default()
-    });
+        })
+        // Named rather than left out: unset, sentry puts the hostname of the
+        // machine in every event, which names the user
+        .server_name("desktop")
+        // Started below instead, once the scope carries the install id: started
+        // here the session goes out with nobody attached
+        .auto_session_tracking(false)
+        .session_mode(sentry::SessionMode::Application)
+        .attach_stacktrace(true)
+        // A single publication spends the default of 100 in git commands alone
+        .max_breadcrumbs(300)
+        .before_send(|mut event| {
+            if let Some(request) = event.request.as_mut() {
+                *request = without_query(request);
+            }
+            event.message = event.message.as_deref().map(without_home);
+            if let Some(entry) = event.logentry.as_mut() {
+                entry.message = without_home(&entry.message);
+            }
+            for exception in event.exception.values.iter_mut() {
+                exception.value = exception.value.as_deref().map(without_home);
+            }
+            with_distribution(&mut event);
+            Some(event)
+        })
+        .before_breadcrumb(|mut breadcrumb| {
+            breadcrumb.message = breadcrumb.message.as_deref().map(without_home);
+            for value in breadcrumb.data.values_mut() {
+                if let sentry::protocol::Value::String(text) = value {
+                    *text = without_home(text);
+                }
+            }
+            Some(breadcrumb)
+        });
+    options.dsn = dsn.as_deref().and_then(|s| s.parse().ok());
+    let configured = SystemTime::now();
+    let _sentry_guard = sentry::init(options);
     sentry::configure_scope(|scope| {
         scope.set_tag("os", std::env::consts::OS);
         scope.set_tag("arch", std::env::consts::ARCH);
+        scope.set_tag("package", package_kind());
+        if let Ok(webview) = tauri::webview_version() {
+            scope.set_tag("webview", webview);
+        }
+        // GlitchTip drops the distribution fields of the os context
+        let release: Vec<&str> = distribution()
+            .iter()
+            .filter(|(field, _)| *field != "distribution_pretty_name")
+            .map(|(_, value)| value.as_str())
+            .collect();
+        if !release.is_empty() {
+            scope.set_tag("distro", release.join(" "));
+        }
+        // Opening a folder or a browser goes through the desktop on Linux
+        if let Ok(desktop) = std::env::var("XDG_CURRENT_DESKTOP") {
+            scope.set_tag("desktop", desktop);
+        }
         // Anonymous install id → distinguishes distinct installs from repeat crashes.
         scope.set_user(Some(sentry::protocol::User {
             id: Some(install_id.clone()),
             ..Default::default()
         }));
     });
+    sentry::start_session();
+    // Until the dashboard has loaded: a launch is over for the user when there
+    // is something to click
+    let startup = sentry::start_transaction_with_timestamp(
+        sentry::TransactionContext::new("app_startup", "app.start"),
+        launched,
+    );
+    let telemetry_ready = SystemTime::now();
+    took(&startup, "before telemetry", launched, configured);
+    took(&startup, "telemetry", configured, telemetry_ready);
 
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "silex_server=info,silex_desktop=info".into()),
+                .unwrap_or_else(|_| "warn,silex_server=info,silex_desktop=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
-        .with(sentry::integrations::tracing::layer())
+        // Logs are left out: they carry paths, and so the name of the user
+        .with(
+            sentry::integrations::tracing::layer().event_filter(|metadata| {
+                use sentry::integrations::tracing::EventFilter;
+                match *metadata.level() {
+                    tracing::Level::ERROR => EventFilter::Event,
+                    tracing::Level::WARN | tracing::Level::INFO => EventFilter::Breadcrumb,
+                    _ => EventFilter::Ignore,
+                }
+            }),
+        )
         .init();
 
     tauri::Builder::default()
+        // Before every other plugin, as this one asks for: a second Silex
+        // would open a second server on the one directory of websites
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -446,83 +971,94 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             set_current_project,
             clear_current_project,
-            mark_unsaved,
-            open_folder,
-            log_debug,
+            set_unsaved,
+            open_link,
+            show_website_folder,
+            trash_website,
+            sync_places,
+            last_publication,
+            sync_website,
+            templates::create_website_from_template,
+            save_ended,
             get_telemetry_context,
         ])
         .setup(move |app| {
-            // Log app launch with OS/arch info (visible in Issues even without errors)
-            sentry::capture_event(sentry::protocol::Event {
-                message: Some("app_started".into()),
-                level: sentry::Level::Info,
-                ..Default::default()
-            });
-
-            // Start a performance transaction for app startup
-            let tx_ctx = sentry::TransactionContext::new("app_startup", "lifecycle");
-            let transaction = sentry::start_transaction(tx_ctx);
-            sentry::configure_scope(|scope| scope.set_span(Some(transaction.clone().into())));
+            let set_up = SystemTime::now();
+            took(&startup, "tauri start", telemetry_ready, set_up);
+            let setup = startup.start_child("app.start", "setup");
 
             // Silex website data lives under app_data_dir/"websites".
             // NOT "storage": WebKitGTK uses app_data_dir/"storage" for the webview's own
             // localStorage/IndexedDB origins, and FsStorage would then scan those origin
             // dirs as if they were websites (→ metadata errors + "No such file or directory").
-            let data_path = app.path().app_data_dir()
-                .expect("failed to resolve app data dir")
-                .join("websites");
-
-            // On first launch, ask the user for telemetry consent.
-            // The choice is saved and takes effect on next launch.
-            let consent_dir = app.path().app_data_dir()
-                .expect("failed to resolve app data dir");
-            if dsn_available
-                && read_telemetry_consent(&consent_dir).is_none()
-            {
-                prompt_telemetry_consent(app.handle(), consent_dir);
-            }
-
-            // Show splash screen while the app loads
-            let _splash = WebviewWindowBuilder::new(
-                app,
-                "splash",
-                WebviewUrl::App("splash.html".into()),
-            )
-            .title("Silex")
-            .inner_size(400.0, 300.0)
-            .resizable(false)
-            .decorations(false)
-            .center()
-            .always_on_top(true)
-            .build()?;
+            let app_data_dir = app.path().app_data_dir()?;
+            let data_path = app_data_dir.join("websites");
+            // SILEX_DATA_PATH lets the user store the websites somewhere else
+            let data_path = std::env::var_os("SILEX_DATA_PATH")
+                .filter(|v| !v.is_empty())
+                .map(PathBuf::from)
+                .unwrap_or(data_path);
+            app.manage(WebsitesFolder(data_path.clone()));
 
             let pending_evals = mcp::PendingEvals::default();
-            let port = tauri::async_runtime::block_on(start_server(
+            let dashboard = dashboard_in_development();
+            let server = setup.start_child("app.start", "server");
+            let (port, actions) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
-                app.path().app_data_dir().expect("failed to resolve app data dir"),
-            ));
+                app_data_dir,
+                app.state::<AppState>().current_website_id.clone(),
+                dashboard.is_some(),
+                startup.start_child("app.start", "integrations"),
+                app.handle().clone(),
+            ))?;
+            server.finish();
+            tells_the_dashboard(app.handle().clone(), actions.sync_statuses());
+            app.manage(actions);
+            app.manage(actions::SaveEnds::new(false));
 
-            let url = format!("http://localhost:{}/", port);
-            let app_handle_for_splash = app.handle().clone();
-            let window = WebviewWindowBuilder::new(
-                app,
-                "main",
-                WebviewUrl::External(url.parse().unwrap()),
-            )
-            .title("Silex")
-            .maximized(true)
-            .initialization_script(include_str!("../scripts/desktop-bridge.js"))
-            .on_page_load(move |webview, payload| {
-                if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
-                    // Close splash — main window is already maximized behind it
-                    if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
-                        let _ = splash.close();
+            let url = dashboard.unwrap_or_else(|| format!("http://localhost:{}/", port));
+            let creating_window = setup.start_child("app.start", "window");
+            let loading: Arc<Mutex<Option<(sentry::Transaction, sentry::Span)>>> =
+                Default::default();
+            let loaded = loading.clone();
+            let shown: Arc<Mutex<Option<SystemTime>>> = Default::default();
+            let was_shown = shown.clone();
+            let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::External(url.parse()?))
+                .title("Silex")
+                .maximized(true)
+                // The dashboard's background, from the first frame on, before the page paints
+                .background_color(include!(concat!(env!("OUT_DIR"), "/background.rs")))
+                .initialization_script(include_str!("../scripts/desktop-bridge.js"))
+                .on_page_load(move |webview, payload| {
+                    if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                        let _ = webview.set_focus();
+                        if let Some((startup, page)) = held(&loaded).take() {
+                            page.finish();
+                            if let Some(shown) = *held(&was_shown) {
+                                took(&startup, "window open", launched, shown);
+                                let open = shown.duration_since(launched).unwrap_or_default();
+                                startup.set_data("window_open", (open.as_millis() as u64).into());
+                            }
+                            startup.finish();
+                        }
                     }
-                    let _ = webview.set_focus();
+                })
+                .build()?;
+            creating_window.finish();
+            // The page loads once setup has handed the main thread back
+            *held(&loading) = Some((startup.clone(), startup.start_child("app.start", "page")));
+
+            // Editor and dashboard reach each other through `location.href`, so
+            // WebKit kept the previous editor pages alive for a back button the
+            // app does not have, about 130 MB each
+            #[cfg(target_os = "linux")]
+            window.with_webview(|webview| {
+                use webkit2gtk::{SettingsExt, WebViewExt};
+                if let Some(settings) = webview.inner().settings() {
+                    settings.set_enable_page_cache(false);
                 }
-            })
-            .build()?;
+            })?;
 
             // MCP transport: --stdio for agent-managed launch, HTTP otherwise
             if std::env::args().any(|a| a == "--stdio") {
@@ -537,22 +1073,24 @@ fn main() {
                 });
             }
 
-            // Finish the startup transaction (sends to GlitchTip Performance)
-            transaction.finish();
-
             // Check for updates in the background — release builds only.
-            // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.1.0,
+            // In dev (`cargo run` / `cargo watch`) the version is the placeholder 0.0.0-dev,
             // so the updater would otherwise prompt "update to <latest release>" on every launch.
             if !cfg!(debug_assertions) {
                 check_for_updates(app.handle().clone());
             }
 
+            setup.finish();
+
             // Handle window close with unsaved changes
             let app_handle = app.handle().clone();
             window.on_window_event(move |event| {
+                // Tauri tells nothing when the window appears: its first event
+                // comes when the window system has placed it on the screen
+                held(&shown).get_or_insert_with(SystemTime::now);
                 if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                     let state = app_handle.state::<AppState>();
-                    let has_changes = *state.has_unsaved_changes.lock().unwrap();
+                    let has_changes = *held(&state.has_unsaved_changes);
                     if has_changes {
                         api.prevent_close();
                         show_quit_dialog(&app_handle);
@@ -562,6 +1100,17 @@ fn main() {
 
             Ok(())
         })
-        .run(context)
-        .expect("error while running tauri application");
+        .build(context)
+        .expect("error while building tauri application")
+        .run(|_app, event| {
+            // Tauri exits the process itself and the guard is never dropped
+            if let tauri::RunEvent::Exit = event {
+                sentry::end_session();
+                if let Some(client) = sentry::Hub::current().client() {
+                    if !client.flush(Some(std::time::Duration::from_secs(2))) {
+                        tracing::warn!("telemetry did not finish sending before quitting");
+                    }
+                }
+            }
+        });
 }

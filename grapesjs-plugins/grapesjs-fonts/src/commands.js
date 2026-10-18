@@ -58,17 +58,17 @@ export default function (editor, opts) {
   // Install a font by family name
   editor.Commands.add(cmdFontsInstall, (editor, sender, options = {}) => {
     const { family } = options
-    if (!family) throw new Error('Required: family (e.g. "Roboto", "Open Sans"). Use fonts:available to search.')
+    if (!family) throw new Error('Required: family (e.g. "Roboto", "Open Sans"). Use fonts_available to search.')
 
     const fonts = editor.getModel().get('fonts') || []
     if (fonts.find(f => f.family.toLowerCase() === family.toLowerCase())) {
-      throw new Error(`Font "${family}" already installed. Use fonts:installed to list installed fonts.`)
+      throw new Error(`Font "${family}" already installed. Use fonts_installed to list installed fonts.`)
     }
 
     const available = getAvailableFonts() || []
     const fontData = available.find(f => f.family.toLowerCase() === family.toLowerCase())
     if (!fontData) {
-      throw new Error(`Font "${family}" not found in available fonts. Run fonts:available to load the font list first, then retry.`)
+      throw new Error(`Font "${family}" not found in available fonts. Run fonts_available to load the font list first, then retry.`)
     }
 
     const newFont = {
@@ -87,11 +87,16 @@ export default function (editor, opts) {
   // Remove an installed font
   editor.Commands.add(cmdFontsRemove, (editor, sender, options = {}) => {
     const { family } = options
-    if (!family) throw new Error('Required: family (e.g. "Roboto"). Use fonts:installed to list installed fonts.')
+    if (!family) throw new Error('Required: family (e.g. "Roboto"). Use fonts_installed to list installed fonts.')
 
     const fonts = editor.getModel().get('fonts') || []
-    const idx = fonts.findIndex(f => f.family === family)
-    if (idx === -1) throw new Error(`Font "${family}" not installed. Use fonts:installed to list installed fonts.`)
+    const idx = fonts.findIndex(f => f.family.toLowerCase() === family.toLowerCase())
+    if (idx === -1) {
+      const installed = fonts.map(f => f.family)
+      throw new Error(installed.length
+        ? `Font "${family}" not installed. Installed fonts: ${installed.join(', ')}.`
+        : `Font "${family}" not installed. No fonts installed.`)
+    }
 
     fonts.splice(idx, 1)
     editor.getModel().set('fonts', [...fonts])

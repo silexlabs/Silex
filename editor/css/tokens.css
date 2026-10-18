@@ -1,0 +1,54 @@
+/*
+ * The colors of Silex, one file for the editor, the dashboard of the desktop
+ * app, the loading page and the window of the desktop app, which reads
+ * --silex-bg-main at build time
+ */
+
+:root {
+  /* Backgrounds */
+  --silex-bg-main: #1A1A1A;
+  --silex-bg-darker: #111111;
+  --silex-bg-lighter: #1D1D1D;
+  --silex-bg-surface: #1A1A1A;
+
+  /* Text colors */
+  --silex-text-primary: #E5E5E5;
+  --silex-text-secondary: #A8A8A8;
+  --silex-text-inverse: #FFFFFF;
+
+  /* Borders (subtle, modern) */
+  --silex-border-color: rgba(255, 255, 255, 0.08);
+  --silex-border-color-strong: #262626;
+
+  /* Shadows (very soft) */
+  --silex-shadow-color: rgba(0, 0, 0, 0.4);
+  --silex-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --silex-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --silex-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  /* Interactive states (micro-interactions) */
+  --silex-hover-bg: #222222;
+  --silex-active-bg: #252525;
+  --silex-focus-outline: #8873FE;
+
+  /* Accents */
+  --silex-accent-primary: #8873FE;
+  --silex-accent-secondary: #7461E3;
+
+  /* Status colors */
+  --silex-status-info: #6B8AFF;
+  --silex-status-success: #5FD68F;
+  --silex-status-warning: #FFA94D;
+  --silex-status-error: #FF6B6B;
+
+  /* UI Components */
+  --silex-button-bg: #252525;
+  --silex-button-hover-bg: #2D2D2D;
+  --silex-input-bg: #141414;
+  --silex-badge-bg: #2D2D2D;
+  --silex-badge-text: #E5E5E5;
+
+  /* Transitions (150-200ms for micro-interactions) */
+  --silex-transition-fast: 0.15s;
+  --silex-transition-medium: 0.2s;
+}

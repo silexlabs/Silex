@@ -469,6 +469,12 @@ function patchBlocksDragDrop(editor: Editor) {
   new MutationObserver(disableDraggable)
     .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['draggable'] })
 
+  // Workaround for https://github.com/GrapesJS/grapesjs/issues/6830
+  editor.on('page:select', () => {
+    const blocksView = (editor.BlockManager as any).blocksView
+    if (blocksView) blocksView.sorter = undefined
+  })
+
   // Prevent text selection while dragging blocks
   container.addEventListener('mousedown', (e: MouseEvent) => {
     if (e.button !== 0) return
@@ -582,6 +588,12 @@ export async function initEditor(config: EditorConfig) {
             editor.select(wrapper)
           }
         }
+      })
+
+      // Select the dropped component right away, GrapesJS does it in a setTimeout
+      // which ends up in a separate undo step in Firefox (layer manager drag)
+      editor.on('component:drag:end', ({ target }) => {
+        if (target && !editor.getSelectedAll().includes(target)) editor.select(target)
       })
 
       // Remove useless buttons

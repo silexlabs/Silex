@@ -1,5 +1,5 @@
 import { API_PATH, API_WEBSITE_ASSET_READ, API_WEBSITE_PATH } from '~/common/constants'
-import { Asset, ClientSideFileType, ConnectorId, Style, WebsiteId } from '~/common/types'
+import { type Asset, ClientSideFileType, type ConnectorId, type Style, type WebsiteId } from '~/common/types'
 
 /**
  * @fileoverview Helpers to manage assets URL
@@ -104,7 +104,7 @@ export function displayedToStored(path: string): string {
  * Publication transformer to convert the asset URL during publication
  */
 export const assetsPublicationTransformer = {
-  transformPath(path: string, type: ClientSideFileType): string {
+  transformPath(path: string, type: ClientSideFileType): string | undefined {
     if(type === ClientSideFileType.ASSET) {
       // External URLs should not be transformed
       if (isExternalUrl(path)) return path
@@ -113,7 +113,7 @@ export const assetsPublicationTransformer = {
     }
     return undefined
   },
-  transformPermalink(path: string, type: ClientSideFileType): string {
+  transformPermalink(path: string, type: ClientSideFileType): string | undefined {
     if(type === ClientSideFileType.ASSET) {
       // External URLs should not be transformed
       if (isExternalUrl(path)) return path

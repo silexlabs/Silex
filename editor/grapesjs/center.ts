@@ -47,6 +47,11 @@ export default (editor: Editor) => {
   })
 
   editor.on('component:selected', component => {
+    // Don't add the center button to the body/wrapper component
+    if (component === editor.getWrapper()) {
+      return
+    }
+
     if (component.toolbar.some(item => item.command === CENTER_COMMAND)) {
       return
     }

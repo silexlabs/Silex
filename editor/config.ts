@@ -125,19 +125,8 @@ export class ClientConfig extends Config {
    */
   cmsConfig: Partial<EleventyPluginOptions> & { enabled?: boolean } = {
     enabled: true,
-    enable11ty: true,
     cacheBuster: false,
     dataSources: [],
-    dir: {
-      input: '',
-      html: '',
-      assets: 'assets',
-      css: 'css',
-    },
-    urls: {
-      css: '/css',
-      assets: '/assets',
-    },
   }
 
   /**

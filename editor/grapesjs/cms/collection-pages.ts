@@ -40,7 +40,6 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
     if (done) throw new Error('FIXME: this should never happen')
     done = true
 
-    if (!opts.enable11ty) return // Do not add the settings if 11ty is disabled
 
     const pagesContainer = editor.Panels.getPanel('project-bar-container')
       ?.view

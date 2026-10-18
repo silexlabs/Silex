@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+const fs = require('fs')
 const path = require('path');
 const webpack = require("webpack")
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -104,6 +105,8 @@ module.exports = {
     filename: 'js/[name].[contenthash:8].js',
     path: path.resolve(__dirname, 'dist/client'),
     library: 'silex',
+    // The watch reruns this build alone: the files of build:public would not come back
+    clean: { keep: (file) => !/^js\/|^css\/admin\./.test(file) },
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -120,8 +123,10 @@ module.exports = {
       template: './editor/index.ejs',
       filename: 'index.html',
       inject: false,
+      // Inlined: the page is painted before the stylesheet arrives
+      templateParameters: { tokens: fs.readFileSync(path.resolve(__dirname, 'editor/css/tokens.css'), 'utf8') },
     }),
-    // The dashboards (silex-dashboard submodules) load the editor at /js/main.js:
+    // The dashboard of the hosted Silex (silex-dashboard submodule) loads the editor at /js/main.js:
     // also emit the bundle under its stable name
     {
       apply(compiler) {

@@ -3,6 +3,8 @@
 import { readFile, writeFile } from 'fs/promises';
 
 async function main(content, key, code) {
+  // The script piped in failed: keep the README as it is
+  if (!content.trim()) throw new Error(`Nothing to insert for ${key}`)
   console.log(content)
   // Read README.md
   const readme = await readFile('README.md', 'utf-8')

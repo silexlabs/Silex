@@ -286,7 +286,7 @@ function parseSizeValue(val) {
   if (!val) return { number: '', unit: 'px' }
   const match = val.match(/^(-?[\d.]+)\s*(.*)$/)
   if (!match) return { number: val, unit: '' }
-  return { number: match[1], unit: match[2] || 'px' }
+  return { number: match[1], unit: match[2] }
 }
 
 /**
@@ -569,7 +569,7 @@ export function renderModal(el, editor, options) {
     if (num) onSizeChange(varItem, wm, num, e.target.value)
   }}
         >
-          ${SIZE_UNITS.map(u => html`<option value=${u} ?selected=${(hasValue ? parsed.unit : 'px') === u}>${u}</option>`)}
+          ${SIZE_UNITS.map(u => html`<option value=${u} ?selected=${(parsed.unit || 'px') === u}>${u}</option>`)}
         </select>
       </div>
     `

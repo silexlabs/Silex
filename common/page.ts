@@ -29,3 +29,9 @@ export function getPageSlug(pageName: string | undefined) {
 export function getPageLink(pageName) {
   return `./${getPageSlug(pageName)}.html`
 }
+// Where the static site generator publishes a page, forges serve their error page from /404.html only
+export function getPageUrl(slug: string) {
+  if (slug === 'index') return '/'
+  if (slug === '404') return '/404.html'
+  return `/${slug}/`
+}

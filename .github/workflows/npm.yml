@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -31,7 +31,7 @@ jobs:
       # over node's bundled corepack shim (whose signing keys are stale and break
       # `pnpm` invocations). No cache:pnpm — it would call corepack during setup-node.
       - name: Install pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --filter @silexlabs/silex

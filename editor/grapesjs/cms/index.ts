@@ -21,10 +21,6 @@ export interface EleventyPluginOptions extends DataSourceEditorOptions {
   // Enable the publication to 11ty version > 2
   // Default: true
   esModule?: boolean,
-  // Enable the publication to 11ty
-  // If false, the publication will not publish to 11ty and do not display 11ty data
-  // Default: true
-  enable11ty?: boolean,
   // Add cache buster to graphql queries
   // Default: false
   cacheBuster?: boolean,
@@ -34,34 +30,6 @@ export interface EleventyPluginOptions extends DataSourceEditorOptions {
   // Internationalization plugin enabled to add specific filters
   // https://www.11ty.dev/docs/plugins/i18n/
   i18nPlugin?: boolean,
-  // Publication paths based on 11ty file structure
-  dir?: {
-    // Directory for 11ty input files
-    // Silex will publish in /_silex/ in this directory
-    // E.g. content
-    // Default: ''
-    input?: string,
-    // Directory for the HTML pages relative to the input directory
-    // Silex will add HTML pages to this directory
-    // Default: ''
-    html?: string,
-    // Directory for the assets relative to the input directory
-    // Silex will add assets to this directory
-    // Default assets
-    assets?: string,
-    // Directory for the CSS files relative to the input directory
-    // Silex will add CSS files to this directory
-    // Default css
-    css?: string,
-  },
-  urls?: {
-    // URL where the CSS files will be accessible to the front end
-    // Default: css
-    css?: string,
-    // URL where the assets will be accessible to the front end
-    // Default: assets
-    assets?: string,
-  },
 }
 
 export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {

@@ -59,21 +59,19 @@ export default class ComplexSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+  ${ FOCUS_VISIBLE }
   :host {
-    ${ FOCUS_VISIBLE }
-    & {
-      display: block;
-      text-align: left;
-      padding: 0.5rem 0;
-    }
-    button:hover, a:hover {
-      transform: translateX(1px);
-      font-weight: bold;
-    }
-    button.asm__add-inline {
-      font-size: 0.8rem;
-      background: transparent;
-    }
+    display: block;
+    text-align: left;
+    padding: 0.5rem 0;
+  }
+  :host button:hover, :host a:hover {
+    transform: translateX(1px);
+    font-weight: bold;
+  }
+  :host button.asm__add-inline {
+    font-size: 0.8rem;
+    background: transparent;
   }
   `
 
