@@ -4,15 +4,31 @@ Thanks for your interest in contributing to Silex! This guide covers code contri
 
 ## Discuss before coding
 
-**Please talk to us before you start writing code.** This avoids duplicate work, ensures your approach fits the project direction, and saves everyone time.
+**Please talk to me before you start writing code.** This avoids duplicate work, ensures your approach fits the project direction, and saves everyone time.
 
 Pick whichever channel suits you:
 
-- [Community forum](https://short.silex.me/community_en) — best for feature proposals and design discussions
-- [Community chat](https://short.silex.me/chat) — good for quick questions and real-time feedback
-- [GitHub Issues](https://github.com/silexlabs/Silex/issues) — best for bug reports and targeted fixes
+- [Community forum](https://short.silex.me/community_en): best for feature proposals and design discussions
+- [Community chat](https://short.silex.me/chat): good for quick questions and real-time feedback
+- [GitHub Issues](https://github.com/silexlabs/Silex/issues): best for bug reports and targeted fixes
+- [Roadmap](https://roadmap.silex.me): see what is planned and vote on features
 
-Describe what you want to change and why. Wait for feedback from a maintainer before opening a pull request.
+Describe what you want to change and why. Wait for my answer before you open a pull request.
+
+## AI tools and testing by hand
+
+I maintain Silex alone. I cannot run every pull request myself, so I need to trust the person who sends it. This trust comes from two things: you test your change by hand, and you understand your code.
+
+You can use AI tools, and you do not need to tell me. The rules are the same for everyone, including good first issues:
+
+- **You know how to use Silex.** If you do not, learn it first: [docs.silex.me](https://docs.silex.me/).
+- **You test your change by hand, like a real user.** Open Silex in a browser. Click. Type the values in the forms yourself. Try several cases, including unusual values (empty, zero, text where a number is expected, a very large number).
+- **A script is not a test by hand.** An editor driven by Playwright, an AI agent or a headless browser does not count, even with screenshots. Values set in code do not count either.
+- **You add a screenshot of your test to the PR** when the change is visible.
+- **You understand your code.** If you cannot explain a line, do not send it.
+- **You answer review comments yourself.** Do not let an AI agent post for you.
+
+If a pull request does not follow these rules, I close it without review.
 
 ## Getting started
 
@@ -20,11 +36,13 @@ Describe what you want to change and why. Wait for feedback from a maintainer be
    ```sh
    git clone --recurse-submodules https://github.com/<your-username>/Silex.git
    cd Silex
-   nvm install        # optional — uses the version from .nvmrc
+   nvm install        # optional: uses the Node version from .nvmrc
    pnpm install       # install dependencies
    pnpm build         # build the editor + server
    pnpm start         # start the editor at http://localhost:6805
    ```
+   Already cloned without submodules? Run `git submodule update --init --recursive`.
+
    For the desktop app and the Rust side (`server-rust/`, `desktop/`), see [desktop/README.md](desktop/README.md).
 2. Create a branch for your changes (`feat/...` or `fix/...`).
 
@@ -32,28 +50,25 @@ New to the project? Look for issues labeled [good first issue](https://github.co
 
 ## How the repo is organized
 
-This is a **monorepo**. The **Silex app itself is a single package** (one `package.json`, one build) — the editor, server and common code are *not* split into separate packages. The code is split by role:
+This is a **monorepo**. The Silex app itself is a single package: one `package.json`, one build. The editor, the server and the common code are not separate packages. The code is split by role:
 
 | Folder | What it is |
 |---|---|
 | `editor/` | the GrapesJS-based visual editor (browser); built with webpack |
 | `server/` | the Node.js server, storage/hosting connectors and `server/deploy/` (SaaS / CapRover) |
 | `common/` | shared contracts and types, plus the plugin-config system |
-| `grapesjs-plugins/` | the first-party GrapesJS plugins — **independently publishable** packages (see *Workspaces* below) whose source the editor build compiles directly |
+| `grapesjs-plugins/` | the first-party GrapesJS plugins (see *Workspaces* below) |
 | `server-rust/` | the Rust server library |
 | `desktop/` | the [Tauri](https://tauri.app/) desktop app (embeds `server-rust/`, the editor frontend and its own dashboard, `desktop/dashboard/`) |
-| `silex-dashboard/` | the multi-site SaaS dashboard — a **git submodule** (see *Submodules* below) |
+| `silex-dashboard/` | the multi-site SaaS dashboard, a git submodule. You need it only to run the full SaaS, not to work on the editor. |
 
-Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`) — no `../../`. The first-party plugins are imported by package name (`@silexlabs/grapesjs-*`), resolved to their source via webpack aliases (see *Workspaces* below). The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
+To import from another folder, use the path aliases `~/common`, `~/editor` and `~/server`. Do not use `../../`. Import a first-party plugin by its package name (`@silexlabs/grapesjs-*`). The Rust crates (`server-rust/`, `desktop/`) form a separate [Cargo workspace](https://doc.rust-lang.org/cargo/reference/workspaces.html).
 
-Issues and pull requests all live in **this single repository**. A single branch can change several areas at once (e.g. the editor and one of its plugins).
+Issues and pull requests for all these folders go to this repository.
 
 ### Workspaces (the plugins and the desktop app)
 
-We use a [pnpm workspace](https://pnpm.io/workspaces) (`pnpm-workspace.yaml`) for the plugins under `grapesjs-plugins/*`, the desktop app (`desktop`) and its dashboard (`desktop/dashboard`). For the plugins, it lets us install, lint, test and **publish them as independent packages**. For the desktop app, it installs the Tauri CLI and the dashboard's own dependencies (Vue, Vite); `pnpm build:desktop` builds the app and the dashboard. For the plugins, two things to understand:
-
-- The Silex app build does *not* use the workspace. The editor compiles each plugin's *source* directly, resolved through webpack aliases + tsconfig `paths` (see `webpack.config.js`) — not through `node_modules` linking. So building/running Silex never depends on the plugins being installed as packages. The app's own install stays lean (`pnpm install --filter @silexlabs/silex`, as in `Dockerfile`).
-- The plugins are versioned and released independently. We deliberately do **not** use the `workspace:` protocol between them — a Silex release does not force a plugin release, and vice-versa. The **only** exception is `@silexlabs/expression-input`, a small internal lib used by `grapesjs-advanced-selector` and `grapesjs-data-source`: it is linked locally (`"@silexlabs/expression-input": "workspace:*"`) so those plugins always build and test against its current source.
+The plugins (`grapesjs-plugins/*`), the desktop app (`desktop`) and its dashboard (`desktop/dashboard`) are in a [pnpm workspace](https://pnpm.io/workspaces). Each plugin is a separate npm package, with its own version and release. The Silex build does not use these packages: it compiles the plugin source directly (see `webpack.config.js`). So you can change a plugin and the editor in the same branch.
 
 Per-plugin tasks (each plugin keeps its own `package.json`, build, lint and test):
 
@@ -64,73 +79,29 @@ pnpm build:plugins    # build each plugin (for publishing)
 # or target one:  pnpm --filter @silexlabs/grapesjs-symbols run test
 ```
 
-> The plugins come from separate repos and still have heterogeneous toolchains (some scripts call `yarn`, some use `web-test-runner`). Normalizing them to pnpm and getting every plugin green is ongoing — contributions welcome.
-
-### Submodules (the SaaS dashboard)
-
-`silex-dashboard/` is a **git submodule** — it is *content* (the multi-site dashboard, built with Silex), not core code, so it lives in its own repo and is pinned here. Clone with submodules:
-
-```sh
-git clone --recurse-submodules https://github.com/silexlabs/Silex.git
-# already cloned? pull them in with:
-git submodule update --init --recursive
-```
-
-The SaaS server serves the pre-built dashboard from `silex-dashboard/_site` (see `server/deploy/server-plugins/dashboard.js`). You don't need the submodule to develop the editor — only to run the full multi-site SaaS.
+> Some plugins still call `yarn` or use `web-test-runner`, and some plugin tests do not pass yet. Help to fix this is welcome.
 
 ## Submitting changes
 
 1. Reference the issue or discussion where your change was agreed upon.
-2. Keep pull requests focused — one feature or fix per PR.
-3. **Test before opening the PR, and include a screenshot of that test** in the description.
+2. Keep pull requests focused: one feature or fix per PR.
+3. Test your change by hand and add a screenshot, as described in [AI tools and testing by hand](#ai-tools-and-testing-by-hand).
 4. Run the checks that match what you changed (CI runs all of them on the PR):
    - **App** (`editor/`, `server/`, `common/`): `pnpm build`, `pnpm lint`, `pnpm test`.
-   - **A plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` — or scope to one: `pnpm --filter @silexlabs/grapesjs-<name> run test`.
-   - **Rust** (`server-rust/`, `desktop/`): `./scripts/ci-rust.sh` — runs what CI runs, in the same order, and says where CI would fail. It needs `dist/client` and `desktop/dashboard/dist`, which `silex-desktop` compiles into the binary: run `pnpm build:desktop` first.
+   - **A plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins`. Or scope to one: `pnpm --filter @silexlabs/grapesjs-<name> run test`.
+   - **Rust** (`server-rust/`, `desktop/`): first `pnpm build:desktop`, then `./scripts/ci-rust.sh`. The script runs the same checks as CI, in the same order, and says where CI would fail.
+   - **Desktop dashboard** (`desktop/dashboard/`): `pnpm build:desktop`, then `pnpm --filter @silexlabs/silex-desktop-dashboard run lint`.
 
-   There is no pre-commit hook — CI on the PR is the gate, so run the relevant checks yourself before pushing.
-5. The PR is **squash-merged**, so its **title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`) — it becomes the changelog entry.
+   There is no pre-commit hook. CI checks the PR, so run these checks yourself before you push.
+5. Open the PR against `main`. Nobody can push to `main` directly.
+6. The PR is **squash-merged**. Its **title** becomes the changelog entry, so it must follow [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`.
 
-## Branches and releases
+How releases work: [RELEASING.md](RELEASING.md).
 
-We use a trunk-based model: `main` is the single, always-releasable branch.
+## Code style
 
-- `main` is protected — no direct pushes. All work lands via PR.
-- Use short-lived branches (`feat/...`, `fix/...`) and open a PR against `main`.
-- PRs are **squash-merged**; the squash title must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`), since it drives the changelog.
-- Nothing auto-deploys from `main`. Deployments and releases are driven by git tags, so untested `main` never reaches production. Server (web) and desktop ship together from the same tag.
-
-Two kinds of tags:
-
-- **Prerelease tags** (e.g. `v3.9.0-canary.1`, `-alpha`, `-beta`) — deploy to **canary** ([canary.silex.me](https://canary.silex.me)) for testing, publish a GitHub *prerelease* of the desktop apps, publish the versioned `silexlabs/silex-platform` Docker image (also tagged `:canary`, never `:latest`), and publish `@silexlabs/silex` to npm under the `canary` dist-tag. Nothing reaches production, and prerelease builds are never offered to stable users by the auto-updater.
-- **Stable tags** (e.g. `v3.9.0`) — deploy the server to CapRover **production** ([v3.silex.me](https://v3.silex.me)), publish the `silexlabs/silex-platform` Docker image (versioned + `:latest`), publish `@silexlabs/silex` to npm as `latest`, and publish the stable desktop release (macOS/Windows/Linux) with auto-updater metadata.
-
-In both cases the desktop GitHub release is created as a **draft** — a maintainer reviews and publishes it (the SaaS/Docker deploys are immediate). To test a build, cut a prerelease tag (it lands on canary); to release, cut a stable tag once canary is validated. Releases are cut by maintainers by tagging `main`.
-
-### Hotfixes
-
-To patch a release without shipping everything currently on `main`:
-
-1. Branch from the last stable tag: `git checkout -b hotfix/v3.8.1 v3.8.0`
-2. Apply the fix and tag the patch (`v3.8.1`) — the tag triggers the deploy.
-3. Forward-port the same fix to `main` so it isn't lost in the next release.
-
-A maintenance branch (e.g. `v3-maintenance`) is created on demand only when an older line must be supported while `main` moves ahead.
-
-## Coding standards
-
-- Use [BEM](https://getbem.com/) class naming for CSS
-- Style via [GrapesJS](https://grapesjs.com/) CssComposer — no inline styles
-- Use Flexbox for layout (not CSS Grid)
-- Internal links must be relative and start with `./`
+`pnpm lint` (ESLint) checks the TypeScript code. `./scripts/ci-rust.sh` checks the Rust code (`cargo fmt`, `cargo clippy`). For the rest, follow the style of the code around your change.
 
 ## Extending Silex with plugins
 
 If your change can work as a plugin rather than a core modification, that's preferred. See [Creating plugins](https://docs.silex.me/developer/plugins/creating/) for how to build and publish Silex plugins.
-
-## Getting help
-
-- [Community chat](https://short.silex.me/chat)
-- [Community forum](https://short.silex.me/community_en)
-- [GitHub Issues](https://github.com/silexlabs/Silex/issues)
-- [Roadmap](https://roadmap.silex.me) — see what's planned and vote on features
