@@ -80,7 +80,6 @@ export default (editor: Editor, opts) => {
         { id: 'inline', value: 'inline', name: 'inline' },
         { id: 'inline-block', value: 'inline-block', name: 'inline-block' },
         { id: 'flex', value: 'flex', name: 'flex' },
-        { id: 'grid', value: 'grid', name: 'grid' },
         { id: 'inline-flex', value: 'inline-flex', name: 'inline-flex' },
         { id: 'none', value: 'none', name: 'none' },
         { id: 'inherit', value: 'inherit', name: 'inherit' },
