@@ -2,10 +2,19 @@ import { expect, jest, beforeEach, it, describe } from '@jest/globals'
 import { ServerEvent } from '~/server/events'
 
 const unlink = jest.fn((_path, cb: (err?: Error) => void) => cb())
+const readdir = jest.fn()
+const stat = jest.fn()
+const unlinkAsync = jest.fn()
 
 jest.unstable_mockModule('fs', () => ({
   createWriteStream: jest.fn(),
   unlink,
+}))
+
+jest.unstable_mockModule('fs/promises', () => ({
+  readdir,
+  stat,
+  unlink: unlinkAsync,
 }))
 
 jest.unstable_mockModule('os', () => ({
@@ -13,6 +22,7 @@ jest.unstable_mockModule('os', () => ({
 }))
 
 const DownloadConnector = (await import('./DownloadConnector')).default
+const { sweepStaleDownloadZips } = await import('./DownloadConnector')
 
 function createRouteHandler() {
   const app = {
@@ -32,6 +42,14 @@ function createRouteHandler() {
 
 beforeEach(() => {
   unlink.mockClear()
+  readdir.mockReset()
+  stat.mockReset()
+  unlinkAsync.mockReset()
+  // Safe defaults so the startup sweep fired on construction is a no-op;
+  // the sweep test overrides these via mockDir().
+  readdir.mockResolvedValue([] as never)
+  stat.mockResolvedValue({ mtimeMs: 0 } as never)
+  unlinkAsync.mockResolvedValue(undefined as never)
 })
 
 describe('DownloadConnector download route', () => {
@@ -66,5 +84,40 @@ describe('DownloadConnector download route', () => {
     expect(res.send).toHaveBeenCalledWith('Invalid download file')
     expect(res.sendFile).not.toHaveBeenCalled()
     expect(unlink).not.toHaveBeenCalled()
+  })
+})
+
+
+describe('DownloadConnector stale-zip sweep', () => {
+  const NOW = 1_700_000_000_000
+  const DAY = 24 * 60 * 60 * 1000
+  const OLD_ZIP = 'mysite-1699000000000-ab12cd.zip'
+  const RECENT_ZIP = 'mysite-1699950000000-ef34gh.zip'
+  const OTHER_FILE = 'important-notes.txt'
+  const OTHER_ZIP = 'backup.zip'
+
+  function mockDir(entries: string[], mtimeByName: Record<string, number>) {
+    readdir.mockResolvedValue(entries as never)
+    stat.mockImplementation((path: string) => {
+      const name = path.split('/').pop() as string
+      return Promise.resolve({ mtimeMs: mtimeByName[name] }) as never
+    })
+    unlinkAsync.mockResolvedValue(undefined as never)
+  }
+
+  it('deletes matching zips older than 24h, keeps recent ones, and never touches non-matching files', async () => {
+    mockDir([OLD_ZIP, RECENT_ZIP, OTHER_FILE, OTHER_ZIP], {
+      [OLD_ZIP]: NOW - 2 * DAY,
+      [RECENT_ZIP]: NOW - 1000,
+    })
+
+    const deleted = await sweepStaleDownloadZips('/tmp', NOW)
+
+    expect(deleted).toBe(1)
+    expect(unlinkAsync).toHaveBeenCalledTimes(1)
+    expect(unlinkAsync).toHaveBeenCalledWith('/tmp/' + OLD_ZIP)
+    const statedPaths = stat.mock.calls.map((c: unknown[]) => c[0])
+    expect(statedPaths).not.toContain('/tmp/' + OTHER_FILE)
+    expect(statedPaths).not.toContain('/tmp/' + OTHER_ZIP)
   })
 })
