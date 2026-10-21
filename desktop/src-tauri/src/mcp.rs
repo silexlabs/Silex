@@ -10,17 +10,17 @@
 /*
  * MCP (Model Context Protocol) server for Silex Desktop.
  *
- * Static tools: website, take_screenshot.
- * Dynamic tools: loaded from the grapesjs-ai-capabilities registry
- * after a project is opened. Each capability becomes an MCP tool
- * that calls editor.runCommand() via eval_js.
+ * Static tools: website, asset, screenshot.
+ * Editor tools: loaded from the grapesjs-ai-capabilities registry once a
+ * website is open, one tool per family of capabilities. A call is routed by
+ * its action to the editor command of that capability, through eval_js.
+ * A family named like a static tool adds its actions to it.
  */
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 
-use base64::Engine;
 use rmcp::handler::server::router::tool::{ToolRoute, ToolRouter};
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::*;
@@ -43,6 +43,31 @@ use crate::AppState;
 /// Pending eval results — shared between MCP tools and the HTTP callback handler.
 pub type PendingEvals = Arc<std::sync::Mutex<HashMap<u64, oneshot::Sender<String>>>>;
 
+/// Replaced as a whole when a website opens, so that a running call keeps its own
+type DynamicTools = Arc<tokio::sync::RwLock<Arc<ToolRouter<SilexMcp>>>>;
+type ToolsOf = Arc<std::sync::Mutex<Option<String>>>;
+type SeenSelection = Arc<std::sync::Mutex<Option<serde_json::Value>>>;
+
+/// Forgets an eval whatever ends the wait: answer, timeout or failure
+struct PendingEval<'a> {
+    evals: &'a PendingEvals,
+    id: u64,
+}
+
+impl<'a> PendingEval<'a> {
+    fn register(evals: &'a PendingEvals, id: u64) -> (Self, oneshot::Receiver<String>) {
+        let (tx, rx) = oneshot::channel::<String>();
+        held(evals).insert(id, tx);
+        (Self { evals, id }, rx)
+    }
+}
+
+impl Drop for PendingEval<'_> {
+    fn drop(&mut self) {
+        held(self.evals).remove(&self.id);
+    }
+}
+
 // ==========================================================================
 // Action enums (static tools only)
 // ==========================================================================
@@ -59,27 +84,107 @@ pub enum WebsiteAction {
     Dashboard,
 }
 
+impl WebsiteAction {
+    fn changes_tool_list(&self) -> bool {
+        matches!(
+            self,
+            Self::Create | Self::Duplicate | Self::Open | Self::Dashboard | Self::Delete
+        )
+    }
+}
+
 // ==========================================================================
 // Parameter structs (static tools only)
 // ==========================================================================
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct WebsiteParams {
-    /// The action to perform.
     pub action: WebsiteAction,
-    /// Website ID (required for delete, rename, duplicate, open).
     pub website_id: Option<String>,
-    /// Website name (required for create, rename).
     pub name: Option<String>,
+}
+
+/// Written by hand: the derived one puts the actions behind a $ref, which
+/// small models ignore
+fn website_schema() -> Arc<JsonObject> {
+    flat_schema(serde_json::json!({
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["list", "create", "open", "rename", "duplicate", "delete", "dashboard"],
+                "description": "list: the websites. create: a new website, opened. open: open a website, the other tools work on it. rename: change its name. duplicate: a copy, opened. delete: delete a website. dashboard: close the website and go back to the website list."
+            },
+            "website_id": {"type": "string", "description": "open/rename/duplicate/delete: website id from list"},
+            "name": {"type": "string", "description": "create/rename: website name"}
+        }
+    }))
+}
+
+fn asset_schema() -> Arc<JsonObject> {
+    flat_schema(serde_json::json!({
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+            "action": {
+                "type": "string",
+                "enum": ["add"],
+                "description": "add: copy an image file (png, jpg, gif, webp, avif, svg) into the open website, and get the URL to use in src or CSS url()."
+            },
+            "path": {"type": "string", "description": "add: absolute path of the image file, like /home/me/logo.svg"}
+        }
+    }))
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum AssetAction {
+    Add,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct AssetParams {
+    pub action: AssetAction,
+    pub path: Option<String>,
+}
+
+fn screenshot_schema() -> Arc<JsonObject> {
+    flat_schema(serde_json::json!({
+        "type": "object",
+        "properties": {
+            "target": {"type": "string", "enum": ["canvas", "ui"], "description": "canvas: the website (default). ui: the whole editor"}
+        }
+    }))
+}
+
+fn flat_schema(schema: serde_json::Value) -> Arc<JsonObject> {
+    match schema {
+        serde_json::Value::Object(map) => Arc::new(map),
+        _ => Arc::new(JsonObject::new()),
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ScreenshotTarget {
+    #[default]
+    Canvas,
+    Ui,
+}
+
+impl ScreenshotTarget {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Ui => "ui",
+            Self::Canvas => "canvas",
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ScreenshotParams {
-    /// What to capture: "ui" for the whole editor (default),
-    /// or "canvas" for only the website preview.
-    pub target: Option<String>,
-    /// File path to save the screenshot PNG to (optional, also returned inline as image).
-    pub output_file: Option<String>,
+    pub target: Option<ScreenshotTarget>,
 }
 
 // ==========================================================================
@@ -88,15 +193,18 @@ pub struct ScreenshotParams {
 
 #[derive(Clone)]
 pub struct SilexMcp {
-    /// Static tools (website, take_screenshot) generated by #[tool_router].
+    /// Static tools (website, asset, screenshot) generated by #[tool_router].
     tool_router: ToolRouter<Self>,
-    /// Dynamic tools loaded from the grapesjs-ai-capabilities JS registry.
-    dynamic_tools: Arc<tokio::sync::RwLock<ToolRouter<Self>>>,
-    /// Whether dynamic capabilities have been loaded for this session.
-    capabilities_loaded: Arc<std::sync::atomic::AtomicBool>,
+    /// Editor tools loaded from the grapesjs-ai-capabilities JS registry.
+    dynamic_tools: DynamicTools,
+    /// The website the editor tools were loaded from
+    tools_of: ToolsOf,
     app_handle: tauri::AppHandle,
     eval_counter: Arc<AtomicU64>,
     pending_evals: PendingEvals,
+    /// The last selection the clients were told about. Shared: a client that
+    /// sends its protocol version with each request gets a new service each time
+    seen_selection: SeenSelection,
 }
 
 // ==========================================================================
@@ -130,6 +238,52 @@ impl SilexMcp {
         window
             .eval(&format!("window.location.href = {}", url_json))
             .map_err(|e| format!("Navigation failed: {}", e))
+    }
+
+    /// A website just made by `create` or `duplicate` opens, as the user would expect
+    async fn open_new_website(&self, base_url: &str, id: &str, made: &str) -> CallToolResult {
+        let opened = reqwest::Url::parse_with_params(&format!("{}/", base_url), &[("id", id)])
+            .map_err(|e| e.to_string())
+            .and_then(|url| self.navigate_to(url.as_str()));
+        if let Err(e) = opened {
+            return tool_error(format!(
+                "Website '{}' {} but could not be opened: {}",
+                id, made, e
+            ));
+        }
+        match self.load_capabilities().await {
+            Ok(n) => tracing::info!("Loaded {} capabilities after the website was {}", n, made),
+            Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
+        }
+        CallToolResult::success(vec![ContentBlock::text(
+            serde_json::json!({
+                "success": true,
+                "websiteId": id,
+                "message": format!("Website {} and opened in editor", made),
+            })
+            .to_string(),
+        )])
+    }
+
+    /// The dashboard forgets the website only once loaded: until then, the
+    /// `list_tools` that follows the notification would poll for editor tools for 30s.
+    async fn forget_website(&self) {
+        *self.dynamic_tools.write().await = Arc::new(ToolRouter::new());
+        *held(&self.tools_of) = None;
+        crate::forget_project(&self.app_handle);
+    }
+
+    fn open_website(&self) -> Option<String> {
+        held(&self.app_handle.state::<AppState>().current_website_id).clone()
+    }
+
+    fn is_open_with_tools(&self, website_id: &str) -> bool {
+        self.tools_loaded() && self.open_website().as_deref() == Some(website_id)
+    }
+
+    fn tools_loaded(&self) -> bool {
+        let open = self.open_website();
+        open.is_some() && *held(&self.tools_of) == open
     }
 
     /// Check that a project is open.
@@ -166,8 +320,7 @@ impl SilexMcp {
         }
 
         let id = self.eval_counter.fetch_add(1, Ordering::Relaxed);
-        let (tx, rx) = oneshot::channel::<String>();
-        held(&self.pending_evals).insert(id, tx);
+        let (_pending, rx) = PendingEval::register(&self.pending_evals, id);
 
         // The code goes in the script itself: the editor's CSP refuses eval(),
         // and what Tauri runs here is not subject to it
@@ -176,17 +329,13 @@ impl SilexMcp {
             .replace("__ID__", &id.to_string())
             .replace("__JS__", js_code);
 
-        window.eval(&wrapped).map_err(|e| {
-            held(&self.pending_evals).remove(&id);
-            format!("Failed to inject JS: {}", e)
-        })?;
+        window
+            .eval(&wrapped)
+            .map_err(|e| format!("Failed to inject JS: {}", e))?;
 
         let raw = tokio::time::timeout(std::time::Duration::from_secs(timeout_secs), rx)
             .await
-            .map_err(|_| {
-                held(&self.pending_evals).remove(&id);
-                format!("Timeout waiting for JS result ({}s)", timeout_secs)
-            })?
+            .map_err(|_| format!("The editor did not answer within {timeout_secs}s."))?
             .map_err(|_| {
                 "Internal error: JS callback channel closed unexpectedly. Retry the operation."
                     .to_string()
@@ -213,159 +362,519 @@ impl SilexMcp {
     // Dynamic capability loading
     // ======================================================================
 
-    /// Load capabilities from the editor's JS registry and add as dynamic MCP tools.
+    /// Load the editor tools of the open website.
     /// Called after a website is opened/created and the editor is ready.
     async fn load_capabilities(&self) -> Result<usize, String> {
-        // Wait for capabilities to be registered (poll up to 30s).
         // The registry function exists early, but capabilities are registered
         // after the editor 'load' event fires 'ai-capabilities:ready'.
-        // So we poll until getAllCapabilities() returns a non-empty array.
         let mut raw = "[]".to_string();
-        let mut ready = false;
+        let mut last_error = None;
         for _ in 0..60 {
-            let js = "JSON.stringify(window.__silexMcp?.getCapabilities?.() || [])";
+            let js = "JSON.stringify(window.__silexMcp?.getTools?.() || [])";
             match self.eval_js_internal(js, 3).await {
                 Ok(Some(val)) if val != "[]" && val.len() > 2 => {
                     raw = val;
-                    ready = true;
+                    last_error = None;
                     break;
                 }
-                _ => {}
+                Ok(_) => {}
+                Err(e) => last_error = Some(e),
             }
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         }
-        if !ready {
-            return Err("Editor capabilities not available after 30s".into());
+        if raw == "[]" {
+            return Err(format!(
+                "Editor capabilities not available after 30s{}",
+                last_error.map(|e| format!(": {e}")).unwrap_or_default()
+            ));
         }
 
-        #[derive(Deserialize)]
-        struct CapDef {
-            id: String,
-            command: String,
-            description: String,
-            #[serde(rename = "inputSchema", default)]
-            input_schema: Option<serde_json::Value>,
-            #[serde(rename = "readOnly", default)]
-            read_only: Option<bool>,
-            #[serde(default)]
-            destructive: Option<bool>,
-            #[serde(default)]
-            idempotent: Option<bool>,
-            #[serde(rename = "openWorld", default)]
-            open_world: Option<bool>,
-        }
-
-        let caps: Vec<CapDef> = serde_json::from_str(&raw)
+        let families: Vec<FamilyDef> = serde_json::from_str(&raw)
             .map_err(|e| format!("Failed to parse capabilities: {}", e))?;
 
-        let count = caps.len();
+        let count = families.len();
         let mut router = ToolRouter::new();
-
-        for cap in caps {
-            // Build the JSON Schema for the tool's input.
-            // Ensure schema always has "type": "object" — some MCP clients
-            // reject tools without a valid JSON Schema.
-            let default_schema = serde_json::json!({"type": "object", "properties": {}});
-            let schema_value = match cap.input_schema {
-                Some(serde_json::Value::Object(ref m)) if m.contains_key("type") => {
-                    cap.input_schema.unwrap()
-                }
-                _ => default_schema,
-            };
-
-            // Convert Value to JsonObject and sanitize property keys
-            // (MCP clients require keys to match ^[a-zA-Z0-9_.-]{1,64})
-            let schema_obj = match schema_value {
-                serde_json::Value::Object(mut map) => {
-                    if let Some(serde_json::Value::Object(props)) = map.remove("properties") {
-                        let sanitized: serde_json::Map<String, serde_json::Value> = props
-                            .into_iter()
-                            .map(|(k, v)| (k.replace(':', "_"), v))
-                            .collect();
-                        map.insert("properties".into(), serde_json::Value::Object(sanitized));
-                    }
-                    map
-                }
-                _ => serde_json::Map::new(),
-            };
-
-            let mut annotations = ToolAnnotations::new();
-            annotations.read_only_hint = cap.read_only.or(Some(false));
-            annotations.destructive_hint = if cap.read_only == Some(true) {
-                None
-            } else {
-                cap.destructive.or(Some(false))
-            };
-            annotations.idempotent_hint = cap.idempotent;
-            annotations.open_world_hint = cap.open_world;
-
-            // ':' in capability ids is not allowed in tool names (clients require ^[a-zA-Z0-9_-]+$)
-            let tool = Tool::new(
-                cap.id.replace(':', "_"),
-                cap.description,
-                Arc::new(schema_obj),
-            )
-            .with_annotations(annotations);
-
-            let cap_command = Arc::new(cap.command);
-
-            let route = ToolRoute::new_dyn(tool, move |ctx| {
-                let cmd = cap_command.clone();
-                Box::pin(async move {
-                    let mcp: &SilexMcp = ctx.service;
-
-                    // Get params as JSON object
-                    let params_json = ctx
-                        .arguments
-                        .as_ref()
-                        .map(|v| serde_json::Value::Object(v.clone()).to_string())
-                        .unwrap_or_else(|| "{}".into());
-
-                    let cmd_js = serde_json::to_string(cmd.as_str()).unwrap();
-                    let params_js_escaped = serde_json::to_string(&params_json).unwrap();
-
-                    // Build JS that runs the command via editor.runCommand() and wraps with selection state
-                    let js = format!(
-                        r#"(function(){{var e=window.silex.getEditor();var params=JSON.parse({params});var __result__;try{{__result__=e.runCommand({cmd},params)}}catch(ex){{return JSON.stringify({{error:ex.message||String(ex)}})}}var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='undefined'||__result__===null)__result__={{}};if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__))__result__={{result:__result__}};if(typeof __result__!=='object'||__result__===null)__result__={{result:__result__}};__result__.selection=__sel__;return JSON.stringify(__result__)}})()"#,
-                        params = params_js_escaped,
-                        cmd = cmd_js
-                    );
-
-                    mcp.require_project()
-                        .map_err(|e| McpError::internal_error(e, None))?;
-                    match mcp.eval_js_internal(&js, 10).await {
-                        Ok(result) => {
-                            let text = result.unwrap_or_else(|| "null".into());
-                            let is_error = serde_json::from_str::<serde_json::Value>(&text)
-                                .ok()
-                                .map(|v| {
-                                    v.get("error").map_or(false, |e| !e.is_null())
-                                        || v.get("success").map_or(false, |s| s == false)
-                                })
-                                .unwrap_or(false);
-                            let content = vec![ContentBlock::text(text)];
-                            Ok(if is_error {
-                                CallToolResult::error(content)
-                            } else {
-                                CallToolResult::success(content)
-                            }
-                            .into())
-                        }
-                        Err(e) => Ok(tool_error(e).into()),
-                    }
-                })
-            });
-
-            router.add_route(route);
+        for family in families {
+            if let Some(base) = self.tool_router.get(&family.name) {
+                warn_collisions(base, &family.input_schema);
+            }
+            router.add_route(family.into_route());
         }
 
-        // Replace the dynamic tools router
-        *self.dynamic_tools.write().await = router;
-        self.capabilities_loaded.store(true, Ordering::Release);
+        *self.dynamic_tools.write().await = Arc::new(router);
+        *held(&self.tools_of) = self.open_website();
 
-        tracing::info!("Loaded {} dynamic capabilities as MCP tools", count);
+        tracing::info!("Loaded {} editor tools", count);
         Ok(count)
     }
+
+    /// One action of an editor tool: its arguments go to the command of its capability
+    async fn run_action(
+        &self,
+        tool: &str,
+        actions: &HashMap<String, ActionDef>,
+        arguments: Option<JsonObject>,
+        context: &RequestContext<RoleServer>,
+    ) -> Result<CallToolResult, McpError> {
+        let arguments = arguments.unwrap_or_default();
+        let name = arguments.get("action").and_then(|a| a.as_str());
+        let Some((name, action)) = name.and_then(|n| actions.get_key_value(n)) else {
+            let mut names: Vec<&str> = actions.keys().map(String::as_str).collect();
+            names.sort_unstable();
+            return Ok(tool_error(format!(
+                "Set action to one of: {}. Nothing was changed.",
+                names.join(", ")
+            )));
+        };
+        let missing: Vec<&str> = action
+            .required
+            .iter()
+            .filter(|key| arguments.get(*key).is_none_or(|v| v.is_null()))
+            .map(String::as_str)
+            .collect();
+        if !missing.is_empty() {
+            return Ok(tool_error(format!(
+                "{tool}(action:'{name}') needs {}. Nothing was changed.",
+                missing.join(", ")
+            )));
+        }
+        let params: JsonObject = action
+            .parameters
+            .iter()
+            .filter_map(|key| Some((key.clone(), arguments.get(key)?.clone())))
+            .collect();
+
+        let js = COMMAND_JS
+            .replace(
+                "__CMD__",
+                &serde_json::Value::from(action.command.as_str()).to_string(),
+            )
+            .replace(
+                "__PARAMS__",
+                &serde_json::Value::from(serde_json::Value::Object(params).to_string()).to_string(),
+            );
+
+        if let Err(e) = self.require_project() {
+            return Ok(tool_error(e));
+        }
+        let state = self.app_handle.state::<AppState>();
+        // A call cancelled while it waits for its turn must not run later
+        let _one_at_a_time = tokio::select! {
+            biased;
+            _ = context.ct.cancelled() => {
+                return Err(McpError::internal_error("The call was cancelled before it ran", None));
+            }
+            guard = state.editor_commands.lock() => guard,
+        };
+        // A command that queries a remote server (a CMS schema) can take far more than 10 s
+        let timeout_secs = if action.open_world { 45 } else { 10 };
+        // Kept until the editor answers even if the call is cancelled: the
+        // command goes on running there
+        Ok(match self.eval_js_internal(&js, timeout_secs).await {
+            Ok(raw) => self.command_answer(raw.as_deref().unwrap_or("{}")),
+            Err(e) => tool_error(e),
+        })
+    }
+
+    /// The selection goes with an answer when the clients have not seen it yet: after
+    /// a tool changed it, or after the user did in the editor.
+    /// Repeated on every call, it was most of what the tools returned.
+    fn selection_news(
+        &self,
+        selection: &serde_json::Value,
+        always: bool,
+    ) -> Option<serde_json::Value> {
+        if selection.is_null() {
+            return None;
+        }
+        let mut seen = held(&self.seen_selection);
+        if !always && seen.as_ref() == Some(selection) {
+            return None;
+        }
+        *seen = Some(selection.clone());
+        Some(selection.clone())
+    }
+
+    /// A text answer stays text, with the selection on a last line
+    fn command_answer(&self, raw: &str) -> CallToolResult {
+        let answer: CommandAnswer = match serde_json::from_str(raw) {
+            Ok(answer) => answer,
+            Err(e) => return tool_error(format!("Failed to parse the editor answer: {e}")),
+        };
+        if let Some(error) = answer.error {
+            let mut body = serde_json::json!({ "error": error });
+            if let Some(selection) = self.selection_news(&answer.selection, true) {
+                body["selection"] = selection;
+            }
+            return CallToolResult::error(vec![ContentBlock::text(body.to_string())]);
+        }
+        let mut result = answer.result;
+        if let serde_json::Value::String(text) = &result {
+            match serde_json::from_str::<serde_json::Value>(text) {
+                Ok(parsed) => result = parsed,
+                Err(_) => {
+                    let text = match self.selection_news(&answer.selection, false) {
+                        Some(selection) => format!("{text}\nselection: {selection}"),
+                        None => text.clone(),
+                    };
+                    return CallToolResult::success(vec![ContentBlock::text(text)]);
+                }
+            }
+        }
+        let failed = result.get("error").is_some_and(|e| !e.is_null())
+            || result.get("success") == Some(&serde_json::Value::Bool(false));
+        let mut body = match result {
+            serde_json::Value::Object(map) => map,
+            serde_json::Value::Null => JsonObject::new(),
+            other => JsonObject::from_iter([("result".to_string(), other)]),
+        };
+        if let Some(selection) = self.selection_news(&answer.selection, failed) {
+            body.insert("selection".into(), selection);
+        }
+        let content = vec![ContentBlock::text(
+            serde_json::Value::Object(body).to_string(),
+        )];
+        if failed {
+            CallToolResult::error(content)
+        } else {
+            CallToolResult::success(content)
+        }
+    }
+
+    /// Says which website is open, and what is selected in it: the user may have
+    /// chosen an element before asking the agent to change it
+    async fn website_list(&self, body: &str) -> CallToolResult {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Listed {
+            website_id: String,
+            #[serde(default)]
+            name: String,
+            updated_at: Option<String>,
+        }
+        let listed = match serde_json::from_str::<Vec<Listed>>(body) {
+            Ok(listed) => listed,
+            Err(e) => return tool_error(format!("Unexpected website list ({e}): {body}")),
+        };
+        let open = held(&self.app_handle.state::<AppState>().current_website_id).clone();
+        let websites: Vec<serde_json::Value> = listed
+            .into_iter()
+            .map(|site| {
+                let mut entry =
+                    serde_json::json!({"websiteId": site.website_id, "name": site.name});
+                if let Some(updated) = site.updated_at {
+                    entry["updatedAt"] = updated.into();
+                }
+                if open.as_deref() == Some(site.website_id.as_str()) {
+                    entry["open"] = true.into();
+                }
+                entry
+            })
+            .collect();
+        let mut answer = serde_json::json!({ "websites": websites });
+        if let Some(selection) = self.current_selection().await {
+            answer["selection"] = selection;
+        }
+        CallToolResult::success(vec![ContentBlock::text(answer.to_string())])
+    }
+
+    /// Sent like an upload from the editor, under a name no other asset has: the
+    /// server writes over a file of the same name. Under the lock of the editor
+    /// commands, so that two imports do not take the same name
+    async fn upload_image(
+        &self,
+        website_id: &str,
+        image: crate::asset_import::Image,
+    ) -> Result<serde_json::Value, String> {
+        let state = self.app_handle.state::<AppState>();
+        let _one_at_a_time = state.editor_commands.lock().await;
+        let base = self.get_base_url();
+        let client = reqwest::Client::new();
+        let query = [("websiteId", website_id), ("connectorId", "fs-storage")];
+        let (stem, extension) = image.name.rsplit_once('.').unwrap_or((&image.name, ""));
+        let mut name = image.name.clone();
+        for n in 2..=100 {
+            let url = reqwest::Url::parse_with_params(
+                &format!("{base}/api/website/assets/{name}"),
+                &query,
+            )
+            .map_err(|e| e.to_string())?;
+            let status = client
+                .head(url)
+                .send()
+                .await
+                .map_err(|e| e.to_string())?
+                .status();
+            if status == reqwest::StatusCode::NOT_FOUND {
+                break;
+            }
+            if !status.is_success() {
+                return Err(format!("checking the name {name}: {status}"));
+            }
+            if n == 100 {
+                return Err(format!("too many images named {}", image.name));
+            }
+            name = format!("{stem}-{n}.{extension}");
+        }
+        let part = reqwest::multipart::Part::bytes(image.content)
+            .file_name(name)
+            .mime_str(image.mime)
+            .map_err(|e| e.to_string())?;
+        let form = reqwest::multipart::Form::new().part("files[]", part);
+        let url = reqwest::Url::parse_with_params(&format!("{base}/api/website/assets"), &query)
+            .map_err(|e| e.to_string())?;
+        let response = client
+            .post(url)
+            .multipart(form)
+            .send()
+            .await
+            .map_err(|e| e.to_string())?;
+        let status = response.status();
+        let text = response.text().await.map_err(|e| e.to_string())?;
+        if !status.is_success() {
+            return Err(format!("{status}: {text}"));
+        }
+        #[derive(Deserialize)]
+        struct Uploaded {
+            data: Vec<String>,
+        }
+        let src = serde_json::from_str::<Uploaded>(&text)
+            .ok()
+            .and_then(|uploaded| uploaded.data.into_iter().next())
+            .ok_or_else(|| format!("unexpected answer: {text}"))?;
+        let mut answer = serde_json::json!({ "src": src });
+        // Listed by the asset manager like an image the user uploaded, if the
+        // website is still the one open
+        let listed = if self.open_website().as_deref() != Some(website_id) {
+            Err("another website was opened meanwhile".to_string())
+        } else {
+            let js = format!(
+                "window.silex.getEditor().AssetManager.add({{src:{}}}),null",
+                serde_json::Value::from(src.as_str())
+            );
+            self.eval_js_internal(&js, 10).await.map(|_| ())
+        };
+        if let Err(why) = listed {
+            answer["warning"] =
+                format!("imported, but not listed in asset(action:'list'): {why}").into();
+        }
+        Ok(answer)
+    }
+
+    /// The selection of the open website, always given by the calls an agent starts with
+    async fn current_selection(&self) -> Option<serde_json::Value> {
+        self.require_project().ok()?;
+        let state = self.app_handle.state::<AppState>();
+        let _after_the_writes = state.editor_commands.lock().await;
+        let selection = match self.eval_js_internal(SELECTION_JS, 3).await {
+            Ok(Some(raw)) => serde_json::from_str(&raw).map_err(|e| e.to_string()),
+            Ok(None) => Err("no answer".to_string()),
+            Err(e) => Err(e),
+        };
+        match selection {
+            Ok(selection) => self.selection_news(&selection, true),
+            Err(e) => {
+                tracing::warn!("Could not read the selection: {}", e);
+                None
+            }
+        }
+    }
+}
+
+/// An editor tool, as grapesjs-ai-capabilities' getTools() describes it
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct FamilyDef {
+    name: String,
+    description: String,
+    input_schema: JsonObject,
+    read_only: bool,
+    destructive: bool,
+    idempotent: bool,
+    open_world: bool,
+    actions: HashMap<String, ActionDef>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ActionDef {
+    command: String,
+    parameters: Vec<String>,
+    required: Vec<String>,
+    open_world: bool,
+}
+
+impl FamilyDef {
+    fn into_route(self) -> ToolRoute<SilexMcp> {
+        let mut annotations = ToolAnnotations::new();
+        annotations.read_only_hint = Some(self.read_only);
+        annotations.destructive_hint = (!self.read_only).then_some(self.destructive);
+        annotations.idempotent_hint = Some(self.idempotent);
+        annotations.open_world_hint = Some(self.open_world);
+        let tool = Tool::new(
+            self.name.clone(),
+            self.description,
+            Arc::new(self.input_schema),
+        )
+        .with_annotations(annotations);
+        let name = Arc::new(self.name);
+        let actions = Arc::new(self.actions);
+        ToolRoute::new_dyn(tool, move |ctx| {
+            let name = name.clone();
+            let actions = actions.clone();
+            Box::pin(async move {
+                let mcp: &SilexMcp = ctx.service;
+                mcp.run_action(&name, &actions, ctx.arguments, &ctx.request_context)
+                    .await
+                    .map(Into::into)
+            })
+        })
+    }
+}
+
+/// A static tool with the actions an editor family of the same name adds to it.
+/// Annotated for the riskiest action of both.
+fn merge_family(base: &Tool, family: &Tool) -> Tool {
+    let mut schema = (*base.input_schema).clone();
+    if let (Some(serde_json::Value::Object(props)), Some(serde_json::Value::Object(extra))) = (
+        schema.get_mut("properties"),
+        family.input_schema.get("properties"),
+    ) {
+        for (key, value) in extra {
+            match (key.as_str(), props.get_mut(key)) {
+                ("action", Some(serde_json::Value::Object(action))) => {
+                    if let (Some(serde_json::Value::Array(all)), Some(more)) = (
+                        action.get_mut("enum"),
+                        value.get("enum").and_then(|e| e.as_array()),
+                    ) {
+                        for name in more {
+                            if !all.contains(name) {
+                                all.push(name.clone());
+                            }
+                        }
+                    }
+                    let described = [action.get("description"), value.get("description")]
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|d| d.as_str())
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    action.insert("description".into(), described.into());
+                }
+                (_, None) => {
+                    props.insert(key.clone(), value.clone());
+                }
+                _ => {}
+            }
+        }
+    }
+    let hint = |tool: &Tool, get: fn(&ToolAnnotations) -> Option<bool>| {
+        tool.annotations.as_ref().and_then(get)
+    };
+    let mut annotations = ToolAnnotations::new();
+    annotations.read_only_hint = Some(
+        hint(base, |a| a.read_only_hint) == Some(true)
+            && hint(family, |a| a.read_only_hint) == Some(true),
+    );
+    annotations.destructive_hint = Some(
+        hint(base, |a| a.destructive_hint) != Some(false)
+            || hint(family, |a| a.destructive_hint) == Some(true),
+    );
+    annotations.idempotent_hint = Some(
+        hint(base, |a| a.idempotent_hint) == Some(true)
+            && hint(family, |a| a.idempotent_hint) == Some(true),
+    );
+    annotations.open_world_hint = Some(
+        hint(base, |a| a.open_world_hint) != Some(false)
+            || hint(family, |a| a.open_world_hint) == Some(true),
+    );
+    let mut tool = base.clone();
+    tool.input_schema = Arc::new(schema);
+    tool.annotations = Some(annotations);
+    tool
+}
+
+/// merge_family keeps the static side of a collision: say it once, when the tools load
+fn warn_collisions(base: &Tool, family: &JsonObject) {
+    let Some(serde_json::Value::Object(extra)) = family.get("properties") else {
+        return;
+    };
+    let actions = declared_actions(base).unwrap_or_default();
+    for (key, value) in extra {
+        if key == "action" {
+            let more = value.get("enum").and_then(|e| e.as_array());
+            for name in more.into_iter().flatten().filter_map(|n| n.as_str()) {
+                if actions.contains(&name) {
+                    tracing::warn!("{}: action {} is already a static one", base.name, name);
+                }
+            }
+        } else if base
+            .input_schema
+            .get("properties")
+            .and_then(|p| p.get(key))
+            .is_some()
+        {
+            tracing::warn!("{}: parameter {} is already a static one", base.name, key);
+        }
+    }
+}
+
+/// The actions a tool declares, None when it has no action parameter
+fn declared_actions(tool: &Tool) -> Option<Vec<&str>> {
+    let actions = tool
+        .input_schema
+        .get("properties")?
+        .get("action")?
+        .get("enum")?
+        .as_array()?;
+    Some(actions.iter().filter_map(|a| a.as_str()).collect())
+}
+
+/// The editor answers with the selection after the command, success or not
+const COMMAND_JS: &str = r#"(async function(){
+var e=window.silex.getEditor();
+var selection=function(){try{return window.__silexMcp.getSelectionState(e)}catch(ex){console.error(ex);return null}};
+var result;
+try{if(!e.Commands.has(__CMD__))throw new Error('Unknown editor command '+__CMD__);result=await e.runCommand(__CMD__,JSON.parse(__PARAMS__))}
+catch(ex){return JSON.stringify({error:ex.message||String(ex),selection:selection()})}
+return JSON.stringify({result:typeof result==='undefined'?null:result,selection:selection()});
+})()"#;
+
+const SELECTION_JS: &str =
+    "JSON.stringify(window.__silexMcp.getSelectionState(window.silex.getEditor()))";
+
+#[derive(Deserialize)]
+struct CommandAnswer {
+    #[serde(default)]
+    result: serde_json::Value,
+    error: Option<String>,
+    #[serde(default)]
+    selection: serde_json::Value,
+}
+
+/// The id the server gives a website it just made
+fn new_website_id(body: &str) -> Option<String> {
+    #[derive(Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct NewWebsite {
+        website_id: String,
+    }
+    serde_json::from_str::<NewWebsite>(body)
+        .ok()
+        .map(|made| made.website_id)
+}
+
+fn needs<'a>(
+    value: &'a Option<String>,
+    tool: &str,
+    action: &str,
+    key: &str,
+) -> Result<&'a str, CallToolResult> {
+    value.as_deref().filter(|v| !v.is_empty()).ok_or_else(|| {
+        tool_error(format!(
+            "{tool}(action:'{action}') needs {key}. Nothing was changed."
+        ))
+    })
 }
 
 /// Create an error CallToolResult (is_error = true).
@@ -379,27 +888,76 @@ fn tool_error(msg: impl Into<String>) -> CallToolResult {
 
 /// Sentry puts no Drop on its own spans, and one that is never finished is
 /// never sent
-struct ToolSpan(Option<sentry::TransactionOrSpan>);
+struct ToolSpan {
+    span: Option<sentry::TransactionOrSpan>,
+    answered: bool,
+}
 
 impl ToolSpan {
-    /// The failure travels in the result, and reaches the span from nowhere else
-    fn answers(self, result: Result<CallToolResult, McpError>) -> Result<CallToolResult, McpError> {
-        let failed = match &result {
-            Ok(call) => call.is_error == Some(true),
-            Err(_) => true,
-        };
-        if failed {
-            if let Some(span) = &self.0 {
-                span.set_status(sentry::protocol::SpanStatus::InternalError);
-            }
+    /// One per tool call, with only values chosen by Silex: never the arguments,
+    /// an error message, nor anything else of the website
+    fn start(tool: &str, action: Option<&str>, client: Option<&str>) -> Self {
+        let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool), "mcp.tool");
+        let transaction = sentry::start_transaction(tx_ctx);
+        if let Some(action) = action {
+            transaction.set_tag("action", action);
         }
-        result
+        if let Some(client) = client {
+            transaction.set_tag("client", client.chars().take(64).collect::<String>());
+        }
+        Self {
+            span: Some(transaction.into()),
+            answered: false,
+        }
+    }
+
+    fn answers(&mut self, result: &Result<CallToolResponse, McpError>) {
+        self.answered = true;
+        let Some(span) = &self.span else { return };
+        let outcome = match result {
+            Ok(CallToolResponse::Complete(call)) => {
+                let bytes: usize = call
+                    .content
+                    .iter()
+                    .map(|block| {
+                        block
+                            .as_text()
+                            .map(|text| text.text.len())
+                            .unwrap_or_default()
+                            + block
+                                .as_image()
+                                .map(|image| image.data.len())
+                                .unwrap_or_default()
+                    })
+                    .sum();
+                span.set_data("response_bytes", bytes.into());
+                if call.is_error == Some(true) {
+                    "tool_error"
+                } else {
+                    "ok"
+                }
+            }
+            Ok(CallToolResponse::InputRequired(_)) => "input_required",
+            Ok(_) => "task",
+            Err(e) => {
+                span.set_data("error_code", e.code.0.into());
+                "protocol_error"
+            }
+        };
+        span.set_tag("outcome", outcome);
+        if matches!(outcome, "tool_error" | "protocol_error") {
+            span.set_status(sentry::protocol::SpanStatus::InternalError);
+        }
     }
 }
 
 impl Drop for ToolSpan {
     fn drop(&mut self) {
-        if let Some(span) = self.0.take() {
+        if let Some(span) = self.span.take() {
+            if !self.answered {
+                span.set_tag("outcome", "cancelled");
+                span.set_status(sentry::protocol::SpanStatus::Cancelled);
+            }
             span.finish();
         }
     }
@@ -411,43 +969,30 @@ impl SilexMcp {
         app_handle: tauri::AppHandle,
         pending_evals: PendingEvals,
         eval_counter: Arc<AtomicU64>,
-        dynamic_tools: Arc<tokio::sync::RwLock<ToolRouter<Self>>>,
-        capabilities_loaded: Arc<std::sync::atomic::AtomicBool>,
+        dynamic_tools: DynamicTools,
+        tools_of: ToolsOf,
+        seen_selection: SeenSelection,
     ) -> Self {
         Self {
             tool_router: Self::tool_router(),
             dynamic_tools,
-            capabilities_loaded,
+            tools_of,
             app_handle,
             eval_counter,
             pending_evals,
+            seen_selection,
         }
     }
 
-    /// Start a Sentry transaction for an MCP tool call.
-    fn start_tool_transaction(tool_name: &str, action: &str) -> ToolSpan {
-        let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool_name), "mcp.tool");
-        let transaction = sentry::start_transaction(tx_ctx);
-        transaction.set_data("action", serde_json::Value::String(action.to_string()));
-        ToolSpan(Some(transaction.into()))
-    }
-
-    // ----------------------------------------------------------------------
-    // website — list, create, delete, rename, duplicate, open, dashboard
-    // ----------------------------------------------------------------------
-
     #[tool(
-        description = "Manage websites in the Silex visual website builder. Actions: list, create, delete, rename, duplicate, open, dashboard. After create or open, new editor tools are loaded dynamically — call list_tools to discover them. Use dashboard to return to the website list."
+        description = "Websites in Silex, a visual website builder. Once a website is open, the editor tools are in the tool list.",
+        input_schema = website_schema(),
+        annotations(read_only_hint = false, destructive_hint = true, open_world_hint = false)
     )]
     async fn website(
         &self,
         Parameters(params): Parameters<WebsiteParams>,
     ) -> Result<CallToolResult, McpError> {
-        let span = Self::start_tool_transaction("website", &format!("{:?}", params.action));
-        span.answers(self.website_call(params).await)
-    }
-
-    async fn website_call(&self, params: WebsiteParams) -> Result<CallToolResult, McpError> {
         let base_url = self.get_base_url();
         let client = reqwest::Client::new();
 
@@ -456,7 +1001,7 @@ impl SilexMcp {
                 let url = format!("{}/api/website", base_url);
                 match reqwest::get(&url).await {
                     Ok(resp) => match resp.text().await {
-                        Ok(body) => Ok(CallToolResult::success(vec![ContentBlock::text(body)])),
+                        Ok(body) => Ok(self.website_list(&body).await),
                         Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                     },
                     Err(e) => Ok(tool_error(format!("Error fetching websites: {}", e))),
@@ -482,30 +1027,13 @@ impl SilexMcp {
                         match resp.text().await {
                             Ok(response_body) => {
                                 if status.is_success() {
-                                    // Auto-navigate to the new website
-                                    if let Some(id) =
-                                        serde_json::from_str::<serde_json::Value>(&response_body)
-                                            .ok()
-                                            .and_then(|v| {
-                                                v.get("websiteId")
-                                                    .and_then(|id| id.as_str().map(String::from))
-                                            })
-                                    {
-                                        let _ =
-                                            self.navigate_to(&format!("{}/?id={}", base_url, id));
-                                    }
-                                    // Load capabilities synchronously so they're available immediately
-                                    match self.load_capabilities().await {
-                                        Ok(n) => {
-                                            tracing::info!("Loaded {} capabilities after create", n)
-                                        }
-                                        Err(e) => {
-                                            tracing::warn!("Failed to load capabilities: {}", e)
-                                        }
-                                    }
-                                    Ok(CallToolResult::success(vec![ContentBlock::text(
-                                        response_body,
-                                    )]))
+                                    let Some(id) = new_website_id(&response_body) else {
+                                        return Ok(tool_error(format!(
+                                            "Website created but the server sent no websiteId, so it was not opened. Do not create it again, find it with website(action:'list'): {}",
+                                            response_body
+                                        )));
+                                    };
+                                    Ok(self.open_new_website(&base_url, &id, "created").await)
                                 } else {
                                     Ok(tool_error(format!(
                                         "Error creating website ({}): {}",
@@ -521,10 +1049,10 @@ impl SilexMcp {
             }
 
             WebsiteAction::Delete => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match needs(&params.website_id, "website", "delete", "website_id") {
+                    Ok(wid) => wid,
+                    Err(missing) => return Ok(missing),
+                };
                 let url = format!(
                     "{}/api/website?websiteId={}&connectorId=fs-storage",
                     base_url, wid
@@ -532,10 +1060,13 @@ impl SilexMcp {
                 match client.delete(&url).send().await {
                     Ok(resp) => {
                         if resp.status().is_success() {
-                            let _ = self.navigate_to(&format!("{}/", base_url));
-                            // Clear dynamic tools since we're back on dashboard
-                            *self.dynamic_tools.write().await = ToolRouter::new();
-                            self.capabilities_loaded.store(false, Ordering::Release);
+                            let was_open =
+                                held(&self.app_handle.state::<AppState>().current_website_id)
+                                    .as_deref()
+                                    == Some(wid);
+                            if was_open && self.navigate_to(&format!("{}/", base_url)).is_ok() {
+                                self.forget_website().await;
+                            }
                             Ok(CallToolResult::success(vec![ContentBlock::text(format!(
                                 "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
                                 wid
@@ -550,14 +1081,14 @@ impl SilexMcp {
             }
 
             WebsiteAction::Rename => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
-                let name = params
-                    .name
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("name is required", None))?;
+                let wid = match needs(&params.website_id, "website", "rename", "website_id") {
+                    Ok(wid) => wid,
+                    Err(missing) => return Ok(missing),
+                };
+                let name = match needs(&params.name, "website", "rename", "name") {
+                    Ok(name) => name,
+                    Err(missing) => return Ok(missing),
+                };
                 let url = format!(
                     "{}/api/website/meta?websiteId={}&connectorId=fs-storage",
                     base_url, wid
@@ -586,22 +1117,34 @@ impl SilexMcp {
             }
 
             WebsiteAction::Duplicate => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match needs(&params.website_id, "website", "duplicate", "website_id") {
+                    Ok(wid) => wid,
+                    Err(missing) => return Ok(missing),
+                };
                 let url = format!(
                     "{}/api/website/duplicate?websiteId={}&connectorId=fs-storage",
                     base_url, wid
                 );
                 match client.post(&url).send().await {
                     Ok(resp) => {
-                        if resp.status().is_success() {
-                            let body = resp.text().await.unwrap_or_default();
-                            Ok(CallToolResult::success(vec![ContentBlock::text(body)]))
-                        } else {
-                            let body = resp.text().await.unwrap_or_default();
-                            Ok(tool_error(format!("Error duplicating website: {}", body)))
+                        let status = resp.status();
+                        match resp.text().await {
+                            Ok(body) if status.is_success() => {
+                                let Some(copy_id) = new_website_id(&body) else {
+                                    return Ok(tool_error(format!(
+                                        "Website duplicated but the server sent no websiteId, so the copy was not opened. Do not duplicate it again, find it with website(action:'list'): {}",
+                                        body
+                                    )));
+                                };
+                                Ok(self
+                                    .open_new_website(&base_url, &copy_id, "duplicated")
+                                    .await)
+                            }
+                            Ok(body) => Ok(tool_error(format!(
+                                "Error duplicating website ({}): {}",
+                                status, body
+                            ))),
+                            Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                         }
                     }
                     Err(e) => Ok(tool_error(format!("Error duplicating website: {}", e))),
@@ -609,10 +1152,21 @@ impl SilexMcp {
             }
 
             WebsiteAction::Open => {
-                let wid = params
-                    .website_id
-                    .as_deref()
-                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let wid = match needs(&params.website_id, "website", "open", "website_id") {
+                    Ok(wid) => wid,
+                    Err(missing) => return Ok(missing),
+                };
+                // Opening it again would reload the editor and lose what the user selected
+                if self.is_open_with_tools(wid) {
+                    let mut body =
+                        serde_json::json!({"success": true, "message": "Website already open"});
+                    if let Some(selection) = self.current_selection().await {
+                        body["selection"] = selection;
+                    }
+                    return Ok(CallToolResult::success(vec![ContentBlock::text(
+                        body.to_string(),
+                    )]));
+                }
                 let nav_url = format!("{}/?id={}", base_url, wid);
                 match self.navigate_to(&nav_url) {
                     Ok(_) => {
@@ -629,38 +1183,64 @@ impl SilexMcp {
                 }
             }
 
-            WebsiteAction::Dashboard => {
-                // Clear dynamic tools since we're leaving the editor
-                *self.dynamic_tools.write().await = ToolRouter::new();
-                self.capabilities_loaded.store(false, Ordering::Release);
-                match self.navigate_to(&format!("{}/", base_url)) {
-                    Ok(_) => Ok(CallToolResult::success(vec![ContentBlock::text(
+            WebsiteAction::Dashboard => match self.navigate_to(&format!("{}/", base_url)) {
+                Ok(_) => {
+                    self.forget_website().await;
+                    Ok(CallToolResult::success(vec![ContentBlock::text(
                         "{\"success\":true,\"message\":\"Navigated to dashboard\"}",
-                    )])),
-                    Err(e) => Ok(tool_error(e)),
+                    )]))
                 }
-            }
+                Err(e) => Ok(tool_error(e)),
+            },
         }
     }
 
-    // ----------------------------------------------------------------------
-    // take_screenshot — returns image inline
-    // ----------------------------------------------------------------------
+    #[tool(
+        description = "Images of the open website.",
+        input_schema = asset_schema(),
+        annotations(read_only_hint = false, destructive_hint = false, open_world_hint = false)
+    )]
+    async fn asset(
+        &self,
+        Parameters(params): Parameters<AssetParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let AssetAction::Add = params.action;
+        let path = match needs(&params.path, "asset", "add", "path") {
+            Ok(path) => path.to_string(),
+            Err(missing) => return Ok(missing),
+        };
+        let Some(website_id) = self.open_website() else {
+            return Ok(tool_error(
+                "No website open. Use website(action:'open') first.",
+            ));
+        };
+        let read =
+            tokio::task::spawn_blocking(move || crate::asset_import::read_image(&path)).await;
+        let image = match read {
+            Ok(Ok(image)) => image,
+            Ok(Err(why)) => return Ok(tool_error(format!("{why} Nothing was imported."))),
+            Err(e) => return Ok(tool_error(format!("Could not read the file: {e}"))),
+        };
+        match self.upload_image(&website_id, image).await {
+            Ok(answer) => Ok(CallToolResult::success(vec![ContentBlock::text(
+                answer.to_string(),
+            )])),
+            Err(why) => Ok(tool_error(format!("Could not import the image: {why}"))),
+        }
+    }
 
     #[tool(
-        description = "Take a screenshot and return it as an image. Use target 'canvas' for the website preview only, or 'ui' (default) for the full editor UI including panels. Use this after making visual changes to verify correctness."
+        description = "Take a screenshot of the website (canvas, default) or of the whole editor (ui). Use it after visual changes to verify your work.",
+        input_schema = screenshot_schema(),
+        annotations(read_only_hint = true)
     )]
-    async fn take_screenshot(
+    async fn screenshot(
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let span =
-            Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
-        span.answers(self.screenshot_call(params).await)
-    }
-
-    async fn screenshot_call(&self, params: ScreenshotParams) -> Result<CallToolResult, McpError> {
-        let target = params.target.as_deref().unwrap_or("ui");
+        let state = self.app_handle.state::<AppState>();
+        let _after_the_writes = state.editor_commands.lock().await;
+        let target = params.target.unwrap_or_default().as_str();
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
                 "Screenshot failed: html2canvas is not in the dashboard build",
@@ -702,24 +1282,7 @@ impl SilexMcp {
             return Ok(tool_error("Unexpected data URL format"));
         };
 
-        let png_bytes = match base64::engine::general_purpose::STANDARD.decode(base64_data) {
-            Ok(bytes) => bytes,
-            Err(e) => return Ok(tool_error(format!("Failed to decode base64: {}", e))),
-        };
-
-        // Build response with inline image
-        let mut content = vec![ContentBlock::image(base64_data.to_string(), "image/png")];
-
-        // Optionally save to file
-        if let Some(path) = params.output_file {
-            match std::fs::write(&path, &png_bytes) {
-                Ok(_) => content.push(ContentBlock::text(format!(
-                    "Screenshot also saved to {}",
-                    path
-                ))),
-                Err(e) => content.push(ContentBlock::text(format!("Failed to save file: {}", e))),
-            }
-        }
+        let content = vec![ContentBlock::image(base64_data.to_string(), "image/png")];
 
         Ok(CallToolResult::success(content))
     }
@@ -746,28 +1309,38 @@ pub async fn eval_callback(
 
 impl ServerHandler for SilexMcp {
     fn get_info(&self) -> ServerConfig {
-        ServerConfig::new(ServerCapabilities::builder().enable_tools().build())
-            .with_protocol_version(ProtocolVersion::V_2024_11_05)
-            .with_instructions(
-                r#"Silex Desktop MCP — controls the Silex no-code visual website builder.
+        ServerConfig::new(
+            ServerCapabilities::builder()
+                .enable_tools()
+                .enable_tool_list_changed()
+                .build(),
+        )
+        .with_protocol_version(ProtocolVersion::V_2024_11_05)
+        .with_instructions(
+            r#"Silex Desktop MCP: controls Silex, a visual website builder.
 
-GETTING STARTED:
-1. Call website(action:'list') or website(action:'create', name:'My Site') to start.
-2. After opening/creating a project, call list_tools to discover editor tools.
-   Editor tools are loaded dynamically and won't appear until a project is open.
+START: website(action:'list') lists the websites and says which one is open. website(action:'open') or (action:'create') opens one, then the editor tools appear.
 
-HIERARCHY (select each level before operating on deeper levels):
-  Website → Breakpoint → Page → Component → Selector
-  Every tool response includes a 'selection' object showing the current state.
-  Check 'warnings' in the selection to see what needs to be selected next.
+SELECTION: website > page > breakpoint > element > selector. Choose each level before the next one.
+The user may have selected an element before asking you to change it: website(action:'list') and the editor tools show the selection, do not reopen the website. element(action:'list', element_id) shows its branch. "symbol" in the selection: the element is in a symbol, a change applies to every page.
+An answer shows the selection (a "selection" object, or a last line "selection: ...") only when it is new to you or the call failed.
+breakpoint(action:'select') chooses the breakpoint that styles are written for.
+
+TO STYLE: one style(action:'set', element_id, selector, css) with all the CSS; the selector must match the element (for a new class, element(action:'update', add_class) first). Nothing changes if a step fails.
+
+IDS: element(action:'insert') returns the new ids in "created": use them, no need to list. Creating one element or page selects it.
+
+IMAGES: asset(action:'add', path) copies an image file into the website and gives its src. Never paste SVG code or data URIs in the HTML.
+
+CMS: cms(action:'add', source:'wp', url:'https://.../graphql') connects a GraphQL API and lists its collections. To repeat a card: keep one card, remove its copies, element(action:'bind', element_id:'<card>', bind_to:'loop', path:'wp.posts(first: 3).nodes'); the answer lists the item fields. Then for each child: element(action:'bind', element_id:'<child>', bind_to:'content', path:'item.title'), or bind_to:'attribute', attribute:'href', path:'item.link'.
 
 RULES:
 - Use BEM class names. No inline styles. No CSS Grid (use Flexbox).
-- Homepage page name must be "index". Internal links start with "./".
-- Autosave is active — no manual save needed.
-- After making visual changes, use take_screenshot to verify your work.
+- The page with no name is the homepage. Internal links start with "./".
+- Autosave is on.
+- After visual changes, use screenshot to verify your work.
 "#,
-            )
+        )
     }
 
     fn list_tools(
@@ -776,39 +1349,31 @@ RULES:
         _context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<ListToolsResult, McpError>> + Send + '_ {
         async move {
-            tracing::info!(
-                "[list_tools] Called. caps_loaded={} project_open={}",
-                self.capabilities_loaded.load(Ordering::Acquire),
-                self.require_project().is_ok()
-            );
             // Eagerly load capabilities if a project is open but caps haven't loaded yet
-            if !self.capabilities_loaded.load(Ordering::Acquire) && self.require_project().is_ok() {
-                tracing::info!("[list_tools] Loading capabilities eagerly...");
-                match self.load_capabilities().await {
-                    Ok(n) => tracing::info!("[list_tools] Loaded {} capabilities", n),
-                    Err(e) => tracing::warn!("[list_tools] Failed to load capabilities: {}", e),
+            if !self.tools_loaded() && self.require_project().is_ok() {
+                if let Err(e) = self.load_capabilities().await {
+                    tracing::warn!("[list_tools] Failed to load capabilities: {}", e);
                 }
             }
-            let mut tools = self.tool_router.list_all();
-            // Set annotations on static tools (macro doesn't support them)
-            for tool in &mut tools {
-                let name = tool.name.as_ref();
-                if name == "take_screenshot" {
-                    tool.annotations = Some(ToolAnnotations::new().read_only(true));
-                }
-            }
-            let static_count = tools.len();
-            // Append dynamic tools from capabilities
             let dynamic = self.dynamic_tools.read().await;
-            let dynamic_count = dynamic.list_all().len();
-            tools.extend(dynamic.list_all());
-            let tool_names: Vec<String> = tools.iter().map(|t| t.name.to_string()).collect();
+            let mut tools: Vec<Tool> = self
+                .tool_router
+                .list_all()
+                .into_iter()
+                .map(|tool| match dynamic.get(&tool.name) {
+                    Some(family) => merge_family(&tool, family),
+                    None => tool,
+                })
+                .collect();
+            tools.extend(
+                dynamic
+                    .list_all()
+                    .into_iter()
+                    .filter(|tool| self.tool_router.get(&tool.name).is_none()),
+            );
             tracing::info!(
-                "[list_tools] Returning {} tools ({} static + {} dynamic): {:?}",
-                tools.len(),
-                static_count,
-                dynamic_count,
-                tool_names
+                "[list_tools] {:?}",
+                tools.iter().map(|t| t.name.as_ref()).collect::<Vec<_>>()
             );
             Ok(ListToolsResult::with_all_items(tools))
         }
@@ -820,54 +1385,144 @@ RULES:
         context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<CallToolResponse, McpError>> + Send + '_ {
         async move {
-            // Check which router owns this tool before consuming request
-            if self.tool_router.get(&request.name).is_some() {
-                let is_website_tool = request.name.as_ref() == "website";
-                let caps_before = self.capabilities_loaded.load(Ordering::Acquire);
-                let peer = context.peer.clone();
-
-                let tool_ctx =
-                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-                let result = self.tool_router.call(tool_ctx).await;
-
-                // If the website tool just loaded capabilities, notify the client
-                if is_website_tool
-                    && !caps_before
-                    && self.capabilities_loaded.load(Ordering::Acquire)
-                {
-                    if let Err(e) = peer.notify_tool_list_changed().await {
-                        tracing::warn!("Failed to send tools/list_changed: {}", e);
-                    }
-                }
-
-                return result;
+            let known = self.get_tool(&request.name);
+            let tool = known.as_ref().map_or("unknown", |tool| tool.name.as_ref());
+            let action = known.as_ref().and_then(|tool| known_action(tool, &request));
+            let client = context
+                .peer
+                .peer_info()
+                .map(|info| info.client_info.name.clone());
+            let mut span = ToolSpan::start(tool, action.as_deref(), client.as_deref());
+            let cancelled = context.ct.clone();
+            let result = self.route_call(request, context).await;
+            if cancelled.is_cancelled() {
+                // The client never gets this answer, nor the selection in it
+                *held(&self.seen_selection) = None;
+            } else {
+                span.answers(&result);
             }
-
-            if self.dynamic_tools.read().await.has_route(&request.name) {
-                let tool_ctx =
-                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-                // Hold read lock across the async call — safe because writes
-                // only happen in load_capabilities() on a separate task.
-                let dynamic = self.dynamic_tools.read().await;
-                return dynamic.call(tool_ctx).await;
-            }
-
-            Err(McpError::invalid_params(
-                format!(
-                    "Tool '{}' not found. Use list_tools to see available tools.",
-                    request.name
-                ),
-                None,
-            ))
+            result
         }
     }
 
     fn get_tool(&self, name: &str) -> Option<Tool> {
-        self.tool_router
-            .get(name)
-            .cloned()
-            .or_else(|| self.dynamic_tools.try_read().ok()?.get(name).cloned())
+        let dynamic = self.dynamic_tools.try_read().ok();
+        let family = dynamic.as_ref().and_then(|tools| tools.get(name));
+        match (self.tool_router.get(name), family) {
+            (Some(base), Some(family)) => Some(merge_family(base, family)),
+            (Some(base), None) => Some(base.clone()),
+            (None, family) => family.cloned(),
+        }
     }
+}
+
+impl SilexMcp {
+    async fn route_call(
+        &self,
+        request: CallToolRequestParams,
+        context: RequestContext<RoleServer>,
+    ) -> Result<CallToolResponse, McpError> {
+        // Not under the lock: a long call would keep load_capabilities waiting
+        let dynamic = {
+            let tools = self.dynamic_tools.read().await;
+            tools.has_route(&request.name).then(|| Arc::clone(&tools))
+        };
+        let action = request
+            .arguments
+            .as_ref()
+            .and_then(|args| args.get("action"))
+            .and_then(|action| action.as_str());
+        let native = self.tool_router.get(&request.name).is_some_and(|tool| {
+            dynamic.is_none()
+                || match (declared_actions(tool), action) {
+                    (Some(actions), Some(action)) => actions.contains(&action),
+                    (None, _) => true,
+                    (Some(_), None) => false,
+                }
+        });
+
+        // The editor family only knows its own actions, not those of the static tool
+        let family_action = dynamic
+            .as_ref()
+            .and_then(|tools| tools.get(&request.name))
+            .and_then(declared_actions)
+            .zip(action)
+            .is_some_and(|(actions, action)| actions.contains(&action));
+        if !native && !family_action && self.tool_router.get(&request.name).is_some() {
+            let all = self
+                .get_tool(&request.name)
+                .and_then(|tool| declared_actions(&tool).map(|actions| actions.join(", ")))
+                .unwrap_or_default();
+            return Ok(
+                tool_error(format!("Set action to one of: {all}. Nothing was changed.")).into(),
+            );
+        }
+
+        if native {
+            let reopened = action == Some("open")
+                && request
+                    .arguments
+                    .as_ref()
+                    .and_then(|args| args.get("website_id"))
+                    .and_then(|id| id.as_str())
+                    .is_some_and(|id| self.is_open_with_tools(id));
+            let may_change_tool_list = request.name.as_ref() == "website"
+                && !reopened
+                && action
+                    .and_then(|action| serde_json::from_value::<WebsiteAction>(action.into()).ok())
+                    .is_some_and(|action| action.changes_tool_list());
+            let peer = context.peer.clone();
+
+            let tool_ctx =
+                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+            let result = self.tool_router.call(tool_ctx).await;
+
+            let succeeded = matches!(
+                &result,
+                Ok(CallToolResponse::Complete(done)) if done.is_error != Some(true)
+            );
+            if may_change_tool_list && succeeded {
+                if let Err(e) = peer.notify_tool_list_changed().await {
+                    tracing::warn!("Failed to send tools/list_changed: {}", e);
+                }
+            }
+
+            return result;
+        }
+
+        if let Some(dynamic) = dynamic {
+            let tool_ctx =
+                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+            return dynamic.call(tool_ctx).await;
+        }
+
+        Err(McpError::invalid_params(
+            format!(
+                "Tool '{}' not found. The editor tools are only available while a website is open.",
+                request.name
+            ),
+            None,
+        ))
+    }
+}
+
+/// The action of a call, when it is one the tool declares: a free value could
+/// be anything of the website
+fn known_action(tool: &Tool, request: &CallToolRequestParams) -> Option<String> {
+    let args = request.arguments.as_ref()?;
+    if tool.name.as_ref() == "screenshot" {
+        let target = args.get("target").cloned().unwrap_or_default();
+        let target = if target.is_null() {
+            ScreenshotTarget::default()
+        } else {
+            serde_json::from_value::<ScreenshotTarget>(target).ok()?
+        };
+        return Some(target.as_str().to_string());
+    }
+    let action = args.get("action")?.as_str()?;
+    declared_actions(tool)?
+        .contains(&action)
+        .then(|| action.to_string())
 }
 
 // ==========================================================================
@@ -876,15 +1531,12 @@ RULES:
 
 /// State shared by every MCP session: the dynamic tools loaded from the page
 /// have to survive a session, otherwise they would be lost on website open.
-fn shared_state() -> (
-    Arc<AtomicU64>,
-    Arc<tokio::sync::RwLock<ToolRouter<SilexMcp>>>,
-    Arc<std::sync::atomic::AtomicBool>,
-) {
+fn shared_state() -> (Arc<AtomicU64>, DynamicTools, ToolsOf, SeenSelection) {
     (
         Arc::new(AtomicU64::new(0)),
-        Arc::new(tokio::sync::RwLock::new(ToolRouter::new())),
-        Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        Arc::new(tokio::sync::RwLock::new(Arc::new(ToolRouter::new()))),
+        Default::default(),
+        Default::default(),
     )
 }
 
@@ -893,7 +1545,7 @@ pub async fn start_mcp_server(
     pending_evals: PendingEvals,
     port: u16,
 ) {
-    let (eval_counter, dynamic_tools, capabilities_loaded) = shared_state();
+    let (eval_counter, dynamic_tools, tools_of, seen_selection) = shared_state();
 
     let mcp_service = StreamableHttpService::new(
         move || {
@@ -902,7 +1554,8 @@ pub async fn start_mcp_server(
                 pending_evals.clone(),
                 eval_counter.clone(),
                 dynamic_tools.clone(),
-                capabilities_loaded.clone(),
+                tools_of.clone(),
+                seen_selection.clone(),
             ))
         },
         LocalSessionManager::default().into(),
@@ -928,13 +1581,14 @@ pub async fn start_mcp_server(
 }
 
 pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: PendingEvals) {
-    let (eval_counter, dynamic_tools, capabilities_loaded) = shared_state();
+    let (eval_counter, dynamic_tools, tools_of, seen_selection) = shared_state();
     let service = SilexMcp::new(
         app_handle,
         pending_evals,
         eval_counter,
         dynamic_tools,
-        capabilities_loaded,
+        tools_of,
+        seen_selection,
     );
     tracing::info!("MCP stdio transport starting");
     match service.serve(rmcp::transport::io::stdio()).await {

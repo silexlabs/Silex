@@ -64,6 +64,20 @@ export default (editor: Editor, opts) => {
     },
   })
 
+  // GrapesJS 0.23 keeps the color shown from a rule and writes it back on the next
+  // component:selected, onto whatever rule the panel targets by then. Only a drag in
+  // the color picker, still partial (__p), needs that write
+  const ColorView = editor.StyleManager.getType('color').view
+  editor.StyleManager.addType('color', {
+    view: {
+      onValueChange(...args: unknown[]) {
+        ColorView.prototype.onValueChange.apply(this, args)
+        const input = (this as { inputInst?: { movedColor: string } }).inputInst
+        if (!this.model.get('__p') && input) input.movedColor = ''
+      },
+    },
+  })
+
   editor.on('load', () => {
   /***************/
   /* General     */

@@ -12,6 +12,7 @@ import blocks from './blocks'
 import buttons from './buttons'
 import traits from './traits'
 import collectionPages from './collection-pages'
+import pageBindings from './page-bindings'
 import { Editor } from 'grapesjs'
 import { eleventyFilters } from './filters'
 
@@ -80,6 +81,7 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
   pageSettings(editor, opts)
   siteSettings(editor, opts)
   collectionPages(editor, opts)
+  pageBindings(editor)
   states(editor)
   publication(editor, opts)
   blocks(editor)

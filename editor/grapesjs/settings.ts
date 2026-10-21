@@ -231,34 +231,9 @@ export const settingsDialog = (
   editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     removeSection(options.section.id, options.siteOrPage)
   })
-  editor.Commands.add(cmdGetSettings, (_editor: Editor, _sender: Button, options: any = {}) => {
-    const { page } = options
-    if (page) {
-      const p = typeof page === 'string'
-        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
-        : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
-      return renameOgSettingsKeys((p.get('settings') || {}) as Record<string, unknown>)
-    }
-    return renameOgSettingsKeys((editor.getModel().get('settings') || {}) as Record<string, unknown>)
-  })
+  editor.Commands.add(cmdGetSettings, () => getSettingsOf(editor.getModel()))
   editor.Commands.add(cmdSetSettings, (_editor: Editor, _sender: Button, options: Record<string, unknown> = {}) => {
-    const { page, ...incoming } = options
-    const settings = renameOgSettingsKeys(incoming)
-    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key.')
-    if (page) {
-      const p = typeof page === 'string'
-        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
-        : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
-      const current = (p.get('settings') || {}) as Record<string, unknown>
-      p.set('settings', { ...current, ...settings })
-    } else {
-      const current = (editor.getModel().get('settings') || {}) as Record<string, unknown>
-      editor.getModel().set('settings', { ...current, ...settings })
-    }
-    editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
-    updateDom(editor)
+    setSettingsOf(editor, editor.getModel(), options)
   })
   editor.on('storage:start:store', (data: WebsiteData): void => {
     data.settings = editor.getModel().get('settings')
@@ -285,42 +260,51 @@ export const settingsDialog = (
     autoFormat: false,
   })
 
-  // Register AI capabilities
   editor.on('ai-capabilities:ready', (addCapability) => {
     addCapability({
-      id: cmdGetSettings,
+      tool: 'website',
+      action: 'get',
       command: cmdGetSettings,
-      description: 'Get site or page settings',
+      description: 'the settings of the open website.',
       readOnly: true,
-      inputSchema: {
-        type: 'object',
-        properties: {
-          page: { type: 'string' },
-        },
-      },
-      tags: ['settings'],
     })
     addCapability({
-      id: cmdSetSettings,
+      tool: 'website',
+      action: 'update',
       command: cmdSetSettings,
-      description: 'Set site or page settings',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          page: { type: 'string' },
-          title: { type: 'string' },
-          description: { type: 'string' },
-          favicon: { type: 'string' },
-          lang: { type: 'string' },
-          head: { type: 'string' },
-          og_title: { type: 'string', description: 'Open Graph title (stored as og:title)' },
-          og_description: { type: 'string', description: 'Open Graph description (stored as og:description)' },
-          og_image: { type: 'string', description: 'Open Graph image URL (stored as og:image)' },
-        },
-      },
-      tags: ['settings'],
+      description: 'change settings of the open website, the others stay.',
+      inputSchema: { type: 'object', properties: SETTINGS_SCHEMA },
     })
   })
+}
+
+/** The settings an agent reads and writes, on the website or on a page */
+export const SETTINGS_SCHEMA = {
+  title: { type: 'string' },
+  description: { type: 'string' },
+  favicon: { type: 'string' },
+  lang: { type: 'string' },
+  head: { type: 'string', description: 'HTML added to <head>' },
+  og_title: { type: 'string' },
+  og_description: { type: 'string' },
+  og_image: { type: 'string', description: 'image URL' },
+}
+
+interface SettingsHolder {
+  get(key: 'settings'): unknown
+  set(key: 'settings', value: Record<string, unknown>): unknown
+}
+
+export function getSettingsOf(holder: SettingsHolder): Record<string, unknown> {
+  return renameOgSettingsKeys((holder.get('settings') || {}) as Record<string, unknown>)
+}
+
+export function setSettingsOf(editor: Editor, holder: SettingsHolder, incoming: Record<string, unknown>): void {
+  const settings = renameOgSettingsKeys(incoming)
+  if (!Object.keys(settings).length) throw new Error(`Set at least one of: ${Object.keys(SETTINGS_SCHEMA).join(', ')}.`)
+  holder.set('settings', { ...(holder.get('settings') as Record<string, unknown> || {}), ...settings })
+  editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
+  updateDom(editor)
 }
 
 function showSection(item: SettingsSection): void {

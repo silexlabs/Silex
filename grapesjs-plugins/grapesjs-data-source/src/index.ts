@@ -16,6 +16,7 @@
  */
 
 import commands from './commands'
+import cms from './mcp/cms'
 import { registerCapabilities } from './capabilities'
 import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
@@ -73,6 +74,7 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
 
   // Register the commands
   commands(editor, options)
+  cms(editor)
 
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
@@ -91,8 +93,8 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   })
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }
 

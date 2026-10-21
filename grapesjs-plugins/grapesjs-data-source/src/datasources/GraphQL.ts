@@ -1114,7 +1114,9 @@ export default class GraphQL implements IDataSource {
   }
 
   async fetchValues(query: string): Promise<unknown[]> {
-    const result = await this.call(query) as { data: unknown[] }
-    return result.data
+    const result = await this.call(query) as { data?: unknown[], errors?: { message: string }[] }
+    if (!result.data && result.errors?.length) throw new Error(result.errors.map(error => error.message).join(' '))
+    if (result.errors?.length) console.warn('GraphQL partial errors', result.errors)
+    return result.data!
   }
 }

@@ -14,7 +14,11 @@ export const cmdList = 'symbols:list'
 export default function(editor: Editor) {
   editor.Commands.add(cmdList, {
     run() {
-      return getSymbols(editor)
+      return getSymbols(editor).map(({ main, instances }) => ({
+        id: main?.getId(),
+        label: main?.getName(),
+        instances: instances.length,
+      }))
     },
   })
   editor.Commands.add(cmdAdd, _addSymbol)
@@ -52,7 +56,7 @@ export function displayError(editor: Editor, title: string, message: string) {
 export function _addSymbol(
   editor: Editor,
   _: any,
-  { component = editor.getSelected(), label = component?.getName(), icon }: {component?: Component, label?: string, icon?: string} ,
+  { element_id, component = elementOf(editor, element_id), label = component?.getName(), icon }: {element_id?: string, component?: Component, label?: string, icon?: string} ,
 ) {
   if(!component || !label) {
     throw new Error('Can not create the symbol: missing required param')
@@ -60,10 +64,8 @@ export function _addSymbol(
   // Give the component a name
   component.setName(label)
   if(icon) component.set('icon', icon)
-  // add the symbol
-  const s = createSymbol(editor, component)
-  // return the symbol to the caller
-  return s
+  const { main } = createSymbol(editor, component)!
+  return { created: [{ id: main!.getId(), label }] }
 }
 
 /**
@@ -73,27 +75,64 @@ export function _addSymbol(
 export function _removeSymbol(
   editor: Editor,
   _: any,
-  {symbolId}: {symbolId: string},
+  { symbolId, symbol_id = symbolId }: { symbolId?: string, symbol_id?: string },
 ) {
-  if (!symbolId) {
-    throw new Error('Can not delete symbol: missing param symbolId')
+  if (!symbol_id) {
+    throw new Error('Can not delete symbol: missing param symbol_id')
   }
-  const symbol = editor.Components.getSymbols()
-    .find(symbol => symbol.getId() === symbolId)
+  const symbols = editor.Components.getSymbols()
+  const symbol = symbols.find(symbol => symbol.getId() === symbol_id)
   if (!symbol) {
-    throw new Error('Can not delete symbol: symbol not found')
+    throw new Error(`No symbol "${symbol_id}". Symbols: ${symbols.map(s => `${s.getId()} (${s.getName()})`).join(', ') || 'none'}.`)
   }
   deleteSymbol(editor, symbol)
 }
 
 export function _unlinkSymbolInstance(
   editor: Editor,
-  _: any, { component = editor.getSelected() }: { component?: Component },
+  _: any, { element_id, component = elementOf(editor, element_id) }: { element_id?: string, component?: Component },
 ) {
   if(!component) {
     throw new Error('Can not unlink the component: missing param component')
   }
   unbindSymbolInstance(editor, component)
+}
+
+const POSITIONS = ['inside', 'before', 'after']
+
+// The element an agent names by the id it was given, or the selected one
+function elementOf(editor: Editor, id?: string): Component | undefined {
+  if (!id) {
+    const selected = editor.getSelectedAll()
+    if (selected.length > 1) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
+    return selected[0]
+  }
+  const found = editor.Commands.has('agent-ids:find')
+    ? editor.runCommand('agent-ids:find', { id })
+    : editor.Components.allById()[id]
+  if (!found) throw new Error(`No element "${id}". Nothing was changed.`)
+  return found
+}
+
+// From an agent: the symbol by its id, placed relative to target_id or the selected element
+function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside', targetId?: string) {
+  const symbols = editor.Components.getSymbols()
+  const symbol = symbols.find(s => s.getId() === symbolId)
+  if (!symbol) {
+    throw new Error(`No symbol "${symbolId}". Nothing was changed. ${symbols.length ? `Symbols: ${symbols.map(s => `${s.getId()} (${s.getName()})`).join(', ')}.` : 'There is no symbol yet: create one with symbol(action:\'create\').'}`)
+  }
+  if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
+  const target = (targetId ? elementOf(editor, targetId) : editor.getSelected()) ?? editor.getWrapper()!
+  const parent = position === 'inside' ? target : target.parent()
+  if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
+  const at = position === 'inside' ? undefined : target.index() + (position === 'after' ? 1 : 0)
+  if (!allowDrop(editor, parent)) throw new Error('A symbol can not go inside a symbol. Nothing was changed. Choose a target_id outside of it, or change position.')
+  if (!editor.Components.canMove(parent, symbol, at).result) throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed. Choose another target_id, or change position.`)
+  const [instance] = parent.append(editor.Components.addSymbol(symbol)!, { at })
+  editor.select(instance)
+  return editor.Commands.has('agent-ids:created')
+    ? editor.runCommand('agent-ids:created', { components: [instance] })
+    : { created: [{ id: instance.getId() }], parent_id: parent.getId() }
 }
 
 /**
@@ -102,8 +141,9 @@ export function _unlinkSymbolInstance(
 export function _createSymbolInstance(
   editor: Editor,
   _: any,
-  { symbol, pos, target }: { symbol: Component, pos: any, target: HTMLElement | Component },
-): Component | null {
+  { symbol, pos, target, symbol_id, target_id, position }: { symbol: Component, pos: any, target: HTMLElement | Component, symbol_id?: string, target_id?: string, position?: string },
+) {
+  if (symbol_id) return insertSymbolInstance(editor, symbol_id, position, target_id)
   if (!symbol || !pos || !target) {
     throw new Error('Can not create the symbol: missing param symbol or pos or target')
   }

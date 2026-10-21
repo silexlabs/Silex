@@ -28,8 +28,8 @@ export default (editor, opts = {}) => {
   registerCommands(editor)
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability, describeTool) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }
 

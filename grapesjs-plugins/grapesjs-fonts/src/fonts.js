@@ -105,11 +105,22 @@ export function getApiUrl() {
   return fontApi
 }
 
+// Google categories that are not CSS generic families
+const GENERIC = { serif: 'serif', 'sans-serif': 'sans-serif', monospace: 'monospace', handwriting: 'cursive', display: 'sans-serif' }
+
+export function fontValue(font) {
+  return `"${font.family}", ${GENERIC[font.category] ?? 'sans-serif'}`
+}
+
 /**
  * Load the available fonts from google
  */
 export async function loadFontList(url) {
-  _fontsList = _fontsList ?? (await (await fetch(url)).json())?.items
+  if (!_fontsList) {
+    const response = await fetch(url)
+    if (!response.ok) throw new Error(`Google Fonts answered ${response.status}`)
+    _fontsList = (await response.json())?.items
+  }
 
   localStorage.setItem(LS_FONTS, JSON.stringify(_fontsList))
   await wait() // let the dialog open
@@ -341,7 +352,7 @@ function installFont(editor, opts, font, fontsList) {
       name: font.family,  // Ensure the font family name is set for both 'family' and 'name'
       category: font.category,
       variants: font.variants,
-      value: `"${font.family}", ${font.category}`
+      value: fontValue(font),
     })
   }
   saveFonts(editor, opts)

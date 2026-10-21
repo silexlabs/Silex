@@ -41,7 +41,7 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
   registerCommands(editor)
 
   // Register AI capabilities
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }
