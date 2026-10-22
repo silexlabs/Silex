@@ -36,6 +36,46 @@ export default (editor: Editor, opts) => {
   // Label for the "decorative image" checkbox trait (#1891)
   const labelDecorative = opts.labelDecorative || 'Decorative image'
 
+  // The alt text trait. Emptied it must remove the attribute instead of
+  // publishing alt="": only the "Decorative image" checkbox publishes alt="",
+  // so clearing the field must not silently mark the image as decorative.
+  const altTrait = {
+    type: 'altText',
+    name: 'alt',
+    label: 'alt',
+    setValue({ value, component, emitUpdate }: { value: string, component: Component, emitUpdate: () => void }) {
+      if (value === '') component.removeAttributes('alt')
+      else component.addAttributes({ alt: value })
+      emitUpdate()
+    },
+  }
+
+  // The alt trait view: a plain text field which greys itself out while the
+  // image is decorative (alt=""), and switches back when it is not.
+  editor.TraitManager.addType('altText', {
+    getInputEl() {
+      const input = document.createElement('input')
+      input.type = 'text'
+      const placeholder = this.model.get('placeholder') || this.model.get('default') || ''
+      if (placeholder) input.placeholder = placeholder
+      const value = this.getModelValue()
+      if (value !== undefined) input.value = value
+      return input
+    },
+    onUpdate() {
+      const input = this.getInputElem()
+      if (input instanceof HTMLInputElement) input.disabled = this.target.getAttributes()?.alt === ''
+    },
+  })
+
+  // Grey out the alt text field while the image is decorative. The alt trait
+  // input lives in the same traits panel.
+  const setAltFieldDisabled = (el: HTMLElement, disabled: boolean) => {
+    const panel = el.closest('.gjs-traits-cs, .gjs-traits')
+    const input = panel?.querySelector('.gjs-trt-trait__wrp-alt input')
+    if (input instanceof HTMLInputElement) input.disabled = disabled
+  }
+
   const domc = editor.DomComponents
   const imgType = domc.getType('image')
 
@@ -72,34 +112,38 @@ export default (editor: Editor, opts) => {
   // A decorative image is published with an empty alt attribute (screen
   // readers skip it). The state is derived from the alt attribute itself, so
   // nothing extra is stored and it survives storage round-trips as-is.
-  // Grey out the alt text field while decorative is on. Best effort: the alt
-  // trait input lives in the same traits panel.
-  const setAltDisabled = (el: HTMLElement, disabled: boolean) => {
-    const panel = el.closest('.gjs-traits-cs, .gjs-traits')
-    const input = panel?.querySelector('.gjs-trt-trait__wrp-alt input')
-    if (input instanceof HTMLInputElement) input.disabled = disabled
-  }
   editor.TraitManager.addType('decorative', {
     createInput() {
-      const el = document.createElement('label')
+      // Same markup as the "Unwrap content" trait, so this checkbox looks and
+      // behaves like the other boolean traits (a bare input is invisible:
+      // Silex sets appearance: none on inputs)
+      const el = document.createElement('div')
+      const label = document.createElement('label')
+      label.className = 'gjs-field gjs-field-checkbox silex-label'
       const input = document.createElement('input')
       input.type = 'checkbox'
-      el.append(input, document.createTextNode(labelDecorative))
+      const icon = document.createElement('i')
+      icon.className = 'gjs-chk-icon'
+      icon.setAttribute('style', 'position: absolute; z-index: 1;')
+      label.append(input, icon)
+      el.append(label)
       return el
     },
     onEvent({ component, event }) {
       const checked = (event.target as HTMLInputElement).checked
-      // Checked: publish alt="". Unchecked: leave the alt attribute alone so
-      // the field keeps working as before.
+      // Checked: publish alt="". Unchecked: drop the attribute so the image
+      // stops being decorative and the alt field can be used again.
       if (checked) component.addAttributes({ alt: '' })
+      else component.removeAttributes('alt')
+      // Grey the alt field out (or back in). '' and "no alt at all" both read
+      // as '' for the alt trait, so it can't detect this change by itself.
       const el = (event.target as HTMLElement).closest('label')
-      if (el instanceof HTMLElement) setAltDisabled(el, checked)
+      if (el instanceof HTMLElement) setAltFieldDisabled(el, checked)
     },
     onUpdate({ elInput, component }) {
       const decorative = (component as Component).getAttributes()?.alt === ''
       const input = elInput.querySelector('input')
       if (input instanceof HTMLInputElement) input.checked = decorative
-      setAltDisabled(elInput, decorative)
     },
   })
 
@@ -112,8 +156,9 @@ export default (editor: Editor, opts) => {
           ...editor.DomComponents.getType('image').model.prototype.defaults.traits
           // Remove href and tagName trait becase images have to keep the img tag, not become links
           // Remove tag-name trait which is added by the semantic plugin
-          // Also remove src trait in case it exists already
-            .filter((trait) => !['href', 'tag-name', 'src'].includes(trait.name)),
+          // Also remove src trait in case it exists already, and alt which is replaced below
+            .filter((trait) => trait !== 'alt' && !['href', 'tag-name', 'src'].includes(trait.name)),
+          altTrait,
           'src',
           {
             type: 'decorative',
