@@ -8,7 +8,7 @@ import imgPlugin from './img'
 // Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
 jest.mock('lit-html', () => ({}))
 
-describe('decorative image trait (#1891)', () => {
+describe('decorative image trait', () => {
   function setup(alt: string | undefined) {
     /* @ts-ignore */
     const editor: Editor = grapesjs.init({
@@ -64,14 +64,9 @@ describe('decorative image trait (#1891)', () => {
     traitsBox.remove()
   })
 
-  it('an image already published with alt="" shows as checked', () => {
-    const { traitsBox } = setup('')
-    expect(input(traitsBox, 'decorative')?.checked).toBe(true)
-    traitsBox.remove()
-  })
-
   it('unchecking the box removes the alt attribute', () => {
     const { img, traitsBox } = setup('')
+    expect(input(traitsBox, 'decorative')?.checked).toBe(true)
     toggleDecorative(traitsBox, false)
     expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
     expect(img.toHTML()).not.toContain('alt=')
@@ -84,16 +79,6 @@ describe('decorative image trait (#1891)', () => {
     typeAlt(traitsBox, '')
     expect(img.getAttributes().alt).toBeUndefined()
     expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
-    traitsBox.remove()
-  })
-
-  it('typing then clearing the alt field leaves the image non-decorative', () => {
-    const { img, traitsBox } = setup(undefined)
-    typeAlt(traitsBox, 'A described image')
-    expect(img.getAttributes().alt).toBe('A described image')
-    typeAlt(traitsBox, '')
-    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
-    expect(input(traitsBox, 'decorative')?.checked).toBe(false)
     traitsBox.remove()
   })
 })

@@ -200,6 +200,9 @@
   width: fit-content;
   border: 1px solid rgba(136, 115, 254, 0.3);
 }
+.gjs-field input[disabled] {
+  opacity: .5;
+}
 
 /*
 */
