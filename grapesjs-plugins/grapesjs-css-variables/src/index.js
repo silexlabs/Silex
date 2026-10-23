@@ -1,5 +1,5 @@
 import { variablesPlugin } from './variables.js'
-import { setupStyleManager } from './style-manager.js'
+import { setupStyleManager, addVariableProperty, removeVariableProperty, getVariableProperties, refreshStyleManager } from './style-manager.js'
 import { registerCommands, registerCapabilities } from './capabilities.js'
 import en from './locale/en.js'
 import fr from './locale/fr.js'
@@ -12,6 +12,9 @@ export default (editor, opts = {}) => {
     enableTypography: true,
     // Pre-defined variables for first load
     presets: [],
+    // Extra variable-enabled Style Manager targets merged into the defaults:
+    // [{sector, property, subProperty?, type}] - see style-manager.js
+    properties: [],
     // i18n overrides
     i18n: {},
     ...opts,
@@ -35,3 +38,4 @@ export default (editor, opts = {}) => {
 
 export { cmdOpenVariables } from './variables.js'
 export { cmdListVars, cmdSetVar, cmdRemoveVar, cmdRenameVar } from './capabilities.js'
+export { addVariableProperty, removeVariableProperty, getVariableProperties, refreshStyleManager } from './style-manager.js'
