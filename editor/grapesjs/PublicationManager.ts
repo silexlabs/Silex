@@ -17,7 +17,7 @@
 
 import { getPageSlug } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
-import { Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
@@ -270,8 +270,8 @@ export class PublicationManager {
           // So we do this only using displayedToStored for the path
           // As path is used to download the asset
           const src = displayedToStored(asset.src)
-            // Remove the /asset prefix to keep only the file name
-            .replace(/^\/assets\//, '')
+            // Remove the assets prefix to keep only the file name
+            .replace(/^\/?assets\//, '')
           return {
             ...asset,
             path,
@@ -453,6 +453,29 @@ export class PublicationManager {
   }
 
   /**
+   * Find images which have not been given an alt attribute.
+   * An empty alt attribute is intentional for decorative images and must not
+   * be reported as missing.
+   */
+  private getImagesMissingAlt(component: Component): Component[] {
+    const images: Component[] = []
+
+    const visit = (current: Component) => {
+      const tagName = current.get('tagName')?.toLowerCase()
+      const attributes = current.getAttributes()
+
+      if (tagName === 'img' && !Object.prototype.hasOwnProperty.call(attributes, 'alt')) {
+        images.push(current)
+      }
+
+      current.components().forEach(visit)
+    }
+
+    visit(component)
+    return images
+  }
+
+  /**
    * Check for missing SEO tags and emit warnings
    * @param siteSettings - Site settings
    */
@@ -471,6 +494,18 @@ export class PublicationManager {
       const bodyComponent = page.getMainComponent()
       const componentId = bodyComponent?.getId()
       const pageId = page.getId()
+
+      const imagesMissingAlt = bodyComponent ? this.getImagesMissingAlt(bodyComponent) : []
+      for (const img of imagesMissingAlt) {
+        const imgId = img.getId()
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-alt-${imgId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Image is missing an alt attribute. Add alt text, or use alt="" for decorative images.`,
+          componentId: imgId,
+          group: 'seo-validation',
+        })
+      }
 
       // Check for lang attribute
       const lang = getSetting(pageSettings, 'lang')

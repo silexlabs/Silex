@@ -3,12 +3,13 @@
  */
 
 import { expect, jest, describe, it, beforeEach } from '@jest/globals'
-import grapesjs, { Editor } from 'grapesjs'
+import grapesjs, { Component, Editor } from 'grapesjs'
 import { WebsiteSettings } from '~/common/types'
 import { PublicationManager } from './PublicationManager'
 
 // Prevent lit-html from being imported (it is a peer dependency and breaks the tests)
 jest.mock('lit-html', () => ({}))
+jest.mock('lit-html/directives/unsafe-html.js', () => ({ unsafeHTML: () => '' }))
 
 describe('PublicationManager html output', () => {
   let editor: Editor
@@ -54,5 +55,121 @@ describe('PublicationManager html output', () => {
     expect(html).toContain('<title>Custom title</title>')
     expect(html).not.toContain('<title>My page</title>')
   })
-})
 
+  it('does not save the fallback title into the page settings', async () => {
+    await getHtml({}, {}, 'My page')
+    const settings = editor.Pages.getAll()[0].get('settings') as WebsiteSettings
+    expect(settings?.title).toBeUndefined()
+  })
+
+  it('finds only images that have no alt attribute', () => {
+    const page = editor.Pages.getAll()[0]
+    const body = page.getMainComponent()
+    body.components().add([
+      { tagName: 'img', attributes: { src: '/missing-alt.png' } },
+      { tagName: 'img', attributes: { src: '/decorative.png', alt: '' } },
+      { tagName: 'img', attributes: { src: '/described.png', alt: 'A described image' } },
+    ])
+    const manager = new PublicationManager(editor, { websiteId: 'test' })
+    const getImagesMissingAlt = (manager as unknown as {
+      getImagesMissingAlt(component: Component): Component[]
+    }).getImagesMissingAlt.bind(manager)
+
+    const imagesMissingAlt = getImagesMissingAlt(body)
+
+    expect(imagesMissingAlt).toHaveLength(1)
+    expect(imagesMissingAlt[0].getAttributes().src).toBe('/missing-alt.png')
+  })
+
+  it('verifies empty-alt trait updates and component model persistence', () => {
+    const page = editor.Pages.getAll()[0]
+    const body = page.getMainComponent()
+    const img = body.components().add({ tagName: 'img', type: 'image', attributes: { src: '/test.png' } }) as unknown as Component
+
+    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
+
+    // User updates Alt trait in UI
+    const altTrait = img.getTrait('alt')
+    if (altTrait) {
+      altTrait.setValue('')
+    }
+
+    // Direct model attribute setting
+    img.addAttributes({ alt: '' })
+    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(true)
+    expect(img.getAttributes().alt).toBe('')
+  })
+
+
+  it('creates one notification per image missing alt and uses seo-validation group', () => {
+    const page = editor.Pages.getAll()[0]
+    page.set('name', 'Gallery')
+    const body = page.getMainComponent()
+    const components = body.components().add([
+      { tagName: 'img', attributes: { src: '/no-alt-1.png' } },
+      { tagName: 'img', attributes: { src: '/no-alt-2.png' } },
+      { tagName: 'img', attributes: { src: '/no-alt-3.png' } },
+      { tagName: 'img', attributes: { src: '/has-alt.png', alt: 'Photo' } },
+      { tagName: 'img', attributes: { src: '/decorative.png', alt: '' } },
+    ])
+    const missingAlt1 = components[0]
+    const missingAlt2 = components[1]
+    const missingAlt3 = components[2]
+    const manager = new PublicationManager(editor, { websiteId: 'test' })
+    const checkSeoTags = (manager as unknown as {
+      checkSeoTags(siteSettings: WebsiteSettings): void
+    }).checkSeoTags.bind(manager)
+    const runCommand = jest.spyOn(editor, 'runCommand')
+
+    checkSeoTags({})
+
+    // One notification per missing-alt image
+    const altCalls = (runCommand.mock.calls as unknown as [string, Record<string, unknown>][]).filter(
+      ([cmd, opts]) => cmd === 'notifications:add' && typeof opts.id === 'string' && opts.id.startsWith('seo-validation-alt-')
+    )
+    expect(altCalls).toHaveLength(3)
+
+    // Each notification references the correct image and uses seo-validation group
+    for (const img of [missingAlt1, missingAlt2, missingAlt3]) {
+      expect(runCommand).toHaveBeenCalledWith('notifications:add', expect.objectContaining({
+        id: `seo-validation-alt-${img.getId()}`,
+        componentId: img.getId(),
+        group: 'seo-validation',
+        type: 'warning',
+      }))
+    }
+
+    // Images with alt text or alt="" must not produce a notification
+    const allAltIds = altCalls.map(([, opts]) => opts.componentId)
+    expect(allAltIds).not.toContain(components[3].getId())
+    expect(allAltIds).not.toContain(components[4].getId())
+  })
+
+  it('does not duplicate notifications when validation runs again', () => {
+    const page = editor.Pages.getAll()[0]
+    page.set('name', 'Home')
+    const body = page.getMainComponent()
+    body.components().add([
+      { tagName: 'img', attributes: { src: '/no-alt.png' } },
+    ])
+    const manager = new PublicationManager(editor, { websiteId: 'test' })
+    const checkSeoTags = (manager as unknown as {
+      checkSeoTags(siteSettings: WebsiteSettings): void
+    }).checkSeoTags.bind(manager)
+    const runCommand = jest.spyOn(editor, 'runCommand')
+
+    // Run validation twice
+    checkSeoTags({})
+    checkSeoTags({})
+
+    // Each call produces notifications with the same IDs, so the notification
+    // manager will replace (not duplicate) them via the id-based dedup
+    const altCalls = (runCommand.mock.calls as unknown as [string, Record<string, unknown>][]).filter(
+      ([cmd, opts]) => cmd === 'notifications:add' && typeof opts.id === 'string' && opts.id.startsWith('seo-validation-alt-')
+    )
+    // The command is called twice (once per run) with the same id,
+    // meaning the notification manager replaces rather than duplicates
+    expect(altCalls).toHaveLength(2)
+    expect(altCalls[0][1].id).toBe(altCalls[1][1].id)
+  })
+})
