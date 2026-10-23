@@ -306,21 +306,39 @@ function displayFontLists(editor, opts, originalFontsList = []) {
     `, el)
 }
 
-function generateFontPreview(font) {
-  const family = font.family || font.name || ''
-  const famQ = family.replace(/ /g, '+')
-  const color = (getComputedStyle(document.documentElement).getPropertyValue('--gjs-font-color') || '').trim() || getComputedStyle(el).color || '#ddd'
-  const inList = (_fontsList || []).find(f => f.family === family)
-  const rawVariants = Array.isArray(font.variants) && font.variants.length ? font.variants : (inList?.variants || ['regular'])
+/**
+ * Convert Google Fonts variants (e.g. ['regular', 'italic', '700', '700italic'])
+ * to css2 `ital,wght` tuples (e.g. ['0,400', '1,400', '0,700', '1,700'])
+ */
+function getVariantPairs(variants) {
   const pairs = []
-  rawVariants.forEach(v => {
+  ;(variants || []).forEach(v => {
     const italic = /italic/i.test(v) ? 1 : 0
     const m = String(v).match(/\d+/)
     const w = m ? parseInt(m[0], 10) : 400
     const key = `${italic},${w}`
     if (!pairs.includes(key)) pairs.push(key)
   })
-  const axis = pairs.length ? `:ital,wght@${pairs.join(';')}` : ''
+  return pairs
+}
+
+/**
+ * Build the axis part of a css2 URL from Google Fonts variants, e.g. `:ital,wght@0,400;0,700`
+ * Returns '' when there are no variants, so the URL falls back to Google's default (regular only)
+ */
+export function getFontAxis(variants) {
+  const pairs = getVariantPairs(variants)
+  return pairs.length ? `:ital,wght@${pairs.join(';')}` : ''
+}
+
+function generateFontPreview(font) {
+  const family = font.family || font.name || ''
+  const famQ = family.replace(/ /g, '+')
+  const color = (getComputedStyle(document.documentElement).getPropertyValue('--gjs-font-color') || '').trim() || getComputedStyle(el).color || '#ddd'
+  const inList = (_fontsList || []).find(f => f.family === family)
+  const rawVariants = Array.isArray(font.variants) && font.variants.length ? font.variants : (inList?.variants || ['regular'])
+  const pairs = getVariantPairs(rawVariants)
+  const axis = getFontAxis(rawVariants)
   const lines = pairs.map(k => {
     const [ital, wght] = k.split(',')
     const fs = ital === '1' ? 'italic' : 'normal'
@@ -391,6 +409,6 @@ export function refresh(editor, opts) {
 
 export function getHtml(fonts, attr = '') {
   const preconnect = fonts.length ? `<link href="${fontServer}" rel="preconnect" ${attr}><link href="${fontServer}/css2" rel="preconnect" crossorigin ${attr}>` : ''
-  const links = fonts.map(f => `<link href="${fontServer}/css2?family=${f.name.replace(/ /g, '+')}&display=swap" rel="stylesheet" ${attr}>`).join('')
+  const links = fonts.map(f => `<link href="${fontServer}/css2?family=${f.name.replace(/ /g, '+')}${getFontAxis(f.variants)}&display=swap" rel="stylesheet" ${attr}>`).join('')
   return preconnect + links
 }
