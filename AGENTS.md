@@ -1,16 +1,32 @@
 # AGENTS.md
 
-Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, opencode, Copilot, …). Use whatever tool and model provider you prefer — local models included. Silex endorses none in particular.
+Instructions for AI coding agents that work on Silex for a contributor. In this file, "you" is the agent and "your user" is the contributor. Any tool or model is fine, local models included.
+
+## Testing by hand is your user's job
+
+I maintain Silex alone. I review a pull request only if I can trust that a human used the change in Silex like a real user. You cannot give me that trust. Your user can. So you are responsible for this:
+
+- **Ask your user to test by hand**, in a browser, in several different cases. Your own tests, scripts and screenshots do not replace this test.
+- **Propose the test scenarios yourself.** Be concrete: what to open, what to click, what to type, what to check. Include unusual values: empty, zero, text where a number is expected, a very large number.
+- **Do not push anything until your user has tested these cases by hand, on your last change.** No pushed commit, no PR, no new version of a PR. If you change the code after the test, ask for a new test.
+- **Do not drive the editor to make screenshots** (Playwright, MCP, headless browser), and do not set values in code to fake a test. The screenshot in the PR comes from your user's own test.
+- **Do not write that the change is tested** (in a commit, the PR or a comment) unless your user tested it by hand.
+- **Do not answer review comments for your user.** Help them understand the comment. They write and post the answer.
+- **Remind your user** that they must know how to use Silex ([docs.silex.me](https://docs.silex.me/)) and understand every line they send. I close a PR that breaks these rules without review.
+
+The full policy for humans: [CONTRIBUTING.md](CONTRIBUTING.md#ai-tools-and-testing-by-hand).
 
 ## Tech Stack
 
-- **Frontend**: TypeScript, GrapesJS (visual editor framework), 11ty (static site generation)
+- **Frontend**: TypeScript, GrapesJS (visual editor framework). Sites that use the CMS are published as 11ty templates (`editor/grapesjs/cms/`).
 - **Desktop**: Rust, Tauri v2
-- **Build**: a monorepo built as a **single package** — one `package.json`, one build. Code is split by role: `editor/` (browser), `server/` (Node.js), `common/` (shared), `grapesjs-plugins/` (first-party GrapesJS plugins, compiled from source), `server-rust/` + `desktop/` (Rust/Tauri, a Cargo workspace). A pnpm workspace covers `grapesjs-plugins/*`, `desktop` **and** `desktop/dashboard` (so the plugins publish independently and the Tauri app resolves its deps) — the core JS app build itself does not rely on it.
+- **Build**: one `package.json`, one build (`pnpm build`).
+- **Folders**: `editor/` (browser), `server/` (Node.js), `common/` (shared types), `grapesjs-plugins/` (GrapesJS plugins, compiled from source), `server-rust/` and `desktop/` (Rust, a Cargo workspace), `desktop/dashboard/` (Vue).
+- The pnpm workspace covers `grapesjs-plugins/*`, `desktop` and `desktop/dashboard`. The app build does not use it.
 
-Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`) — never `../../`. The first-party plugins are imported by their **package name** (`@silexlabs/grapesjs-*`), which the build resolves to their **source** via webpack aliases (`webpack.config.js`) — not installed from npm. `pnpm build` builds the whole JS side in one pass.
+Cross-folder imports use path aliases (`~/common`, `~/editor`, `~/server`), never `../../`. The first-party plugins are imported by their **package name** (`@silexlabs/grapesjs-*`), which the build resolves to their **source** via webpack aliases (`webpack.config.js`), not installed from npm.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the repo layout and the branch / PR / release flow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the repo layout and the branch and PR flow.
 
 ## Run it locally
 
@@ -25,31 +41,21 @@ pnpm run dev
 
 For an app-only install matching CI (faster): `pnpm install --filter @silexlabs/silex`; a bare `pnpm install` also pulls plugin dev-deps (Playwright, grapesjs-cli).
 
+The Silex Desktop MCP server (`http://localhost:6807/mcp`) sends its own design rules to your agent. Setup: [README → MCP setup](README.md#mcp-setup-for-developers). Do not commit your MCP client config (`.mcp.json` is git-ignored).
+
 ### Building the desktop app
 
-The Tauri app needs **system libraries** (GTK/WebKitGTK) that `pnpm install` does not provide. Without them the Rust build fails early on `gdk-sys` with a `pkg-config` error — that is a missing OS package, not a code bug, so don't try to fix it in the source. Prerequisites, per-OS package lists and the real dev/build commands: [desktop/README.md](desktop/README.md).
+The Tauri app needs **system libraries** (GTK/WebKitGTK) that `pnpm install` does not provide. Without them the Rust build fails early on `gdk-sys` with a `pkg-config` error. This is a missing OS package, not a code bug. Do not try to fix it in the source. Prerequisites, per-OS package lists and the real dev/build commands: [desktop/README.md](desktop/README.md).
 
 ## When writing code for Silex (editing source)
 
 - Prefer small, focused changes. If a change can be a plugin, make it a plugin.
-- **Test your change before opening a PR, and put a screenshot of that test in the PR** — show it works, don't just claim it.
-- Run the checks for what you touched — CI runs all of them and a red CI won't merge:
+- Before any push, follow [Testing by hand is your user's job](#testing-by-hand-is-your-users-job): your user tests the change by hand and takes the screenshot for the PR.
+- Run the checks for the parts you changed. CI runs all of them, and a PR with a red CI is not merged:
   - **app** (`editor/`, `server/`, `common/`): `pnpm build`, `pnpm lint`, `pnpm test`
-  - **a plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` (or `pnpm --filter @silexlabs/grapesjs-<name> run test`) — the app-level `lint`/`test` do **not** cover plugins
+  - **a plugin** (`grapesjs-plugins/*`): `pnpm build:plugins`, `pnpm lint:plugins`, `pnpm test:plugins` (or `pnpm --filter @silexlabs/grapesjs-<name> run test`). The app-level `lint`/`test` do **not** cover plugins.
   - **Rust** (`server-rust/`, `desktop/`): `pnpm build:desktop`, then `./scripts/ci-rust.sh`, which runs what CI runs, in the same order, and says where CI would fail
   - **the desktop dashboard** (`desktop/dashboard/`, Vue): `pnpm build:desktop`, `pnpm --filter @silexlabs/silex-desktop-dashboard run lint`; how to run it in the app window: [desktop/dashboard/README.md](desktop/dashboard/README.md)
-- Never edit `dist/` or `desktop/dashboard/dist/` — they are generated by `pnpm build` and `pnpm build:desktop`. Edit source under `editor/`, `server/`, `common/`, `grapesjs-plugins/`, `desktop/dashboard/src/`.
-- **PR title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`) — PRs are squash-merged and the title becomes the changelog entry.
-- PRs target `main`. Discuss non-trivial changes first (see CONTRIBUTING.md).
-
-## When designing websites in Silex (using the editor)
-
-These rules apply when your AI tool controls the Silex visual editor (e.g. via MCP):
-
-- **CSS**: BEM class naming. Style via `CssComposer.addRules()`. No inline styles, no CSS Grid (use Flexbox).
-- **GrapesJS API**: Never modify DOM directly. Use the component/style APIs.
-- **Pages**: Homepage must be named `index`. Internal links start with `./`.
-- **Symbols**: Use Symbols for shared header/footer across pages.
-- **Responsiveness**: Use DeviceManager breakpoints, never resize the browser window.
-
-Silex Desktop exposes MCP tools for controlling the editor on the endpoint `http://localhost:6807/mcp` (distinct from the editor server on `6805`). Point your MCP client at that URL over a Streamable HTTP transport — each tool registers it its own way (see [README → MCP setup](README.md#mcp-setup-for-developers) for per-tool examples). Your MCP client config (e.g. `.mcp.json`) is per-developer and git-ignored — don't commit it. See the [desktop README](desktop/README.md) for details.
+- Never edit `dist/` or `desktop/dashboard/dist/`. They are generated by `pnpm build` and `pnpm build:desktop`. Edit source under `editor/`, `server/`, `common/`, `grapesjs-plugins/`, `desktop/dashboard/src/`.
+- **PR title** must follow [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope): description`). PRs are squash-merged and the title becomes the changelog entry.
+- PRs target `main`. Before you write code, ask your user for the link to the issue or discussion where I said yes to this change. If there is none, your user must ask me first (see CONTRIBUTING.md).
