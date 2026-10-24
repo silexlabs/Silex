@@ -100,6 +100,12 @@ export class PublicationManager {
   set settings(newSettings: PublicationSettings) {
     this._settings = newSettings
     this.dialog && (this.dialog.settings = newSettings)
+    // Hide the top bar's Sign out button when the connector has no logout
+    // to offer (e.g. Silex Desktop's FsStorage), like the publication
+    // dialog already does (#1932)
+    const btn = this.editor.Panels?.getButton('dash', 'logout-button')
+    const el = btn?.view?.el as HTMLElement | undefined
+    if (el) el.style.display = newSettings.connector?.disableLogout ? 'none' : ''
   }
   /**
    * Plugin options
