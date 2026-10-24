@@ -61,6 +61,7 @@ import parserPostCSS from 'grapesjs-parser-postcss'
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
 import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
+import { bindLogoutButtonVisibility } from './logout-button'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
@@ -352,7 +353,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             },
           }, {
             id: 'logout-button',
-            className: 'page-panel-btn fa fa-fw fa-sign-out',
+            className: 'page-panel-btn fa fa-fw fa-sign-out gjs-hidden',
             attributes: { title: 'Sign out' },
             command: cmdLogout,
           },
@@ -505,8 +506,10 @@ export async function initEditor(config: EditorConfig) {
       reject(e)
     }
 
+    bindLogoutButtonVisibility(editor)
+
     // customize the editor
-    ['text']
+    ;['text']
       .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
     ;['image', 'video']
       .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
