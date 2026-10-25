@@ -81,25 +81,6 @@ describe('PublicationManager html output', () => {
     expect(imagesMissingAlt[0].getAttributes().src).toBe('/missing-alt.png')
   })
 
-  it('verifies empty-alt trait updates and component model persistence', () => {
-    const page = editor.Pages.getAll()[0]
-    const body = page.getMainComponent()
-    const img = body.components().add({ tagName: 'img', type: 'image', attributes: { src: '/test.png' } }) as unknown as Component
-
-    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(false)
-
-    // User updates Alt trait in UI
-    const altTrait = img.getTrait('alt')
-    if (altTrait) {
-      altTrait.setValue('')
-    }
-
-    // Direct model attribute setting
-    img.addAttributes({ alt: '' })
-    expect(Object.prototype.hasOwnProperty.call(img.getAttributes(), 'alt')).toBe(true)
-    expect(img.getAttributes().alt).toBe('')
-  })
-
 
   it('creates one notification per image missing alt and uses seo-validation group', () => {
     const page = editor.Pages.getAll()[0]

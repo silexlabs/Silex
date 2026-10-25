@@ -40,7 +40,7 @@ export class PublicationError extends Error {
   }
 }
 
-const PROJECT_ROOT = (typeof require !== 'undefined' && require.main) ? require.main.path : process.cwd()
+const PROJECT_ROOT = require.main ? require.main.path : process.cwd()
 
 // Limit parallel storage reads so we don't overwhelm the upstream API
 // (GitLab returns 5xx for the same project under high concurrent load)
@@ -88,25 +88,6 @@ export async function getStorageConnector(session: any, config: ServerConfig, co
   }
 
   return storageConnector as StorageConnector
-}
-
-// Normalize asset src sent from editor to resolve filename relative to assets folder
-export function assetNameOf(src: string): string {
-  let clean = src.replace(/\\/g, '/')
-  const apiMarker = '/api/website/assets/'
-  const pos = clean.indexOf(apiMarker)
-  if (pos !== -1) {
-    clean = clean.slice(pos + apiMarker.length)
-  }
-  clean = clean.split('?')[0]
-  clean = clean.replace(/^\/?assets\//, '')
-  clean = clean.replace(/^\/+/, '')
-  try {
-    clean = decodeURIComponent(clean)
-  } catch {
-    // ignore
-  }
-  return clean
 }
 
 export default function (config: ServerConfig): Router {
@@ -162,7 +143,7 @@ export default function (config: ServerConfig): Router {
         const fileWithContent = file as ClientSideFileWithContent
         const fileWithSrc = file as ClientSideFileWithSrc
         if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
-        const content = fileWithContent.content ?? await storage.readAsset(session, websiteId, assetNameOf(fileWithSrc.src))
+        const content = fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src)
         return {
           // Destination
           path: file.permalink ?? file.path,

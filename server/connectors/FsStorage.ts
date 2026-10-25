@@ -300,7 +300,6 @@ export class FsStorage implements StorageConnector<FsSession> {
     for (const fileStatus of filesStatuses) {
       const {file} = fileStatus
       const path = underPath(this.options.path, id, assetsFolder, file.path)
-      await fs.mkdir(dirname(path), { recursive: true })
       if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
@@ -350,8 +349,7 @@ export class FsStorage implements StorageConnector<FsSession> {
 
   async readAsset(session: object, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const cleanFileName = fileName.replace(/\\/g, '/').replace(/^\/?(assets\/)?/, '').replace(/^\/+/, '')
-    const path = underPath(this.options.path, id, this.options.assetsFolder, cleanFileName)
+    const path = underPath(this.options.path, id, this.options.assetsFolder, fileName)
     return await fs.readFile(path)
   }
 }
