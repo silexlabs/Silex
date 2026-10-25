@@ -32,8 +32,14 @@ export default (editor: Editor) => {
   }
   editor.Commands.add(cmdPromptAddSymbol, {
     run: (_) => {
+      if (!editor.getSelected()) {
+        return
+      }
       const label = prompt('Label', getNext('Symbol '))
-      editor.runCommand('symbols:add', { label })
+      if (!label || !label.trim()) {
+        return
+      }
+      editor.runCommand('symbols:add', { label: label.trim() })
     }
   })
 }
