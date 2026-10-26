@@ -42,7 +42,7 @@ import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
 import bodyRemapPlugin from './body-remap'
 import websiteInfoPlugin from './website-info'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
-import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
+import loginDialogPlugin, { LoginDialogOptions } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
 import imgPlugin from './img'
@@ -61,7 +61,7 @@ import parserPostCSS from 'grapesjs-parser-postcss'
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
 import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
-import { bindLogoutButtonVisibility } from './logout-button'
+import { createLogoutButton } from './logout-button'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
@@ -83,6 +83,7 @@ import { ClientSideFileWithContent, PublicationData } from '~/common/types'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
+  {name: './logout-button', value: createLogoutButton},
   {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
   {name: './website-info', value: websiteInfoPlugin},
@@ -351,11 +352,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             command: () => {
               window.open('https://docs.silex.me/', '_blank')
             },
-          }, {
-            id: 'logout-button',
-            className: 'page-panel-btn fa fa-fw fa-sign-out gjs-hidden',
-            attributes: { title: 'Sign out' },
-            command: cmdLogout,
           },
         ],
       },
@@ -505,8 +501,6 @@ export async function initEditor(config: EditorConfig) {
       console.error('Error initializing GrapesJs with plugins:', plugins, e)
       reject(e)
     }
-
-    bindLogoutButtonVisibility(editor)
 
     // customize the editor
     ;['text']

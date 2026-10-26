@@ -1,20 +1,26 @@
 import { Editor } from 'grapesjs'
 import { ConnectorUser } from '~/common/types'
+import { cmdLogout } from './LoginDialog'
 import { PROJECT_BAR_PANEL_ID } from './project-bar'
 
-export function bindLogoutButtonVisibility(editor: Editor): void {
-  const button = editor.Panels.getButton(PROJECT_BAR_PANEL_ID, 'logout-button')
-  if (!button) return
+export function createLogoutButton(editor: Editor) {
+  const className = 'page-panel-btn fa fa-fw fa-sign-out'
+  const button = editor.Panels.addButton(PROJECT_BAR_PANEL_ID, {
+    id: 'logout-button',
+    className: `${className} gjs-hidden`,
+    attributes: { title: 'Sign out' },
+    command: cmdLogout,
+  })
+  if (!button) return button
 
   const model = editor.getModel()
   const updateVisibility = () => {
     const user = model.get('user') as ConnectorUser | null | undefined
-    const className: string = button.get('className') || ''
-    const classes = className.split(/\s+/).filter(name => name !== 'gjs-hidden')
-    if (!user?.storage || user.storage.disableLogout) classes.push('gjs-hidden')
-    button.set('className', classes.join(' '))
+    const hidden = !user?.storage || user.storage.disableLogout
+    button.set('className', className + (hidden ? ' gjs-hidden' : ''))
   }
 
   model.on('change:user', updateVisibility)
   updateVisibility()
+  return button
 }
