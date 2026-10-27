@@ -263,8 +263,10 @@ export default (editor: Editor, opts) => {
       name: 'Overflow',
       property: 'overflow',
       type: 'composite',
+      detached: true,
       properties: [{
         name: 'Overflow X',
+        property: 'overflow-x',
         type: 'select',
         defaults: '',
         options: [
@@ -279,6 +281,7 @@ export default (editor: Editor, opts) => {
         ],
       }, {
         name: 'Overflow Y',
+        property: 'overflow-y',
         type: 'select',
         defaults: '',
         options: [
@@ -300,6 +303,7 @@ export default (editor: Editor, opts) => {
       name: 'Margin',
       property: 'margin',
       type: 'composite',
+      detached: true,
       defaults: '',
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
@@ -338,6 +342,7 @@ export default (editor: Editor, opts) => {
       name: 'Padding',
       property: 'padding',
       type: 'composite',
+      detached: true,
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
@@ -496,6 +501,7 @@ export default (editor: Editor, opts) => {
       name: 'Text decoration',
       property: 'text-decoration',
       type: 'composite',
+      detached: true,
       properties: [{
         name: 'Text decoration line',
         property: 'text-decoration-line',
@@ -606,6 +612,7 @@ export default (editor: Editor, opts) => {
       name: 'Border radius',
       property: 'border-radius',
       type: 'composite',
+      detached: true,
       defaults: '',
       fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
@@ -644,6 +651,7 @@ export default (editor: Editor, opts) => {
       name: 'Outline',
       property: 'outline',
       type: 'composite',
+      detached: true,
       properties: [{
         name: 'Outline width',
         property: 'outline-width',
@@ -942,6 +950,7 @@ export default (editor: Editor, opts) => {
       name: 'Column rule',
       property: 'column-rule',
       type: 'composite',
+      detached: true,
       properties: [{
         name: 'Column rule width',
         property: 'column-rule-width',
@@ -1006,6 +1015,14 @@ export default (editor: Editor, opts) => {
       name: 'Scroll Snap Type',
       property: 'scroll-snap-type',
       type: 'composite',
+      // Css needs the direction before the mode, and `none` takes no mode: anything
+      // else is invalid and the browser drops the declaration
+      toStyle: (values, { name }) => {
+        const direction = values['scroll-snap-type-direction']
+        const mode = values['scroll-snap-type-mode']
+        if (!direction) return { [name]: '' }
+        return { [name]: direction === 'none' || !mode ? direction : `${direction} ${mode}` }
+      },
       properties: [{
         name: 'Direction',
         property: 'scroll-snap-type-direction',
