@@ -11,7 +11,6 @@ export function createLogoutButton(editor: Editor) {
     attributes: { title: 'Sign out' },
     command: cmdLogout,
   })
-  if (!button) return button
 
   const model = editor.getModel()
   const updateVisibility = () => {
@@ -21,6 +20,5 @@ export function createLogoutButton(editor: Editor) {
   }
 
   model.on('change:user', updateVisibility)
-  updateVisibility()
   return button
 }
