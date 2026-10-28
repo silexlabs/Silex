@@ -49,6 +49,9 @@ describe('element tool', () => {
     expect(img.getAttributes().title).toBeUndefined()
     expect(() => editor.runCommand('element:update', { element_id, remove_class: 'photo missing', add_class: 'big' })).toThrow(/missing/)
     expect(img.getClasses()).toEqual(['photo'])
+    expect(() => editor.runCommand('element:update', { element_id, attributes: { class: 'big', alt: 'x' } })).toThrow(/add_class/)
+    expect(img.getClasses()).toEqual(['photo'])
+    expect(img.getAttributes()).toMatchObject({ alt: 'A red car' })
   })
 
   it('selects one created element, and refuses HTML where it can not go', () => {

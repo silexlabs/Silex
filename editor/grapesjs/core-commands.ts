@@ -179,6 +179,10 @@ export default (editor: Editor) => {
     if (attributes !== undefined && (typeof attributes !== 'object' || Array.isArray(attributes) || attributes === null)) {
       throw new Error('attributes must be an object, like {"href": "./contact"}. Nothing was changed.')
     }
+    const reserved = Object.keys(attributes ?? {}).filter(name => ['class', 'style', 'id'].includes(name.toLowerCase()))
+    if (reserved.length) {
+      throw new Error(`attributes can not set ${reserved.join(', ')}: use add_class and remove_class for classes, and style(action:'set') for styles. Nothing was changed.`)
+    }
     if (tag) element.set('tagName', tag)
     if (attributes) {
       const removed = Object.keys(attributes).filter(name => attributes[name] === null)
