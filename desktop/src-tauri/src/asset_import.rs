@@ -232,28 +232,49 @@ mod tests {
         path.to_string_lossy().into_owned()
     }
 
+    fn refusal(path: &str) -> String {
+        read_image(path).err().unwrap_or_default()
+    }
+
     #[test]
-    fn reads_only_images() {
+    fn reads_the_images_of_each_format() {
         let png = write("Logo Final.PNG", b"\x89PNG\r\n\x1a\nrest");
         assert_eq!(read_image(&png).unwrap().name, "logo-final.png");
-        assert!(read_image(&write(
+        for (name, content, mime) in [
+            ("photo.jpg", b"\xFF\xD8\xFFrest".as_slice(), "image/jpeg"),
+            ("anim.gif", b"GIF89arest", "image/gif"),
+            ("pic.webp", b"RIFF\0\0\0\0WEBPrest", "image/webp"),
+            ("pic.avif", b"\0\0\0\x1cftypavifrest", "image/avif"),
+        ] {
+            assert_eq!(
+                read_image(&write(name, content)).unwrap().mime,
+                mime,
+                "{name}"
+            );
+        }
+    }
+
+    #[test]
+    fn says_why_a_file_is_refused() {
+        assert!(refusal(&write(
             "id_ed25519.png",
             b"-----BEGIN OPENSSH PRIVATE KEY-----"
         ))
-        .is_err());
-        assert!(read_image(&write("notes.txt", b"hello")).is_err());
-        assert!(read_image("relative/logo.png").is_err());
-        assert!(read_image(&write(".hidden.png", b"\x89PNG\r\n\x1a\nrest")).is_err());
+        .contains("is not a png image"));
+        assert!(refusal(&write("notes.txt", b"hello")).contains("Only images"));
+        assert!(refusal("relative/logo.png").contains("must be absolute"));
+        assert!(refusal(&write(".hidden.png", b"\x89PNG\r\n\x1a\nrest")).contains("hidden"));
         #[cfg(unix)]
         {
-            let link = std::path::Path::new(&png).with_file_name("link-to-hidden.png");
+            let link =
+                std::path::Path::new(&write("x.png", b"")).with_file_name("link-to-hidden.png");
             let _ = std::fs::remove_file(&link);
             std::os::unix::fs::symlink(write(".hidden.png", b"\x89PNG\r\n\x1a\nrest"), &link)
                 .unwrap();
-            assert!(read_image(&link.to_string_lossy()).is_err());
+            assert!(refusal(&link.to_string_lossy()).contains("hidden"));
         }
         let large = [b"\x89PNG\r\n\x1a\n".as_slice(), &vec![0; 10 * 1024 * 1024]].concat();
-        assert!(read_image(&write("large.png", &large)).is_err());
+        assert!(refusal(&write("large.png", &large)).contains("larger than 10 MB"));
     }
 
     #[test]
