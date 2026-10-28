@@ -82,10 +82,12 @@
   window.__silexMcp = {
     // Named by the ids the tools take, in the order they are chosen
     getSelectionState(editor) {
+      const page = editor.Pages.getSelected();
+      const device = editor.Devices.getSelected();
       const element = editor.getSelected();
       const state = {
-        page: editor.Pages.getSelected()?.id ?? null,
-        breakpoint: editor.Devices.getSelected()?.getName() ?? null,
+        page: page?.id ?? null,
+        breakpoint: device?.getName() ?? null,
         element: element && editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component: element }) : null,
       };
       // A change inside a symbol instance changes it on every page
