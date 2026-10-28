@@ -25,7 +25,7 @@ import { Component, Editor, Page } from 'grapesjs'
 
 const cmdAgentId = 'agent-ids:get'
 const cmdCreated = 'agent-ids:created'
-const cmdFind = 'agent-ids:find'
+const cmdElements = 'agent-ids:elements'
 
 const GENERATION_KEY = 'silex-agent-ids-generation'
 // Two letters at most: a..z, then aa..zz
@@ -121,6 +121,25 @@ function describeCreated(editor: Editor, component: Component) {
  * What a creation answers. One element created becomes the selection, so the next
  * call acts on it; several leave the selection where it was
  */
+/**
+ * The element an action works on: the one named by element_id, or the selection
+ */
+export function elementsOf(editor: Editor, id?: string, { several = false } = {}): Component[] {
+  if (id) {
+    const found = findByAgentId(editor, id)
+    if (!found) throw new Error(`No element "${id}" on this page. Use element(action:'list') to see the ids.`)
+    return [found]
+  }
+  const selected = editor.getSelectedAll()
+  if (!selected.length) throw new Error('No element selected: set element_id, or select one with element(action:\'select\').')
+  if (selected.length > 1 && !several) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
+  return selected
+}
+
+export function elementOf(editor: Editor, id?: string): Component {
+  return elementsOf(editor, id)[0]
+}
+
 export function created(editor: Editor, components: Component[], parent: Component, { select = true } = {}) {
   const elements = components.filter(component => component.get('type') !== 'textnode')
   if (select && elements.length === 1) editor.select(elements[0])
@@ -133,11 +152,7 @@ export function created(editor: Editor, components: Component[], parent: Compone
 export default (editor: Editor) => {
   // For the plugins published on their own, and the desktop selection echo
   editor.Commands.add(cmdAgentId, (_ed, _sender, { component }: { component: Component }) => agentId(editor, component))
-  editor.Commands.add(cmdFind, (_ed, _sender, { id }: { id: string }) => {
-    const component = findByAgentId(editor, id)
-    if (!component) throw new Error(`No element "${id}" on this page. Use element(action:'list') to see the ids.`)
-    return component
-  })
+  editor.Commands.add(cmdElements, (_ed, _sender, { element_id, several }: { element_id?: string, several?: boolean }) => elementsOf(editor, element_id, { several }))
   editor.Commands.add(cmdCreated, (_ed, _sender, { components }: { components: Component[] }) => {
     const parent = components[0]?.parent()
     if (!parent) throw new Error(`${cmdCreated} needs created components that are in the page`)

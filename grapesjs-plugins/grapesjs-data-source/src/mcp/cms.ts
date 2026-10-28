@@ -267,15 +267,10 @@ function search(opts: CmsOptions): string {
 
 
 function targetElement(editor: Editor, id: string | undefined): Component {
-  if (id) {
-    return editor.Commands.has('agent-ids:find')
-      ? editor.runCommand('agent-ids:find', { id })
-      : editor.Components.allById()[id] ?? (() => { throw new Error(`No element "${id}".`) })()
-  }
-  const all = editor.getSelectedAll()
-  if (all.length === 0) throw new Error('No element selected: set element_id, or select one with element(action:\'select\').')
-  if (all.length > 1) throw new Error('Several elements are selected. Select only one with element(action:\'select\').')
-  return all[0]
+  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id })[0]
+  const found = id ? editor.Components.allById()[id] : editor.getSelected()
+  if (!found) throw new Error(id ? `No element "${id}".` : 'No element selected: set element_id.')
+  return found
 }
 
 function loopAround(component: Component, includeSelf: boolean): Component | null {

@@ -23,14 +23,11 @@ function selectedElements(editor: Editor): Component[] {
   return components
 }
 
-// The element named by the id the agent was given, or the selected ones
 function elementsOf(editor: Editor, id?: string): Component[] {
-  if (!id) return selectedElements(editor)
-  const found = editor.Commands.has('agent-ids:find')
-    ? editor.runCommand('agent-ids:find', { id })
-    : editor.Components.allById()[id]
-  if (!found) throw new Error(`No element "${id}". ${NOTHING_CHANGED}`)
-  return [found]
+  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id, several: true })
+  const found = id ? editor.Components.allById()[id] : undefined
+  if (id && !found) throw new Error(`No element "${id}". ${NOTHING_CHANGED}`)
+  return found ? [found] : selectedElements(editor)
 }
 
 interface StyleOptions {

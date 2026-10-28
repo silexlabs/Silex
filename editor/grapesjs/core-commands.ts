@@ -16,7 +16,7 @@
  */
 
 import { Asset, Component, Device, Editor } from 'grapesjs'
-import { agentId, created, findByAgentId } from './agent-ids'
+import { agentId, created, elementOf } from './agent-ids'
 
 /**
  * The commands of the element, asset and breakpoint tools of the agents.
@@ -37,19 +37,6 @@ function place(editor: Editor, target: Component, position = 'inside'): { parent
   const parent = target.parent()
   if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
   return { parent, at: target.index() + (position === 'after' ? 1 : 0) }
-}
-
-// The element an action works on: the one named, or the selected one
-function elementOf(editor: Editor, id?: string): Component {
-  if (id) {
-    const found = findByAgentId(editor, id)
-    if (!found) throw new Error(`No element "${id}" on this page. Use element(action:'list') to see the ids.`)
-    return found
-  }
-  const selected = editor.getSelectedAll()
-  if (!selected.length) throw new Error('No element selected: set element_id, or select one with element(action:\'select\').')
-  if (selected.length > 1) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
-  return selected[0]
 }
 
 interface ElementOptions {

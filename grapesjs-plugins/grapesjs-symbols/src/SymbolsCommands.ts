@@ -100,21 +100,14 @@ export function _unlinkSymbolInstance(
 
 const POSITIONS = ['inside', 'before', 'after']
 
-// The element an agent names by the id it was given, or the selected one
 function elementOf(editor: Editor, id?: string): Component | undefined {
-  if (!id) {
-    const selected = editor.getSelectedAll()
-    if (selected.length > 1) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
-    return selected[0]
-  }
-  const found = editor.Commands.has('agent-ids:find')
-    ? editor.runCommand('agent-ids:find', { id })
-    : editor.Components.allById()[id]
-  if (!found) throw new Error(`No element "${id}". Nothing was changed.`)
-  return found
+  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id })[0]
+  if (id) return editor.Components.allById()[id] ?? (() => { throw new Error(`No element "${id}". Nothing was changed.`) })()
+  const selected = editor.getSelectedAll()
+  if (selected.length > 1) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
+  return selected[0]
 }
 
-// From an agent: the symbol by its id, placed relative to target_id or the selected element
 function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside', targetId?: string) {
   const symbols = editor.Components.getSymbols()
   const symbol = symbols.find(s => s.getId() === symbolId)
