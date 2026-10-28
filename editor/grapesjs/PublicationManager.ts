@@ -19,7 +19,7 @@ import { getPageSlug } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Component, Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
-import { getUser, logout, publicationStatus, publish } from '../api'
+import { connectorList, getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
@@ -41,6 +41,9 @@ import { displayedToStored, isExternalUrl } from '../assetUrl'
 export const cmdPublicationStart = 'publish'
 export const cmdPublicationLogin = 'publish-login'
 export const cmdPublicationLogout = 'publish-logout'
+export const cmdPublicationAgent = 'publish-for-agent'
+// Under the 45 s the desktop gives an editor command that goes online
+const AGENT_WAIT_MS = 35_000
 
 // Types
 export type PublishableEditor = Editor & {
@@ -141,16 +144,17 @@ export class PublicationManager {
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
+    editor.Commands.add(cmdPublicationAgent, () => this.publishForAgent())
     editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, connector: ConnectorData) => this.goLogin(connector))
     editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
     // Register AI capabilities
     editor.on('ai-capabilities:ready', (addCapability) => {
       addCapability({
-        id: cmdPublicationStart,
-        command: cmdPublicationStart,
-        description: 'Publish the website',
+        tool: 'website',
+        action: 'publish',
+        command: cmdPublicationAgent,
+        description: 'publish the open website.',
         openWorld: true,
-        tags: ['publication'],
       })
     })
     // Add the publication dialog to the editor
@@ -292,6 +296,33 @@ export class PublicationManager {
     this.editor.trigger(ClientEvent.PUBLISH_DATA, { data, preventDefault, publicationManager: this })
     // Return the data
     return data
+  }
+
+  /**
+   * The publication dialog says how a publication ended, an agent gets it in the answer.
+   * Without the dialog, nobody chose a hosting yet: the one that is connected is used
+   */
+  async publishForAgent(): Promise<string> {
+    if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('A publication is already in progress, wait for it to end.')
+    if (!this.settings.connector?.connectorId) {
+      const connected = (await connectorList({ type: ConnectorType.HOSTING })).filter(connector => connector.isLoggedIn)
+      if (connected.length !== 1) {
+        throw new Error(connected.length
+          ? `Several hostings are connected (${connected.map(c => c.displayName).join(', ')}): choose one in the Publish dialog of Silex.`
+          : 'No hosting is connected: choose one in the Publish dialog of Silex.')
+      }
+      this.settings = { ...this.settings, connector: connected[0] }
+    }
+    const ended = new Promise<{ success: boolean, message: string } | null>(resolve => {
+      this.editor.once(ClientEvent.PUBLISH_END, resolve)
+      // A forge can take minutes to build the website, the agent hears back before
+      setTimeout(() => resolve(null), AGENT_WAIT_MS)
+    })
+    await this.startPublication()
+    const end = await ended
+    if (!end) return `Publication started, the hosting is still building the website${this.job?.url ? ` at ${this.job.url}` : ''}.`
+    if (!end.success) throw new Error(`The website was not published: ${end.message || 'the hosting gave no reason'}.`)
+    return this.job?.url ? `Published to ${this.job.url}` : 'Published.'
   }
 
   /**

@@ -18,6 +18,9 @@
 import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
+import { getPageSlug } from '~/common/page'
+import { getSettingsOf, setSettingsOf, SETTINGS_SCHEMA } from './settings'
+import { pageOf } from './pages'
 
 const pluginName = 'page-panel'
 let open
@@ -32,17 +35,49 @@ export const cmdSelectFirstPage = 'pages:select-first'
 export const cmdListPages = 'pages:list'
 export const cmdSelectPage = 'pages:select'
 export const cmdDeletePage = 'pages:delete'
-export const cmdRenamePage = 'pages:rename'
+export const cmdGetPage = 'pages:get'
+export const cmdUpdatePage = 'pages:update'
+
+interface PageOptions {
+  page_id?: string
+  name?: string
+}
+
+// The CMS keeps the collection and the permalink as expressions: the page tool shows paths
+const CMS_SETTINGS = /^eleventy(PageData|Permalink)$/
+
+function cmsBindingsOf(editor: Editor, page: Page): Record<string, string> {
+  return editor.Commands.has('pages:cms-bindings') ? editor.runCommand('pages:cms-bindings', { page }) : {}
+}
+
+function pick(object: Record<string, string>, key: string): Record<string, string> {
+  return object[key] ? { [key]: object[key] } : {}
+}
+
 
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
 }
-function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }) {
+function assertNameFree(editor: Editor, name: string, renamed?: Page) {
+  if (!name) throw new Error('Set a name, it can not be empty. Nothing was changed.')
+  if (!getPageSlug(name).replace(/-/g, '')) throw new Error(`Name "${name}" gives an empty address: use letters or digits. Nothing was changed.`)
+  const taken = editor.Pages.getAll().find(p => p !== renamed && getPageSlug(p.getName()) === getPageSlug(name))
+  if (taken) {
+    throw new Error(`Name "${name}" gives the same address as page "${taken.getName() || '(home, no name)'}". Choose another name. Nothing was changed.`)
+  }
+}
+
+function created(page: Page) {
+  return { created: [{ id: page.id, name: page.getName() }] }
+}
+
+function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }, name?: string) {
+  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
   const newPageName = config.newPageName || 'New page'
-  let pageName = newPageName
+  let pageName = name || newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
@@ -51,15 +86,17 @@ function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDi
   // Select the new page
   editor.Pages.select(page)
   // Open page settings to edit the name
-  editor.runCommand(config.cmdOpenNewPageDialog, {page})
+  if (name === undefined) editor.runCommand(config.cmdOpenNewPageDialog, {page})
+  return created(page!)
 }
 
-function clonePage(editor: Editor, page: Page) {
+function clonePage(editor: Editor, page: Page, name?: string) {
+  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
   const newPageName = (page.getName() || 'main') + ' copy'
-  let pageName = newPageName
+  let pageName = name || newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
@@ -86,6 +123,7 @@ function clonePage(editor: Editor, page: Page) {
 
   // Select the new page
   editor.Pages.select(newPage)
+  return created(newPage!)
 }
 
 function removePage(editor, page) {
@@ -315,9 +353,9 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     // document.addEventListener('mousedown', close)
 
     // add useful commands
-    editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
+    editor.Commands.add(cmdAddPage, (_editor: Editor, _sender: any, options: { name?: string } = {}) => addPage(editor, opts, options.name))
     editor.Commands.add(cmdRemovePage, () => removePageWithConfirm(editor, editor.Pages.getSelected()))
-    editor.Commands.add(cmdClonePage, () => clonePage(editor, editor.Pages.getSelected()))
+    editor.Commands.add(cmdClonePage, (_editor: Editor, _sender: any, options: PageOptions = {}) => clonePage(editor, pageOf(editor, options.page_id), options.name))
     editor.Commands.add(cmdSelectNextPage, () => selectNextPage(editor))
     editor.Commands.add(cmdSelectPrevPage, () => selectPrevPage(editor))
     editor.Commands.add(cmdSelectFirstPage, () => selectPage(editor, editor.Pages.getAll()[0]))
@@ -326,99 +364,108 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
         id: p.id,
         name: p.getName(),
         selected: editor.Pages.getSelected() === p,
+        ...pick(cmsBindingsOf(editor, p), 'collection'),
       }))
     })
-    editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: any = {}) => {
-      const { name, id } = options
-      if (!name && !id) throw new Error('Required: name or id. Use pages_list to see all pages.')
-      const page = id
-        ? editor.Pages.get(id)
-        : editor.Pages.getAll().find((p: Page) => p.getName() === name)
-      if (!page) throw new Error(`Page not found: "${name || id}". Use pages_list to see all pages.`)
-      selectPage(editor, page)
+    editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
+      if (!options.page_id) throw new Error('Required: page_id. Use page(action:\'list\') to see all pages.')
+      selectPage(editor, pageOf(editor, options.page_id))
     })
-
-    editor.Commands.add(cmdDeletePage, (_editor: Editor, _sender: any, options: any = {}) => {
-      const { name, id } = options
-      const page = name || id
-        ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
-        : editor.Pages.getSelected()
-      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages_list to see all pages.`)
+    editor.Commands.add(cmdDeletePage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
+      const page = pageOf(editor, options.page_id)
       if (editor.Pages.getAll().length === 1) throw new Error('Cannot delete the only page. At least one page must exist.')
       removePage(editor, page)
     })
-    editor.Commands.add(cmdRenamePage, (_editor: Editor, _sender: any, options: any = {}) => {
-      const { name, id, newName } = options
-      if (!newName) throw new Error('Required: newName (the new page name string)')
-      const page = name || id
-        ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
-        : editor.Pages.getSelected()
-      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages_list to see all pages.`)
-      page.set('name', newName)
+    editor.Commands.add(cmdGetPage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
+      const page = pageOf(editor, options.page_id)
+      const settings = Object.fromEntries(Object.entries(getSettingsOf(page)).filter(([key]) => !CMS_SETTINGS.test(key)))
+      return { id: page.id, name: page.getName(), ...settings, ...cmsBindingsOf(editor, page) }
+    })
+    editor.Commands.add(cmdUpdatePage, (_editor: Editor, _sender: any, options: PageOptions & Record<string, unknown> = {}) => {
+      const { page_id, name, ...settings } = options
+      const page = pageOf(editor, page_id)
+      if (name !== undefined) assertNameFree(editor, name, page)
+      if (Object.keys(settings).length) setSettingsOf(editor, page, settings)
+      else if (name === undefined) throw new Error(`Set name or at least one of: ${Object.keys(SETTINGS_SCHEMA).join(', ')}.`)
+      if (name !== undefined) page.set('name', name)
     })
 
-    // Register AI capabilities
-    editor.on('ai-capabilities:ready', (addCapability) => {
+    editor.on('ai-capabilities:ready', (addCapability, describeTool) => {
+      const pageId = { type: 'string', description: 'Page id from list. Default: the selected page' }
+      describeTool('page', 'Pages of the open website. The element tools work on the selected page. The page with no name is the homepage.')
       addCapability({
-        id: cmdListPages,
+        tool: 'page',
+        action: 'list',
         command: cmdListPages,
-        description: 'List all pages',
+        description: 'the pages.',
         readOnly: true,
-        tags: ['pages'],
       })
       addCapability({
-        id: cmdSelectPage,
-        command: cmdSelectPage,
-        description: 'Select a page by name or id',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-            id: { type: 'string' },
-          },
-        },
-        tags: ['pages'],
-      })
-      addCapability({
-        id: cmdAddPage,
+        tool: 'page',
+        action: 'add',
         command: cmdAddPage,
-        description: 'Create a new page',
-        tags: ['pages'],
+        description: 'a new page, which becomes the selected page.',
+        inputSchema: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: { type: 'string', description: 'Unique. The address of the page comes from it' },
+          },
+        },
       })
       addCapability({
-        id: cmdClonePage,
+        tool: 'page',
+        action: 'select',
+        command: cmdSelectPage,
+        description: 'choose the page to work on.',
+        inputSchema: {
+          type: 'object',
+          required: ['page_id'],
+          properties: { page_id: { type: 'string', description: 'Page id from list' } },
+        },
+      })
+      addCapability({
+        tool: 'page',
+        action: 'clone',
         command: cmdClonePage,
-        description: 'Clone the selected page',
-        tags: ['pages'],
+        description: 'a copy of a page, which becomes the selected page.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            page_id: pageId,
+            name: { type: 'string', description: 'Unique. The address of the page comes from it' },
+          },
+        },
       })
       addCapability({
-        id: cmdDeletePage,
+        tool: 'page',
+        action: 'delete',
         command: cmdDeletePage,
-        description: 'Delete a page',
+        description: 'delete a page.',
         destructive: true,
-        inputSchema: {
-          type: 'object',
-          properties: {
-            name: { type: 'string' },
-            id: { type: 'string' },
-          },
-        },
-        tags: ['pages'],
+        inputSchema: { type: 'object', properties: { page_id: pageId } },
       })
       addCapability({
-        id: cmdRenamePage,
-        command: cmdRenamePage,
-        description: 'Rename a page',
+        tool: 'page',
+        action: 'get',
+        command: cmdGetPage,
+        description: 'the name and settings of a page.',
+        readOnly: true,
+        inputSchema: { type: 'object', properties: { page_id: pageId } },
+      })
+      addCapability({
+        tool: 'page',
+        action: 'update',
+        command: cmdUpdatePage,
+        description: 'change the name or settings of a page, the others stay.',
         inputSchema: {
           type: 'object',
-          required: ['newName'],
           properties: {
-            name: { type: 'string' },
-            id: { type: 'string' },
-            newName: { type: 'string' },
+            page_id: pageId,
+            name: { type: 'string', description: 'Unique. The address of the page comes from it' },
+            ...SETTINGS_SCHEMA,
           },
         },
-        tags: ['pages'],
       })
     })
   })

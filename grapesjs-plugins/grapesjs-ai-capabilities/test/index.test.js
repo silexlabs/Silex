@@ -7,6 +7,8 @@ const {
     getAllCapabilities,
     removeCapability,
     hasCapability,
+    getTools,
+    describeTool,
     clearCapabilities,
     PLUGIN_ID,
 } = plugin
@@ -50,148 +52,76 @@ test('PLUGIN_ID is exported', () => {
     assert.strictEqual(PLUGIN_ID, 'grapesjs-ai-capabilities')
 })
 
-test('register and retrieve a capability', () => {
-    const editor = setup()
-    const cap = addCapability({
-        id: 'clear',
-        command: 'core:canvas-clear',
-        description: 'Clear the canvas',
-        tags: ['core'],
-        title: 'Clear',
-        version: '1.0',
-    })
-    assert.strictEqual(cap.id, 'clear')
-    assert.strictEqual(cap.title, 'Clear')
+const cap = (tool, action, extra = {}) => ({ tool, action, command: 'core:canvas-clear', description: `${action} it`, ...extra })
 
-    const get = getCapability('clear')
-    assert.strictEqual(get.description, 'Clear the canvas')
-})
-
-test('addCapability returns a copy', () => {
-    const editor = setup()
-    const cap = addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
-    cap.id = 'mutated'
-    assert.strictEqual(getCapability('a').id, 'a')
-})
-
-test('reject duplicate id', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
-    assert.throws(
-        () => addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' }),
-        /already exists/
-    )
-})
-
-test('replace with option', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'v1' })
-    const cap = addCapability({ id: 'a', command: 'core:canvas-clear', description: 'v2' }, { replace: true })
-    assert.strictEqual(cap.description, 'v2')
-})
-
-test('validation: missing id, command, description', () => {
-    const editor = setup()
-    assert.throws(() => addCapability({ command: 'x', description: 'y' }), /id/)
-    assert.throws(() => addCapability({ id: '', command: 'x', description: 'y' }), /id/)
-    assert.throws(() => addCapability({ id: 'a', description: 'y' }), /command/)
-    assert.throws(() => addCapability({ id: 'a', command: 'x' }), /description/)
-    assert.throws(() => addCapability(null))
-    assert.throws(() => addCapability(editor))
-})
-
-test('validation: tags, inputSchema, outputSchema types', () => {
-    const editor = setup()
-    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', tags: 'bad' }), /tags/)
-    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', inputSchema: 'bad' }), /inputSchema/)
-    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', outputSchema: [1] }), /outputSchema/)
-})
-
-test('prompt alias for description', () => {
-    const editor = setup()
-    const cap = addCapability({ id: 'p', command: 'core:canvas-clear', prompt: 'Do something' })
-    assert.strictEqual(cap.description, 'Do something')
-})
-
-test('optional fields omitted when not provided', () => {
-    const editor = setup()
-    const cap = addCapability({ id: 'min', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(cap.title, undefined)
-    assert.strictEqual(cap.tags, undefined)
-    assert.strictEqual(cap.version, undefined)
-})
-
-test('getCapability returns copy', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
-    const r = getCapability('a')
-    r.id = 'mutated'
-    assert.strictEqual(getCapability('a').id, 'a')
-})
-
-test('getCapability missing throws', () => {
+test('a capability is keyed by its tool and action', () => {
     setup()
-    assert.throws(() => getCapability('nope'), /not found/)
+    addCapability(cap('page', 'list'))
+    assert.strictEqual(getCapability('page.list').command, 'core:canvas-clear')
+    assert.throws(() => addCapability(cap('page', 'list')), /already exists/)
+    assert.throws(() => addCapability(cap('page', 'list:all')), /action/)
+    assert.throws(() => addCapability(cap('Page', 'list')), /tool/)
+    assert.throws(() => addCapability(cap('page', 'add', { inputSchema: { properties: { action: { type: 'string' } } } })), /action/)
 })
 
-test('getAllCapabilities returns all in order', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd1' })
-    addCapability({ id: 'b', command: 'core:canvas-clear', description: 'd2' })
-    const caps = getAllCapabilities()
-    assert.strictEqual(caps.length, 2)
-    assert.strictEqual(caps[0].id, 'a')
-    assert.strictEqual(caps[1].id, 'b')
+test('getTools merges the actions of a family into one flat schema', () => {
+    setup()
+    describeTool('page', 'Pages of the website.')
+    addCapability(cap('page', 'list', { readOnly: true }))
+    addCapability(cap('page', 'select', { inputSchema: { required: ['page_id'], properties: { page_id: { type: 'string', description: 'Page id' } } } }))
+    addCapability(cap('page', 'delete', { destructive: true, inputSchema: { properties: { page_id: { type: 'string', description: 'Page id' } } } }))
+    addCapability(cap('page', 'add', { openWorld: true, inputSchema: { properties: { name: { type: 'string' } } } }))
+    addCapability(cap('device', 'list', { readOnly: true }))
+    const [page, device] = getTools()
+    assert.strictEqual(page.name, 'page')
+    assert.strictEqual(page.description, 'Pages of the website.')
+    assert.deepStrictEqual(page.inputSchema.required, ['action'])
+    assert.deepStrictEqual(page.inputSchema.properties.action.enum, ['list', 'select', 'delete', 'add'])
+    assert.strictEqual(page.inputSchema.properties.action.description, 'list: list it select: select it delete: delete it add: add it')
+    assert.strictEqual(page.inputSchema.properties.page_id.description, 'select/delete: Page id')
+    assert.strictEqual(page.inputSchema.properties.name.description, 'used by add')
+    assert.deepStrictEqual(page.actions.select, { command: 'core:canvas-clear', parameters: ['page_id'], required: ['page_id'], openWorld: false })
+    assert.deepStrictEqual([page.readOnly, page.destructive, page.openWorld], [false, true, true])
+    assert.deepStrictEqual([device.readOnly, device.destructive, device.description], [true, false, 'Actions: list.'])
+    JSON.parse(JSON.stringify(getTools()))
 })
 
-test('getAllCapabilities returns copies and is JSON-serializable', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
-    const caps = getAllCapabilities()
-    caps[0].id = 'mutated'
-    assert.strictEqual(getAllCapabilities()[0].id, 'a')
-    JSON.parse(JSON.stringify(caps))
+test('getTools keeps the description of a parameter that every action reads the same way', () => {
+    setup()
+    const schema = { properties: { family: { type: 'string', description: 'Font family' } } }
+    addCapability(cap('font', 'install', { inputSchema: schema }))
+    addCapability(cap('font', 'remove', { inputSchema: schema }))
+    assert.strictEqual(getTools()[0].inputSchema.properties.family.description, 'Font family')
 })
 
-test('getAllCapabilities filter by tags', () => {
-    const editor = setup()
-    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd', tags: ['ui'] })
-    addCapability({ id: 'b', command: 'core:canvas-clear', description: 'd', tags: ['data'] })
-    assert.strictEqual(getAllCapabilities({ tags: ['ui'] }).length, 1)
-    assert.strictEqual(getAllCapabilities({ tags: ['nope'] }).length, 0)
-    assert.strictEqual(getAllCapabilities({}).length, 2)
+test('a parameter means the same for every action of a tool', () => {
+    setup()
+    addCapability(cap('page', 'get', { inputSchema: { properties: { page: { type: 'string' } } } }))
+    assert.throws(() => addCapability(cap('page', 'set', { inputSchema: { properties: { page: { type: 'object' } } } })), /parameter "page"/)
+    assert.throws(() => addCapability(cap('page', 'add', { inputSchema: { properties: { page: { type: 'string', enum: ['a'] } } } })), /parameter "page"/)
+    addCapability(cap('device', 'set', { inputSchema: { properties: { page: { type: 'object' } } } }))
 })
 
-test('removeCapability', () => {
-    const editor = setup()
-    addCapability({ id: 'x', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(removeCapability('x'), true)
-    assert.strictEqual(removeCapability('x'), false)
-    assert.strictEqual(getAllCapabilities().length, 0)
+test('registry functions and validation', () => {
+    setup()
+    assert.throws(() => addCapability({ tool: 'page', action: 'list', description: 'd' }), /command/)
+    assert.throws(() => addCapability({ tool: 'page', action: 'list', command: 'c' }), /description/)
+    assert.throws(() => addCapability(cap('page', 'list', { inputSchema: 'bad' })), /inputSchema/)
+    assert.strictEqual(addCapability({ tool: 'page', action: 'list', command: 'c', prompt: 'p' }).description, 'p')
+    assert.strictEqual(hasCapability('page.list'), true)
+    assert.strictEqual(removeCapability('page.list'), true)
+    assert.strictEqual(hasCapability('page.list'), false)
+    assert.deepStrictEqual(getTools(), [])
 })
 
-test('hasCapability', () => {
-    const editor = setup()
-    addCapability({ id: 'h', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(hasCapability('h'), true)
-    assert.strictEqual(hasCapability('nope'), false)
-})
-
-test('late-binding warns but succeeds', () => {
-    const editor = setup()
-    const cap = addCapability({ id: 'late', command: 'future:cmd', description: 'd' })
-    assert.strictEqual(cap.id, 'late')
-})
-
-test('triggers ai-capabilities:ready on load with addCapability', () => {
+test('triggers ai-capabilities:ready on load with addCapability and describeTool', () => {
     const editor = setup()
     let received = null
-    editor.on('ai-capabilities:ready', (fn) => { received = fn })
+    editor.on('ai-capabilities:ready', (add, describe) => { received = { add, describe } })
     editor.trigger('load')
-    assert.strictEqual(typeof received, 'function')
-    const cap = received({ id: 'via-event', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(cap.id, 'via-event')
-    assert.strictEqual(getCapability('via-event').id, 'via-event')
+    received.add(cap('page', 'list'))
+    received.describe('page', 'Pages')
+    assert.strictEqual(getTools()[0].description, 'Pages')
 })
 
 console.log(`\n${passed}/${total} passed, ${total - passed} failed`)

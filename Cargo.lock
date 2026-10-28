@@ -3809,6 +3809,7 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
+ "mime_guess",
  "native-tls",
  "percent-encoding",
  "pin-project-lite",
@@ -4610,11 +4611,11 @@ name = "silex-desktop"
 version = "0.1.0"
 dependencies = [
  "axum",
- "base64 0.23.1",
  "dirs",
  "git2",
  "libc",
  "open",
+ "quick-xml",
  "reqwest",
  "rmcp",
  "rust-embed",

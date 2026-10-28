@@ -15,296 +15,294 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
+import { Asset, Component, Device, Editor } from 'grapesjs'
+import { agentId, created, elementOf } from './agent-ids'
 
 /**
- * Core GrapesJS commands for blocks, components, styles and classes.
- * Registered as AI capabilities via grapesjs-ai-capabilities.
+ * The commands of the element, asset and breakpoint tools of the agents.
  */
 
-function findComponentById(editor: Editor, id: string) {
-  const all: any[] = []
-  const collect = (c) => { all.push(c); c.components().forEach(collect) }
-  collect(editor.getWrapper())
-  return all.find(c => c.getId() === id)
+const POSITIONS = ['inside', 'before', 'after']
+const POSITION_SCHEMA = { type: 'string', enum: POSITIONS, description: 'Default: inside, as last child' }
+
+function describe(editor: Editor, component: Component): string {
+  const classes = component.getClasses().join(' ')
+  return `"${agentId(editor, component)}" <${component.get('tagName')}${classes ? ` class="${classes}"` : ''}>`
 }
 
+function place(editor: Editor, target: Component, position = 'inside'): { parent: Component, at?: number } {
+  if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
+  if (position === 'inside') return { parent: target }
+  const parent = target.parent()
+  if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
+  return { parent, at: target.index() + (position === 'after' ? 1 : 0) }
+}
+
+interface ElementOptions {
+  element_id?: string
+  target_id?: string
+  position?: string
+  html?: string
+  tag?: string
+  attributes?: Record<string, unknown>
+  add_class?: string
+  remove_class?: string
+}
+
+const classNames = (value: string) => value.split(/\s+/).filter(Boolean)
+
+// Long values (a data URI, a long style) would fill the answer
+const MAX_VALUE = 60
+
+function attributeValue(value: unknown): string {
+  const text = String(value)
+  const shown = text.startsWith('data:') ? `${text.slice(0, text.indexOf(',') + 1)}…` : text.length > MAX_VALUE ? `${text.slice(0, MAX_VALUE)}…` : text
+  return shown.replace(/"/g, '&quot;')
+}
+
+const ID_REFERENCES = ['for', 'form', 'list', 'headers', 'popovertarget', 'aria-labelledby', 'aria-describedby', 'aria-controls',
+  'aria-owns', 'aria-activedescendant', 'aria-details', 'aria-errormessage', 'aria-flowto']
+
+function referencedIds(root: Component): Set<string> {
+  const ids = new Set<string>()
+  const visit = (component: Component) => {
+    for (const [name, value] of Object.entries(component.get('attributes') ?? {})) {
+      if (typeof value !== 'string') continue
+      if (ID_REFERENCES.includes(name)) value.split(/\s+/).forEach(id => ids.add(id))
+      if ((name === 'href' || name === 'usemap') && value.includes('#')) ids.add(value.slice(value.indexOf('#') + 1))
+    }
+    component.components().forEach(visit)
+  }
+  visit(root)
+  return ids
+}
+
+/**
+ * Tag, classes and attributes, enough to find an element by its structure. GrapesJS
+ * stores ids of its own on symbols and styled elements: only those used are shown,
+ * they would be taken for element ids
+ */
+function outline(component: Component, referenced: Set<string>): string {
+  const classes = component.getClasses().join(' ')
+  const src = component.get('src')
+  const attributes = Object.entries({ ...component.get('attributes'), ...(src ? { src } : {}) })
+    .filter(([name, value]) => name !== 'class' && (name !== 'id' || referenced.has(String(value))))
+    .map(([name, value]) => value === '' || value === true ? ` ${name}` : ` ${name}="${attributeValue(value)}"`)
+    .join('')
+  return `${component.get('tagName') || 'div'}${classes ? ` class="${attributeValue(classes)}"` : ''}${attributes}`
+}
+
+// Breakpoints are the devices of the site: names, widths and base all come from them.
+// They are read once, when the tools load: Silex has no way to change them afterwards
+function reach(device: Device): string {
+  const width = device.get('widthMedia')
+  return width ? `up to ${width}` : 'all sizes'
+}
+
+function registerBreakpoints(editor: Editor, addCapability: AddCapability, describeTool: DescribeTool) {
+  const devices = editor.Devices.getDevices()
+  const base = devices.find(device => !device.get('widthMedia'))?.getName()
+  const list = devices.map(device => `${device.getName()} (${reach(device)})`).join(', ')
+  describeTool('breakpoint', [
+    `Breakpoints for responsive design, desktop-first: ${list}.`,
+    base ? `Styles written for ${base} apply everywhere; another breakpoint only overrides them below its width. Select it only for responsive changes, then select ${base} again.` : '',
+  ].filter(Boolean).join(' '))
+  addCapability({
+    tool: 'breakpoint',
+    action: 'list',
+    command: 'breakpoint:list',
+    description: 'the breakpoints and where their styles apply.',
+    readOnly: true,
+  })
+  addCapability({
+    tool: 'breakpoint',
+    action: 'select',
+    command: 'breakpoint:select',
+    description: 'choose the breakpoint that styles are written for.',
+    inputSchema: {
+      type: 'object',
+      required: ['name'],
+      properties: {
+        name: { type: 'string', enum: devices.map(d => d.getName()) },
+      },
+    },
+  })
+}
+
+type AddCapability = (def: Record<string, unknown>) => void
+type DescribeTool = (name: string, description: string) => void
+
 export default (editor: Editor) => {
-  // Blocks
-  editor.Commands.add('blocks:list', () => {
-    return editor.BlockManager.getAll().map(b => ({
-      id: b.getId(),
-      label: b.getLabel(),
-      category: b.getCategoryLabel(),
-    }))
-  })
-  editor.Commands.add('blocks:add', (_ed, _sender, options: any = {}) => {
-    const { blockId } = options
-    if (!blockId) throw new Error('Required: blockId. Use blocks_list to see available blocks.')
-    const block = editor.BlockManager.get(blockId)
-    if (!block) throw new Error(`Block "${blockId}" not found. Use blocks_list to see available blocks.`)
-    const selected = editor.getSelected() || editor.getWrapper()
-    return selected.append(block.getContent())?.[0]?.toHTML()
-  })
-
-  // Components
-  editor.Commands.add('components:list', () => {
-    const walk = (comp, depth = 0) => {
-      const result: any[] = [{
-        id: comp.getId(),
-        tagName: comp.get('tagName'),
-        type: comp.get('type'),
-        name: comp.getName(),
-        depth,
-      }]
-      comp.components().forEach(c => result.push(...walk(c, depth + 1)))
-      return result
+  editor.Commands.add('element:list', (_ed, _sender, options: ElementOptions = {}) => {
+    const lines: string[] = []
+    const referenced = referencedIds(editor.getWrapper()!)
+    const walk = (comp: Component, depth: number) => {
+      lines.push(`${'  '.repeat(depth)}${agentId(editor, comp)} <${outline(comp, referenced)}>`)
+      comp.components()
+        .filter((c: Component) => c.get('type') !== 'textnode')
+        .forEach((c: Component) => walk(c, depth + 1))
     }
-    return walk(editor.getWrapper())
+    walk(options.element_id ? elementOf(editor, options.element_id) : editor.getWrapper()!, 0)
+    return lines.join('\n')
   })
-  editor.Commands.add('components:select', (_ed, _sender, options: any = {}) => {
-    const { id } = options
-    if (!id) throw new Error('Required: id. Use components_list to see all component ids.')
-    const found = findComponentById(editor, id)
-    if (!found) throw new Error(`Component "${id}" not found. Use components_list to see all component ids.`)
-    editor.select(found)
+  editor.Commands.add('asset:list', () => {
+    const sources = editor.AssetManager.getAll().map((asset: Asset) => asset.getSrc())
+    return sources.length ? sources.join('\n') : 'No image yet: asset(action:\'add\') copies one from the disk.'
   })
-  editor.Commands.add('components:remove', (_ed, _sender, options: any = {}) => {
-    const comp = options.id ? findComponentById(editor, options.id) : editor.getSelected()
-    if (!comp) throw new Error(options.id ? `Component "${options.id}" not found. Use components_list to see all component ids.` : 'No component selected. Use components_select first, or pass {id}.')
-    if (comp === editor.getWrapper()) throw new Error('Cannot remove the body component.')
-    comp.remove()
+  editor.Commands.add('element:select', (_ed, _sender, options: ElementOptions = {}) => {
+    if (!options.element_id) throw new Error('Required: element_id. Use element(action:\'list\') to see the ids.')
+    editor.select(elementOf(editor, options.element_id))
   })
-  editor.Commands.add('components:move', (_ed, _sender, options: any = {}) => {
-    const { id, targetId, position } = options
-    if (!id) throw new Error('Required: id — the component to move. Use components_list to see all ids.')
-    if (!targetId) throw new Error('Required: targetId — the parent to move into. Use components_list to see all ids.')
-    const comp = findComponentById(editor, id)
-    if (!comp) throw new Error(`Component "${id}" not found. Use components_list to see all component ids.`)
-    const target = findComponentById(editor, targetId)
-    if (!target) throw new Error(`Target "${targetId}" not found. Use components_list to see all component ids.`)
-    const idx = typeof position === 'number' ? position : undefined
-    target.append(comp.clone(), { at: idx })
-    comp.remove()
-  })
-  editor.Commands.add('components:update', (_ed, _sender, options: any = {}) => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components_select first.')
-    const { content, tagName, attributes } = options
-    if (content !== undefined) selected.components(content)
-    if (tagName) selected.set('tagName', tagName)
-    if (attributes && typeof attributes === 'object') {
-      Object.entries(attributes).forEach(([k, v]) => selected.addAttributes({ [k]: v }))
+  editor.Commands.add('element:insert', (_ed, _sender, options: ElementOptions = {}) => {
+    if (!options.html) throw new Error('Required: html, the HTML to add.')
+    const target = options.target_id ? elementOf(editor, options.target_id) : editor.getSelected() ?? editor.getWrapper()!
+    const { parent, at } = place(editor, target, options.position)
+    if (!editor.Components.canMove(parent, options.html, at).result) {
+      throw new Error(`${describe(editor, parent)} can not contain this HTML. Nothing was changed. Choose another target_id or position.`)
     }
-    if (content === undefined && !tagName && !attributes) {
-      throw new Error('Required: at least one of {content, tagName, attributes}. Example: {content: "<b>Hello</b>"} or {tagName: "section"} or {attributes: {title: "My div"}}')
+    return created(editor, parent.append(options.html, { at }), parent)
+  })
+  editor.Commands.add('element:update', (_ed, _sender, options: ElementOptions = {}) => {
+    const { html, tag, attributes, add_class, remove_class } = options
+    if (html === undefined && !tag && !attributes && !add_class && !remove_class) {
+      throw new Error('Set at least one of: html, tag, attributes, add_class, remove_class.')
+    }
+    const element = elementOf(editor, options.element_id)
+    if (remove_class) {
+      const missing = classNames(remove_class).filter(name => !element.getClasses().includes(name))
+      if (missing.length) {
+        throw new Error(`Class ${missing.join(', ')} is not on ${describe(editor, element)}. Nothing was changed.`)
+      }
+    }
+    if (attributes !== undefined && (typeof attributes !== 'object' || Array.isArray(attributes) || attributes === null)) {
+      throw new Error('attributes must be an object, like {"href": "./contact"}. Nothing was changed.')
+    }
+    const reserved = Object.keys(attributes ?? {}).filter(name => ['class', 'style', 'id'].includes(name.toLowerCase()))
+    if (reserved.length) {
+      throw new Error(`attributes can not set ${reserved.join(', ')}: use add_class and remove_class for classes, and style(action:'set') for styles. Nothing was changed.`)
+    }
+    if (tag) element.set('tagName', tag)
+    if (attributes) {
+      const removed = Object.keys(attributes).filter(name => attributes[name] === null)
+      const added = Object.fromEntries(Object.entries(attributes).filter(([, value]) => value !== null))
+      element.removeAttributes(removed)
+      element.addAttributes(added)
+      // An image shows its src property, not the attribute
+      if (element.get('src') !== undefined && 'src' in attributes) element.set('src', added.src ?? '')
+    }
+    if (remove_class) classNames(remove_class).forEach(name => element.removeClass(name))
+    if (add_class) classNames(add_class).forEach(name => element.addClass(name))
+    if (html !== undefined) {
+      element.empty()
+      return created(editor, html ? element.append(html) : [], element, { select: false })
     }
   })
-
-  // CSS Classes
-  editor.Commands.add('classes:list', () => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components_select first.')
-    return selected.getClasses()
-  })
-  editor.Commands.add('classes:add', (_ed, _sender, options: any = {}) => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components_select first.')
-    const { name } = options
-    if (!name) throw new Error('Required: name (CSS class name, e.g. "my-card", "container"). Use classes_list to see existing classes.')
-    selected.addClass(name)
-  })
-  editor.Commands.add('classes:remove', (_ed, _sender, options: { name?: string } = {}) => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components_select first.')
-    const { name } = options
-    if (!name) throw new Error('Required: name (CSS class name). Use classes_list to see classes on the selected component.')
-    const classes: string[] = selected.getClasses()
-    if (!classes.includes(name)) {
-      throw new Error(classes.length
-        ? `Class "${name}" is not on the selected element. Its classes are: ${classes.join(', ')}.`
-        : `Class "${name}" is not on the selected element. It has no classes.`)
+  editor.Commands.add('element:move', (_ed, _sender, options: ElementOptions = {}) => {
+    if (!options.target_id) throw new Error('Required: target_id, the element it goes inside, before or after.')
+    const element = elementOf(editor, options.element_id)
+    const { parent, at } = place(editor, elementOf(editor, options.target_id), options.position)
+    if ([parent, ...parent.parents()].includes(element)) {
+      throw new Error(`Can not move ${describe(editor, element)} into itself or one of its children. Nothing was changed. Choose a target_id outside of it.`)
     }
-    selected.removeClass(name)
+    if (!editor.Components.canMove(parent, element, at).result) {
+      throw new Error(`${describe(editor, element)} can not go into ${describe(editor, parent)}. Nothing was changed. Choose another target_id or position.`)
+    }
+    element.move(parent, { at })
+  })
+  editor.Commands.add('element:remove', (_ed, _sender, options: ElementOptions = {}) => {
+    const element = elementOf(editor, options.element_id)
+    if (element === editor.getWrapper()) throw new Error('The body can not be removed.')
+    element.remove()
   })
 
-  // Devices
-  editor.Commands.add('device:list', () => {
-    return editor.Devices.getDevices().map((d: any) => ({
-      id: d.id,
-      name: d.get('name'),
-      width: d.get('width'),
-      widthMedia: d.get('widthMedia'),
-    }))
+  editor.Commands.add('breakpoint:list', () => {
+    return editor.Devices.getDevices().map(device => `${device.getName()}: ${reach(device)}`).join('\n')
   })
-  editor.Commands.add('device:set', (_ed, _sender, options: any = {}) => {
-    const { name } = options
-    if (!name) throw new Error('Required: name (device name or id, e.g. "Desktop", "Tablet", "Mobile"). Use device_list to see available devices.')
-    const dev = editor.Devices.get(name)
-      || editor.Devices.getDevices().find((d: any) => d.get('name') === name)
-    if (!dev) throw new Error(`Device "${name}" not found. Use device_list to see available devices.`)
-    editor.Devices.select(dev)
-  })
-
-  // History
-  editor.Commands.add('history:undo', () => {
-    if (!editor.UndoManager.hasUndo()) throw new Error('Nothing to undo.')
-    editor.UndoManager.undo()
-  })
-  editor.Commands.add('history:redo', () => {
-    if (!editor.UndoManager.hasRedo()) throw new Error('Nothing to redo.')
-    editor.UndoManager.redo()
+  editor.Commands.add('breakpoint:select', (_ed, _sender, options: { name?: string } = {}) => {
+    const devices = editor.Devices.getDevices()
+    const device = devices.find(d => d.getName() === options.name)
+    if (!device) throw new Error(`Set name to one of: ${devices.map(d => d.getName()).join(', ')}.`)
+    editor.Devices.select(device)
   })
 
   // Register AI capabilities
-  editor.on('ai-capabilities:ready', (addCapability) => {
+  editor.on('ai-capabilities:ready', (addCapability, describeTool) => {
+    const elementId = { type: 'string', description: 'Element id, like "ab12". Default: the selected element' }
+    const targetId = { type: 'string', description: 'The element it goes inside, before or after' }
+    describeTool('element', 'Elements of the selected page.')
     addCapability({
-      id: 'blocks:list',
-      command: 'blocks:list',
-      description: 'List available blocks',
+      tool: 'element',
+      action: 'list',
+      command: 'element:list',
+      description: 'the tree of the page, or of the branch of element_id: one line per element, its id then its tag, classes and attributes, indented by depth.',
       readOnly: true,
-      tags: ['blocks'],
+      inputSchema: { type: 'object', properties: { element_id: { type: 'string', description: 'Element id, like "ab12"' } } },
     })
     addCapability({
-      id: 'blocks:add',
-      command: 'blocks:add',
-      description: 'Insert a block into selected element',
+      tool: 'element',
+      action: 'select',
+      command: 'element:select',
+      description: 'choose the default element of the other actions, of the symbol tool and of the style tool.',
+      inputSchema: { type: 'object', required: ['element_id'], properties: { element_id: { type: 'string', description: 'Element id, like "ab12"' } } },
+    })
+    addCapability({
+      tool: 'element',
+      action: 'insert',
+      command: 'element:insert',
+      description: 'add HTML inside, before or after target_id (default: the selected element, else the body). One created element becomes the selected one.',
       inputSchema: {
         type: 'object',
-        required: ['blockId'],
+        required: ['html'],
         properties: {
-          blockId: { type: 'string' },
+          html: { type: 'string', description: 'HTML to add' },
+          target_id: { type: 'string', description: 'The element it goes inside, before or after. Default: the selected element' },
+          position: POSITION_SCHEMA,
         },
       },
-      tags: ['blocks'],
     })
     addCapability({
-      id: 'components:list',
-      command: 'components:list',
-      description: 'List all elements in the page',
-      readOnly: true,
-      tags: ['components'],
-    })
-    addCapability({
-      id: 'components:select',
-      command: 'components:select',
-      description: 'Select an element by id',
+      tool: 'element',
+      action: 'update',
+      command: 'element:update',
+      description: 'change an element: html replaces its children; or set tag, attributes, add_class, remove_class.',
       inputSchema: {
         type: 'object',
-        required: ['id'],
         properties: {
-          id: { type: 'string' },
+          element_id: elementId,
+          html: { type: 'string', description: 'HTML that replaces the children' },
+          tag: { type: 'string', description: 'new tag name' },
+          attributes: { type: 'object', description: 'attributes to set, like {"href": "./contact"}; null removes one' },
+          add_class: { type: 'string', description: 'CSS classes to add, separated by spaces' },
+          remove_class: { type: 'string', description: 'CSS classes to remove, separated by spaces' },
         },
       },
-      tags: ['components'],
     })
     addCapability({
-      id: 'components:remove',
-      command: 'components:remove',
-      description: 'Remove an element',
+      tool: 'element',
+      action: 'move',
+      command: 'element:move',
+      description: 'move an element inside, before or after target_id.',
+      inputSchema: {
+        type: 'object',
+        required: ['target_id'],
+        properties: { element_id: elementId, target_id: targetId, position: POSITION_SCHEMA },
+      },
+    })
+    addCapability({
+      tool: 'element',
+      action: 'remove',
+      command: 'element:remove',
+      description: 'remove an element.',
       destructive: true,
-      inputSchema: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', description: 'Element id. Omit to remove selected.' },
-        },
-      },
-      tags: ['components'],
+      inputSchema: { type: 'object', properties: { element_id: elementId } },
     })
     addCapability({
-      id: 'components:move',
-      command: 'components:move',
-      description: 'Move an element into another parent',
-      inputSchema: {
-        type: 'object',
-        required: ['id', 'targetId'],
-        properties: {
-          id: { type: 'string' },
-          targetId: { type: 'string' },
-          position: { type: 'number', description: 'Index in target children' },
-        },
-      },
-      tags: ['components'],
-    })
-    addCapability({
-      id: 'components:update',
-      command: 'components:update',
-      description: 'Update content, tagName or attributes of selected element',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          content: { type: 'string', description: 'HTML content' },
-          tagName: { type: 'string' },
-          attributes: { type: 'object' },
-        },
-      },
-      tags: ['components'],
-    })
-    addCapability({
-      id: 'classes:list',
-      command: 'classes:list',
-      description: 'List CSS classes on selected element',
+      tool: 'asset',
+      action: 'list',
+      command: 'asset:list',
+      description: 'the images of the website, as URLs for src or CSS url().',
       readOnly: true,
-      tags: ['classes'],
     })
-    addCapability({
-      id: 'classes:add',
-      command: 'classes:add',
-      description: 'Add CSS class to selected element',
-      inputSchema: {
-        type: 'object',
-        required: ['name'],
-        properties: {
-          name: { type: 'string' },
-        },
-      },
-      tags: ['classes'],
-    })
-    addCapability({
-      id: 'classes:remove',
-      command: 'classes:remove',
-      description: 'Remove CSS class from selected element',
-      destructive: true,
-      inputSchema: {
-        type: 'object',
-        required: ['name'],
-        properties: {
-          name: { type: 'string' },
-        },
-      },
-      tags: ['classes'],
-    })
-    addCapability({
-      id: 'device:list',
-      command: 'device:list',
-      description: 'List available responsive breakpoints/devices',
-      readOnly: true,
-      tags: ['device'],
-    })
-    addCapability({
-      id: 'device:set',
-      command: 'device:set',
-      description: 'Switch responsive breakpoint by device name',
-      inputSchema: {
-        type: 'object',
-        required: ['name'],
-        properties: {
-          name: { type: 'string', description: 'Device name or id (e.g. "Desktop", "Tablet", "Mobile")' },
-        },
-      },
-      tags: ['device'],
-    })
-    addCapability({
-      id: 'history:undo',
-      command: 'history:undo',
-      description: 'Undo the last change',
-      tags: ['history'],
-    })
-    addCapability({
-      id: 'history:redo',
-      command: 'history:redo',
-      description: 'Redo the last undone change',
-      tags: ['history'],
-    })
+    registerBreakpoints(editor, addCapability, describeTool)
   })
 }

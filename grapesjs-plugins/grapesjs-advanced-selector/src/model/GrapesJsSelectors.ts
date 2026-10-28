@@ -42,8 +42,8 @@ export function getUntranslatedKeys(): string[] {
  * Get all selectors that match the selected component
  * Don't take pseudo class into account
  */
-export function getSelectors(editor: Editor): ComplexSelector[] {
-  return editor.getSelectedAll()
+export function getSelectors(editor: Editor, components: Component[] = editor.getSelectedAll()): ComplexSelector[] {
+  return components
     .flatMap((component: Component) => {
       return editor
         .CssComposer
@@ -89,16 +89,19 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
     })
 }
 
+export function ruleOptions(editor: Editor) {
+  const currentWidth = editor.DeviceManager.getSelected()?.get('widthMedia')
+  return {
+    atRuleType: currentWidth ? 'media' : '',
+    atRuleParams: currentWidth ? `(max-width: ${currentWidth})` : '',
+  }
+}
+
 /**
  * Function to edit or add style based on the selector
  */
 export function getOrCreateRule(editor: Editor, selector: string) {
-  const currentWidth = editor.DeviceManager.getSelected()?.get('widthMedia')
-
-  const opts = {
-    atRuleType: currentWidth ? 'media' : '',
-    atRuleParams: currentWidth ? `(max-width: ${currentWidth})` : '',
-  }
+  const opts = ruleOptions(editor)
   const old = editor.CssComposer.getRule(selector, opts)
   return editor.CssComposer.setRule(selector, old?.getStyle(), {
     addStyles: !!old?.getStyle(),

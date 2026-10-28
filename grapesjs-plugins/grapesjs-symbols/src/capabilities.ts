@@ -1,50 +1,60 @@
 import { cmdList, cmdAdd, cmdRemove, cmdUnlink, cmdCreate } from './SymbolsCommands'
 
-export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
+const POSITION = { type: 'string', enum: ['inside', 'before', 'after'], description: 'Default: inside, as last child' }
+const ELEMENT_ID = { type: 'string', description: 'Element id, like "ab12". Default: the selected element' }
+const SYMBOL_ID = { type: 'string', description: 'Symbol id from list or create' }
+
+export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) {
+  describeTool?.('symbol', 'Symbols: elements shared by several pages, like a header.')
   addCapability({
-    id: cmdList,
+    tool: 'symbol',
+    action: 'list',
     command: cmdList,
-    description: 'List all symbols',
+    description: 'the symbols.',
     readOnly: true,
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdAdd,
+    tool: 'symbol',
+    action: 'create',
     command: cmdAdd,
-    description: 'Create symbol from element',
+    description: 'turn an element into a symbol; it becomes its first instance.',
     inputSchema: {
       type: 'object',
+      required: ['label'],
       properties: {
-        label: { type: 'string' },
-        icon: { type: 'string' },
+        element_id: ELEMENT_ID,
+        label: { type: 'string', description: 'Symbol name' },
       },
     },
-    tags: ['symbols'],
   })
   addCapability({
-    id: cmdRemove,
-    command: cmdRemove,
-    description: 'Delete a symbol',
-    destructive: true,
-    inputSchema: {
-      type: 'object',
-      required: ['symbolId'],
-      properties: {
-        symbolId: { type: 'string' },
-      },
-    },
-    tags: ['symbols'],
-  })
-  addCapability({
-    id: cmdUnlink,
-    command: cmdUnlink,
-    description: 'Unlink element from symbol',
-    tags: ['symbols'],
-  })
-  addCapability({
-    id: cmdCreate,
+    tool: 'symbol',
+    action: 'insert',
     command: cmdCreate,
-    description: 'Create symbol instance',
-    tags: ['symbols'],
+    description: 'add an instance inside, before or after target_id (default: the selected element), and select it.',
+    inputSchema: {
+      type: 'object',
+      required: ['symbol_id'],
+      properties: {
+        symbol_id: SYMBOL_ID,
+        target_id: { type: 'string', description: 'The element it goes inside, before or after. Default: the selected element' },
+        position: POSITION,
+      },
+    },
+  })
+  addCapability({
+    tool: 'symbol',
+    action: 'unlink',
+    command: cmdUnlink,
+    description: 'turn an instance back into a plain element, the other instances stay.',
+    inputSchema: { type: 'object', properties: { element_id: ELEMENT_ID } },
+  })
+  addCapability({
+    tool: 'symbol',
+    action: 'remove',
+    command: cmdRemove,
+    description: 'delete a symbol.',
+    destructive: true,
+    inputSchema: { type: 'object', required: ['symbol_id'], properties: { symbol_id: SYMBOL_ID } },
   })
 }
