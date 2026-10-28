@@ -96,17 +96,19 @@ function outline(component: Component, referenced: Set<string>): string {
 
 // Breakpoints are the devices of the site: names, widths and base all come from them.
 // They are read once, when the tools load: Silex has no way to change them afterwards
-function reach(editor: Editor, device: Device): string {
+function reach(device: Device): string {
   const width = device.get('widthMedia')
-  if (!width) return 'all sizes'
-  return `${editor.getConfig().mediaCondition === 'min-width' ? 'from' : 'up to'} ${width}`
+  return width ? `up to ${width}` : 'all sizes'
 }
 
 function registerBreakpoints(editor: Editor, addCapability: AddCapability, describeTool: DescribeTool) {
   const devices = editor.Devices.getDevices()
-  const desktopFirst = editor.getConfig().mediaCondition !== 'min-width'
-  const list = devices.map(device => `${device.getName()} (${reach(editor, device)})`).join(', ')
-  describeTool('breakpoint', `Breakpoints for responsive design${desktopFirst ? ', desktop-first' : ', mobile-first'}: ${list}.`)
+  const base = devices.find(device => !device.get('widthMedia'))?.getName()
+  const list = devices.map(device => `${device.getName()} (${reach(device)})`).join(', ')
+  describeTool('breakpoint', [
+    `Breakpoints for responsive design, desktop-first: ${list}.`,
+    base ? `Styles written for ${base} apply everywhere; another breakpoint only overrides them below its width. Select it only for responsive changes, then select ${base} again.` : '',
+  ].filter(Boolean).join(' '))
   addCapability({
     tool: 'breakpoint',
     action: 'list',
@@ -213,7 +215,7 @@ export default (editor: Editor) => {
 
   // Devices
   editor.Commands.add('breakpoint:list', () => {
-    return editor.Devices.getDevices().map(device => `${device.getName()}: ${reach(editor, device)}`).join('\n')
+    return editor.Devices.getDevices().map(device => `${device.getName()}: ${reach(device)}`).join('\n')
   })
   editor.Commands.add('breakpoint:select', (_ed, _sender, options: { name?: string } = {}) => {
     const devices = editor.Devices.getDevices()

@@ -76,12 +76,10 @@ describe('breakpoint tool', () => {
     return getTools().find(tool => tool.name === 'breakpoint')!
   }
 
-  it('describes the devices of the site, desktop-first or mobile-first', () => {
+  it('describes the devices of the site', () => {
     const desktopFirst = breakpoint({ deviceManager: { devices: [{ id: 'big', name: 'Big' }, { id: 'small', name: 'Small', width: '320px', widthMedia: '600px' }] } })
-    expect(desktopFirst.description).toBe('Breakpoints for responsive design, desktop-first: Big (all sizes), Small (up to 600px).')
+    expect(desktopFirst.description).toBe('Breakpoints for responsive design, desktop-first: Big (all sizes), Small (up to 600px). Styles written for Big apply everywhere; another breakpoint only overrides them below its width. Select it only for responsive changes, then select Big again.')
     expect(desktopFirst.inputSchema.properties.name.enum).toEqual(['Big', 'Small'])
-    const mobileFirst = breakpoint({ mediaCondition: 'min-width', deviceManager: { devices: [{ id: 'phone', name: 'Phone' }, { id: 'wide', name: 'Wide', widthMedia: '1024px' }] } })
-    expect(mobileFirst.description).toContain('mobile-first: Phone (all sizes), Wide (from 1024px)')
   })
 })
 
