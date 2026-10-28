@@ -1429,23 +1429,12 @@ impl SilexMcp {
             .as_ref()
             .and_then(|args| args.get("action"))
             .and_then(|action| action.as_str());
-        let native = self.tool_router.get(&request.name).is_some_and(|tool| {
-            dynamic.is_none()
-                || match (declared_actions(tool), action) {
-                    (Some(actions), Some(action)) => actions.contains(&action),
-                    (None, _) => true,
-                    (Some(_), None) => false,
-                }
-        });
-
-        // The editor family only knows its own actions, not those of the static tool
-        let family_action = dynamic
-            .as_ref()
-            .and_then(|tools| tools.get(&request.name))
-            .and_then(declared_actions)
-            .zip(action)
-            .is_some_and(|(actions, action)| actions.contains(&action));
-        if !native && !family_action && self.tool_router.get(&request.name).is_some() {
+        let route = route(
+            self.tool_router.get(&request.name),
+            dynamic.as_ref().map(|tools| tools.get(&request.name)),
+            action,
+        );
+        if route == Route::WrongAction {
             let all = self
                 .get_tool(&request.name)
                 .and_then(|tool| declared_actions(&tool).map(|actions| actions.join(", ")))
@@ -1455,7 +1444,7 @@ impl SilexMcp {
             );
         }
 
-        if native {
+        if route == Route::Static {
             let reopened = action == Some("open")
                 && request
                     .arguments
@@ -1472,7 +1461,13 @@ impl SilexMcp {
 
             let tool_ctx =
                 rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-            let result = self.tool_router.call(tool_ctx).await;
+            // A wrong value is the agent's to fix, so it gets a tool error like the other tools
+            let result = match self.tool_router.call(tool_ctx).await {
+                Err(e) if e.code == ErrorCode::INVALID_PARAMS => {
+                    Ok(tool_error(format!("{} Nothing was changed.", e.message)).into())
+                }
+                other => other,
+            };
 
             let succeeded = matches!(
                 &result,
@@ -1500,6 +1495,35 @@ impl SilexMcp {
             ),
             None,
         ))
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Route {
+    Static,
+    Family,
+    WrongAction,
+    NotFound,
+}
+
+/// Which half serves a call: the static tool, or the editor family of the same
+/// name (`family` is `Some` once the editor tools are loaded, its inner value
+/// the family tool when the editor has one)
+fn route(static_tool: Option<&Tool>, family: Option<Option<&Tool>>, action: Option<&str>) -> Route {
+    let declares = |tool: &Tool| {
+        declared_actions(tool).is_none_or(|actions| action.is_some_and(|a| actions.contains(&a)))
+    };
+    let in_family = family
+        .flatten()
+        .and_then(declared_actions)
+        .zip(action)
+        .is_some_and(|(actions, action)| actions.contains(&action));
+    match static_tool {
+        Some(tool) if family.is_none() || declares(tool) => Route::Static,
+        Some(_) if in_family => Route::Family,
+        Some(_) => Route::WrongAction,
+        None if family.is_some() => Route::Family,
+        None => Route::NotFound,
     }
 }
 
@@ -1596,5 +1620,76 @@ pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: Pendin
         Err(e) => {
             tracing::warn!("MCP stdio not available (launched without stdin?): {}", e);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn tool(name: &'static str, actions: &[&str]) -> Tool {
+        let schema = json!({ "type": "object", "properties": { "action": { "type": "string", "enum": actions } } });
+        Tool::new(name, "", Arc::new(schema.as_object().unwrap().clone()))
+    }
+
+    fn call(name: &str, arguments: serde_json::Value) -> CallToolRequestParams {
+        serde_json::from_value(json!({ "name": name, "arguments": arguments })).unwrap()
+    }
+
+    #[test]
+    fn routes_each_action_to_the_half_that_declares_it() {
+        let website = tool("website", &["list", "open"]);
+        let family = tool("website", &["publish"]);
+        assert_eq!(route(Some(&website), None, Some("publish")), Route::Static);
+        assert_eq!(
+            route(Some(&website), Some(Some(&family)), Some("open")),
+            Route::Static
+        );
+        assert_eq!(
+            route(Some(&website), Some(Some(&family)), Some("publish")),
+            Route::Family
+        );
+        assert_eq!(
+            route(Some(&website), Some(Some(&family)), Some("rename")),
+            Route::WrongAction
+        );
+        assert_eq!(route(Some(&website), Some(None), None), Route::WrongAction);
+        assert_eq!(
+            route(None, Some(Some(&family)), Some("publish")),
+            Route::Family
+        );
+        assert_eq!(route(None, None, Some("publish")), Route::NotFound);
+    }
+
+    #[test]
+    fn traces_only_an_action_the_tool_declares() {
+        let element = tool("element", &["list", "update"]);
+        assert_eq!(
+            known_action(&element, &call("element", json!({ "action": "update" }))),
+            Some("update".into())
+        );
+        assert_eq!(
+            known_action(
+                &element,
+                &call("element", json!({ "action": "<h1>secret</h1>" }))
+            ),
+            None
+        );
+        assert_eq!(
+            known_action(
+                &element,
+                &call("element", json!({ "html": "<h1>secret</h1>" }))
+            ),
+            None
+        );
+        let screenshot = Tool::new("screenshot", "", Arc::new(serde_json::Map::new()));
+        assert_eq!(
+            known_action(
+                &screenshot,
+                &call("screenshot", json!({ "target": "secret" }))
+            ),
+            None
+        );
     }
 }
