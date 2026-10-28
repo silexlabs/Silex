@@ -17,7 +17,6 @@
 
 import { Editor, Page } from 'grapesjs'
 
-/** The page an agent names by its id, or the selected one */
 export function pageOf(editor: Editor, id?: string): Page {
   if (!id) return editor.Pages.getSelected()!
   const page = editor.Pages.get(id)

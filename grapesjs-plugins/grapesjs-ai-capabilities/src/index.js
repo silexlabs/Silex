@@ -111,7 +111,6 @@ export function addCapability(def, options = {}) {
   return { ...capability }
 }
 
-/** What a tool is about, before the list of its actions */
 export function describeTool(name, description) {
   if (!TOOL_NAME.test(name)) throw new Error('tool name must match ^[a-z][a-z0-9_]{0,63}$')
   if (typeof description !== 'string' || !description) throw new Error('description must be a non-empty string')

@@ -3,7 +3,6 @@ import { getHtml, refresh, getAvailableFonts, getApiUrl, loadFontList, fontValue
 export const cmdGetCss = 'get-fonts-css'
 export const cmdGetHtml = 'get-fonts-html'
 export const cmdFontsInstalled = 'fonts:installed'
-export const cmdFontsAvailable = 'fonts:available'
 export const cmdFontsInstall = 'fonts:install'
 export const cmdFontsRemove = 'fonts:remove'
 export const cmdFontsSearch = 'fonts:search'
@@ -11,7 +10,6 @@ export const cmdFontsSearch = 'fonts:search'
 const MAX_FOUND = 20
 
 export default function (editor, opts) {
-  // Loaded once from the Google Fonts API, when a command first needs it
   const fontList = async () => {
     if (getAvailableFonts()) return getAvailableFonts()
     if (!opts?.api_key) throw new Error('No Google Fonts api_key configured.')
@@ -37,28 +35,6 @@ export default function (editor, opts) {
   editor.Commands.add(cmdFontsInstalled, () => {
     const fonts = editor.getModel().get('fonts') || []
     return fonts.length ? fonts.map(f => `${f.family} → font-family: ${f.value}`).join('\n') : 'No font installed.'
-  })
-
-  // List available Google Fonts (with optional search/category filter).
-  // Loads the font list on demand from the Google Fonts API if not cached.
-  // Returns a Promise — callers must await the result.
-  editor.Commands.add(cmdFontsAvailable, async (editor, sender, options = {}) => {
-    const list = await fontList()
-
-    const { search, category } = options
-    let filtered = list
-    if (search) {
-      const q = search.toLowerCase()
-      filtered = filtered.filter(f => f.family.toLowerCase().includes(q))
-    }
-    if (category) {
-      filtered = filtered.filter(f => f.category === category)
-    }
-    return filtered.map(f => ({
-      family: f.family,
-      category: f.category,
-      variants: f.variants,
-    }))
   })
 
   editor.Commands.add(cmdFontsSearch, async (editor, sender, options = {}) => {

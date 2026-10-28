@@ -194,9 +194,6 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
   }
 }
 
-/**
- * Why the last load got no data from a source
- */
 export function getPreviewErrors(): Record<DataSourceId, string> {
   return getLoader().errors
 }

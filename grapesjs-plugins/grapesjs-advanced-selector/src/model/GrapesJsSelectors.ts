@@ -89,9 +89,6 @@ export function getSelectors(editor: Editor, components: Component[] = editor.ge
     })
 }
 
-/**
- * The media query of the selected device, as CssComposer expects it
- */
 export function ruleOptions(editor: Editor) {
   const currentWidth = editor.DeviceManager.getSelected()?.get('widthMedia')
   return {

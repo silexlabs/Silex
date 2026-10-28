@@ -30,7 +30,6 @@ function describe(editor: Editor, component: Component): string {
   return `"${agentId(editor, component)}" <${component.get('tagName')}${classes ? ` class="${classes}"` : ''}>`
 }
 
-// Where an element goes, relative to the target: in it as its last child, or next to it
 function place(editor: Editor, target: Component, position = 'inside'): { parent: Component, at?: number } {
   if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
   if (position === 'inside') return { parent: target }
@@ -64,7 +63,6 @@ function attributeValue(value: unknown): string {
 const ID_REFERENCES = ['for', 'form', 'list', 'headers', 'popovertarget', 'aria-labelledby', 'aria-describedby', 'aria-controls',
   'aria-owns', 'aria-activedescendant', 'aria-details', 'aria-errormessage', 'aria-flowto']
 
-// Ids that a label, an aria attribute or an anchor points to
 function referencedIds(root: Component): Set<string> {
   const ids = new Set<string>()
   const visit = (component: Component) => {
@@ -217,7 +215,6 @@ export default (editor: Editor) => {
     element.remove()
   })
 
-  // Devices
   editor.Commands.add('breakpoint:list', () => {
     return editor.Devices.getDevices().map(device => `${device.getName()}: ${reach(device)}`).join('\n')
   })

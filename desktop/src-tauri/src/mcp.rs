@@ -362,7 +362,6 @@ impl SilexMcp {
     // Dynamic capability loading
     // ======================================================================
 
-    /// Load the editor tools of the open website.
     /// Called after a website is opened/created and the editor is ready.
     async fn load_capabilities(&self) -> Result<usize, String> {
         // The registry function exists early, but capabilities are registered
@@ -852,7 +851,6 @@ struct CommandAnswer {
     selection: serde_json::Value,
 }
 
-/// The id the server gives a website it just made
 fn new_website_id(body: &str) -> Option<String> {
     #[derive(Deserialize)]
     #[serde(rename_all = "camelCase")]

@@ -121,9 +121,6 @@ function describeCreated(editor: Editor, component: Component) {
  * What a creation answers. One element created becomes the selection, so the next
  * call acts on it; several leave the selection where it was
  */
-/**
- * The element an action works on: the one named by element_id, or the selection
- */
 export function elementsOf(editor: Editor, id?: string, { several = false } = {}): Component[] {
   if (id) {
     const found = findByAgentId(editor, id)
