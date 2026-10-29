@@ -63,3 +63,34 @@ describe('array filters: per-item key resolver + null guard', () => {
     expect(map.apply(null, { key: () => 1 })).toBeNull()
   })
 })
+
+describe('slice filter: the second option is a length, like Liquid', () => {
+  const list = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7']
+  const slice = (start: unknown, end: unknown) => (byId('slice') as ApplyFilter).apply(list, { start, end })
+  test('keeps "length" items from start', () => {
+    expect(slice(2, 3)).toEqual(['p3', 'p4', 'p5'])
+    expect(slice(0, 3)).toEqual(['p1', 'p2', 'p3'])
+  })
+  test('works with the strings typed in the options', () => {
+    expect(slice('2', '3')).toEqual(['p3', 'p4', 'p5'])
+  })
+  test('keeps all the items after start when the length is empty or 0', () => {
+    expect(slice('2', '')).toEqual(['p3', 'p4', 'p5', 'p6', 'p7'])
+    expect(slice('2', [])).toEqual(['p3', 'p4', 'p5', 'p6', 'p7'])
+    expect(slice('2', undefined)).toEqual(['p3', 'p4', 'p5', 'p6', 'p7'])
+    expect(slice('2', 0)).toEqual(['p3', 'p4', 'p5', 'p6', 'p7'])
+  })
+  test('starts at 0 when start is empty or not a number', () => {
+    expect(slice('', '3')).toEqual(['p1', 'p2', 'p3'])
+    expect(slice('abc', '3')).toEqual(['p1', 'p2', 'p3'])
+  })
+  test('counts a negative start from the end of the list', () => {
+    expect(slice('-2', '1')).toEqual(['p6'])
+    expect(slice('-1', '5')).toEqual(['p7'])
+    expect(slice('-100', '2')).toEqual(['p1', 'p2'])
+  })
+  test('stops at the end of the list', () => {
+    expect(slice('5', '100')).toEqual(['p6', 'p7'])
+    expect(slice('100', '3')).toEqual([])
+  })
+})
