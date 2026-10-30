@@ -8,6 +8,7 @@ import {
 } from '@silexlabs/grapesjs-data-source'
 import { Component } from 'grapesjs'
 import { EleventyDataSourceId } from './DataSource'
+import { getSliceOptions } from './slice'
 
 export interface BinaryCondition {
   operator: BinaryOperator,
@@ -303,7 +304,9 @@ export function getLiquidStatementFilters(filters: Filter[], component?: Compone
         allPrefixStatements.push(...result.prefixStatements)
         return result.optionStr
       }) : []
-    return `${token.filterName ?? token.id}${options.length ? `: ${options.join(', ')}` : ''}`
+    const filterName = token.filterName ?? token.id
+    const liquidOptions = filterName === 'slice' ? getSliceOptions(options) : options
+    return `${filterName}${liquidOptions.length ? `: ${liquidOptions.join(', ')}` : ''}`
   })
     .join(' | ')
   return { filterStr, prefixStatements: allPrefixStatements }

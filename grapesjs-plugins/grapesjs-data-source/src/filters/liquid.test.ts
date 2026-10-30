@@ -87,7 +87,7 @@ describe('slice filter: the second option is a length, like Liquid', () => {
   test('counts a negative start from the end of the list', () => {
     expect(slice('-2', '1')).toEqual(['p6'])
     expect(slice('-1', '5')).toEqual(['p7'])
-    expect(slice('-100', '2')).toEqual(['p1', 'p2'])
+    expect(slice('-100', '2')).toEqual([])
   })
   test('stops at the end of the list', () => {
     expect(slice('5', '100')).toEqual(['p6', 'p7'])

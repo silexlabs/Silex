@@ -431,7 +431,9 @@ export default function(editor: Editor): Filter[] {
       apply: (arr, options) => {
         const list = arr as unknown[]
         let start = parseInt(options.start as string) || 0
-        if (start < 0) start = Math.max(list.length + start, 0)
+        if (start < 0) start = list.length + start
+        // Like Liquid, nothing when start is before the beginning of the list
+        if (start < 0) return []
         // No length (empty or 0): keep all the items after start
         const length = parseInt(options.end as string)
         return length > 0 ? list.slice(start, start + length) : list.slice(start)
