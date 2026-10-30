@@ -2,47 +2,180 @@ import { getVariables, buildVarRef, getTargetStyleValue, setTargetStyleValue } f
 import { TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
 
 /**
- * CSS properties targeted for each variable type
+ * CSS properties targeted for each variable type.
+ *
+ * Each entry describes where the pencil control is injected:
+ * - top-level property: `{ sector, property, type }`
+ * - sub-property of a composite (or a future stack): `{ sector, property, subProperty, type }`
+ *
+ * The parent `property` is always part of the key. This is what disambiguates
+ * sub-properties with the same name living in different parents, e.g.
+ * `border-color` under `border` vs `border-top` vs `border-right` vs `border-left`.
+ *
+ * The default list covers the standard GrapesJS properties so the plugin stays
+ * usable on its own. Host apps (e.g. Silex in `editor/grapesjs/css-props.ts`)
+ * declare their own properties where they create them via
+ * {@link addVariableProperty} / {@link removeVariableProperty}.
+ *
+ * @typedef {object} VariablePropertyTarget
+ * @property {string} sector - Style Manager sector id (e.g. `'typography'`)
+ * @property {string} property - Property id (composite id when `subProperty` is set)
+ * @property {string} [subProperty] - Sub-property id inside the composite
+ * @property {string} type - `'color'` | `'size'` | `'font-family'` (aliases `'font'`, `'typo'`, `'typography'` accepted on write)
  */
-const COLOR_PROPERTIES = [
-  ['typography', 'color'],
-  ['decorations', 'background-color'],
+const DEFAULT_VARIABLE_PROPERTIES = [
+  // Colors - top-level
+  { sector: 'typography', property: 'color', type: TYPE_COLOR },
+  { sector: 'decorations', property: 'background-color', type: TYPE_COLOR },
+  // Colors - composite sub-properties (parent disambiguates)
+  { sector: 'decorations', property: 'outline', subProperty: 'outline-color', type: TYPE_COLOR },
+  { sector: 'typography', property: 'text-decoration', subProperty: 'text-decoration-color', type: TYPE_COLOR },
+  { sector: 'extra', property: 'column-rule', subProperty: 'column-rule-color', type: TYPE_COLOR },
+
+  // Sizes - top-level
+  { sector: 'dimension', property: 'width', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'height', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'min-width', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'max-width', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'min-height', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'max-height', type: TYPE_SIZE },
+  { sector: 'general', property: 'top', type: TYPE_SIZE },
+  { sector: 'general', property: 'right', type: TYPE_SIZE },
+  { sector: 'general', property: 'bottom', type: TYPE_SIZE },
+  { sector: 'general', property: 'left', type: TYPE_SIZE },
+  { sector: 'typography', property: 'font-size', type: TYPE_SIZE },
+  { sector: 'typography', property: 'letter-spacing', type: TYPE_SIZE },
+  { sector: 'typography', property: 'line-height', type: TYPE_SIZE },
+  { sector: 'extra', property: 'column-gap', type: TYPE_SIZE },
+  { sector: 'extra', property: 'row-gap', type: TYPE_SIZE },
+
+  // Sizes - composite sub-properties
+  { sector: 'dimension', property: 'margin', subProperty: 'margin-top', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'margin', subProperty: 'margin-right', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'margin', subProperty: 'margin-bottom', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'margin', subProperty: 'margin-left', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'padding', subProperty: 'padding-top', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'padding', subProperty: 'padding-right', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'padding', subProperty: 'padding-bottom', type: TYPE_SIZE },
+  { sector: 'dimension', property: 'padding', subProperty: 'padding-left', type: TYPE_SIZE },
+  { sector: 'decorations', property: 'border-radius', subProperty: 'border-top-left-radius', type: TYPE_SIZE },
+  { sector: 'decorations', property: 'border-radius', subProperty: 'border-top-right-radius', type: TYPE_SIZE },
+  { sector: 'decorations', property: 'border-radius', subProperty: 'border-bottom-right-radius', type: TYPE_SIZE },
+  { sector: 'decorations', property: 'border-radius', subProperty: 'border-bottom-left-radius', type: TYPE_SIZE },
+
+  // Typography - font-family only (font-weight is numeric, not suited for font-family variables)
+  { sector: 'typography', property: 'font-family', type: TYPE_FONT_FAMILY },
 ]
 
-const COLOR_SUB_PROPERTIES = [
-  'outline-color',
-  'text-decoration-color',
-  'column-rule-color',
-]
+// Aliases accepted on write, same as in capabilities.js
+const VARIABLE_TYPE_ALIASES = {
+  font: TYPE_FONT_FAMILY,
+  typo: TYPE_FONT_FAMILY,
+  typography: TYPE_FONT_FAMILY,
+}
 
-const SIZE_PROPERTIES = [
-  ['dimension', 'width'],
-  ['dimension', 'height'],
-  ['dimension', 'min-width'],
-  ['dimension', 'max-width'],
-  ['dimension', 'min-height'],
-  ['dimension', 'max-height'],
-  ['general', 'top'],
-  ['general', 'right'],
-  ['general', 'bottom'],
-  ['general', 'left'],
-  ['typography', 'font-size'],
-  ['typography', 'letter-spacing'],
-  ['typography', 'line-height'],
-]
+/** Normalize a variable type to its canonical name, or null when unknown. */
+function normalizeVariableType(type) {
+  if (type === TYPE_COLOR || type === TYPE_SIZE || type === TYPE_FONT_FAMILY) return type
+  return VARIABLE_TYPE_ALIASES[type] || null
+}
 
-const SIZE_SUB_PROPERTIES = [
-  'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
-  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-  'border-top-left-radius', 'border-top-right-radius', 'border-bottom-right-radius', 'border-bottom-left-radius',
-]
+// Per-editor state so several editors (and tests) stay isolated
+const registryByEditor = new WeakMap()
+const optionsByEditor = new WeakMap()
 
-const SIZE_EXTRA_PROPERTIES = [
-  ['extra', 'column-gap'],
-  ['extra', 'row-gap'],
-]
+function getRegistry(editor) {
+  if (!registryByEditor.has(editor)) {
+    registryByEditor.set(editor, DEFAULT_VARIABLE_PROPERTIES.map(entry => ({ ...entry })))
+  }
+  return registryByEditor.get(editor)
+}
 
-const TYPO_FONT_FAMILY = ['typography', 'font-family']
+function getStoredOptions(editor) {
+  return optionsByEditor.get(editor) || { enableColors: true, enableSizes: true, enableTypography: true }
+}
+
+function sameTarget(a, b) {
+  return a.sector === b.sector
+    && a.property === b.property
+    && (a.subProperty || '') === (b.subProperty || '')
+    && a.type === b.type
+}
+
+/**
+ * List the variable-enabled properties for this editor (a copy).
+ */
+export function getVariableProperties(editor) {
+  return getRegistry(editor).map(entry => ({ ...entry }))
+}
+
+/**
+ * Enable variables (pencil control) on a Style Manager property.
+ * Idempotent: adding the same target twice keeps a single entry.
+ * Triggers a refresh so the control appears without waiting for the next selection change.
+ */
+export function addVariableProperty(editor, descriptor = {}) {
+  const { sector, property, subProperty } = descriptor
+  const type = normalizeVariableType(descriptor.type)
+  if (!sector || typeof sector !== 'string') {
+    throw new Error('addVariableProperty requires `sector` (string). Example: {sector: "typography", property: "text-underline-offset", type: "size"}')
+  }
+  if (!property || typeof property !== 'string') {
+    throw new Error('addVariableProperty requires `property` (string). Example: {sector: "typography", property: "text-underline-offset", type: "size"}')
+  }
+  if (subProperty !== undefined && typeof subProperty !== 'string') {
+    throw new Error('addVariableProperty `subProperty` must be a string when given. Example: {sector: "extra", property: "transform-origin", subProperty: "transform-origin-x", type: "size"}')
+  }
+  if (!type) {
+    throw new Error(`addVariableProperty: invalid type "${descriptor.type}". Must be one of: color, size, font-family (aliases: font, typo, typography)`)
+  }
+  const registry = getRegistry(editor)
+  const entry = subProperty ? { sector, property, subProperty, type } : { sector, property, type }
+  if (!registry.some(existing => sameTarget(existing, entry))) {
+    registry.push(entry)
+  }
+  refreshStyleManager(editor)
+  return { ...entry }
+}
+
+/**
+ * Disable variables on a Style Manager property.
+ * `type` is optional: when omitted, all types registered on that target are removed.
+ * `subProperty` is optional: when omitted, only the top-level entry is removed
+ * (sub-properties of that parent are kept - pass each one explicitly to remove them).
+ * Returns the number of removed entries and refreshes the Style Manager.
+ */
+export function removeVariableProperty(editor, descriptor = {}) {
+  const { sector, property, subProperty } = descriptor
+  if (!sector || typeof sector !== 'string') {
+    throw new Error('removeVariableProperty requires `sector` (string).')
+  }
+  if (!property || typeof property !== 'string') {
+    throw new Error('removeVariableProperty requires `property` (string).')
+  }
+  let type = null
+  if (descriptor.type !== undefined) {
+    type = normalizeVariableType(descriptor.type)
+    if (!type) {
+      throw new Error(`removeVariableProperty: invalid type "${descriptor.type}". Must be one of: color, size, font-family (aliases: font, typo, typography)`)
+    }
+  }
+  const registry = getRegistry(editor)
+  let removed = 0
+  for (let i = registry.length - 1; i >= 0; i--) {
+    const entry = registry[i]
+    const matchTarget = entry.sector === sector
+      && entry.property === property
+      && (subProperty === undefined || (entry.subProperty || '') === subProperty)
+      && (subProperty !== undefined || !entry.subProperty)
+    if (matchTarget && (type === null || entry.type === type)) {
+      registry.splice(i, 1)
+      removed++
+    }
+  }
+  refreshStyleManager(editor)
+  return removed
+}
 
 /**
  * Styles for the variable UI in the Style Manager (Webflow-style)
@@ -317,42 +450,6 @@ function injectVarUI(editor, property, variables) {
 }
 
 /**
- * Inject variable UI on composite sub-properties.
- * Also hooks the composite's clear button so it clears var() values
- * from sub-properties (Bug 6: GrapesJS can't clear var() on number sub-properties).
- */
-function injectOnCompositeSubProperties(editor, sectorId, propertyId, subPropertyNames, variables) {
-  const prop = editor.StyleManager.getProperty(sectorId, propertyId)
-  if (!prop) return
-  const subProps = prop.getProperties ? prop.getProperties() : []
-  for (const sub of subProps) {
-    const propName = sub.get('property')
-    if (subPropertyNames.includes(propName)) {
-      injectVarUI(editor, sub, variables)
-    }
-  }
-
-  // Hook the composite's clear button (once) to also clear var() from sub-properties
-  if (!prop.__cssVarClearHooked && prop.view && prop.view.el) {
-    const clearBtn = prop.view.el.querySelector('[data-clear-style]')
-    if (clearBtn) {
-      prop.__cssVarClearHooked = true
-      clearBtn.addEventListener('click', () => {
-        for (const sub of (prop.getProperties ? prop.getProperties() : [])) {
-          const pName = sub.get('property')
-          if (subPropertyNames.includes(pName)) {
-            const val = getTargetStyleValue(editor, sub)
-            if (val && val.includes('var(')) {
-              setTargetStyleValue(editor, sub, '')
-            }
-          }
-        }
-      })
-    }
-  }
-}
-
-/**
  * Build variable option lists from current :root variables
  */
 function buildVarOptions(editor) {
@@ -383,44 +480,87 @@ function buildVarOptions(editor) {
 }
 
 /**
- * Inject all variable UIs into the style manager
+ * Inject variable UI on a single composite sub-property.
+ * The parent composite is looked up by sector + property, so sub-properties
+ * with the same name in different parents (e.g. `border-color` under
+ * `border` vs `border-top`) never get mixed up.
+ */
+function injectOnSingleSubProperty(editor, sectorId, propertyId, subPropertyName, variables) {
+  const prop = editor.StyleManager.getProperty(sectorId, propertyId)
+  if (!prop) return
+  const subProps = prop.getProperties ? prop.getProperties() : []
+  for (const sub of subProps) {
+    const propName = sub.get('property')
+    if (propName === subPropertyName) {
+      injectVarUI(editor, sub, variables)
+    }
+  }
+
+  // Hook the composite's clear button (once per parent) to also clear var()
+  // from sub-properties (GrapesJS can't clear var() on number sub-properties).
+  // Tracked as a set so several sub-properties of the same parent share one hook.
+  if (!prop.__cssVarClearHookedSubs) prop.__cssVarClearHookedSubs = new Set()
+  prop.__cssVarClearHookedSubs.add(subPropertyName)
+  if (!prop.__cssVarClearHooked && prop.view && prop.view.el) {
+    const clearBtn = prop.view.el.querySelector('[data-clear-style]')
+    if (clearBtn) {
+      prop.__cssVarClearHooked = true
+      clearBtn.addEventListener('click', () => {
+        const hooked = prop.__cssVarClearHookedSubs || new Set([subPropertyName])
+        for (const sub of (prop.getProperties ? prop.getProperties() : [])) {
+          const pName = sub.get('property')
+          if (hooked.has(pName)) {
+            const val = getTargetStyleValue(editor, sub)
+            if (val && val.includes('var(')) {
+              setTargetStyleValue(editor, sub, '')
+            }
+          }
+        }
+      })
+    }
+  }
+}
+
+/**
+ * Inject variable UI on composite sub-properties.
+ * Kept for backwards compatibility, delegates to the single-sub helper.
+ * Also hooks the composite's clear button so it clears var() values
+ * from sub-properties (Bug 6: GrapesJS can't clear var() on number sub-properties).
+ */
+function injectOnCompositeSubProperties(editor, sectorId, propertyId, subPropertyNames, variables) {
+  for (const name of subPropertyNames) {
+    injectOnSingleSubProperty(editor, sectorId, propertyId, name, variables)
+  }
+}
+
+function isTypeEnabled(options, type) {
+  if (type === TYPE_COLOR) return options.enableColors !== false
+  if (type === TYPE_SIZE) return options.enableSizes !== false
+  return options.enableTypography !== false
+}
+
+/**
+ * Inject all variable UIs into the style manager, from the per-editor registry.
+ * Unknown sectors/properties (e.g. registered before their plugin loads) are skipped.
  */
 function injectAllDropdowns(editor, options) {
+  const opts = options || getStoredOptions(editor)
   const { colorOptions, sizeOptions, typoOptions } = buildVarOptions(editor)
-
-  // Color properties
-  if (options.enableColors) {
-    for (const [sector, prop] of COLOR_PROPERTIES) {
-      const property = editor.StyleManager.getProperty(sector, prop)
-      if (property) injectVarUI(editor, property, colorOptions)
-    }
-    // Color sub-properties in composites
-    injectOnCompositeSubProperties(editor, 'decorations', 'outline', COLOR_SUB_PROPERTIES, colorOptions)
-    injectOnCompositeSubProperties(editor, 'typography', 'text-decoration', COLOR_SUB_PROPERTIES, colorOptions)
-    injectOnCompositeSubProperties(editor, 'extra', 'column-rule', COLOR_SUB_PROPERTIES, colorOptions)
+  const optionsByType = {
+    [TYPE_COLOR]: colorOptions,
+    [TYPE_SIZE]: sizeOptions,
+    [TYPE_FONT_FAMILY]: typoOptions,
   }
 
-  // Size properties
-  if (options.enableSizes) {
-    for (const [sector, prop] of SIZE_PROPERTIES) {
-      const property = editor.StyleManager.getProperty(sector, prop)
-      if (property) injectVarUI(editor, property, sizeOptions)
-    }
-    for (const [sector, prop] of SIZE_EXTRA_PROPERTIES) {
-      const property = editor.StyleManager.getProperty(sector, prop)
-      if (property) injectVarUI(editor, property, sizeOptions)
-    }
-    // Size sub-properties in composites
-    injectOnCompositeSubProperties(editor, 'dimension', 'margin', SIZE_SUB_PROPERTIES, sizeOptions)
-    injectOnCompositeSubProperties(editor, 'dimension', 'padding', SIZE_SUB_PROPERTIES, sizeOptions)
-    injectOnCompositeSubProperties(editor, 'decorations', 'border-radius', SIZE_SUB_PROPERTIES, sizeOptions)
-  }
-
-  // Typography: font-family only (font-weight is numeric, not suited for font-family variables)
-  if (options.enableTypography) {
-    const fontFamilyProp = editor.StyleManager.getProperty(...TYPO_FONT_FAMILY)
-    if (fontFamilyProp) {
-      injectVarUI(editor, fontFamilyProp, typoOptions)
+  for (const entry of getRegistry(editor)) {
+    if (!isTypeEnabled(opts, entry.type)) continue
+    const variables = optionsByType[entry.type]
+    if (!variables) continue
+    if (!entry.subProperty) {
+      const property = editor.StyleManager.getProperty(entry.sector, entry.property)
+      if (property) injectVarUI(editor, property, variables)
+    } else {
+      injectOnSingleSubProperty(editor, entry.sector, entry.property, entry.subProperty, variables)
     }
   }
 }
@@ -429,21 +569,66 @@ function injectAllDropdowns(editor, options) {
  * Refresh all style manager variable UIs
  */
 export function refreshStyleManager(editor, options) {
+  const opts = options || getStoredOptions(editor)
+  // requestAnimationFrame is unavailable in some test envs (node) - inject synchronously there
+  if (typeof requestAnimationFrame === 'undefined') {
+    injectAllDropdowns(editor, opts)
+    return
+  }
   requestAnimationFrame(() => {
-    injectAllDropdowns(editor, options)
+    injectAllDropdowns(editor, opts)
   })
 }
 
 /**
- * Set up event listeners to inject variable UIs when the style manager updates
+ * Set up event listeners to inject variable UIs when the style manager updates.
+ * Attaches `editor.CssVariables` so any plugin (e.g. Silex `css-props.ts`)
+ * can add or remove variable-enabled properties at runtime.
+ * `options.properties` (array of targets) is merged into the defaults on init.
  */
-export function setupStyleManager(editor, options) {
+export function setupStyleManager(editor, options = {}) {
+  optionsByEditor.set(editor, options)
+  // Init registry with defaults
+  getRegistry(editor)
+  // Merge initial extra targets (standalone usage without a host app)
+  if (Array.isArray(options.properties)) {
+    for (const descriptor of options.properties) {
+      try {
+        // Push without refresh: the Style Manager is not ready yet during init
+        const type = normalizeVariableType(descriptor.type)
+        if (!descriptor.sector || !descriptor.property || !type) continue
+        const registry = getRegistry(editor)
+        const entry = descriptor.subProperty
+          ? { sector: descriptor.sector, property: descriptor.property, subProperty: descriptor.subProperty, type }
+          : { sector: descriptor.sector, property: descriptor.property, type }
+        if (!registry.some(existing => sameTarget(existing, entry))) {
+          registry.push(entry)
+        }
+      } catch (e) {
+        console.warn('[grapesjs-css-variables] ignoring invalid options.properties entry', descriptor, e)
+      }
+    }
+  }
+
+  // Public API, callable from anywhere with access to the editor
+  editor.CssVariables = {
+    addVariableProperty: (descriptor) => addVariableProperty(editor, descriptor),
+    removeVariableProperty: (descriptor) => removeVariableProperty(editor, descriptor),
+    getVariableProperties: () => getVariableProperties(editor),
+    refreshStyleManager: (opts) => refreshStyleManager(editor, opts || getStoredOptions(editor)),
+  }
+
   let debounceTimeout
   const inject = () => {
     clearTimeout(debounceTimeout)
     debounceTimeout = setTimeout(() => {
+      const opts = getStoredOptions(editor)
+      if (typeof requestAnimationFrame === 'undefined') {
+        injectAllDropdowns(editor, opts)
+        return
+      }
       requestAnimationFrame(() => {
-        injectAllDropdowns(editor, options)
+        injectAllDropdowns(editor, opts)
       })
     }, 60)
   }
