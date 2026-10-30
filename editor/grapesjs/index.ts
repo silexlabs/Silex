@@ -80,6 +80,7 @@ import uploadProgress from './upload-progress'
 import cmsPlugin from './cms'
 import { ClientEvent } from '../events'
 import { ClientSideFileWithContent, PublicationData } from '~/common/types'
+import { getLocaleMessages } from '../i18n'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -157,6 +158,7 @@ const catComponents = 'Elements'
 
 export function getEditorConfig(config: ClientConfig): EditorConfig {
   const { websiteId, storageId, rootUrl } = config
+  const localeMessages = getLocaleMessages()
 
   // Create dynamic plugins array with conditional CMS plugin
   const dynamicPlugins = [...plugins]
@@ -178,8 +180,13 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     telemetry: false,
 
     i18n: {
+      locale: config.lang,
+      detectLocale: false,
+      localeFallback: 'en',
       messages: {
+        ...localeMessages,
         en: {
+          ...localeMessages.en,
           traitManager: {
             label: '',
           },
