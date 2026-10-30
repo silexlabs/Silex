@@ -31,6 +31,9 @@
     ],
     "resources": {
       "resources/glitchtip.dsn": "glitchtip.dsn"
+    },
+    "macOS": {
+      "signingIdentity": "-"
     }
   },
   "plugins": {

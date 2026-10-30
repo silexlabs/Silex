@@ -210,6 +210,24 @@ jobs:
           tauriScript: pnpm tauri
           args: --config tauri.ci.json ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
+      # Without a valid bundle signature, macOS says a downloaded app is "damaged" and offers no way to open it.
+      - name: Check the macOS app signature
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t APPS < <(find target -type d -path '*/release/bundle/macos/*.app' -prune)
+          if [ ${#APPS[@]} -eq 0 ]; then
+            echo "::error::No .app bundle found"; exit 1
+          fi
+          for app in "${APPS[@]}"; do
+            codesign --verify --deep --strict --verbose=2 "$app"
+            SIGNATURE=$(codesign -dv "$app" 2>&1)
+            if ! grep -qx 'Signature=adhoc' <<< "$SIGNATURE"; then
+              echo "::error::$app is not ad-hoc signed"; echo "$SIGNATURE"; exit 1
+            fi
+          done
+
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
