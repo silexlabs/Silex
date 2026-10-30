@@ -224,17 +224,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t APPS < <(find target -type d -path '*/release/bundle/macos/*.app' -prune)
-          if [ ${#APPS[@]} -eq 0 ]; then
+          APPS=$(find target -type d -path '*/release/bundle/macos/*.app' -prune)
+          if [ -z "$APPS" ]; then
             echo "::error::No .app bundle found"; exit 1
           fi
-          for app in "${APPS[@]}"; do
+          while IFS= read -r app; do
             codesign --verify --deep --strict --verbose=2 "$app"
             SIGNATURE=$(codesign -dv "$app" 2>&1)
             if ! grep -qx 'Signature=adhoc' <<< "$SIGNATURE"; then
               echo "::error::$app is not ad-hoc signed"; echo "$SIGNATURE"; exit 1
             fi
-          done
+          done <<< "$APPS"
 
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
       - name: Upload desktop artifacts
