@@ -32,14 +32,22 @@ jobs:
   # runners are worth it. No per-commit main build — the PR already covered it.
   set-matrix:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     outputs:
       matrix: ${{ steps.m.outputs.matrix }}
     steps:
       - id: m
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_FILES_URL: repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"},{"platform":"macos-arm","os":"macos-latest"},{"platform":"macos-x64","os":"macos-latest","rust-target":"x86_64-apple-darwin"},{"platform":"windows","os":"windows-latest"}]}' >> "$GITHUB_OUTPUT"
+          # The macOS bundle (signature, packaging) is only built on tags otherwise: a broken one would ship.
+          elif PR_FILES=$(gh api --paginate "$PR_FILES_URL" --jq '.[].filename') && grep -qxE 'desktop/src-tauri/tauri\.conf\.json|\.github/workflows/desktop\.yml' <<< "$PR_FILES"; then
+            echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"},{"platform":"macos-arm","os":"macos-latest"}]}' >> "$GITHUB_OUTPUT"
           else
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
           fi
