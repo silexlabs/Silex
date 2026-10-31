@@ -4615,7 +4615,6 @@ dependencies = [
  "git2",
  "libc",
  "open",
- "quick-xml",
  "reqwest",
  "rmcp",
  "rust-embed",

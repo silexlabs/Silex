@@ -1196,7 +1196,7 @@ impl SilexMcp {
     #[tool(
         description = "Images of the open website.",
         input_schema = asset_schema(),
-        annotations(read_only_hint = false, destructive_hint = false, open_world_hint = false)
+        annotations(read_only_hint = false, destructive_hint = false, open_world_hint = true)
     )]
     async fn asset(
         &self,
