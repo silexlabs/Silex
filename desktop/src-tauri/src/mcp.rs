@@ -270,7 +270,7 @@ impl SilexMcp {
     async fn forget_website(&self) {
         *self.dynamic_tools.write().await = Arc::new(ToolRouter::new());
         *held(&self.tools_of) = None;
-        crate::forget_project(&self.app_handle);
+        crate::clear_current_project(self.app_handle.clone());
     }
 
     fn open_website(&self) -> Option<String> {

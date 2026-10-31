@@ -92,10 +92,6 @@ fn set_current_project(
 
 #[tauri::command]
 fn clear_current_project(app: tauri::AppHandle) {
-    forget_project(&app);
-}
-
-pub(crate) fn forget_project(app: &tauri::AppHandle) {
     let state = app.state::<AppState>();
     *held(&state.current_website_id) = None;
     *held(&state.current_website_name) = None;
