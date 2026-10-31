@@ -16,7 +16,6 @@ const MAX_BYTES: u64 = 10 * 1024 * 1024;
 
 pub struct Image {
     pub name: String,
-    pub mime: &'static str,
     pub content: Vec<u8>,
 }
 
@@ -33,15 +32,6 @@ pub fn read_image(path: &str) -> Result<Image, String> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase)
         .unwrap_or_default();
-    let mime = match extension.as_str() {
-        "png" => "image/png",
-        "jpg" | "jpeg" => "image/jpeg",
-        "gif" => "image/gif",
-        "webp" => "image/webp",
-        "avif" => "image/avif",
-        "svg" => "image/svg+xml",
-        _ => return Err("Only images can be imported: png, jpg, gif, webp, avif or svg.".into()),
-    };
     let unreadable = |e: std::io::Error| format!("Can not read {}: {e}", path.display());
     // Opening a named pipe would wait for a writer forever
     if !std::fs::metadata(path).map_err(unreadable)?.is_file() {
@@ -58,7 +48,6 @@ pub fn read_image(path: &str) -> Result<Image, String> {
     }
     Ok(Image {
         name: safe_name(path, &extension),
-        mime,
         content,
     })
 }
@@ -110,15 +99,15 @@ mod tests {
     }
 
     #[test]
-    fn reads_an_image_under_a_safe_name() {
-        let image = read_image(&write("Logo Final.PNG", b"png")).unwrap();
-        assert_eq!(image.name, "logo-final.png");
-        assert_eq!(image.mime, "image/png");
+    fn reads_a_file_under_a_safe_name() {
+        assert_eq!(
+            read_image(&write("Logo Final.PNG", b"png")).unwrap().name,
+            "logo-final.png"
+        );
     }
 
     #[test]
     fn says_why_a_file_is_refused() {
-        assert!(refusal(&write("notes.txt", b"hello")).contains("Only images"));
         assert!(refusal("relative/logo.png").contains("must be absolute"));
         let large = vec![0; 10 * 1024 * 1024 + 1];
         assert!(refusal(&write("large.png", &large)).contains("larger than 10 MB"));

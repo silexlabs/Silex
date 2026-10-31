@@ -130,7 +130,7 @@ fn asset_schema() -> Arc<JsonObject> {
             "action": {
                 "type": "string",
                 "enum": ["add"],
-                "description": "add: copy an image file (png, jpg, gif, webp, avif, svg) into the open website, and get the URL to use in src or CSS url()."
+                "description": "add: copy a file, usually an image, into the open website, and get the URL to use in src or CSS url()."
             },
             "path": {"type": "string", "description": "add: absolute path of the image file, like /home/me/logo.svg"}
         }
@@ -615,10 +615,7 @@ impl SilexMcp {
             }
             name = format!("{stem}-{n}.{extension}");
         }
-        let part = reqwest::multipart::Part::bytes(image.content)
-            .file_name(name)
-            .mime_str(image.mime)
-            .map_err(|e| e.to_string())?;
+        let part = reqwest::multipart::Part::bytes(image.content).file_name(name);
         let form = reqwest::multipart::Form::new().part("files[]", part);
         let url = reqwest::Url::parse_with_params(&format!("{base}/api/website/assets"), &query)
             .map_err(|e| e.to_string())?;
