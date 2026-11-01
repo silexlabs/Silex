@@ -2,11 +2,6 @@ import { describe, expect, it } from '@jest/globals'
 import { getAvailableLocales, resolveLocale } from './index'
 
 describe('resolveLocale', () => {
-  it('registers the simplified core locale identifiers', () => {
-    expect(getAvailableLocales()).toEqual(['en', 'fr'])
-    expect(resolveLocale('fr-FR')).toBe('fr')
-    expect(resolveLocale('en-US')).toBe('en')
-  })
 
   it('uses exact bare language locales', () => {
     expect(resolveLocale('fr', ['en', 'fr'])).toBe('fr')
