@@ -19,10 +19,6 @@
  * @fileoverview Core i18n helpers shared across Silex's own editor code,
  * reusing the getTranslation()/addMessages() pattern already proven in
  * grapesjs-advanced-selector, instead of a second JS i18n library.
- * Locale files are plain JSON identity maps (English string -> translation),
- * one full, standalone file per language or BCP-47 locale, loaded as-is with no
- * merge/overlay step. Strings are registered under the `silex` namespace in
- * GrapesJS I18n, to keep them isolated from GrapesJS core and plugin messages.
  */
 
 import en from '../locales/en.json'
@@ -67,8 +63,7 @@ export function resolveLocale(requested: string | undefined | null, available: s
 }
 
 /**
- * Index the `silex` namespace of a locale with the raw English key. Returns
- * undefined when the locale or the key is missing, so the caller can fall back.
+ * Index the `silex` namespace of a locale with the raw English key.
  */
 function readSilex(editor: Editor, locale: string | undefined, key: string): string | undefined {
   const silex = editor?.I18n?.getMessages(locale)?.[NAMESPACE] as Record<string, string> | undefined
@@ -88,12 +83,7 @@ function addParams(value: string, vars: Record<string, unknown>): string {
 
 /**
  * Translate `key` (the English string itself, house style) for the editor's
- * current locale, forwarding `vars` for interpolated messages
- * (e.g. key: 'Hello {name}', vars: { name: 'Bob' }).
- * Reads the `silex` namespace directly instead of I18n.t(), so keys
- * containing '.' are looked up verbatim. Falls back to the English locale and
- * then to the raw key when untranslated, matching getTranslation() in
- * grapesjs-advanced-selector/src/model/GrapesJsSelectors.ts.
+ * current locale.
  */
 export function t(editor: Editor, key: string, vars?: Record<string, unknown>): string {
   if (!key) return ''
