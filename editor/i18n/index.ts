@@ -27,6 +27,7 @@
 
 import en from '../locales/en.json'
 import fr from '../locales/fr.json'
+import type { Editor } from 'grapesjs'
 
 const NAMESPACE = 'silex'
 
