@@ -53,7 +53,6 @@ function extractKeys(files, pattern) {
 }
 
 const editorFiles = walk(path.join(root, 'editor'))
-  .filter(f => !f.includes(`${path.sep}src${path.sep}locales${path.sep}`))
 
 const foundKeys = extractKeys(editorFiles, T_CALL_RE)
 
