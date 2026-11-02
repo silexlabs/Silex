@@ -30,16 +30,25 @@ export default (editor: Editor) => {
     }
     return prefix + idx
   }
+  function updateCreateButton() {
+    const hasSelection = !!editor.getSelected()
+    document.querySelectorAll<HTMLElement>('.symbol-create-button').forEach(button => {
+      button.classList.toggle('project-bar__panel-header-button--disabled', !hasSelection)
+      button.setAttribute('aria-disabled', String(!hasSelection))
+      button.setAttribute('title', hasSelection ? 'Create a symbol' : 'Select an element to create a symbol')
+    })
+  }
+  editor.on('load component:toggled', updateCreateButton)
   editor.Commands.add(cmdPromptAddSymbol, {
     run: (_) => {
       if (!editor.getSelected()) {
         return
       }
-      const label = prompt('Label', getNext('Symbol '))
-      if (!label || !label.trim()) {
+      const label = prompt('Label', getNext('Symbol '))?.trim()
+      if (!label) {
         return
       }
-      editor.runCommand('symbols:add', { label: label.trim() })
+      editor.runCommand('symbols:add', { label })
     }
   })
 }

@@ -124,6 +124,13 @@
       &:hover {
         color: var(--silex-accent-secondary);
       }
+      &.project-bar__panel-header-button--disabled {
+        cursor: not-allowed;
+        opacity: 0.4;
+        &:hover {
+          color: inherit;
+        }
+      }
     }
   }
 }
