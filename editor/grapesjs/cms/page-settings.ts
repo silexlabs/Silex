@@ -1,10 +1,11 @@
-import { removeState, setState, toExpression } from '@silexlabs/grapesjs-data-source'
+import { removeState, setState, StoredToken, toExpression } from '@silexlabs/grapesjs-data-source'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html, TemplateResult } from 'lit-html'
 import { Page, Editor, Component } from 'grapesjs'
 import { WebsiteSettings } from '~/common/types'
 import { ClientEvent } from '../../events'
 import { cmdAddSection } from '../settings'
+import { SettingsError } from '../settings-sections'
 import { createRef, ref } from 'lit-html/directives/ref.js'
 
 /**
@@ -23,10 +24,44 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
         currentPage = page as Page
         return renderSettingsSection(settings, editor, currentPage)
       },
+      check: checkCmsSettings,
     },
     siteOrPage: 'page',
     position: 'last',
   })
+}
+
+type Token = StoredToken & { kind?: string, fieldId?: string, id?: string, options?: { value?: string } }
+
+function textOf(tokens: Token[] | null): string | null {
+  if (!tokens?.every(token => token.type === 'property' && token.fieldId === 'fixed')) return null
+  return tokens.map(token => token.options?.value ?? '').join('')
+}
+
+function filterText(token: Token, id: string): string {
+  return token.type === 'filter' && token.id === id ? textOf(toExpression(token.options?.value) as Token[] | null) ?? '' : ''
+}
+
+/** Shared by the settings dialog and the page tool of the agents */
+export function checkCmsSettings(settings: Partial<Silex11tyPluginWebsiteSettings>): SettingsError | null {
+  if (settings.eleventyPageData) {
+    const data = toExpression(settings.eleventyPageData) as Token[] | null
+    if (!data?.length || data.some(token => token.type !== 'property') || data[data.length - 1].kind !== 'list') {
+      return { field: 'eleventyPageData', message: 'Pagination data must be a list, like the posts of a CMS' }
+    }
+  }
+  return null
+}
+
+// Publication adds a slash around a dynamic permalink, without knowing the text the filters add
+export function permalinkWarning(settings: Partial<Silex11tyPluginWebsiteSettings>): string | null {
+  const permalink = toExpression(settings.eleventyPermalink) as Token[] | null
+  if (!permalink?.length || textOf(permalink) !== null) return null
+  const start = permalink.reduce((text, token) => filterText(token, 'prepend') + text, '')
+  const end = permalink.reduce((text, token) => text + filterText(token, 'append'), '')
+  return start.startsWith('/') || end.endsWith('/')
+    ? 'The permalink starts or ends with a slash. Silex adds one at each end, so the published address may have two slashes in a row.'
+    : null
 }
 
 // Store original settings for revert functionality
@@ -36,6 +71,8 @@ let currentPage: Page | undefined
 function handleSettingsSaveEnd(editor: Editor) {
   return (page: Page) => {
     updateBodyStates(editor, page)
+    const warning = permalinkWarning(page.get('settings') ?? {})
+    if (warning) editor.runCommand('notifications:add', { type: 'warning', message: warning, group: 'Warnings in your settings' })
     currentPage = null
     originalSettings = null
   }

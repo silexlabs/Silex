@@ -16,7 +16,7 @@
  */
 
 import {html, render, TemplateResult} from 'lit-html'
-import {defaultSections, idCodeWrapper, isSite, SettingsSection, updateInfo} from './settings-sections'
+import {defaultSections, idCodeWrapper, isSite, SettingsError, SettingsSection, updateInfo} from './settings-sections'
 
 /**
  * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
@@ -131,6 +131,7 @@ function createCustomSettingsDialog(editor: Editor, opts: Record<string, unknown
   const form = el.querySelector('form') as HTMLFormElement
   form.onsubmit = (event: Event) => {
     event.preventDefault()
+    if (!checkSettings(page)) return
     editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
     saveSettings(editor, opts, page)
     editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
@@ -178,6 +179,7 @@ function reopenSettingsModal(editor: Editor, opts: Record<string, unknown>) {
   const form = el.querySelector('form') as HTMLFormElement
   form.onsubmit = (event: Event) => {
     event.preventDefault()
+    if (!checkSettings(settingsState?.page)) return
     editor.trigger(ClientEvent.SETTINGS_SAVE_START, settingsState?.page)
     saveSettings(editor, opts, settingsState?.page)
     editor.trigger(ClientEvent.SETTINGS_SAVE_END, settingsState?.page)
@@ -434,21 +436,55 @@ function displaySettings(
   requestAnimationFrame(() => headEditor?.refresh())
 }
 
-function saveSettings(
-  editor: Editor,
-  config: Record<string, unknown>,
-  model: any = editor.getModel()
-): void {
+function formSettings(): Record<string, any> {
   const form = el.querySelector('form') as HTMLFormElement
-  const formData = new FormData(form)
-  const data = Array.from(formData)
-    .reduce((aggregate: {[key: string]: any}, [key, value]) => {
+  return Array.from(new FormData(form))
+    .reduce((aggregate: Record<string, any>, [key, value]) => {
       if(value !== '') {
         aggregate[key] = value
       }
       return aggregate
     }, {})
-  const { name, ...settings } = data
+}
+
+function checkSettings(model: any): boolean {
+  el.querySelectorAll('.silex-form__error').forEach(error => error.remove())
+  const sections = model && !isSite(model) ? sectionsPage : sectionsSite
+  const settings = formSettings()
+  for (const section of sections) {
+    const error = section.check?.(settings)
+    if (error) {
+      showError(section, error)
+      return false
+    }
+  }
+  return true
+}
+
+function showError(section: SettingsSection, { field, message }: SettingsError): void {
+  showSection(section)
+  const input = el.querySelector(`[name="${field}"]`) as HTMLElement | null
+  const error = document.createElement('p')
+  error.className = 'silex-form__error'
+  error.setAttribute('role', 'alert')
+  error.textContent = message
+  if (input) {
+    error.id = `${field}-error`
+    input.setAttribute('aria-describedby', error.id)
+    input.after(error)
+    input.focus()
+  } else {
+    el.querySelector('form')?.prepend(error)
+  }
+}
+
+function saveSettings(
+  editor: Editor,
+  config: Record<string, unknown>,
+  model: any = editor.getModel()
+): void {
+  const data = formSettings()
+  const { name } = data
   model.set({
     settings: {
       ...data,

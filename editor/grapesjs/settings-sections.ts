@@ -28,6 +28,12 @@ export interface SettingsSection {
   id: string
   label: string
   render: (settings: WebsiteSettings, model: Backbone.Model) => TemplateResult
+  check?: (settings: Record<string, unknown>) => SettingsError | null
+}
+
+export interface SettingsError {
+  field: string
+  message: string
 }
 
 /**
