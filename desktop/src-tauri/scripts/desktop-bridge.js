@@ -88,7 +88,7 @@
       const state = {
         page: page?.id ?? null,
         breakpoint: device?.getName() ?? null,
-        element: element && editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component: element }) : null,
+        element: element ? editor.runCommand('agent-ids:get', { component: element }) : null,
       };
       // A change inside a symbol instance changes it on every page
       for (let c = element; c; c = c.parent()) {
@@ -98,7 +98,7 @@
           break;
         }
       }
-      state.selector = element && editor.Commands.has('selector:get') ? editor.runCommand('selector:get').selector : null;
+      state.selector = element ? editor.runCommand('selector:get').selector : null;
       return state;
     },
 

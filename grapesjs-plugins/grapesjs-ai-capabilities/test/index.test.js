@@ -18,6 +18,7 @@ function createEditor(commands = {}) {
     return {
         Commands: {
             has(id) { return id in commands },
+            add() {},
         },
         on(event, fn) { (listeners[event] = listeners[event] || []).push(fn) },
         trigger(event, ...args) { (listeners[event] || []).forEach(fn => fn(...args)) },

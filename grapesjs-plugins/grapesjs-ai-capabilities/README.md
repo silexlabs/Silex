@@ -132,6 +132,15 @@ Clears the registry and the tool descriptions. Useful for tests.
 
 Fired on `editor.on('load')`. The callback receives `addCapability` and `describeTool`.
 
+### Element ids for agents
+
+Agents name elements with short ids (`ab12`), valid until the website is opened again. Plugins resolve them with commands, so that every plugin shares the same ids:
+
+- `agent-ids:get` `{ component }`: the id of a component
+- `agent-ids:elements` `{ element_id?, several? }`: the component of an id, or the selected ones; throws an error the agent can act on
+- `agent-ids:created` `{ components }`: what a creation answers to the agent
+- `agent-ids:describe` `{ component }`: `"ab12" <div class="card">`, to name an element in a message
+
 ## Install
 
 ```

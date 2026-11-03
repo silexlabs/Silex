@@ -14,7 +14,7 @@
 import { describe, expect, it } from '@jest/globals'
 import grapesjs from 'grapesjs'
 import coreCommands from './core-commands'
-import agentIds from './agent-ids'
+import agentIds from '@silexlabs/grapesjs-ai-capabilities'
 
 const open = (components: string) => grapesjs.init({
   headless: true,

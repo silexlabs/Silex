@@ -1,3 +1,7 @@
+import agentIds from './agent-ids.js'
+
+export { agentId, created, describe, elementOf } from './agent-ids.js'
+
 export const PLUGIN_ID = 'grapesjs-ai-capabilities'
 
 const registry = new Map()
@@ -10,10 +14,10 @@ function isPlainObject(v) {
   return proto === Object.prototype || proto === null
 }
 
-// MCP clients require property names to match ^[a-zA-Z0-9_.-]{1,64} (see desktop mcp.rs).
+// MCP clients require property names to match ^[a-zA-Z0-9_.-]{1,64}.
 export const MCP_SCHEMA_PROPERTY_NAME = /^[a-zA-Z0-9_.-]{1,64}$/
 // Tool names travel to every MCP client, some only accept these characters
-export const TOOL_NAME = /^[a-z][a-z0-9_]{0,63}$/
+const TOOL_NAME = /^[a-z][a-z0-9_]{0,63}$/
 
 function assertValidSchemaPropertyNames(schema, path) {
   if (!isPlainObject(schema)) return
@@ -55,6 +59,7 @@ export default (editor) => {
       clearCapabilities,
     }
   }
+  agentIds(editor)
   editor.on('load', () => {
     editor.trigger(EVENT_READY, addCapability, describeTool)
   })
@@ -62,10 +67,10 @@ export default (editor) => {
 
 export function addCapability(def, options = {}) {
   if (!def || typeof def.tool !== 'string' || !TOOL_NAME.test(def.tool)) {
-    throw new Error('tool is required and must match ^[a-z][a-z0-9_]{0,63}$')
+    throw new Error(`tool is required and must match ${TOOL_NAME.source}`)
   }
   if (typeof def.action !== 'string' || !TOOL_NAME.test(def.action)) {
-    throw new Error('action is required and must match ^[a-z][a-z0-9_]{0,63}$')
+    throw new Error(`action is required and must match ${TOOL_NAME.source}`)
   }
   if (typeof def.command !== 'string' || !def.command) {
     throw new Error('command is required and must be a non-empty string')
@@ -112,7 +117,7 @@ export function addCapability(def, options = {}) {
 }
 
 export function describeTool(name, description) {
-  if (!TOOL_NAME.test(name)) throw new Error('tool name must match ^[a-z][a-z0-9_]{0,63}$')
+  if (!TOOL_NAME.test(name)) throw new Error(`tool name must match ${TOOL_NAME.source}`)
   if (typeof description !== 'string' || !description) throw new Error('description must be a non-empty string')
   toolDescriptions.set(name, description)
 }

@@ -15,8 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Editor, Page } from 'grapesjs'
-
 /**
  * Short ids the agents use to name elements, valid until the website is reopened.
  * Kept out of the model on purpose: nothing goes in the website file, and a clone
@@ -26,20 +24,15 @@ import { Component, Editor, Page } from 'grapesjs'
 const cmdAgentId = 'agent-ids:get'
 const cmdCreated = 'agent-ids:created'
 const cmdElements = 'agent-ids:elements'
+const cmdDescribe = 'agent-ids:describe'
 
 const GENERATION_KEY = 'silex-agent-ids-generation'
 // Two letters at most: a..z, then aa..zz
 const GENERATIONS = 26 + 26 * 26
 
-interface Registry {
-  generation: string
-  count: number
-  ids: WeakMap<Component, string>
-  components: Map<string, Component>
-}
-const registries = new WeakMap<Editor, Registry>()
+const registries = new WeakMap()
 
-function letters(n: number): string {
+function letters(n) {
   let s = ''
   for (let rest = n; rest > 0; rest = Math.floor((rest - 1) / 26)) {
     s = String.fromCharCode(97 + (rest - 1) % 26) + s
@@ -52,8 +45,8 @@ const randomGeneration = () => 1 + Math.floor(Math.random() * GENERATIONS)
 // Each opening takes the next prefix, kept across restarts, so that an id from an
 // older opening is refused instead of naming another element. Random when there is
 // no count: Desktop on another port has an empty storage
-function nextGeneration(): string {
-  let n: number
+function nextGeneration() {
+  let n
   try {
     const last = Number(localStorage.getItem(GENERATION_KEY))
     n = last ? last % GENERATIONS + 1 : randomGeneration()
@@ -64,7 +57,7 @@ function nextGeneration(): string {
   return letters(n)
 }
 
-function registry(editor: Editor): Registry {
+function registry(editor) {
   let reg = registries.get(editor)
   if (!reg) {
     reg = { generation: nextGeneration(), count: 0, ids: new WeakMap(), components: new Map() }
@@ -73,7 +66,7 @@ function registry(editor: Editor): Registry {
   return reg
 }
 
-export function agentId(editor: Editor, component: Component): string {
+export function agentId(editor, component) {
   const reg = registry(editor)
   let id = reg.ids.get(component)
   if (!id) {
@@ -84,7 +77,12 @@ export function agentId(editor: Editor, component: Component): string {
   return id
 }
 
-function pageOf(editor: Editor, component: Component): Page | undefined {
+export function describe(editor, component) {
+  const classes = component.getClasses().join(' ')
+  return `"${agentId(editor, component)}" <${component.get('tagName')}${classes ? ` class="${classes}"` : ''}>`
+}
+
+function pageOf(editor, component) {
   const root = component.parents().pop() ?? component
   return editor.Pages.getAll().find(page => page.getMainComponent() === root)
 }
@@ -92,7 +90,7 @@ function pageOf(editor: Editor, component: Component): Page | undefined {
 /**
  * The element in the selected page, undefined for an id never given
  */
-export function findByAgentId(editor: Editor, id: string): Component | undefined {
+function findByAgentId(editor, id) {
   const reg = registry(editor)
   const generation = /^([a-z]{1,2})\d+$/.exec(id)?.[1]
   if (generation && generation !== reg.generation) {
@@ -108,7 +106,7 @@ export function findByAgentId(editor: Editor, id: string): Component | undefined
   return component
 }
 
-function describeCreated(editor: Editor, component: Component) {
+function describeCreated(editor, component) {
   const classes = component.getClasses().join(' ')
   return {
     id: agentId(editor, component),
@@ -117,11 +115,7 @@ function describeCreated(editor: Editor, component: Component) {
   }
 }
 
-/**
- * What a creation answers. One element created becomes the selection, so the next
- * call acts on it; several leave the selection where it was
- */
-export function elementsOf(editor: Editor, id?: string, { several = false } = {}): Component[] {
+function elementsOf(editor, id, { several = false } = {}) {
   if (id) {
     const found = findByAgentId(editor, id)
     if (!found) throw new Error(`No element "${id}" on this page. Use element(action:'list') to see the ids.`)
@@ -133,11 +127,15 @@ export function elementsOf(editor: Editor, id?: string, { several = false } = {}
   return selected
 }
 
-export function elementOf(editor: Editor, id?: string): Component {
+export function elementOf(editor, id) {
   return elementsOf(editor, id)[0]
 }
 
-export function created(editor: Editor, components: Component[], parent: Component, { select = true } = {}) {
+/**
+ * What a creation answers. One element created becomes the selection, so the next
+ * call acts on it; several leave the selection where it was
+ */
+export function created(editor, components, parent, { select = true } = {}) {
   const elements = components.filter(component => component.get('type') !== 'textnode')
   if (select && elements.length === 1) editor.select(elements[0])
   return {
@@ -146,11 +144,12 @@ export function created(editor: Editor, components: Component[], parent: Compone
   }
 }
 
-export default (editor: Editor) => {
+export default (editor) => {
   // For the plugins published on their own, and the desktop selection echo
-  editor.Commands.add(cmdAgentId, (_ed, _sender, { component }: { component: Component }) => agentId(editor, component))
-  editor.Commands.add(cmdElements, (_ed, _sender, { element_id, several }: { element_id?: string, several?: boolean }) => elementsOf(editor, element_id, { several }))
-  editor.Commands.add(cmdCreated, (_ed, _sender, { components }: { components: Component[] }) => {
+  editor.Commands.add(cmdAgentId, (_ed, _sender, { component }) => agentId(editor, component))
+  editor.Commands.add(cmdDescribe, (_ed, _sender, { component }) => describe(editor, component))
+  editor.Commands.add(cmdElements, (_ed, _sender, { element_id, several }) => elementsOf(editor, element_id, { several }))
+  editor.Commands.add(cmdCreated, (_ed, _sender, { components }) => {
     const parent = components[0]?.parent()
     if (!parent) throw new Error(`${cmdCreated} needs created components that are in the page`)
     return created(editor, components, parent)

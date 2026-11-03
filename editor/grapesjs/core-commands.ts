@@ -16,21 +16,12 @@
  */
 
 import { Asset, Component, Device, Editor } from 'grapesjs'
-import { agentId, created, elementOf } from './agent-ids'
-
-/**
- * The commands of the element, asset and breakpoint tools of the agents.
- */
+import { agentId, created, describe, elementOf } from '@silexlabs/grapesjs-ai-capabilities'
 
 const POSITIONS = ['inside', 'before', 'after']
 const POSITION_SCHEMA = { type: 'string', enum: POSITIONS, description: 'Default: inside, as last child' }
 
-function describe(editor: Editor, component: Component): string {
-  const classes = component.getClasses().join(' ')
-  return `"${agentId(editor, component)}" <${component.get('tagName')}${classes ? ` class="${classes}"` : ''}>`
-}
-
-function place(editor: Editor, target: Component, position = 'inside'): { parent: Component, at?: number } {
+function place(target: Component, position = 'inside'): { parent: Component, at?: number } {
   if (!POSITIONS.includes(position)) throw new Error(`position must be one of: ${POSITIONS.join(', ')}. Nothing was changed.`)
   if (position === 'inside') return { parent: target }
   const parent = target.parent()
@@ -179,7 +170,7 @@ export default (editor: Editor) => {
   editor.Commands.add('element:insert', (_ed, _sender, options: ElementOptions = {}) => {
     if (!options.html) throw new Error('Required: html, the HTML to add.')
     const target = options.target_id ? elementOf(editor, options.target_id) : editor.getSelected() ?? editor.getWrapper()!
-    const { parent, at } = place(editor, target, options.position)
+    const { parent, at } = place(target, options.position)
     if (!editor.Components.canMove(parent, options.html, at).result) {
       throw new Error(`${describe(editor, parent)} can not contain this HTML. Nothing was changed. Choose another target_id or position.`)
     }
@@ -213,20 +204,16 @@ export default (editor: Editor) => {
       // An image shows its src property, not the attribute
       if (element.get('src') !== undefined && 'src' in attributes) element.set('src', added.src ?? '')
     }
-    if (remove_class) classNames(remove_class).forEach(name => element.removeClass(name))
-    if (add_class) classNames(add_class).forEach(name => element.addClass(name))
+    if (remove_class) element.removeClass(remove_class)
+    if (add_class) element.addClass(add_class)
     if (html !== undefined) {
-      element.empty()
-      return created(editor, html ? element.append(html) : [], element, { select: false })
+      return created(editor, element.components(html), element, { select: false })
     }
   })
   editor.Commands.add('element:move', (_ed, _sender, options: ElementOptions = {}) => {
     if (!options.target_id) throw new Error('Required: target_id, the element it goes inside, before or after.')
     const element = elementOf(editor, options.element_id)
-    const { parent, at } = place(editor, elementOf(editor, options.target_id), options.position)
-    if ([parent, ...parent.parents()].includes(element)) {
-      throw new Error(`Can not move ${describe(editor, element)} into itself or one of its children. Nothing was changed. Choose a target_id outside of it.`)
-    }
+    const { parent, at } = place(elementOf(editor, options.target_id), options.position)
     if (!editor.Components.canMove(parent, element, at).result) {
       throw new Error(`${describe(editor, element)} can not go into ${describe(editor, parent)}. Nothing was changed. Choose another target_id or position.`)
     }
