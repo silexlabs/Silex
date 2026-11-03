@@ -46,6 +46,7 @@ describe('SymbolsCommands', () => {
       Components: {
         getSymbols: jest.fn(() => [symbol]),
         allById: jest.fn(() => ({ parentId: symbol })),
+        canMove: jest.fn(() => ({ result: true })),
       },
       Modal: {
         open: jest.fn(),

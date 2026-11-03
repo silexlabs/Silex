@@ -104,7 +104,7 @@ function elementOf(editor: Editor, id?: string): Component | undefined {
   return editor.runCommand('agent-ids:elements', { element_id: id })[0]
 }
 
-function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside', targetId?: string) {
+function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside', targetId?: string): Record<string, unknown> {
   const symbols = editor.Components.getSymbols()
   const symbol = symbols.find(s => s.getId() === symbolId)
   if (!symbol) {
@@ -115,13 +115,10 @@ function insertSymbolInstance(editor: Editor, symbolId: string, position = 'insi
   const parent = position === 'inside' ? target : target.parent()
   if (!parent) throw new Error('The body has no parent: use position "inside". Nothing was changed.')
   const at = position === 'inside' ? undefined : target.index() + (position === 'after' ? 1 : 0)
+  // Before the instance path, which refuses with a dialog meant for the user
   if (!allowDrop(editor, parent)) throw new Error('A symbol can not go inside a symbol. Nothing was changed. Choose a target_id outside of it, or change position.')
-  if (!editor.Components.canMove(parent, symbol, at).result) throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed. Choose another target_id, or change position.`)
-  const [instance] = parent.append(editor.Components.addSymbol(symbol)!, { at })
-  editor.select(instance)
-  return editor.Commands.has('agent-ids:created')
-    ? editor.runCommand('agent-ids:created', { components: [instance] })
-    : { created: [{ id: instance.getId() }], parent_id: parent.getId() }
+  const instance = _createSymbolInstance(editor, null, { symbol, target: parent, pos: { index: at } })
+  return editor.runCommand('agent-ids:created', { components: [instance] })
 }
 
 /**
@@ -148,6 +145,9 @@ export function _createSymbolInstance(
     // Check that it is a valid parent
     if (parent) {
       if(allowDrop(editor, parent)) {
+        if (!editor.Components.canMove(parent, symbol, pos.index).result) {
+          throw new Error(`The parent element can not contain symbol "${symbol.getName()}". Nothing was changed.`)
+        }
         // create the new component
         const symbolInfo = createSymbol(editor, symbol)
         if (!symbolInfo) throw new Error('Can not create the symbol: symbol creation failed')
