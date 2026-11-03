@@ -9,10 +9,7 @@
 
 //! Images an agent copies from the disk into a website
 
-use std::io::Read;
 use std::path::Path;
-
-const MAX_BYTES: u64 = 10 * 1024 * 1024;
 
 pub struct Image {
     pub name: String,
@@ -37,15 +34,7 @@ pub fn read_image(path: &str) -> Result<Image, String> {
     if !std::fs::metadata(path).map_err(unreadable)?.is_file() {
         return Err(format!("{} is not a file.", path.display()));
     }
-    let mut content = Vec::new();
-    std::fs::File::open(path)
-        .map_err(unreadable)?
-        .take(MAX_BYTES + 1)
-        .read_to_end(&mut content)
-        .map_err(unreadable)?;
-    if content.len() as u64 > MAX_BYTES {
-        return Err(format!("{} is larger than 10 MB.", path.display()));
-    }
+    let content = std::fs::read(path).map_err(unreadable)?;
     Ok(Image {
         name: safe_name(path, &extension),
         content,
@@ -109,7 +98,5 @@ mod tests {
     #[test]
     fn says_why_a_file_is_refused() {
         assert!(refusal("relative/logo.png").contains("must be absolute"));
-        let large = vec![0; 10 * 1024 * 1024 + 1];
-        assert!(refusal(&write("large.png", &large)).contains("larger than 10 MB"));
     }
 }
