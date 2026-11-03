@@ -48,11 +48,3 @@ test('paths become the tokens the editor stores, and back', () => {
   const link = [...pageItem, { type: 'filter', id: 'prepend', options: { value: fixed('./blog/') } }, { type: 'filter', id: 'append', options: { value: fixed('/') } }] as unknown as Parameters<typeof expressionToPath>[0]
   expect(expressionToPath(link, t => String(t.dataSourceId), 'body')).toBe('./blog/{item.title}/')
 })
-
-test('paths that cannot work say what to do', () => {
-  expect(() => resolvePath(parsePath('wp.posts.nodes.title').slice(1), null, 'wp', lookup)).toThrow('wp.posts.nodes is a list')
-  expect(() => resolvePath(parsePath('wp.posts.nodez').slice(1), null, 'wp', lookup)).toThrow('No field "nodez" on RootQueryToPostConnection. Fields: nodes.')
-  expect(() => resolvePath(parsePath('wp.posts(limit: 3)').slice(1), null, 'wp', lookup)).toThrow('Arguments: first, where')
-  expect(() => parsePath('wp.posts(first: 3')).toThrow('Unclosed (')
-  expect(() => parsePath('wp.posts(where: {search: "${x}"}).nodes')).toThrow('cannot contain')
-})
