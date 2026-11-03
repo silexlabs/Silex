@@ -17,6 +17,7 @@
 
 import { Asset, Component, Device, Editor } from 'grapesjs'
 import { agentId, created, describe, elementOf } from '@silexlabs/grapesjs-ai-capabilities'
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
 
 const POSITIONS = ['inside', 'before', 'after']
 const POSITION_SCHEMA = { type: 'string', enum: POSITIONS, description: 'Default: inside, as last child' }
@@ -119,9 +120,6 @@ function registerBreakpoints(editor: Editor, addCapability: AddCapability, descr
     },
   })
 }
-
-type AddCapability = (def: Record<string, unknown>) => void
-type DescribeTool = (name: string, description: string) => void
 
 export default (editor: Editor) => {
   editor.Commands.add('element:list', (_ed, _sender, options: ElementOptions = {}) => {

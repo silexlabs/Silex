@@ -16,6 +16,7 @@
  */
 
 import { Editor, Page } from 'grapesjs'
+import type { AddCapability } from '@silexlabs/grapesjs-ai-capabilities'
 import { StoredToken, toExpression } from '@silexlabs/grapesjs-data-source'
 import { ClientEvent } from '../../events'
 import { setSettingsOf } from '../settings'
@@ -74,7 +75,7 @@ export default function pageBindings(editor: Editor) {
     return `${bind_to} removed.`
   })
 
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
+  editor.on('ai-capabilities:ready', (addCapability: AddCapability) => {
     const pageId = { type: 'string', description: 'Page id from list. Default: the selected page' }
     const bindTo = { type: 'string', enum: BIND_TO }
     addCapability({

@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Discovery and metadata layer for GrapesJS commands, enabling MCP tool exposure and external integrations",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.d.ts",
   "files": [
     "dist",
     "src",

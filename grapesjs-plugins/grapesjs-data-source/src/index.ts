@@ -23,6 +23,7 @@ import { DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOpt
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 import { Editor } from 'grapesjs'
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
 
 /**
  * Export the public API
@@ -92,8 +93,8 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   })
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) => {
-    describeTool?.('cms', CMS_DESCRIPTION)
+  editor.on('ai-capabilities:ready', (addCapability: AddCapability, describeTool: DescribeTool) => {
+    describeTool('cms', CMS_DESCRIPTION)
     cmsCapabilities.forEach(capability => addCapability(capability))
   })
 }

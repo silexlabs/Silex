@@ -1,11 +1,12 @@
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
 import { cmdList, cmdAdd, cmdRemove, cmdUnlink, cmdCreate } from './SymbolsCommands'
 
 const POSITION = { type: 'string', enum: ['inside', 'before', 'after'], description: 'Default: inside, as last child' }
 const ELEMENT_ID = { type: 'string', description: 'Element id, like "ab12". Default: the selected element' }
 const SYMBOL_ID = { type: 'string', description: 'Symbol id from list or create' }
 
-export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) {
-  describeTool?.('symbol', 'Symbols: elements shared by several pages, like a header.')
+export function registerCapabilities(addCapability: AddCapability, describeTool: DescribeTool) {
+  describeTool('symbol', 'Symbols: elements shared by several pages, like a header.')
   addCapability({
     tool: 'symbol',
     action: 'list',

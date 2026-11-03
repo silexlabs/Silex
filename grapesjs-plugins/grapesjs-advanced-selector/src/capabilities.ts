@@ -1,7 +1,9 @@
-export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void, describeTool?: (name: string, description: string) => void) {
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
+
+export function registerCapabilities(addCapability: AddCapability, describeTool: DescribeTool) {
   const elementId = { type: 'string', description: 'Element id, like "ab12". Default: the selected element' }
   const selector = { type: 'string', description: 'CSS selector that matches the element, one relation and one state at most, like ".card", ".card:hover" or ".list > .card"' }
-  describeTool?.('style', 'CSS rules, written for the selected breakpoint.')
+  describeTool('style', 'CSS rules, written for the selected breakpoint.')
   addCapability({
     tool: 'style',
     action: 'list',
