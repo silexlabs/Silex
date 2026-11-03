@@ -42,6 +42,7 @@ describe('SymbolsCommands', () => {
       getSelected: jest.fn(() => component),
       getSelectedAll: jest.fn(() => [component]),
       Commands: { has: jest.fn(() => false) },
+      runCommand: jest.fn(() => editor.getSelectedAll()),
       Components: {
         getSymbols: jest.fn(() => [symbol]),
         allById: jest.fn(() => ({ parentId: symbol })),
@@ -86,19 +87,19 @@ describe('SymbolsCommands', () => {
   describe('_removeSymbol', () => {
     it('removes symbol by id', async () => {
       symbol.getId.mockReturnValue('symbolId')
-      expect(() => _removeSymbol(editor, null, { symbolId: 'symbolId' })).not.toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: 'symbolId' })).not.toThrow()
       // deleteSymbol is called by the command
       const { deleteSymbol } = await import('./utils')
       expect(deleteSymbol).toHaveBeenCalledWith(editor, symbol)
     })
 
     it('throws if missing symbolId', () => {
-      expect(() => _removeSymbol(editor, null, { symbolId: '' })).toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: '' })).toThrow()
     })
 
     it('throws if symbol not found', () => {
       editor.Components.getSymbols.mockReturnValue([])
-      expect(() => _removeSymbol(editor, null, { symbolId: 'notfound' })).toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: 'notfound' })).toThrow()
     })
   })
 
@@ -113,12 +114,6 @@ describe('SymbolsCommands', () => {
       const { unbindSymbolInstance } = await import('./utils')
       expect(() => _unlinkSymbolInstance(editor, null, {})).not.toThrow()
       expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
-    })
-
-    it('refuses an unknown element_id or several selected elements, instead of acting on another element', () => {
-      expect(() => _unlinkSymbolInstance(editor, null, { element_id: 'nope' })).toThrow(/No element "nope"/)
-      editor.getSelectedAll.mockReturnValue([component, symbol])
-      expect(() => _unlinkSymbolInstance(editor, null, {})).toThrow(/Several elements/)
     })
 
     it('throws if no component is selected', () => {

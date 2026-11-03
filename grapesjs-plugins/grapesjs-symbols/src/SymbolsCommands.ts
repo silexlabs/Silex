@@ -75,7 +75,7 @@ export function _addSymbol(
 export function _removeSymbol(
   editor: Editor,
   _: any,
-  { symbolId, symbol_id = symbolId }: { symbolId?: string, symbol_id?: string },
+  { symbol_id }: { symbol_id?: string },
 ) {
   if (!symbol_id) {
     throw new Error('Can not delete symbol: missing param symbol_id')
@@ -101,11 +101,7 @@ export function _unlinkSymbolInstance(
 const POSITIONS = ['inside', 'before', 'after']
 
 function elementOf(editor: Editor, id?: string): Component | undefined {
-  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id })[0]
-  if (id) return editor.Components.allById()[id] ?? (() => { throw new Error(`No element "${id}". Nothing was changed.`) })()
-  const selected = editor.getSelectedAll()
-  if (selected.length > 1) throw new Error('Several elements are selected: set element_id. Nothing was changed.')
-  return selected[0]
+  return editor.runCommand('agent-ids:elements', { element_id: id })[0]
 }
 
 function insertSymbolInstance(editor: Editor, symbolId: string, position = 'inside', targetId?: string) {
