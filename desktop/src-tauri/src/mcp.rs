@@ -24,7 +24,6 @@ use std::sync::Arc;
 use rmcp::handler::server::router::tool::{ToolRoute, ToolRouter};
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::*;
-use rmcp::schemars::JsonSchema;
 use rmcp::service::RequestContext;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
@@ -70,26 +69,50 @@ impl Drop for PendingEval<'_> {
 
 /// Files named by an agent, fetched once by the editor at /mcp-file/{token}/{name}, so
 /// that nothing in the editor can read a path of the disk by itself
-static LOCAL_FILES: std::sync::LazyLock<std::sync::Mutex<HashMap<String, Vec<u8>>>> =
-    std::sync::LazyLock::new(Default::default);
+pub type LocalFiles = Arc<std::sync::Mutex<HashMap<String, Vec<u8>>>>;
 
 /// Forgets the files of a call when it ends, fetched or not
-struct LocalFiles(Vec<String>);
+struct CallFiles<'a> {
+    files: &'a LocalFiles,
+    tokens: Vec<String>,
+}
 
-impl Drop for LocalFiles {
+impl Drop for CallFiles<'_> {
     fn drop(&mut self) {
-        let mut files = held(&LOCAL_FILES);
-        for token in &self.0 {
+        let mut files = held(self.files);
+        for token in &self.tokens {
             files.remove(token);
         }
     }
+}
+
+fn read_file(path: &str) -> Result<(String, Vec<u8>), String> {
+    let path = std::path::Path::new(path);
+    if !path.is_absolute() {
+        return Err(format!(
+            "path must be absolute, like /home/me/logo.svg: {}",
+            path.display()
+        ));
+    }
+    let unreadable = |e: std::io::Error| format!("Can not read {}: {e}", path.display());
+    // Opening a named pipe would wait for a writer forever
+    if !std::fs::metadata(path).map_err(unreadable)?.is_file() {
+        return Err(format!("{} is not a file.", path.display()));
+    }
+    let content = std::fs::read(path).map_err(unreadable)?;
+    let name = path
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .into_owned();
+    Ok((name, content))
 }
 
 // ==========================================================================
 // Action enums (static tools only)
 // ==========================================================================
 
-#[derive(Debug, Deserialize, JsonSchema)]
+#[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum WebsiteAction {
     List,
@@ -101,28 +124,17 @@ pub enum WebsiteAction {
     Dashboard,
 }
 
-impl WebsiteAction {
-    fn changes_tool_list(&self) -> bool {
-        matches!(
-            self,
-            Self::Create | Self::Duplicate | Self::Open | Self::Dashboard | Self::Delete
-        )
-    }
-}
-
 // ==========================================================================
 // Parameter structs (static tools only)
 // ==========================================================================
 
-#[derive(Debug, Deserialize, JsonSchema)]
+#[derive(Debug, Deserialize)]
 pub struct WebsiteParams {
     pub action: WebsiteAction,
     pub website_id: Option<String>,
     pub name: Option<String>,
 }
 
-/// Written by hand: the derived one puts the actions behind a $ref, which
-/// small models ignore
 fn website_schema() -> Arc<JsonObject> {
     flat_schema(serde_json::json!({
         "type": "object",
@@ -155,7 +167,7 @@ fn flat_schema(schema: serde_json::Value) -> Arc<JsonObject> {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, Deserialize, JsonSchema)]
+#[derive(Debug, Default, Clone, Copy, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ScreenshotTarget {
     #[default]
@@ -172,7 +184,7 @@ impl ScreenshotTarget {
     }
 }
 
-#[derive(Debug, Deserialize, JsonSchema)]
+#[derive(Debug, Deserialize)]
 pub struct ScreenshotParams {
     pub target: Option<ScreenshotTarget>,
 }
@@ -192,6 +204,7 @@ pub struct SilexMcp {
     app_handle: tauri::AppHandle,
     eval_counter: Arc<AtomicU64>,
     pending_evals: PendingEvals,
+    local_files: LocalFiles,
     /// The last selection the clients were told about. Shared: a client that
     /// sends its protocol version with each request gets a new service each time
     seen_selection: SeenSelection,
@@ -230,26 +243,31 @@ impl SilexMcp {
             .map_err(|e| format!("Navigation failed: {}", e))
     }
 
-    /// A website just made by `create` or `duplicate` opens, as the user would expect
-    async fn open_new_website(&self, base_url: &str, id: &str, made: &str) -> CallToolResult {
+    /// `made` is what `create` or `duplicate` did: the website they made opens, as the
+    /// user would expect
+    async fn open_in_editor(&self, base_url: &str, id: &str, made: Option<&str>) -> CallToolResult {
         let opened = reqwest::Url::parse_with_params(&format!("{}/", base_url), &[("id", id)])
             .map_err(|e| e.to_string())
             .and_then(|url| self.navigate_to(url.as_str()));
         if let Err(e) = opened {
-            return tool_error(format!(
-                "Website '{}' {} but could not be opened: {}",
-                id, made, e
-            ));
+            return tool_error(match made {
+                Some(made) => format!("Website '{}' {} but could not be opened: {}", id, made, e),
+                None => e,
+            });
         }
         match self.load_capabilities().await {
-            Ok(n) => tracing::info!("Loaded {} capabilities after the website was {}", n, made),
+            Ok(n) => tracing::info!("Loaded {} capabilities after opening the website", n),
             Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
         }
+        let message = match made {
+            Some(made) => format!("Website {} and opened in editor", made),
+            None => "Website opened in editor".to_string(),
+        };
         CallToolResult::success(vec![ContentBlock::text(
             serde_json::json!({
                 "success": true,
                 "websiteId": id,
-                "message": format!("Website {} and opened in editor", made),
+                "message": message,
             })
             .to_string(),
         )])
@@ -384,9 +402,6 @@ impl SilexMcp {
         let count = families.len();
         let mut router = ToolRouter::new();
         for family in families {
-            if let Some(base) = self.tool_router.get(&family.name) {
-                warn_collisions(base, &family.input_schema);
-            }
             router.add_route(family.into_route());
         }
 
@@ -436,26 +451,29 @@ impl SilexMcp {
         if let Err(e) = self.require_project() {
             return Ok(tool_error(e));
         }
-        let mut local_files = LocalFiles(Vec::new());
+        let mut call_files = CallFiles {
+            files: &self.local_files,
+            tokens: Vec::new(),
+        };
         for key in &action.files {
             let Some(path) = params.get(key).and_then(|v| v.as_str()).map(str::to_string) else {
                 continue;
             };
-            let file =
-                match tokio::task::spawn_blocking(move || crate::asset_import::read_file(&path))
-                    .await
-                {
-                    Ok(Ok(file)) => file,
-                    Ok(Err(why)) => return Ok(tool_error(format!("{why} Nothing was changed."))),
-                    Err(e) => return Ok(tool_error(format!("Could not read the file: {e}"))),
-                };
+            let (name, content) = match tokio::task::spawn_blocking(move || read_file(&path)).await
+            {
+                Ok(Ok(file)) => file,
+                Ok(Err(why)) => return Ok(tool_error(format!("{why} Nothing was changed."))),
+                Err(e) => return Ok(tool_error(format!("Could not read the file: {e}"))),
+            };
             let token = uuid::Uuid::new_v4().to_string();
-            params.insert(
-                key.clone(),
-                format!("/mcp-file/{token}/{}", file.name).into(),
-            );
-            held(&LOCAL_FILES).insert(token.clone(), file.content);
-            local_files.0.push(token);
+            let mut url = reqwest::Url::parse("http://localhost/mcp-file/").expect("valid URL");
+            url.path_segments_mut()
+                .expect("URL with a path")
+                .push(&token)
+                .push(&name);
+            params.insert(key.clone(), url.path().into());
+            held(&self.local_files).insert(token.clone(), content);
+            call_files.tokens.push(token);
         }
 
         let js = COMMAND_JS
@@ -567,7 +585,7 @@ impl SilexMcp {
             Ok(listed) => listed,
             Err(e) => return tool_error(format!("Unexpected website list ({e}): {body}")),
         };
-        let open = held(&self.app_handle.state::<AppState>().current_website_id).clone();
+        let open = self.open_website();
         let websites: Vec<serde_json::Value> = listed
             .into_iter()
             .map(|site| {
@@ -723,31 +741,6 @@ fn merge_family(base: &Tool, family: &Tool) -> Tool {
     tool
 }
 
-/// merge_family keeps the static side of a collision: say it once, when the tools load
-fn warn_collisions(base: &Tool, family: &JsonObject) {
-    let Some(serde_json::Value::Object(extra)) = family.get("properties") else {
-        return;
-    };
-    let actions = declared_actions(base).unwrap_or_default();
-    for (key, value) in extra {
-        if key == "action" {
-            let more = value.get("enum").and_then(|e| e.as_array());
-            for name in more.into_iter().flatten().filter_map(|n| n.as_str()) {
-                if actions.contains(&name) {
-                    tracing::warn!("{}: action {} is already a static one", base.name, name);
-                }
-            }
-        } else if base
-            .input_schema
-            .get("properties")
-            .and_then(|p| p.get(key))
-            .is_some()
-        {
-            tracing::warn!("{}: parameter {} is already a static one", base.name, key);
-        }
-    }
-}
-
 /// The actions a tool declares, None when it has no action parameter
 fn declared_actions(tool: &Tool) -> Option<Vec<&str>> {
     let actions = tool
@@ -822,8 +815,8 @@ struct ToolSpan {
 }
 
 impl ToolSpan {
-    /// One per tool call, with only values chosen by Silex: never the arguments,
-    /// an error message, nor anything else of the website
+    /// One per tool call, with only values chosen by Silex or the name of the client:
+    /// never the arguments, an error message, nor anything else of the website
     fn start(tool: &str, action: Option<&str>, client: Option<&str>) -> Self {
         let tx_ctx = sentry::TransactionContext::new(&format!("mcp/{}", tool), "mcp.tool");
         let transaction = sentry::start_transaction(tx_ctx);
@@ -896,6 +889,7 @@ impl SilexMcp {
     pub fn new(
         app_handle: tauri::AppHandle,
         pending_evals: PendingEvals,
+        local_files: LocalFiles,
         eval_counter: Arc<AtomicU64>,
         dynamic_tools: DynamicTools,
         tools_of: ToolsOf,
@@ -908,6 +902,7 @@ impl SilexMcp {
             app_handle,
             eval_counter,
             pending_evals,
+            local_files,
             seen_selection,
         }
     }
@@ -957,11 +952,10 @@ impl SilexMcp {
                                 if status.is_success() {
                                     let Some(id) = new_website_id(&response_body) else {
                                         return Ok(tool_error(format!(
-                                            "Website created but the server sent no websiteId, so it was not opened. Do not create it again, find it with website(action:'list'): {}",
-                                            response_body
+                                            "Unexpected server answer: {response_body}"
                                         )));
                                     };
-                                    Ok(self.open_new_website(&base_url, &id, "created").await)
+                                    Ok(self.open_in_editor(&base_url, &id, Some("created")).await)
                                 } else {
                                     Ok(tool_error(format!(
                                         "Error creating website ({}): {}",
@@ -988,10 +982,7 @@ impl SilexMcp {
                 match client.delete(&url).send().await {
                     Ok(resp) => {
                         if resp.status().is_success() {
-                            let was_open =
-                                held(&self.app_handle.state::<AppState>().current_website_id)
-                                    .as_deref()
-                                    == Some(wid);
+                            let was_open = self.open_website().as_deref() == Some(wid);
                             if was_open && self.navigate_to(&format!("{}/", base_url)).is_ok() {
                                 self.forget_website().await;
                             }
@@ -1060,12 +1051,11 @@ impl SilexMcp {
                             Ok(body) if status.is_success() => {
                                 let Some(copy_id) = new_website_id(&body) else {
                                     return Ok(tool_error(format!(
-                                        "Website duplicated but the server sent no websiteId, so the copy was not opened. Do not duplicate it again, find it with website(action:'list'): {}",
-                                        body
+                                        "Unexpected server answer: {body}"
                                     )));
                                 };
                                 Ok(self
-                                    .open_new_website(&base_url, &copy_id, "duplicated")
+                                    .open_in_editor(&base_url, &copy_id, Some("duplicated"))
                                     .await)
                             }
                             Ok(body) => Ok(tool_error(format!(
@@ -1095,20 +1085,7 @@ impl SilexMcp {
                         body.to_string(),
                     )]));
                 }
-                let nav_url = format!("{}/?id={}", base_url, wid);
-                match self.navigate_to(&nav_url) {
-                    Ok(_) => {
-                        // Load capabilities synchronously so they're available immediately
-                        match self.load_capabilities().await {
-                            Ok(n) => tracing::info!("Loaded {} capabilities after open", n),
-                            Err(e) => tracing::warn!("Failed to load capabilities: {}", e),
-                        }
-                        Ok(CallToolResult::success(vec![ContentBlock::text(
-                            "{\"success\":true,\"message\":\"Website opened in editor\"}",
-                        )]))
-                    }
-                    Err(e) => Ok(tool_error(e)),
-                }
+                Ok(self.open_in_editor(&base_url, wid, None).await)
             }
 
             WebsiteAction::Dashboard => match self.navigate_to(&format!("{}/", base_url)) {
@@ -1198,9 +1175,10 @@ pub async fn eval_callback(
 }
 
 pub async fn local_file(
+    axum::extract::Extension(files): axum::extract::Extension<LocalFiles>,
     axum::extract::Path((token, _name)): axum::extract::Path<(String, String)>,
 ) -> Result<Vec<u8>, axum::http::StatusCode> {
-    held(&LOCAL_FILES)
+    held(&files)
         .remove(&token)
         .ok_or(axum::http::StatusCode::NOT_FOUND)
 }
@@ -1333,70 +1311,43 @@ impl SilexMcp {
             .and_then(|action| action.as_str());
         let route = route(
             self.tool_router.get(&request.name),
-            dynamic.as_ref().map(|tools| tools.get(&request.name)),
+            dynamic.as_ref().and_then(|tools| tools.get(&request.name)),
             action,
         );
-        if route == Route::WrongAction {
-            let all = self
-                .get_tool(&request.name)
-                .and_then(|tool| declared_actions(&tool).map(|actions| actions.join(", ")))
-                .unwrap_or_default();
-            return Ok(
-                tool_error(format!("Set action to one of: {all}. Nothing was changed.")).into(),
-            );
-        }
-
-        if route == Route::Static {
-            let reopened = action == Some("open")
-                && request
-                    .arguments
-                    .as_ref()
-                    .and_then(|args| args.get("website_id"))
-                    .and_then(|id| id.as_str())
-                    .is_some_and(|id| self.is_open_with_tools(id));
-            let may_change_tool_list = request.name.as_ref() == "website"
-                && !reopened
-                && action
-                    .and_then(|action| serde_json::from_value::<WebsiteAction>(action.into()).ok())
-                    .is_some_and(|action| action.changes_tool_list());
-            let peer = context.peer.clone();
-
-            let tool_ctx =
-                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-            // A wrong value is the agent's to fix, so it gets a tool error like the other tools
-            let result = match self.tool_router.call(tool_ctx).await {
-                Err(e) if e.code == ErrorCode::INVALID_PARAMS => {
-                    Ok(tool_error(format!("{} Nothing was changed.", e.message)).into())
-                }
-                other => other,
-            };
-
-            let succeeded = matches!(
-                &result,
-                Ok(CallToolResponse::Complete(done)) if done.is_error != Some(true)
-            );
-            if may_change_tool_list && succeeded {
-                if let Err(e) = peer.notify_tool_list_changed().await {
-                    tracing::warn!("Failed to send tools/list_changed: {}", e);
-                }
+        match (route, dynamic) {
+            (Route::WrongAction, _) => {
+                let all = self
+                    .get_tool(&request.name)
+                    .and_then(|tool| declared_actions(&tool).map(|actions| actions.join(", ")))
+                    .unwrap_or_default();
+                Ok(tool_error(format!("Set action to one of: {all}. Nothing was changed.")).into())
             }
-
-            return result;
+            (Route::Static, _) => {
+                let before = Arc::clone(&*self.dynamic_tools.read().await);
+                let peer = context.peer.clone();
+                let tool_ctx =
+                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+                let result = self.tool_router.call(tool_ctx).await;
+                if !Arc::ptr_eq(&before, &*self.dynamic_tools.read().await) {
+                    if let Err(e) = peer.notify_tool_list_changed().await {
+                        tracing::warn!("Failed to send tools/list_changed: {}", e);
+                    }
+                }
+                result
+            }
+            (Route::Family, Some(dynamic)) => {
+                let tool_ctx =
+                    rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
+                dynamic.call(tool_ctx).await
+            }
+            (Route::Family | Route::NotFound, _) => Err(McpError::invalid_params(
+                format!(
+                    "Tool '{}' not found. The editor tools are only available while a website is open.",
+                    request.name
+                ),
+                None,
+            )),
         }
-
-        if let Some(dynamic) = dynamic {
-            let tool_ctx =
-                rmcp::handler::server::tool::ToolCallContext::new(self, request, context);
-            return dynamic.call(tool_ctx).await;
-        }
-
-        Err(McpError::invalid_params(
-            format!(
-                "Tool '{}' not found. The editor tools are only available while a website is open.",
-                request.name
-            ),
-            None,
-        ))
     }
 }
 
@@ -1408,15 +1359,12 @@ enum Route {
     NotFound,
 }
 
-/// Which half serves a call: the static tool, or the editor family of the same
-/// name (`family` is `Some` once the editor tools are loaded, its inner value
-/// the family tool when the editor has one)
-fn route(static_tool: Option<&Tool>, family: Option<Option<&Tool>>, action: Option<&str>) -> Route {
+/// Which half serves a call: the static tool, or the editor family of the same name
+fn route(static_tool: Option<&Tool>, family: Option<&Tool>, action: Option<&str>) -> Route {
     let declares = |tool: &Tool| {
         declared_actions(tool).is_none_or(|actions| action.is_some_and(|a| actions.contains(&a)))
     };
     let in_family = family
-        .flatten()
         .and_then(declared_actions)
         .zip(action)
         .is_some_and(|(actions, action)| actions.contains(&action));
@@ -1466,6 +1414,7 @@ fn shared_state() -> (Arc<AtomicU64>, DynamicTools, ToolsOf, SeenSelection) {
 pub async fn start_mcp_server(
     app_handle: tauri::AppHandle,
     pending_evals: PendingEvals,
+    local_files: LocalFiles,
     port: u16,
 ) {
     let (eval_counter, dynamic_tools, tools_of, seen_selection) = shared_state();
@@ -1475,6 +1424,7 @@ pub async fn start_mcp_server(
             Ok(SilexMcp::new(
                 app_handle.clone(),
                 pending_evals.clone(),
+                local_files.clone(),
                 eval_counter.clone(),
                 dynamic_tools.clone(),
                 tools_of.clone(),
@@ -1503,11 +1453,16 @@ pub async fn start_mcp_server(
     });
 }
 
-pub async fn start_mcp_stdio(app_handle: tauri::AppHandle, pending_evals: PendingEvals) {
+pub async fn start_mcp_stdio(
+    app_handle: tauri::AppHandle,
+    pending_evals: PendingEvals,
+    local_files: LocalFiles,
+) {
     let (eval_counter, dynamic_tools, tools_of, seen_selection) = shared_state();
     let service = SilexMcp::new(
         app_handle,
         pending_evals,
+        local_files,
         eval_counter,
         dynamic_tools,
         tools_of,
@@ -1545,22 +1500,18 @@ mod tests {
         let family = tool("website", &["publish"]);
         assert_eq!(route(Some(&website), None, Some("publish")), Route::Static);
         assert_eq!(
-            route(Some(&website), Some(Some(&family)), Some("open")),
+            route(Some(&website), Some(&family), Some("open")),
             Route::Static
         );
         assert_eq!(
-            route(Some(&website), Some(Some(&family)), Some("publish")),
+            route(Some(&website), Some(&family), Some("publish")),
             Route::Family
         );
         assert_eq!(
-            route(Some(&website), Some(Some(&family)), Some("rename")),
+            route(Some(&website), Some(&family), Some("rename")),
             Route::WrongAction
         );
-        assert_eq!(route(Some(&website), Some(None), None), Route::WrongAction);
-        assert_eq!(
-            route(None, Some(Some(&family)), Some("publish")),
-            Route::Family
-        );
+        assert_eq!(route(None, Some(&family), Some("publish")), Route::Family);
         assert_eq!(route(None, None, Some("publish")), Route::NotFound);
     }
 

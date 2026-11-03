@@ -26,10 +26,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # MCP (Model Context Protocol) support
-reqwest = { version = "0.13", features = ["json", "multipart"] }
+reqwest = { version = "0.13", features = ["json"] }
 rmcp = { version = "3.5", features = ["server", "transport-streamable-http-server", "transport-io"] }
-# Required as a direct dependency: the JsonSchema derive expands to ::schemars paths
-schemars = "1"
 
 # Open files/folders in the OS default application
 open = "5"
