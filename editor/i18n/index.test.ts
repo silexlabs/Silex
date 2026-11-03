@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { getAvailableLocales, resolveLocale } from './index'
+import { resolveLocale } from './index'
 
 describe('resolveLocale', () => {
 
