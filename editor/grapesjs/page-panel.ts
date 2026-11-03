@@ -18,9 +18,9 @@
 import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
-import { getPageSlug } from '~/common/page'
 import { getSettingsOf, setSettingsOf, SETTINGS_SCHEMA } from './settings'
 import { pageOf } from './pages'
+import { cmdBindings } from './cms/page-bindings'
 
 const pluginName = 'page-panel'
 let open
@@ -47,24 +47,12 @@ interface PageOptions {
 const CMS_SETTINGS = /^eleventy(PageData|Permalink)$/
 
 function cmsBindingsOf(editor: Editor, page: Page): Record<string, string> {
-  return editor.Commands.has('pages:cms-bindings') ? editor.runCommand('pages:cms-bindings', { page }) : {}
-}
-
-function pick(object: Record<string, string>, key: string): Record<string, string> {
-  return object[key] ? { [key]: object[key] } : {}
+  return editor.Commands.has(cmdBindings) ? editor.runCommand(cmdBindings, { page }) : {}
 }
 
 
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
-}
-function assertNameFree(editor: Editor, name: string, renamed?: Page) {
-  if (!name) throw new Error('Set a name, it can not be empty. Nothing was changed.')
-  if (!getPageSlug(name).replace(/-/g, '')) throw new Error(`Name "${name}" gives an empty address: use letters or digits. Nothing was changed.`)
-  const taken = editor.Pages.getAll().find(p => p !== renamed && getPageSlug(p.getName()) === getPageSlug(name))
-  if (taken) {
-    throw new Error(`Name "${name}" gives the same address as page "${taken.getName() || '(home, no name)'}". Choose another name. Nothing was changed.`)
-  }
 }
 
 function created(page: Page) {
@@ -72,7 +60,6 @@ function created(page: Page) {
 }
 
 function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }, name?: string) {
-  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
@@ -91,7 +78,6 @@ function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDi
 }
 
 function clonePage(editor: Editor, page: Page, name?: string) {
-  if (name !== undefined) assertNameFree(editor, name)
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
@@ -360,12 +346,15 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     editor.Commands.add(cmdSelectPrevPage, () => selectPrevPage(editor))
     editor.Commands.add(cmdSelectFirstPage, () => selectPage(editor, editor.Pages.getAll()[0]))
     editor.Commands.add(cmdListPages, () => {
-      return editor.Pages.getAll().map((p: Page) => ({
-        id: p.id,
-        name: p.getName(),
-        selected: editor.Pages.getSelected() === p,
-        ...pick(cmsBindingsOf(editor, p), 'collection'),
-      }))
+      return editor.Pages.getAll().map((p: Page) => {
+        const { collection } = cmsBindingsOf(editor, p)
+        return {
+          id: p.id,
+          name: p.getName(),
+          selected: editor.Pages.getSelected() === p,
+          ...(collection ? { collection } : {}),
+        }
+      })
     })
     editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: PageOptions = {}) => {
       if (!options.page_id) throw new Error('Required: page_id. Use page(action:\'list\') to see all pages.')
@@ -384,7 +373,6 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     editor.Commands.add(cmdUpdatePage, (_editor: Editor, _sender: any, options: PageOptions & Record<string, unknown> = {}) => {
       const { page_id, name, ...settings } = options
       const page = pageOf(editor, page_id)
-      if (name !== undefined) assertNameFree(editor, name, page)
       if (Object.keys(settings).length) setSettingsOf(editor, page, settings)
       else if (name === undefined) throw new Error(`Set name or at least one of: ${Object.keys(SETTINGS_SCHEMA).join(', ')}.`)
       if (name !== undefined) page.set('name', name)

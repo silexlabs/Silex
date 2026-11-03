@@ -448,7 +448,10 @@ function formSettings(): Record<string, any> {
 }
 
 function checkSettings(model: any): boolean {
-  el.querySelectorAll('.silex-form__error').forEach(error => error.remove())
+  el.querySelectorAll('.silex-form__error').forEach(error => {
+    if (error.id) el.querySelector(`[aria-describedby="${error.id}"]`)?.removeAttribute('aria-describedby')
+    error.remove()
+  })
   const sections = model && !isSite(model) ? sectionsPage : sectionsSite
   const settings = formSettings()
   for (const section of sections) {
@@ -484,7 +487,7 @@ function saveSettings(
   model: any = editor.getModel()
 ): void {
   const data = formSettings()
-  const { name } = data
+  const { name, ...settings } = data
   model.set({
     settings: {
       ...data,
