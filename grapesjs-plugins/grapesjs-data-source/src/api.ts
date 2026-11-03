@@ -352,6 +352,8 @@ export function toExpression(json: unknown | string): Expression | null {
   return toExpressionInternal(json)
 }
 
+export { fixedText, filterText } from './utils'
+
 // ===============================
 // UTILITY FUNCTIONS
 // ===============================

@@ -15,7 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Field, StoredProperty, StoredToken, Type, TypeId } from '../types'
+import { FIXED_TOKEN_ID, Field, StoredProperty, StoredToken, Type, TypeId } from '../types'
+import { filterText } from '../utils'
 
 /**
  * Data paths written by agents, like `wp.posts(first: 3).nodes` or `item.title`,
@@ -69,17 +70,12 @@ function splitTopLevel(text: string): string[] {
   return parts.map(part => part.trim()).filter(Boolean)
 }
 
-// Argument values end up in the JavaScript of the published site (cms/publication.ts),
-// inside a template literal
-const UNSAFE_IN_ARG = /[`\\$]/
-
 function parseArgs(text: string): Record<string, string> {
   return Object.fromEntries(splitTopLevel(text).map(arg => {
     const colon = arg.indexOf(':')
     const name = arg.slice(0, colon).trim()
     const value = arg.slice(colon + 1).trim()
     if (colon < 0 || !NAME.test(name) || !value) throw new Error(`Write arguments as name: value, like (first: 3). Got "${arg}".`)
-    if (UNSAFE_IN_ARG.test(value)) throw new Error(`Argument values cannot contain \` \\ or $. Got "${arg}".`)
     return [name, value]
   }))
 }
@@ -184,23 +180,13 @@ export function resolvePath(segments: Segment[], from: Field | null, start: stri
 
 export function expressionToPath(expression: StoredToken[], sourceOf: (token: StoredProperty) => string | null, pageBodyId?: string): string {
   // Text added at the end, like ./blog/{item.slug}/, is shown around the path
-  const textOf = (token: StoredToken): string | null => {
-    if (token.type !== 'filter' || (token.id !== 'prepend' && token.id !== 'append')) return null
-    const option = (token as { options?: { value?: string } }).options?.value
-    try {
-      const parts = option ? JSON.parse(option) : []
-      return parts.length === 1 && parts[0]?.fieldId === 'fixed' ? String(parts[0].options?.value ?? '') : null
-    } catch {
-      return null
-    }
-  }
   let end = expression.length
-  while (end > 0 && textOf(expression[end - 1]) !== null) end--
+  while (end > 0 && filterText(expression[end - 1]) !== null) end--
   let before = ''
   let after = ''
   for (const token of expression.slice(end)) {
-    if ((token as { id: string }).id === 'prepend') before = textOf(token) + before
-    else after += textOf(token)
+    if ((token as { id: string }).id === 'prepend') before = filterText(token) + before
+    else after += filterText(token)
   }
   let path = ''
   let pageItems = false
@@ -220,7 +206,7 @@ export function expressionToPath(expression: StoredToken[], sourceOf: (token: St
       path += ` | ${token.id}`
       break
     case 'property': {
-      if (token.fieldId === 'fixed') {
+      if (token.fieldId === FIXED_TOKEN_ID) {
         path += `"${String(token.options?.value ?? '')}"`
         break
       }

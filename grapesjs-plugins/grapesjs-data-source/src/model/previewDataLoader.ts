@@ -162,13 +162,13 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
             return { dataSourceId, value }
           } catch (err) {
             console.error(`Error fetching preview data for data source ${dataSourceId}:`, err)
-            if (myPid !== loader.currentUpdatePid) return
-            loader.errors[dataSourceId] = (err as Error).message ?? String(err)
             loader.editor.runCommand('notifications:add', {
               type: 'error',
               group: NOTIFICATION_GROUP,
               message: `Error fetching preview data for data source ${dataSourceId}: ${err}`,
             })
+            if (myPid !== loader.currentUpdatePid) return
+            loader.errors[dataSourceId] = (err as Error).message ?? String(err)
             return null
           }
         })

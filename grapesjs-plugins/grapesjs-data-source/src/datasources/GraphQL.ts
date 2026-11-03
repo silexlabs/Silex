@@ -173,6 +173,8 @@ const BACKEND_PROFILES: Record<GraphQLBackendType, BackendProfile> = {
   generic:   { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
 }
 
+export const BACKEND_TYPES = Object.keys(BACKEND_PROFILES) as GraphQLBackendType[]
+
 export function getBatchSize(backendType: GraphQLBackendType): number {
   return BACKEND_PROFILES[backendType].batchSize
 }
@@ -1116,7 +1118,6 @@ export default class GraphQL implements IDataSource {
   async fetchValues(query: string): Promise<unknown[]> {
     const result = await this.call(query) as { data?: unknown[], errors?: { message: string }[] }
     if (!result.data && result.errors?.length) throw new Error(result.errors.map(error => error.message).join(' '))
-    if (result.errors?.length) console.warn('GraphQL partial errors', result.errors)
     return result.data!
   }
 }

@@ -1,4 +1,4 @@
-import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId, Type } from './types'
+import { Expression, Field, FieldKind, IDataSource, Options, StoredFilter, StoredProperty, StoredToken, Token, TypeId, Type } from './types'
 import { Editor } from 'grapesjs'
 import { getParentByPersistentId, getStateDisplayName, getState } from './model/state'
 import { TemplateResult, html } from 'lit'
@@ -161,6 +161,29 @@ export function getFixedToken(value: string): Token {
         </label>
     `,
   }
+}
+
+/**
+ * A prepend or append filter that adds a fixed text
+ */
+export function textFilter(id: 'prepend' | 'append', value: string): StoredFilter {
+  return { type: 'filter', id, label: id, options: { value: JSON.stringify([getFixedToken(value)]) } }
+}
+
+/**
+ * The text of an expression made only of fixed values, null otherwise
+ */
+export function fixedText(tokens: Expression | null): string | null {
+  if (!tokens?.every(token => token.type === 'property' && token.fieldId === FIXED_TOKEN_ID)) return null
+  return tokens.map(token => String((token as StoredProperty).options?.value ?? '')).join('')
+}
+
+/**
+ * The text a prepend or append filter adds, null for another token
+ */
+export function filterText(token: StoredToken): string | null {
+  if (token.type !== 'filter' || (token.id !== 'prepend' && token.id !== 'append')) return null
+  return fixedText(toExpression(token.options?.value))
 }
 
 /**

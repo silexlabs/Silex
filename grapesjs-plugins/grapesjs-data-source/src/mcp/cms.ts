@@ -17,18 +17,18 @@
 
 import { Component, Editor } from 'grapesjs'
 import { DATA_SOURCE_DATA_LOAD_END, DataSourceId, Expression, Field, IDataSource, Properties, State, StoredProperty, StoredToken, Type, UnariOperator } from '../types'
-import GraphQL, { GraphQLBackendType } from '../datasources/GraphQL'
-import { getAllDataSources, setDataSources } from '../model/dataSourceRegistry'
-import { getOrCreatePersistantId, getPersistantId, getState, getStateIds, removeState, setState } from '../model/state'
+import GraphQL, { BACKEND_TYPES, GraphQLBackendType } from '../datasources/GraphQL'
+import { addDataSource, getAllDataSources, removeDataSource, setDataSources } from '../model/dataSourceRegistry'
+import { getOrCreatePersistantId, getPersistantId, getState, getStateIds, newStateId, previewFirstItem, removeState, setState } from '../model/state'
 import { StoredState } from '../model/state'
 import { getExpressionResultType } from '../model/token'
 import { isComponentVisible } from '../view/canvas'
 import { getPageExpressions, getPageQuery, getValue } from '../api'
-import { cleanStateName } from '../utils'
+import { cleanStateName, textFilter } from '../utils'
 import { getPreviewErrors } from '../model/previewDataLoader'
 import { SchemaLookup, expressionToPath, parsePath, resolvePath, typeLabel } from './path'
 import { itemFields, listBelow, searchSchema, summarizeRoot, summarizeType } from './schema'
-import { BACKENDS, checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
+import { bodyStart, checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
 
 export const CMD_CMS = 'data-source:cms'
 
@@ -60,7 +60,7 @@ const STATE_OF: Record<Exclude<BindTo, 'attribute'>, string> = {
 const SOURCE = {
   source: { type: 'string', description: 'Source id, like "wp". Paths start with it' },
   url: { type: 'string', description: 'GraphQL endpoint, like https://name.wp.cms.blue/graphql' },
-  backend: { type: 'string', enum: [...BACKENDS], description: 'default detected' },
+  backend: { type: 'string', enum: [...BACKEND_TYPES], description: 'default detected' },
   authorization: { type: 'string', description: 'Authorization header, like "Bearer <token>". Empty removes it. Never shown back' },
   type: { type: 'string', description: 'a type name from a previous answer, like Post' },
   text: { type: 'string', description: 'part of a type or field name' },
@@ -150,7 +150,7 @@ function editableSource(id: string | undefined): GraphQL {
 
 function backendOf(value: string | undefined): GraphQLBackendType | undefined {
   if (value === undefined) return undefined
-  if (!BACKENDS.includes(value as GraphQLBackendType)) throw new Error(`backend must be one of ${BACKENDS.join(', ')}.`)
+  if (!BACKEND_TYPES.includes(value as GraphQLBackendType)) throw new Error(`backend must be one of ${BACKEND_TYPES.join(', ')}.`)
   return value as GraphQLBackendType
 }
 
@@ -166,7 +166,7 @@ function describeSource(ds: IDataSource): string {
 }
 
 function elementId(editor: Editor, component: Component): string {
-  return editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component }) : component.getId()
+  return editor.runCommand('agent-ids:get', { component })
 }
 
 function someToken(value: unknown, test: (token: StoredToken) => boolean): boolean {
@@ -178,11 +178,6 @@ function someToken(value: unknown, test: (token: StoredToken) => boolean): boole
     return test(value as StoredToken) || Object.values(value).some(v => someToken(v, test))
   }
   return false
-}
-
-function sentence(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error)
-  return message.slice(0, 200).trim().replace(/[.\s]+$/, '')
 }
 
 function listIds(editor: Editor, components: Component[]): string {
@@ -197,7 +192,7 @@ async function add(editor: Editor, opts: CmsOptions): Promise<string> {
   const headers: Record<string, string> = opts.authorization ? { Authorization: checkAuthorization(opts.authorization) } : {}
   const ds = await connectSource({ id, label: id, url, headers, backend: backendOf(opts.backend) })
     .catch(e => { throw new Error(`${(e as Error).message} The source was not added.`, { cause: e }) })
-  setDataSources([...getAllDataSources(), ds])
+  addDataSource(ds, { connected: true })
   markChanged(editor)
   return `Source "${id}" added (${ds.backendType}).\n${summarizeRoot(id, lookupFor(ds))}`
 }
@@ -231,7 +226,7 @@ function remove(editor: Editor, opts: CmsOptions): string {
     const where = [here.length ? `elements ${listIds(editor, here)}` : '', elsewhere.length ? `pages ${elsewhere.join(', ')}` : ''].filter(Boolean).join(' and ')
     throw new Error(`Source "${ds.id}" is used by ${where}. Unbind them first with element(action:'unbind'). Nothing was removed.`)
   }
-  setDataSources(getAllDataSources().filter(other => other !== ds))
+  removeDataSource(ds)
   markChanged(editor)
   return `Source "${ds.id}" removed.`
 }
@@ -267,10 +262,7 @@ function search(opts: CmsOptions): string {
 
 
 function targetElement(editor: Editor, id: string | undefined): Component {
-  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id })[0]
-  const found = id ? editor.Components.allById()[id] : editor.getSelected()
-  if (!found) throw new Error(id ? `No element "${id}".` : 'No element selected: set element_id.')
-  return found
+  return editor.runCommand('agent-ids:elements', { element_id: id })[0]
 }
 
 function loopAround(component: Component, includeSelf: boolean): Component | null {
@@ -308,14 +300,6 @@ interface Resolved {
 // Liquid and JavaScript, so it keeps to the characters of an address
 const TEMPLATE = /^([^{}]*)\{([^{}]+)\}([^{}]*)$/
 const TEMPLATE_TEXT = /^[A-Za-z0-9/_.#?=&:~-]*$/
-
-function fixedText(value: string): StoredToken {
-  return { type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value', kind: 'scalar', typeIds: ['String'], options: { value } } as StoredToken
-}
-
-function textFilter(id: 'prepend' | 'append', value: string): StoredToken {
-  return { type: 'filter', id, label: id, options: { value: JSON.stringify([fixedText(value)]) } } as unknown as StoredToken
-}
 
 function templateExpression(editor: Editor, component: Component | undefined, path: string, ownLoopIsItem: boolean, link = false): Resolved {
   if (!path.includes('{') && !path.includes('}')) return pathExpression(editor, component, path, ownLoopIsItem)
@@ -429,7 +413,7 @@ function nextPreviewLoad(editor: Editor): { loaded: Promise<Record<DataSourceId,
 
 function writer(component: Component, target: BindTo, attribute: string | null): { write: (state: StoredState | null) => void, before: StoredState | null } {
   const id = attribute
-    ? attributeStateId(component, attribute) ?? `${component.getId()}-${Math.random().toString(36).slice(2)}`
+    ? attributeStateId(component, attribute) ?? newStateId(component)
     : STATE_OF[target as Exclude<BindTo, 'attribute'>]
   return {
     before: getState(component, id, false),
@@ -445,12 +429,9 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
   const operator = opts.operator ?? UnariOperator.TRUTHY
   if (target === 'condition' && operator !== UnariOperator.TRUTHY && operator !== UnariOperator.FALSY) throw new Error('operator must be truthy or falsy.')
   if ((target === 'loop' || target === 'condition') && /[{}]/.test(opts.path)) throw new Error(`A ${target} takes a path, without text around it.`)
-  const { expression, field, lookup, ds } = templateExpression(editor, component, opts.path, target !== 'loop', target === 'attribute')
+  const { field, lookup, ds, ...resolved } = templateExpression(editor, component, opts.path, target !== 'loop', target === 'attribute')
   checkKind(target, opts.path, field, lookup)
-  if (target === 'loop') {
-    const last = expression[expression.length - 1] as StoredProperty
-    expression[expression.length - 1] = { ...last, previewIndex: 0 }
-  }
+  const expression = target === 'loop' ? previewFirstItem(resolved.expression) : resolved.expression
 
   const { write, before } = writer(component, target, attribute)
   const operatorBefore = component.get('conditionOperator')
@@ -474,7 +455,7 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
     write(attribute ? { label: attribute, expression } : { expression })
     getPageQuery(page, editor)
   } catch (e) {
-    throw undo(`This binding breaks the data query of the page: ${sentence(e)}.`)
+    throw undo(`This binding breaks the data query of the page: ${bodyStart(e)}.`)
   }
 
   let data: Record<DataSourceId, unknown>
@@ -486,7 +467,7 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
   }
   if (data[ds.id] === undefined || data[ds.id] === null) {
     const why = getPreviewErrors()[ds.id]
-    throw undo(why ? `The data query failed with this binding: ${sentence(why)}. Check the arguments in path.` : `Source "${ds.id}" sent no data for this page.`)
+    throw undo(why ? `The data query failed with this binding: ${bodyStart(why)}. Check the arguments in path.` : `Source "${ds.id}" sent no data for this page.`)
   }
 
   const inLoop = expression[0]?.type === 'state' && (expression[0] as State).storedStateId === Properties.__data

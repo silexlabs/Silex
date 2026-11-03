@@ -17,8 +17,6 @@
 
 import GraphQL, { GraphQLBackendType, LightweightType, LightweightTypesResult, lightweightTypeNamesQuery } from '../datasources/GraphQL'
 
-export const BACKENDS: GraphQLBackendType[] = ['wordpress', 'strapi', 'supabase', 'gitlab', 'generic']
-
 const SOURCE_ID = /^[a-z][a-z0-9_]{0,23}$/
 
 export function checkSourceId(id: unknown, taken: string[]): string {
@@ -29,11 +27,6 @@ export function checkSourceId(id: unknown, taken: string[]): string {
   if (taken.includes(id)) throw new Error(`Source "${id}" already exists. Sources: ${taken.join(', ')}. Use action "update", or another id.`)
   return id
 }
-
-// The URL and the headers are written into the JavaScript of the published site
-// (cms/publication.ts), inside quotes and template literals
-const UNSAFE_IN_URL = /[\s`'"\\$<>{}]/
-const UNSAFE_IN_HEADER = /[^\x20-\x7e]|[`\\$]/
 
 export function checkUrl(url: unknown): string {
   if (typeof url !== 'string' || !url) throw new Error('Set url to the GraphQL endpoint, like https://name.wp.cms.blue/graphql.')
@@ -47,13 +40,11 @@ export function checkUrl(url: unknown): string {
   if (parsed.protocol !== 'https:' && !(local && parsed.protocol === 'http:')) {
     throw new Error('The url must start with https:// (http:// only for localhost).')
   }
-  if (UNSAFE_IN_URL.test(url)) throw new Error('The url cannot contain spaces, quotes, backslashes, $, < > or { }.')
   return url
 }
 
 export function checkAuthorization(value: unknown): string {
   if (typeof value !== 'string') throw new Error('authorization must be text, like "Bearer <token>".')
-  if (UNSAFE_IN_HEADER.test(value)) throw new Error('authorization can only contain printable ASCII characters, without ` \\ or $.')
   return value
 }
 
@@ -66,8 +57,8 @@ export function detectBackend({ types, queryTypeName }: LightweightTypesResult):
   return 'generic'
 }
 
-function bodyStart(text: string): string {
-  const flat = text.replace(/\s+/g, ' ').trim()
+export function bodyStart(text: unknown): string {
+  const flat = (text instanceof Error ? text.message : String(text)).replace(/\s+/g, ' ').trim().replace(/\.+$/, '')
   return flat.length > 200 ? `${flat.slice(0, 200)}…` : flat
 }
 
@@ -156,7 +147,7 @@ async function connect(options: ConnectOptions): Promise<GraphQL> {
     await ds.connect()
   } catch (e) {
     const hint = backendType === 'generic' ? ' Try backend "wordpress" if it is a WordPress site, it loads fewer types.' : ''
-    throw new Error(`Loading the schema of ${url} failed: ${(e as Error).message.slice(0, 200)}.${hint}`, { cause: e })
+    throw new Error(`Loading the schema of ${url} failed: ${bodyStart(e)}.${hint}`, { cause: e })
   }
   return ds
 }
