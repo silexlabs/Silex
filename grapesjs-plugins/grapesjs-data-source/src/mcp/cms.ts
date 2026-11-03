@@ -17,7 +17,7 @@
 
 import { Component, Editor } from 'grapesjs'
 import { DATA_SOURCE_DATA_LOAD_END, DataSourceId, Expression, Field, IDataSource, Properties, State, StoredProperty, StoredToken, Type, UnariOperator } from '../types'
-import GraphQL, { BACKEND_TYPES, GraphQLBackendType } from '../datasources/GraphQL'
+import GraphQL, { BACKEND_TYPES, GraphQLBackendType, bodyStart } from '../datasources/GraphQL'
 import { addDataSource, getAllDataSources, removeDataSource, setDataSources } from '../model/dataSourceRegistry'
 import { getOrCreatePersistantId, getPersistantId, getState, getStateIds, newStateId, previewFirstItem, removeState, setState } from '../model/state'
 import { StoredState } from '../model/state'
@@ -28,7 +28,7 @@ import { cleanStateName, textFilter } from '../utils'
 import { getPreviewErrors } from '../model/previewDataLoader'
 import { SchemaLookup, expressionToPath, parsePath, resolvePath, typeLabel } from './path'
 import { itemFields, listBelow, searchSchema, summarizeRoot, summarizeType } from './schema'
-import { bodyStart, checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
+import { checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
 
 export const CMD_CMS = 'data-source:cms'
 

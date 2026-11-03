@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import GraphQL, { GraphQLBackendType, LightweightType, LightweightTypesResult, lightweightTypeNamesQuery } from '../datasources/GraphQL'
+import GraphQL, { GraphQLBackendType, LightweightType, LightweightTypesResult, bodyStart } from '../datasources/GraphQL'
 
 const SOURCE_ID = /^[a-z][a-z0-9_]{0,23}$/
 
@@ -57,53 +57,6 @@ export function detectBackend({ types, queryTypeName }: LightweightTypesResult):
   return 'generic'
 }
 
-export function bodyStart(text: unknown): string {
-  const flat = (text instanceof Error ? text.message : String(text)).replace(/\s+/g, ' ').trim().replace(/\.+$/, '')
-  return flat.length > 200 ? `${flat.slice(0, 200)}…` : flat
-}
-
-/**
- * The light introspection query, with the failures told apart: the data source
- * reports them all as one message, and the whole response body
- */
-export async function probe(url: string, headers: Record<string, string>): Promise<LightweightTypesResult> {
-  let response: Response
-  try {
-    response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
-      body: JSON.stringify({ query: lightweightTypeNamesQuery }),
-    })
-  } catch (e) {
-    console.warn('[cms] probe failed', url, e)
-    throw new Error(`Cannot reach ${url}. Check the URL (on WordPress it usually ends with /graphql). The server must also allow requests from Silex (CORS).`, { cause: e })
-  }
-  const text = await response.text()
-  if (response.status === 401 || response.status === 403) {
-    throw new Error(`${url} refused the request (${response.status}). Set authorization, like "Bearer <token>" or "Basic <base64 of user:application-password>".`)
-  }
-  if (response.status === 404) throw new Error(`${url} answered 404: no GraphQL endpoint there. On WordPress the path is usually /graphql.`)
-  if (response.status >= 500) throw new Error(`${url} answered ${response.status}: the server failed. Try again later.`)
-  let json: { data?: { __schema?: { queryType?: { name: string }, types?: LightweightType[] } }, errors?: { message: string }[] }
-  try {
-    json = JSON.parse(text)
-  } catch {
-    throw new Error(`${url} is not a GraphQL endpoint (it answered a web page${response.redirected ? ' after a redirection' : ''}). Use the API address, usually ending with /graphql.`)
-  }
-  const schema = json.data?.__schema
-  if (!schema?.types) {
-    const message = json.errors?.[0]?.message ?? ''
-    if (/authentication|introspection|not allowed|permission/i.test(message)) {
-      throw new Error(`The schema of ${url} is private. Set authorization, or enable public introspection (in WordPress: GraphQL > Settings).`)
-    }
-    throw new Error(`${url} answered ${response.status} without a GraphQL schema: ${bodyStart(message || text)}`)
-  }
-  return {
-    queryTypeName: schema.queryType?.name || 'Query',
-    types: schema.types.filter(type => !type.name.startsWith('__')),
-  }
-}
-
 // Under the 45 s the desktop waits for a command: past it, the agent would not know
 // whether the source was added
 const CONNECT_TIMEOUT_MS = 40_000
@@ -134,15 +87,16 @@ export function connectSource(options: ConnectOptions): Promise<GraphQL> {
 
 async function connect(options: ConnectOptions): Promise<GraphQL> {
   const { id, label, url, headers, keep } = options
-  const light = await probe(url, headers)
-  const backendType = options.backend ?? detectBackend(light)
-  const enabled = GraphQL.getDefaultEnabledTypes(backendType, light.types, light.queryTypeName)
-  const disabledTypes = keep ? keep.disabledTypes : light.types.map(type => type.name).filter(name => !enabled.includes(name))
   const ds = new GraphQL({
-    id, label, type: 'graphql', url, headers, readonly: false, backendType, disabledTypes,
+    id, label, type: 'graphql', url, headers, readonly: false,
     method: keep?.method ?? 'POST',
     queryable: keep?.queryable,
   })
+  const light = await ds.fetchTypeNames()
+  const backendType = options.backend ?? detectBackend(light)
+  const enabled = GraphQL.getDefaultEnabledTypes(backendType, light.types, light.queryTypeName)
+  ds.backendType = backendType
+  ds.disabledTypes = keep ? keep.disabledTypes : light.types.map(type => type.name).filter(name => !enabled.includes(name))
   try {
     await ds.connect()
   } catch (e) {
