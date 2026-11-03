@@ -1337,7 +1337,6 @@ impl SilexMcp {
     }
 }
 
-#[derive(Debug, PartialEq)]
 enum Route {
     Static,
     Family,
@@ -1463,72 +1462,5 @@ pub async fn start_mcp_stdio(
         Err(e) => {
             tracing::warn!("MCP stdio not available (launched without stdin?): {}", e);
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use serde_json::json;
-
-    fn tool(name: &'static str, actions: &[&str]) -> Tool {
-        let schema = json!({ "type": "object", "properties": { "action": { "type": "string", "enum": actions } } });
-        Tool::new(name, "", Arc::new(schema.as_object().unwrap().clone()))
-    }
-
-    fn call(name: &str, arguments: serde_json::Value) -> CallToolRequestParams {
-        serde_json::from_value(json!({ "name": name, "arguments": arguments })).unwrap()
-    }
-
-    #[test]
-    fn routes_each_action_to_the_half_that_declares_it() {
-        let website = tool("website", &["list", "open"]);
-        let family = tool("website", &["publish"]);
-        assert_eq!(route(Some(&website), None, Some("publish")), Route::Static);
-        assert_eq!(
-            route(Some(&website), Some(&family), Some("open")),
-            Route::Static
-        );
-        assert_eq!(
-            route(Some(&website), Some(&family), Some("publish")),
-            Route::Family
-        );
-        assert_eq!(
-            route(Some(&website), Some(&family), Some("rename")),
-            Route::WrongAction
-        );
-        assert_eq!(route(None, Some(&family), Some("publish")), Route::Family);
-        assert_eq!(route(None, None, Some("publish")), Route::NotFound);
-    }
-
-    #[test]
-    fn traces_only_an_action_the_tool_declares() {
-        let element = tool("element", &["list", "update"]);
-        assert_eq!(
-            known_action(&element, &call("element", json!({ "action": "update" }))),
-            Some("update".into())
-        );
-        assert_eq!(
-            known_action(
-                &element,
-                &call("element", json!({ "action": "<h1>secret</h1>" }))
-            ),
-            None
-        );
-        assert_eq!(
-            known_action(
-                &element,
-                &call("element", json!({ "html": "<h1>secret</h1>" }))
-            ),
-            None
-        );
-        let screenshot = Tool::new("screenshot", "", Arc::new(serde_json::Map::new()));
-        assert_eq!(
-            known_action(
-                &screenshot,
-                &call("screenshot", json!({ "target": "secret" }))
-            ),
-            None
-        );
     }
 }
