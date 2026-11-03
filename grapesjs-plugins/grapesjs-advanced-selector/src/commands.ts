@@ -3,7 +3,6 @@ import { getSelectors, getOrCreateRule, matchSelectorAll, ruleOptions } from './
 import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
 import { CompoundSelector } from './model/CompoundSelector'
 import { PSEUDO_CLASSES } from './model/PseudoClass'
-import { fitsModel } from './model/selectorText'
 
 const NOTHING_CHANGED = 'Nothing was changed.'
 const MAX_LISTED = 5
@@ -127,7 +126,6 @@ function checkedSelector(editor: Editor, text: string | undefined, components: C
   }
   const target = complexSelectorToString(withoutStates(cs))
   if (!target) throw new Error(`Selector "${selector}" has no class, tag or id. ${NOTHING_CHANGED} Put one before the state, like ".card:hover".`)
-  if (!fitsModel(selector, cs)) throw new Error(unsupported)
   // Despite its name, matchSelectorAll is true when some of the elements match
   if (!matchSelectorAll(target, components)) throw new Error(notMatching(editor, components[0], selector, target))
   return { cs, target }
