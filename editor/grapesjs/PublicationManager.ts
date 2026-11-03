@@ -144,7 +144,7 @@ export class PublicationManager {
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
-    editor.Commands.add(cmdPublicationAgent, () => this.publishForAgent())
+    editor.Commands.add(cmdPublicationAgent, (_editor: Editor, _sender: any, options: { hosting_id?: string } = {}) => this.publishForAgent(options.hosting_id))
     editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, connector: ConnectorData) => this.goLogin(connector))
     editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
     // Register AI capabilities
@@ -154,6 +154,10 @@ export class PublicationManager {
         action: 'publish',
         command: cmdPublicationAgent,
         description: 'publish the open website.',
+        inputSchema: {
+          type: 'object',
+          properties: { hosting_id: { type: 'string', description: 'Default: the hosting of the website' } },
+        },
         openWorld: true,
       })
     })
@@ -300,18 +304,23 @@ export class PublicationManager {
 
   /**
    * The publication dialog says how a publication ended, an agent gets it in the answer.
-   * Without the dialog, nobody chose a hosting yet: the one that is connected is used
+   * The hosting is taken as the dialog takes it
    */
-  async publishForAgent(): Promise<string> {
+  async publishForAgent(hostingId?: string): Promise<string> {
     if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('A publication is already in progress, wait for it to end.')
-    if (!this.settings.connector?.connectorId) {
-      const connected = (await connectorList({ type: ConnectorType.HOSTING })).filter(connector => connector.isLoggedIn)
-      if (connected.length !== 1) {
-        throw new Error(connected.length
-          ? `Several hostings are connected (${connected.map(c => c.displayName).join(', ')}): choose one in the Publish dialog of Silex.`
-          : 'No hosting is connected: choose one in the Publish dialog of Silex.')
-      }
-      this.settings = { ...this.settings, connector: connected[0] }
+    const hostings = await connectorList({ type: ConnectorType.HOSTING })
+    const list = hostings.map(hosting => `${hosting.connectorId} (${hosting.displayName})`).join(', ')
+    const chosen = hostingId ?? this.settings.connector?.connectorId
+    if (chosen) {
+      const connector = hostings.find(hosting => hosting.connectorId === chosen)
+      if (!connector) throw new Error(`No hosting ${chosen} here. Hostings: ${list}.`)
+      this.settings = { ...this.settings, connector }
+    } else if (hostings.length === 1 && hostings[0].isLoggedIn) {
+      this.settings = { ...this.settings, connector: hostings[0] }
+    } else if (!hostings.some(hosting => hosting.isLoggedIn)) {
+      throw new Error('No hosting is connected.')
+    } else {
+      throw new Error(`Several hostings, set hosting_id to one of: ${list}.`)
     }
     const ended = new Promise<{ success: boolean, message: string } | null>(resolve => {
       this.editor.once(ClientEvent.PUBLISH_END, resolve)
