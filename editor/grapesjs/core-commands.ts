@@ -304,6 +304,7 @@ export default (editor: Editor) => {
       destructive: true,
       inputSchema: { type: 'object', properties: { element_id: elementId } },
     })
+    describeTool('asset', 'Images of the open website.')
     addCapability({
       tool: 'asset',
       action: 'list',
