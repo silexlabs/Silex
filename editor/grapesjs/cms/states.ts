@@ -32,7 +32,6 @@ export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTri
       // Apply pagination size limit using slice filter
       const pageSize = parseInt(settings?.eleventyPageSize || '1')
       const startIndex = pageIndex * pageSize
-      const endIndex = startIndex + pageSize
 
       const slice = {
         type: 'filter',
@@ -40,7 +39,7 @@ export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTri
         label: 'slice',
         options: {
           start: startIndex,
-          end: endIndex,
+          end: pageSize,
         },
       } as StoredFilter
 
