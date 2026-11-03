@@ -1,6 +1,6 @@
 import { Component, Editor } from 'grapesjs'
 import { getSelectors, getOrCreateRule, matchSelectorAll, ruleOptions } from './model/GrapesJsSelectors'
-import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
+import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector, mergeChosen } from './model/ComplexSelector'
 import { CompoundSelector } from './model/CompoundSelector'
 import { ClassSelector, SimpleSelectorType } from './model/SimpleSelector'
 import { PSEUDO_CLASSES } from './model/PseudoClass'
@@ -76,15 +76,11 @@ function listed<T>(items: T[], name: (item: T) => string = String): string {
 }
 
 // One object for all the elements: the style panel compares the stored selectors by reference.
-// The other classes stay listed but off, as the panel stores them
+// Merged with the classes and not with the stored selector, whose relation would win over the chosen one
 function toStore(cs: ComplexSelector, components: Component[]): ComplexSelector {
-  const used = cs.mainSelector.selectors
-    .filter(simple => simple.type === SimpleSelectorType.CLASS)
-    .map(simple => (simple as ClassSelector).value)
-  const others = [...new Set(components.flatMap(component => component.getClasses() as string[]))]
-    .filter(name => !used.includes(name))
+  const classes = [...new Set(components.flatMap(component => component.getClasses() as string[]))]
     .map(value => ({ type: SimpleSelectorType.CLASS, value, active: false } as ClassSelector))
-  return { ...cs, mainSelector: { ...cs.mainSelector, selectors: [...cs.mainSelector.selectors, ...others] } }
+  return mergeChosen({ mainSelector: { selectors: classes } }, cs)
 }
 
 function notMatching(editor: Editor, component: Component, selector: string, target: string): string {
@@ -105,43 +101,12 @@ function notMatching(editor: Editor, component: Component, selector: string, tar
   ].join(' ')
 }
 
-// Splits on ";" outside of quotes and parentheses, as in url("data:...;base64,...")
-function parseDeclarations(css: string): Record<string, string> {
-  const invalid = (text: string) => new Error(`Invalid CSS "${text}". ${NOTHING_CHANGED} Write it like "display: flex; gap: 16px".`)
-  const declarations: string[] = []
-  let current = ''
-  let depth = 0
-  let quote = ''
-  let escaped = false
-  for (const char of css.replace(/\/\*[\s\S]*?\*\//g, '')) {
-    if (escaped) escaped = false
-    else if (char === '\\') escaped = true
-    else if (quote) {
-      if (char === quote) quote = ''
-    } else if (char === '"' || char === '\'') quote = char
-    else if (char === '{' || char === '}') throw invalid(css)
-    else if (char === '(') depth++
-    else if (char === ')' && --depth < 0) throw invalid(css)
-    else if (char === ';' && depth === 0) {
-      declarations.push(current)
-      current = ''
-      continue
-    }
-    current += char
-  }
-  if (quote || depth) throw invalid(css)
-  declarations.push(current)
-  const style: Record<string, string> = {}
-  for (const declaration of declarations.map(d => d.trim()).filter(Boolean)) {
-    const colon = declaration.indexOf(':')
-    const name = declaration.slice(0, colon).trim()
-    const property = name.startsWith('--') ? name : name.toLowerCase()
-    const value = declaration.slice(colon + 1).trim()
-    if (colon < 1 || !/^(--[\w-]+|-?[a-zA-Z][\w-]*)$/.test(property)) throw invalid(declaration)
-    if (!value) throw new Error(`No value for "${property}". ${NOTHING_CHANGED} To remove a property, call style(action:'remove').`)
-    style[property] = value
-  }
-  return style
+function parseDeclarations(editor: Editor, css: string): Record<string, string> {
+  // A "}" in the text would close the rule and open another one
+  const rules = editor.Parser.parseCss(`x{${css}}`)
+  if (rules.length > 1) throw new Error(`Invalid CSS "${css}". ${NOTHING_CHANGED} Write it like "display: flex; gap: 16px".`)
+  return Object.fromEntries(Object.entries(rules[0]?.style ?? {})
+    .map(([name, value]) => [name.startsWith('--') ? name : name.toLowerCase(), String(value)]))
 }
 
 /**
@@ -236,7 +201,7 @@ export default function registerCommands(editor: Editor) {
 
   editor.Commands.add('styles:set', {
     run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
-      const style = typeof cmdOpts.css === 'string' ? parseDeclarations(cmdOpts.css) : {}
+      const style = typeof cmdOpts.css === 'string' ? parseDeclarations(editor, cmdOpts.css) : {}
       if (!Object.keys(style).length) throw new Error('Required: css. Example: {"css": "display: flex; gap: 16px"}.')
       getOrCreateRule(editor, styleTarget(editor, cmdOpts)).addStyle(style)
     },
