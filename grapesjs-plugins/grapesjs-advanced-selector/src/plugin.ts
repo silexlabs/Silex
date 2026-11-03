@@ -1,7 +1,7 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
-import { ComplexSelector, EMPTY_SELECTOR, fromString, mergeChosen, toString, getSelector, noPseudo } from './model/ComplexSelector'
+import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, fromString, merge, toString, getSelector, noPseudo } from './model/ComplexSelector'
 import './components/complex-selector'
 import './components/current-selector-display'
 
@@ -149,7 +149,12 @@ function changedSelector(selector: ComplexSelector, editor: Editor, components: 
 function mergeSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
   components.forEach((component) => {
     const oldSelector = getComponentSelector(component) || EMPTY_SELECTOR
-    setComponentSelector(component, mergeChosen(oldSelector, selector))
+    const newSelector = merge(oldSelector, selector)
+    const activated = activateSelectors(newSelector, selector)
+    activated.atRule = selector.atRule // We merged but want to keep the atRule
+    activated.mainSelector.pseudoClass = selector.mainSelector.pseudoClass // We merged but want to keep the pseudoClass
+    if (activated.relatedSelector) activated.relatedSelector.pseudoClass = selector.relatedSelector?.pseudoClass // We merged but want to keep the pseudoClass
+    setComponentSelector(component, activated)
   })
   // Select the device if the selector contains the device
   if(selector.atRule) {

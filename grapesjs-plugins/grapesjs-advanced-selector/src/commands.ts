@@ -1,8 +1,7 @@
 import { Component, Editor } from 'grapesjs'
 import { getSelectors, getOrCreateRule, matchSelectorAll, ruleOptions } from './model/GrapesJsSelectors'
-import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector, mergeChosen } from './model/ComplexSelector'
+import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
 import { CompoundSelector } from './model/CompoundSelector'
-import { ClassSelector, SimpleSelectorType } from './model/SimpleSelector'
 import { PSEUDO_CLASSES } from './model/PseudoClass'
 import { fitsModel } from './model/selectorText'
 
@@ -20,7 +19,7 @@ interface StyleOptions {
   property?: string
 }
 
-// null until style(action:'select'), or the style panel, chose a selector for every selected element
+// null until the style panel chose a selector for every selected element
 function storedSelector(components: Component[]): ComplexSelector | null {
   if (!components.length || components.some(component => !component.get('selector'))) return null
   return getSelector(components)
@@ -50,10 +49,10 @@ function chosenSelector(editor: Editor, components: Component[]): string {
   const selector = cs && complexSelectorToString(cs)
   if (!selector) {
     if (components.length > 1 && components.every(component => component.get('selector'))) {
-      throw new Error(`The selected elements have no selector in common. ${NOTHING_CHANGED} Call style(action:'select') with a selector that matches them all, or element(action:'select') to select one.`)
+      throw new Error(`The selected elements have no selector in common. ${NOTHING_CHANGED} Set selector to one that matches them all, or element(action:'select') to select one.`)
     }
     const own = components[0].getClasses().map((name: string) => `.${name}`)
-    throw new Error(`No selector chosen for ${describe(editor, components[0])}. ${NOTHING_CHANGED} Set selector${own.length ? `, like "${own[0]}"` : ''}, or call style(action:'select') first.`)
+    throw new Error(`No selector chosen for ${describe(editor, components[0])}. ${NOTHING_CHANGED} Set selector${own.length ? `, like "${own[0]}"` : ''}.`)
   }
   // The classes can have changed since the selector was chosen
   if (!matchSelectorAll(complexSelectorToString(withoutStates(cs)), components)) {
@@ -73,14 +72,6 @@ function describe(editor: Editor, component: Component): string {
 function listed<T>(items: T[], name: (item: T) => string = String): string {
   const more = items.length - MAX_LISTED
   return items.slice(0, MAX_LISTED).map(name).join(', ') + (more > 0 ? ` and ${more} more` : '')
-}
-
-// One object for all the elements: the style panel compares the stored selectors by reference.
-// Merged with the classes and not with the stored selector, whose relation would win over the chosen one
-function toStore(cs: ComplexSelector, components: Component[]): ComplexSelector {
-  const classes = [...new Set(components.flatMap(component => component.getClasses() as string[]))]
-    .map(value => ({ type: SimpleSelectorType.CLASS, value, active: false } as ClassSelector))
-  return mergeChosen({ mainSelector: { selectors: classes } }, cs)
 }
 
 function notMatching(editor: Editor, component: Component, selector: string, target: string): string {
@@ -164,19 +155,6 @@ export default function registerCommands(editor: Editor) {
     run() {
       elementsOf(editor)
       return { selector: currentSelector(editor), media: media(editor) }
-    },
-  })
-
-  editor.Commands.add('selector:set', {
-    run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
-      const components = elementsOf(editor)
-      const { cs, target } = checkedSelector(editor, cmdOpts.selector, components)
-      const stored = toStore(cs, components)
-      components.forEach(component => component.set('selector', stored))
-      const left = components.filter(component => !matchSelectorAll(target, [component]))
-      return left.length
-        ? { warning: `Selector "${cmdOpts.selector?.trim()}" is chosen, but style(action:'set') will not change these selected elements: ${listed(left, component => agentId(editor, component))}. To style them all, call style(action:'select') with a selector they all match.` }
-        : {}
     },
   })
 

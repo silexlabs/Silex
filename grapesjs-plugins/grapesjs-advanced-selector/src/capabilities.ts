@@ -14,17 +14,6 @@ export function registerCapabilities(addCapability: AddCapability, describeTool:
   })
   addCapability({
     tool: 'style',
-    action: 'select',
-    command: 'selector:set',
-    description: 'choose the selector of the selected element that the other actions use by default.',
-    inputSchema: {
-      type: 'object',
-      required: ['selector'],
-      properties: { selector },
-    },
-  })
-  addCapability({
-    tool: 'style',
     action: 'get',
     command: 'styles:get',
     description: 'the CSS of a selector.',

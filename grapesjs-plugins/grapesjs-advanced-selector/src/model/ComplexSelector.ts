@@ -145,19 +145,6 @@ export function activateSelectors(cs: ComplexSelector, other: ComplexSelector): 
 }
 
 /**
- * Merge the chosen selector with the current selector of a component
- * If a simple selector is missing, just deactivate it
- * Handles the atRule and pseudoClass
- */
-export function mergeChosen(current: ComplexSelector, chosen: ComplexSelector): ComplexSelector {
-  const activated = activateSelectors(merge(current, chosen), chosen)
-  activated.atRule = chosen.atRule // We merged but want to keep the atRule
-  activated.mainSelector.pseudoClass = chosen.mainSelector.pseudoClass // We merged but want to keep the pseudoClass
-  if (activated.relatedSelector) activated.relatedSelector.pseudoClass = chosen.relatedSelector?.pseudoClass // We merged but want to keep the pseudoClass
-  return activated
-}
-
-/**
  * Make sure all ComplexSelectors have the same mainSelector, operator, and relatedSelector
  */
 export function same(all: ComplexSelector[]): ComplexSelector | false {
