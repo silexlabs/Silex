@@ -5,7 +5,6 @@ import {
   renameVariable,
 } from './variables.js'
 import { VARIABLE_TYPES, TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
-import { sanitizeName } from './modal.js'
 
 // Aliases that LLMs might guess instead of the canonical type names
 const TYPE_ALIASES = {
@@ -30,6 +29,16 @@ function guessType(value) {
   if (CSS.supports('color', value)) return TYPE_COLOR
   if (CSS.supports('width', value)) return TYPE_SIZE
   return TYPE_FONT_FAMILY
+}
+
+// Kept as given, case included, so that the var() the agent writes next matches.
+// CSS.supports() accepts a name with a space, CSS.escape() only leaves a valid one as is
+function variableName(name) {
+  const stripped = name.replace(/^--/, '')
+  if (stripped && CSS.escape(`--${stripped}`) !== `--${stripped}`) {
+    throw new Error(`"${name}" is not a valid CSS variable name. Use letters, digits, - and _, without spaces.`)
+  }
+  return stripped
 }
 
 /** Names of all defined CSS variables, in order. */
@@ -61,7 +70,7 @@ export function registerCommands(editor) {
   editor.Commands.add(cmdSetVar, {
     run(ed, sender, opts = {}) {
       const { value, type } = opts
-      const name = opts.name && sanitizeName(opts.name)
+      const name = opts.name && variableName(opts.name)
       if (!name || !value) {
         throw new Error('Required: name, value. Example: {name: "primary", value: "#ff0000"}.')
       }
@@ -87,7 +96,7 @@ export function registerCommands(editor) {
 
   editor.Commands.add(cmdRemoveVar, {
     run(ed, sender, opts = {}) {
-      const name = opts.name && sanitizeName(opts.name)
+      const name = opts.name && variableName(opts.name)
       if (!name) {
         throw new Error('Required: name. Example: {name: "primary"}. Use variable(action:\'list\') to see existing variables.')
       }
@@ -102,8 +111,8 @@ export function registerCommands(editor) {
 
   editor.Commands.add(cmdRenameVar, {
     run(ed, sender, opts = {}) {
-      const oldName = opts.name && sanitizeName(opts.name)
-      const newName = opts.new_name && sanitizeName(opts.new_name)
+      const oldName = opts.name && variableName(opts.name)
+      const newName = opts.new_name && variableName(opts.new_name)
       if (!oldName || !newName) {
         throw new Error('Required: name, new_name. Example: {name: "primary", new_name: "brand"}. Use variable(action:\'list\') to see existing variables.')
       }

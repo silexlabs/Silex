@@ -269,7 +269,7 @@ const SIZE_UNITS = ['px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'dvh', 'vmin', 'v
 /**
  * Sanitize a variable name: lowercase, replace spaces/special chars with hyphens
  */
-export function sanitizeName(name) {
+function sanitizeName(name) {
   // Strip leading -- so user can type "--my-var" or "my-var"
   const stripped = name.replace(/^--/, '')
   return stripped
