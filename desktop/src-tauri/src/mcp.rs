@@ -418,7 +418,6 @@ impl SilexMcp {
         tool: &str,
         actions: &HashMap<String, ActionDef>,
         arguments: Option<JsonObject>,
-        context: &RequestContext<RoleServer>,
     ) -> Result<CallToolResult, McpError> {
         let arguments = arguments.unwrap_or_default();
         let name = arguments.get("action").and_then(|a| a.as_str());
@@ -486,15 +485,6 @@ impl SilexMcp {
                 &serde_json::Value::from(serde_json::Value::Object(params).to_string()).to_string(),
             );
 
-        let state = self.app_handle.state::<AppState>();
-        // A call cancelled while it waits for its turn must not run later
-        let _one_at_a_time = tokio::select! {
-            biased;
-            _ = context.ct.cancelled() => {
-                return Err(McpError::internal_error("The call was cancelled before it ran", None));
-            }
-            guard = state.editor_commands.lock() => guard,
-        };
         // A command that queries a remote server (a CMS schema) can take far more than 10 s
         let timeout_secs = if action.open_world { 45 } else { 10 };
         // Kept until the editor answers even if the call is cancelled: the
@@ -610,8 +600,6 @@ impl SilexMcp {
     /// The selection of the open website, always given by the calls an agent starts with
     async fn current_selection(&self) -> Option<serde_json::Value> {
         self.require_project().ok()?;
-        let state = self.app_handle.state::<AppState>();
-        let _after_the_writes = state.editor_commands.lock().await;
         let selection = match self.eval_js_internal(SELECTION_JS, 3).await {
             Ok(Some(raw)) => serde_json::from_str(&raw).map_err(|e| e.to_string()),
             Ok(None) => Err("no answer".to_string()),
@@ -671,7 +659,7 @@ impl FamilyDef {
             let actions = actions.clone();
             Box::pin(async move {
                 let mcp: &SilexMcp = ctx.service;
-                mcp.run_action(&name, &actions, ctx.arguments, &ctx.request_context)
+                mcp.run_action(&name, &actions, ctx.arguments)
                     .await
                     .map(Into::into)
             })
@@ -1109,8 +1097,6 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let state = self.app_handle.state::<AppState>();
-        let _after_the_writes = state.editor_commands.lock().await;
         let target = params.target.unwrap_or_default().as_str();
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
