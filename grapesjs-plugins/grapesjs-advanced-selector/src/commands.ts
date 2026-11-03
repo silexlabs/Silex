@@ -3,31 +3,14 @@ import { getSelectors, getOrCreateRule, matchSelectorAll, ruleOptions } from './
 import { ComplexSelector, toString as complexSelectorToString, fromString as complexSelectorFromString, getSelector } from './model/ComplexSelector'
 import { CompoundSelector } from './model/CompoundSelector'
 import { ClassSelector, SimpleSelectorType } from './model/SimpleSelector'
-import { PSEUDO_CLASSES, PseudoClassType } from './model/PseudoClass'
+import { PSEUDO_CLASSES } from './model/PseudoClass'
 import { fitsModel } from './model/selectorText'
 
 const NOTHING_CHANGED = 'Nothing was changed.'
 const MAX_LISTED = 5
-const STRUCTURAL = new Set<string>([
-  PseudoClassType.FIRST_CHILD, PseudoClassType.LAST_CHILD, PseudoClassType.NTH_CHILD, PseudoClassType.NTH_LAST_CHILD,
-  PseudoClassType.ONLY_CHILD, PseudoClassType.FIRST_OF_TYPE, PseudoClassType.LAST_OF_TYPE, PseudoClassType.NTH_OF_TYPE,
-  PseudoClassType.NTH_LAST_OF_TYPE, PseudoClassType.ONLY_OF_TYPE, PseudoClassType.EMPTY, PseudoClassType.ROOT,
-])
-const PSEUDO_ELEMENTS = new Set<string>([
-  PseudoClassType.BEFORE, PseudoClassType.AFTER, PseudoClassType.FIRST_LINE, PseudoClassType.FIRST_LETTER, PseudoClassType.SELECTION,
-])
-
-function selectedElements(editor: Editor): Component[] {
-  const components = editor.getSelectedAll()
-  if (!components.length) throw new Error('No element selected: set element_id, or call element(action:\'select\') first.')
-  return components
-}
 
 function elementsOf(editor: Editor, id?: string): Component[] {
-  if (editor.Commands.has('agent-ids:elements')) return editor.runCommand('agent-ids:elements', { element_id: id, several: true })
-  const found = id ? editor.Components.allById()[id] : undefined
-  if (id && !found) throw new Error(`No element "${id}". ${NOTHING_CHANGED}`)
-  return found ? [found] : selectedElements(editor)
+  return editor.runCommand('agent-ids:elements', { element_id: id, several: true })
 }
 
 interface StyleOptions {
@@ -58,7 +41,7 @@ function media(editor: Editor): string | undefined {
 // What the element is now, without the states it may take later nor the pseudo-elements
 function withoutStates(cs: ComplexSelector): ComplexSelector {
   const strip = (compound: CompoundSelector): CompoundSelector =>
-    compound.pseudoClass && !STRUCTURAL.has(compound.pseudoClass.type) ? { ...compound, pseudoClass: undefined } : compound
+    compound.pseudoClass && !PSEUDO_CLASSES.find(pseudo => pseudo.type === compound.pseudoClass!.type)?.structural ? { ...compound, pseudoClass: undefined } : compound
   return { ...cs, mainSelector: strip(cs.mainSelector), relatedSelector: cs.relatedSelector && strip(cs.relatedSelector) }
 }
 
@@ -79,14 +62,12 @@ function chosenSelector(editor: Editor, components: Component[]): string {
   return selector
 }
 
-// Silex names elements with ids of its own for agents
 function agentId(editor: Editor, component: Component): string {
-  return editor.Commands.has('agent-ids:get') ? editor.runCommand('agent-ids:get', { component }) : component.getId()
+  return editor.runCommand('agent-ids:get', { component })
 }
 
 function describe(editor: Editor, component: Component): string {
-  const classes = component.getClasses().join(' ')
-  return `"${agentId(editor, component)}" <${component.tagName}${classes ? ` class="${classes}"` : ''}>`
+  return editor.runCommand('agent-ids:describe', { component })
 }
 
 function listed<T>(items: T[], name: (item: T) => string = String): string {
@@ -108,11 +89,9 @@ function toStore(cs: ComplexSelector, components: Component[]): ComplexSelector 
 
 function notMatching(editor: Editor, component: Component, selector: string, target: string): string {
   const matching: Component[] = []
-  const walk = (parent: Component) => parent.components().forEach((child: Component) => {
+  editor.getWrapper()!.forEachChild((child: Component) => {
     if (child.view?.el?.nodeType === Node.ELEMENT_NODE && matchSelectorAll(target, [child])) matching.push(child)
-    walk(child)
   })
-  walk(editor.getWrapper()!)
   if (!matching.length) {
     return `No element on this page matches "${selector}". ${NOTHING_CHANGED} Add the class to the element with element(action:'update', add_class) first.`
   }
@@ -177,7 +156,7 @@ function checkedSelector(editor: Editor, text: string | undefined, components: C
     throw new Error(`Selector "${selector}" is not supported: use one selector, without "," or "@media". ${NOTHING_CHANGED} For a breakpoint, call breakpoint(action:'select').`)
   }
   const invalid = `Invalid selector "${selector}". ${NOTHING_CHANGED} Examples: ".card", ".card:hover", ".list > .card".`
-  const states = PSEUDO_CLASSES.filter(pseudo => !PSEUDO_ELEMENTS.has(pseudo.type)).map(pseudo => `:${pseudo.type}`)
+  const states = PSEUDO_CLASSES.map(pseudo => `:${pseudo.type}`)
   const unsupported = `Selector "${selector}" is not supported. ${NOTHING_CHANGED} Use one relation at most, like ".list > .card", and one state at most among ${states.join(' ')}.`
   try {
     document.createDocumentFragment().querySelector(selector)
@@ -218,14 +197,14 @@ function breakpointOf(editor: Editor, atRule: string | undefined): string {
 export default function registerCommands(editor: Editor) {
   editor.Commands.add('selector:get', {
     run() {
-      selectedElements(editor)
+      elementsOf(editor)
       return { selector: currentSelector(editor), media: media(editor) }
     },
   })
 
   editor.Commands.add('selector:set', {
     run(_ed: Editor, _sender: unknown, cmdOpts: StyleOptions = {}) {
-      const components = selectedElements(editor)
+      const components = elementsOf(editor)
       const { cs, target } = checkedSelector(editor, cmdOpts.selector, components)
       const stored = toStore(cs, components)
       components.forEach(component => component.set('selector', stored))

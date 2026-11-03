@@ -62,6 +62,8 @@ export interface PseudoClass {
   hasParam: boolean
   param?: string | null
   isPseudoElement?: boolean
+  // Matches the element as it is, not a state it may take later
+  structural?: boolean
   sentencePre: string
   sentencePost?: string
   helpLink?: string
@@ -85,20 +87,20 @@ export const PSEUDO_CLASSES: PseudoClass[] = [
   { type: PseudoClassType.ANY_LINK, hasParam: false, sentencePre: 'When it is a', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:any-link' },
 
   // Child and type-based selection
-  { type: PseudoClassType.FIRST_CHILD, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:first-child' },
-  { type: PseudoClassType.LAST_CHILD, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:last-child' },
-  { type: PseudoClassType.NTH_CHILD, hasParam: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-child' },
-  { type: PseudoClassType.NTH_LAST_CHILD, hasParam: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-last-child' },
-  { type: PseudoClassType.ONLY_CHILD, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:only-child' },
-  { type: PseudoClassType.FIRST_OF_TYPE, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:first-of-type' },
-  { type: PseudoClassType.LAST_OF_TYPE, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:last-of-type' },
-  { type: PseudoClassType.NTH_OF_TYPE, hasParam: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-of-type' },
-  { type: PseudoClassType.NTH_LAST_OF_TYPE, hasParam: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-last-of-type' },
-  { type: PseudoClassType.ONLY_OF_TYPE, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:only-of-type' },
+  { type: PseudoClassType.FIRST_CHILD, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:first-child' },
+  { type: PseudoClassType.LAST_CHILD, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:last-child' },
+  { type: PseudoClassType.NTH_CHILD, hasParam: true, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-child' },
+  { type: PseudoClassType.NTH_LAST_CHILD, hasParam: true, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-last-child' },
+  { type: PseudoClassType.ONLY_CHILD, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:only-child' },
+  { type: PseudoClassType.FIRST_OF_TYPE, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:first-of-type' },
+  { type: PseudoClassType.LAST_OF_TYPE, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:last-of-type' },
+  { type: PseudoClassType.NTH_OF_TYPE, hasParam: true, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-of-type' },
+  { type: PseudoClassType.NTH_LAST_OF_TYPE, hasParam: true, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-last-of-type' },
+  { type: PseudoClassType.ONLY_OF_TYPE, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:only-of-type' },
 
   // Structural
-  { type: PseudoClassType.EMPTY, hasParam: false, sentencePre: 'When it is', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:empty' },
-  { type: PseudoClassType.ROOT, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:root' },
+  { type: PseudoClassType.EMPTY, hasParam: false, structural: true, sentencePre: 'When it is', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:empty' },
+  { type: PseudoClassType.ROOT, hasParam: false, structural: true, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:root' },
   { type: PseudoClassType.SCOPE, hasParam: false, sentencePre: 'When it is within', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:scope' },
   { type: PseudoClassType.TARGET, hasParam: false, sentencePre: 'When URL matches', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:target' },
   // Legacy pseudo-elements keep the single colon: existing sites saved them as :before etc.,
