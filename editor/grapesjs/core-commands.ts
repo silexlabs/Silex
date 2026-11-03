@@ -149,6 +149,29 @@ export default (editor: Editor) => {
     const sources = editor.AssetManager.getAll().map((asset: Asset) => asset.getSrc())
     return sources.length ? sources.join('\n') : 'No image yet: asset(action:\'add\') copies one from the disk.'
   })
+  // Silex Desktop gives the file at a one-time address instead of its path
+  editor.Commands.add('asset:add', async (_ed, _sender, { path }: { path?: string } = {}) => {
+    if (!path) throw new Error('Required: path, the absolute path of the file.')
+    const response = await fetch(path).catch(() => null)
+    if (!response?.ok) throw new Error(`Can not read ${path}. Nothing was imported.`)
+    const file = new File([await response.blob()], decodeURIComponent(path.split('/').pop()!))
+    let src = ''
+    let failure = 'no answer from the server'
+    const onError = (error: unknown) => { failure = String(error) }
+    editor.on('asset:upload:error', onError)
+    const drop = new DataTransfer()
+    drop.items.add(file)
+    try {
+      await editor.AssetManager.FileUploader().uploadFile({ dataTransfer: drop } as DragEvent, (res: { data?: (string | { src: string })[] }) => {
+        const first = res?.data?.[0]
+        src = typeof first === 'string' ? first : first?.src ?? ''
+      })
+    } finally {
+      editor.off('asset:upload:error', onError)
+    }
+    if (!src) throw new Error(`Could not import ${file.name}: ${failure}. Nothing was imported.`)
+    return src
+  })
   editor.Commands.add('element:select', (_ed, _sender, options: ElementOptions = {}) => {
     if (!options.element_id) throw new Error('Required: element_id. Use element(action:\'list\') to see the ids.')
     editor.select(elementOf(editor, options.element_id))
@@ -302,6 +325,17 @@ export default (editor: Editor) => {
       command: 'asset:list',
       description: 'the images of the website, as URLs for src or CSS url().',
       readOnly: true,
+    })
+    addCapability({
+      tool: 'asset',
+      action: 'add',
+      command: 'asset:add',
+      description: 'copy a file, usually an image, into the website, and get the URL to use in src or CSS url().',
+      inputSchema: {
+        type: 'object',
+        required: ['path'],
+        properties: { path: { type: 'string', format: 'file-path', description: 'absolute path of the file, like /home/me/logo.svg' } },
+      },
     })
     registerBreakpoints(editor, addCapability, describeTool)
   })

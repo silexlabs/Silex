@@ -725,6 +725,10 @@ async fn start_server(
             "/eval-callback/{id}",
             axum::routing::post(mcp::eval_callback),
         )
+        .route(
+            "/mcp-file/{token}/{name}",
+            axum::routing::get(mcp::local_file),
+        )
         .layer(axum::Extension(pending_evals));
 
     let app = app

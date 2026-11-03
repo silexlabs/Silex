@@ -106,7 +106,7 @@ The sentence that introduces a tool, before the list of its actions.
 
 ### getTools()
 
-One tool per family: `{ name, description, inputSchema, readOnly, destructive, idempotent, openWorld, actions: { [action]: { command, parameters, required, openWorld } } }`.
+One tool per family: `{ name, description, inputSchema, readOnly, destructive, idempotent, openWorld, actions: { [action]: { command, parameters, required, openWorld, files } } }`. `files` lists the parameters declared with `format: 'file-path'`: a host that can read the disk gives the command the file instead of its path.
 
 ### getCapability(id)
 

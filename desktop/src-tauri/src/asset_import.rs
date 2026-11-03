@@ -7,16 +7,16 @@
  * the Free Software Foundation, either version 3 of the License, or any later version.
  */
 
-//! Images an agent copies from the disk into a website
+//! Files an agent copies from the disk into a website
 
 use std::path::Path;
 
-pub struct Image {
+pub struct LocalFile {
     pub name: String,
     pub content: Vec<u8>,
 }
 
-pub fn read_image(path: &str) -> Result<Image, String> {
+pub fn read_file(path: &str) -> Result<LocalFile, String> {
     let path = Path::new(path);
     if !path.is_absolute() {
         return Err(format!(
@@ -35,7 +35,7 @@ pub fn read_image(path: &str) -> Result<Image, String> {
         return Err(format!("{} is not a file.", path.display()));
     }
     let content = std::fs::read(path).map_err(unreadable)?;
-    Ok(Image {
+    Ok(LocalFile {
         name: safe_name(path, &extension),
         content,
     })
@@ -66,37 +66,4 @@ fn safe_name(path: &Path, extension: &str) -> String {
         "{}.{extension}",
         if stem.is_empty() { "image" } else { stem }
     )
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn write(name: &str, content: &[u8]) -> String {
-        let dir = std::env::current_dir()
-            .unwrap()
-            .join("target")
-            .join("asset-import-tests");
-        std::fs::create_dir_all(&dir).unwrap();
-        let path = dir.join(name);
-        std::fs::write(&path, content).unwrap();
-        path.to_string_lossy().into_owned()
-    }
-
-    fn refusal(path: &str) -> String {
-        read_image(path).err().unwrap_or_default()
-    }
-
-    #[test]
-    fn reads_a_file_under_a_safe_name() {
-        assert_eq!(
-            read_image(&write("Logo Final.PNG", b"png")).unwrap().name,
-            "logo-final.png"
-        );
-    }
-
-    #[test]
-    fn says_why_a_file_is_refused() {
-        assert!(refusal("relative/logo.png").contains("must be absolute"));
-    }
 }

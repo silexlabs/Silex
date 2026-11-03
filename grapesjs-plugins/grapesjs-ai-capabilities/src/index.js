@@ -217,6 +217,9 @@ export function getTools() {
         parameters: Object.keys(cap.inputSchema.properties || {}),
         required: cap.inputSchema.required || [],
         openWorld: cap.openWorld === true,
+        files: Object.entries(cap.inputSchema.properties || {})
+          .filter(([, schema]) => schema.format === 'file-path')
+          .map(([key]) => key),
       }])),
     }
   })

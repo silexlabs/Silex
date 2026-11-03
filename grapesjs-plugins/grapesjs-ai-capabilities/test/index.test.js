@@ -80,7 +80,7 @@ test('getTools merges the actions of a family into one flat schema', () => {
     assert.strictEqual(page.inputSchema.properties.action.description, 'list: list it select: select it delete: delete it add: add it')
     assert.strictEqual(page.inputSchema.properties.page_id.description, 'select/delete: Page id')
     assert.strictEqual(page.inputSchema.properties.name.description, 'used by add')
-    assert.deepStrictEqual(page.actions.select, { command: 'core:canvas-clear', parameters: ['page_id'], required: ['page_id'], openWorld: false })
+    assert.deepStrictEqual(page.actions.select, { command: 'core:canvas-clear', parameters: ['page_id'], required: ['page_id'], openWorld: false, files: [] })
     assert.deepStrictEqual([page.readOnly, page.destructive, page.openWorld], [false, true, true])
     assert.deepStrictEqual([device.readOnly, device.destructive, device.description], [true, false, 'Actions: list.'])
     JSON.parse(JSON.stringify(getTools()))
