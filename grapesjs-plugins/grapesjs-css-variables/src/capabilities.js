@@ -4,8 +4,8 @@ import {
   removeVariable,
   renameVariable,
 } from './variables.js'
-import { VARIABLE_TYPES, TYPE_FONT_FAMILY } from './types.js'
-import { guessType } from './guess-type.js'
+import { VARIABLE_TYPES, TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
+import { sanitizeName } from './modal.js'
 
 // Aliases that LLMs might guess instead of the canonical type names
 const TYPE_ALIASES = {
@@ -21,10 +21,16 @@ function normalizeType(type) {
 }
 
 export const cmdListVars = 'css-var:list'
-export const cmdDescribeVars = 'css-var:describe'
 export const cmdSetVar = 'css-var:set'
 export const cmdRemoveVar = 'css-var:remove'
 export const cmdRenameVar = 'css-var:rename'
+
+// A value says what it is, the way the browser reads it: red is a color, 16px a size
+function guessType(value) {
+  if (CSS.supports('color', value)) return TYPE_COLOR
+  if (CSS.supports('width', value)) return TYPE_SIZE
+  return TYPE_FONT_FAMILY
+}
 
 /** Names of all defined CSS variables, in order. */
 function getVariableNames(editor) {
@@ -45,12 +51,6 @@ function requireVariable(editor, name, label = 'Variable') {
 export function registerCommands(editor) {
   editor.Commands.add(cmdListVars, {
     run() {
-      return getAllVariablesOrdered(editor)
-    },
-  })
-
-  editor.Commands.add(cmdDescribeVars, {
-    run() {
       const variables = getAllVariablesOrdered(editor)
       return variables.length
         ? variables.map(v => `--${v.name}: ${v.values[''] ?? Object.values(v.values)[0]} (${v.type})`).join('\n')
@@ -61,7 +61,7 @@ export function registerCommands(editor) {
   editor.Commands.add(cmdSetVar, {
     run(ed, sender, opts = {}) {
       const { value, type } = opts
-      const name = opts.name?.replace(/^--/, '')
+      const name = opts.name && sanitizeName(opts.name)
       if (!name || !value) {
         throw new Error('Required: name, value. Example: {name: "primary", value: "#ff0000"}.')
       }
@@ -87,7 +87,7 @@ export function registerCommands(editor) {
 
   editor.Commands.add(cmdRemoveVar, {
     run(ed, sender, opts = {}) {
-      const name = opts.name?.replace(/^--/, '')
+      const name = opts.name && sanitizeName(opts.name)
       if (!name) {
         throw new Error('Required: name. Example: {name: "primary"}. Use variable(action:\'list\') to see existing variables.')
       }
@@ -102,8 +102,8 @@ export function registerCommands(editor) {
 
   editor.Commands.add(cmdRenameVar, {
     run(ed, sender, opts = {}) {
-      const oldName = opts.name?.replace(/^--/, '')
-      const newName = opts.new_name?.replace(/^--/, '')
+      const oldName = opts.name && sanitizeName(opts.name)
+      const newName = opts.new_name && sanitizeName(opts.new_name)
       if (!oldName || !newName) {
         throw new Error('Required: name, new_name. Example: {name: "primary", new_name: "brand"}. Use variable(action:\'list\') to see existing variables.')
       }
@@ -125,7 +125,7 @@ export function registerCapabilities(addCapability, describeTool) {
   addCapability({
     tool: 'variable',
     action: 'list',
-    command: cmdDescribeVars,
+    command: cmdListVars,
     description: 'the variables and their values.',
     readOnly: true,
   })
