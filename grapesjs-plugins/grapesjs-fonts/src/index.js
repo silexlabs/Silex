@@ -24,8 +24,8 @@ export default (editor, opts = {}) => {
   fontsDialogPlugin(editor, options)
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability, describeTool) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }
 

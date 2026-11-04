@@ -1,70 +1,54 @@
-export function registerCapabilities(addCapability: (def: Record<string, unknown>) => void) {
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
+
+export function registerCapabilities(addCapability: AddCapability, describeTool: DescribeTool) {
+  const elementId = { type: 'string', description: 'Element id, like "ab12". Default: the selected element' }
+  const selector = { type: 'string', description: 'CSS selector that matches the element, one relation and one state at most, like ".card", ".card:hover" or ".list > .card"' }
+  describeTool('style', 'CSS rules, written for the selected breakpoint.')
   addCapability({
-    id: 'selector:get',
-    command: 'selector:get',
-    description: 'Get CSS selector of selected element',
-    readOnly: true,
-    tags: ['selectors'],
-  })
-  addCapability({
-    id: 'selector:set',
-    command: 'selector:set',
-    description: 'Set CSS selector on selected element',
-    inputSchema: {
-      type: 'object',
-      required: ['selector'],
-      properties: {
-        selector: { type: 'string', description: 'CSS selector string. Examples: ".my-class", "div.card:hover", ".parent > .child"' },
-      },
-    },
-    tags: ['selectors'],
-  })
-  addCapability({
-    id: 'selector:list-rules',
+    tool: 'style',
+    action: 'list',
     command: 'selector:list-rules',
-    description: 'List all CSS rules applied to selected element',
+    description: 'the selectors with styles for an element, and their breakpoint.',
     readOnly: true,
-    tags: ['selectors'],
+    inputSchema: { type: 'object', properties: { element_id: elementId } },
   })
   addCapability({
-    id: 'styles:get',
+    tool: 'style',
+    action: 'get',
     command: 'styles:get',
-    description: 'Get CSS styles from the active selector (set via selector_set)',
+    description: 'the CSS of a selector.',
     readOnly: true,
-    tags: ['styles'],
+    inputSchema: { type: 'object', properties: { element_id: elementId, selector } },
   })
   addCapability({
-    id: 'styles:set',
+    tool: 'style',
+    action: 'set',
     command: 'styles:set',
-    description: 'Set CSS style on the active selector (set via selector_set)',
+    description: 'add or change CSS properties, the others stay. Set them all in one call.',
     inputSchema: {
       type: 'object',
+      required: ['css'],
       properties: {
-        property: { type: 'string' },
-        value: { type: 'string' },
+        element_id: elementId,
+        selector,
+        css: { type: 'string', description: 'CSS declarations, like "display: flex; gap: 16px; color: #222"' },
       },
     },
-    tags: ['styles'],
   })
   addCapability({
-    id: 'styles:remove',
+    tool: 'style',
+    action: 'remove',
     command: 'styles:remove',
-    description: 'Remove a CSS property from the active selector (set via selector_set)',
+    description: 'remove a CSS property.',
     destructive: true,
     inputSchema: {
       type: 'object',
       required: ['property'],
       properties: {
-        property: { type: 'string' },
+        element_id: elementId,
+        selector,
+        property: { type: 'string', description: 'CSS property name, like "color"' },
       },
     },
-    tags: ['styles'],
-  })
-  addCapability({
-    id: 'selector:info',
-    command: 'selector:info',
-    description: 'List valid pseudo-classes, operators, and selector examples',
-    readOnly: true,
-    tags: ['selectors'],
   })
 }
