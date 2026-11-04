@@ -398,7 +398,7 @@ function displaySettings(
   currentSection = targetSection || currentSection || menuItemsCurrent[0]
   const sections: TemplateResult[] = menuItemsCurrent.map(item => {
     try {
-      return item.render(settings, model)
+      return item.render(settings, model, editor)
     } catch (e) {
       console.error('Error rendering settings section', item.id, e)
       return html`<div class="silex-error">Error rendering settings section ${item.id}</div>`
