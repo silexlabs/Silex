@@ -16,7 +16,7 @@
  */
 
 import {html, render, TemplateResult} from 'lit-html'
-import {defaultSections, idCodeWrapper, isSite, SettingsSection, updateInfo} from './settings-sections'
+import {defaultSections, idCodeWrapper, isSite, SettingsError, SettingsSection, updateInfo} from './settings-sections'
 
 /**
  * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
@@ -131,9 +131,8 @@ function createCustomSettingsDialog(editor: Editor, opts: Record<string, unknown
   const form = el.querySelector('form') as HTMLFormElement
   form.onsubmit = (event: Event) => {
     event.preventDefault()
-    editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
+    if (!checkSettings(page)) return
     saveSettings(editor, opts, page)
-    editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
     closeCustomSettingsDialog(editor, false)
   }
 
@@ -178,9 +177,8 @@ function reopenSettingsModal(editor: Editor, opts: Record<string, unknown>) {
   const form = el.querySelector('form') as HTMLFormElement
   form.onsubmit = (event: Event) => {
     event.preventDefault()
-    editor.trigger(ClientEvent.SETTINGS_SAVE_START, settingsState?.page)
+    if (!checkSettings(settingsState?.page)) return
     saveSettings(editor, opts, settingsState?.page)
-    editor.trigger(ClientEvent.SETTINGS_SAVE_END, settingsState?.page)
     editor.stopCommand(cmdOpenSettings)
   }
 }
@@ -231,34 +229,9 @@ export const settingsDialog = (
   editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     removeSection(options.section.id, options.siteOrPage)
   })
-  editor.Commands.add(cmdGetSettings, (_editor: Editor, _sender: Button, options: any = {}) => {
-    const { page } = options
-    if (page) {
-      const p = typeof page === 'string'
-        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
-        : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
-      return renameOgSettingsKeys((p.get('settings') || {}) as Record<string, unknown>)
-    }
-    return renameOgSettingsKeys((editor.getModel().get('settings') || {}) as Record<string, unknown>)
-  })
+  editor.Commands.add(cmdGetSettings, () => getSettingsOf(editor.getModel()))
   editor.Commands.add(cmdSetSettings, (_editor: Editor, _sender: Button, options: Record<string, unknown> = {}) => {
-    const { page, ...incoming } = options
-    const settings = renameOgSettingsKeys(incoming)
-    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key.')
-    if (page) {
-      const p = typeof page === 'string'
-        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
-        : editor.Pages.getSelected()
-      if (!p) throw new Error(`Page not found: "${page}". Use pages_list to see all pages.`)
-      const current = (p.get('settings') || {}) as Record<string, unknown>
-      p.set('settings', { ...current, ...settings })
-    } else {
-      const current = (editor.getModel().get('settings') || {}) as Record<string, unknown>
-      editor.getModel().set('settings', { ...current, ...settings })
-    }
-    editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
-    updateDom(editor)
+    setSettingsOf(editor, editor.getModel(), options)
   })
   editor.on('storage:start:store', (data: WebsiteData): void => {
     data.settings = editor.getModel().get('settings')
@@ -285,42 +258,87 @@ export const settingsDialog = (
     autoFormat: false,
   })
 
-  // Register AI capabilities
   editor.on('ai-capabilities:ready', (addCapability) => {
     addCapability({
-      id: cmdGetSettings,
+      tool: 'website',
+      action: 'get',
       command: cmdGetSettings,
-      description: 'Get site or page settings',
+      description: 'the settings of the open website.',
       readOnly: true,
-      inputSchema: {
-        type: 'object',
-        properties: {
-          page: { type: 'string' },
-        },
-      },
-      tags: ['settings'],
     })
     addCapability({
-      id: cmdSetSettings,
+      tool: 'website',
+      action: 'update',
       command: cmdSetSettings,
-      description: 'Set site or page settings',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          page: { type: 'string' },
-          title: { type: 'string' },
-          description: { type: 'string' },
-          favicon: { type: 'string' },
-          lang: { type: 'string' },
-          head: { type: 'string' },
-          og_title: { type: 'string', description: 'Open Graph title (stored as og:title)' },
-          og_description: { type: 'string', description: 'Open Graph description (stored as og:description)' },
-          og_image: { type: 'string', description: 'Open Graph image URL (stored as og:image)' },
-        },
-      },
-      tags: ['settings'],
+      description: 'change settings of the open website, the others stay.',
+      inputSchema: { type: 'object', properties: SETTINGS_SCHEMA },
     })
   })
+}
+
+export const SETTINGS_SCHEMA = {
+  title: { type: 'string' },
+  description: { type: 'string' },
+  favicon: { type: 'string' },
+  lang: { type: 'string' },
+  head: { type: 'string', description: 'HTML added to <head>' },
+  og_title: { type: 'string' },
+  og_description: { type: 'string' },
+  og_image: { type: 'string', description: 'image URL' },
+}
+
+interface SettingsHolder {
+  get(key: 'settings'): unknown
+  set(key: 'settings', value: Record<string, unknown>): unknown
+}
+
+export function getSettingsOf(holder: SettingsHolder): Record<string, unknown> {
+  return renameOgSettingsKeys((holder.get('settings') || {}) as Record<string, unknown>)
+}
+
+export function setSettingsOf(editor: Editor, holder: SettingsHolder, incoming: Record<string, unknown>): void {
+  const settings = renameOgSettingsKeys(incoming)
+  if (!Object.keys(settings).length) throw new Error(`Set at least one of: ${Object.keys(SETTINGS_SCHEMA).join(', ')}.`)
+  const merged = Object.fromEntries(Object.entries({ ...(holder.get('settings') as Record<string, unknown> || {}), ...settings })
+    .filter(([, value]) => value !== undefined))
+  const failed = settingsError(holder, merged)
+  if (failed) throw new Error(`${failed.error.message}. Nothing was changed.`)
+  storeSettings(editor, holder, () => holder.set('settings', merged))
+  if (settingsState && (settingsState.page ?? editor.getModel()) === holder) refreshDialog(editor, Object.keys(settings))
+}
+
+// The sections reset every field to the model when they render, so what the user typed in the other fields is put back
+function refreshDialog(editor: Editor, changed: string[]): void {
+  const typed = Array.from(el.querySelectorAll<HTMLInputElement>('[name]'))
+    .filter(input => !changed.includes(input.name))
+    .map(input => ({ input, value: input.value, checked: input.checked }))
+  const head = headEditor!.getContent()
+  displaySettings(editor, {}, settingsState!.page)
+  if (!changed.includes('head')) headEditor!.setContent(head)
+  // After the sections which fill their fields in a timeout
+  setTimeout(() => typed.forEach(({ input, value, checked }) => {
+    input.value = value
+    input.checked = checked
+  }))
+}
+
+function settingsError(model: unknown, settings: Record<string, unknown>): { section: SettingsSection, error: SettingsError } | null {
+  const sections = model && !isSite(model) ? sectionsPage : sectionsSite
+  for (const section of sections) {
+    const error = section.check?.(settings)
+    if (error) return { section, error }
+  }
+  return null
+}
+
+// The listeners get the page, or nothing for the website, as the dialog has always sent them
+function storeSettings(editor: Editor, model: unknown, write: () => void): void {
+  const page = model && !isSite(model) ? model : undefined
+  editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
+  write()
+  editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
+  updateDom(editor)
+  editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
 }
 
 function showSection(item: SettingsSection): void {
@@ -450,30 +468,58 @@ function displaySettings(
   requestAnimationFrame(() => headEditor?.refresh())
 }
 
-function saveSettings(
-  editor: Editor,
-  config: Record<string, unknown>,
-  model: any = editor.getModel()
-): void {
+function formSettings(): Record<string, any> {
   const form = el.querySelector('form') as HTMLFormElement
-  const formData = new FormData(form)
-  const data = Array.from(formData)
-    .reduce((aggregate: {[key: string]: any}, [key, value]) => {
+  return Array.from(new FormData(form))
+    .reduce((aggregate: Record<string, any>, [key, value]) => {
       if(value !== '') {
         aggregate[key] = value
       }
       return aggregate
     }, {})
+}
+
+function checkSettings(model: any): boolean {
+  el.querySelectorAll('.silex-form__error').forEach(error => {
+    if (error.id) el.querySelector(`[aria-describedby="${error.id}"]`)?.removeAttribute('aria-describedby')
+    error.remove()
+  })
+  const failed = settingsError(model, formSettings())
+  if (failed) showError(failed.section, failed.error)
+  return !failed
+}
+
+function showError(section: SettingsSection, { field, message }: SettingsError): void {
+  showSection(section)
+  const input = el.querySelector(`[name="${field}"]`) as HTMLElement | null
+  const error = document.createElement('p')
+  error.className = 'silex-form__error'
+  error.setAttribute('role', 'alert')
+  error.textContent = message
+  if (input) {
+    error.id = `${field}-error`
+    input.setAttribute('aria-describedby', error.id)
+    input.after(error)
+    input.focus()
+  } else {
+    el.querySelector('form')?.prepend(error)
+  }
+}
+
+function saveSettings(
+  editor: Editor,
+  config: Record<string, unknown>,
+  model: any = editor.getModel()
+): void {
+  const data = formSettings()
   const { name, ...settings } = data
-  model.set({
+  storeSettings(editor, model, () => model.set({
     settings: {
       ...data,
       head: headEditor!.getContent(),
     },
     name,
-  })
-  editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
-  updateDom(editor)
+  }))
 }
 function getHeadContainer(doc: Document, className: string): HTMLElement {
   const container = doc.head.querySelector(`.${className}`) as HTMLElement | null
