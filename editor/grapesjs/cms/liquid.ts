@@ -75,6 +75,44 @@ export function assignBlock(stateId: StateId, component: Component, expression: 
 }
 
 /**
+ * Get the value of a fixed token if it is a number
+ * Returns null if the expression is not a single fixed value or the value is not a number
+ */
+function getFixedNumber(expression: Expression): string | null {
+  if (expression.length === 1 && expression[0].type === 'property' && expression[0].fieldId === FIXED_TOKEN_ID) {
+    const value = expression[0].options?.value
+    const str = typeof value === 'number' ? String(value) : typeof value === 'string' ? value.trim() : null
+    // Liquid only supports integers and decimals, no scientific notation
+    return str !== null && /^-?\d+(\.\d+)?$/.test(str) ? str : null
+  }
+  return null
+}
+
+/**
+ * Check if the expression resolves to a numeric field (Int or Float in GraphQL)
+ * Only the last token matters because it holds the type of the result
+ * Returns false when the type is unknown, in which case the fixed value stays quoted
+ */
+function isNumericExpression(expression: Expression): boolean {
+  const last = expression[expression.length - 1]
+  return !!last
+    && last.type === 'property'
+    && last.kind === 'scalar'
+    && last.typeIds.some(typeId => typeId === 'Int' || typeId === 'Float')
+}
+
+/**
+ * Liquid statement which assigns an unquoted number to a variable
+ */
+function fixedNumberStatement(component: Component, value: string): { variableName: string, liquid: string } {
+  const variableName = getNextVariableName(component, numNextVar++)
+  return {
+    variableName,
+    liquid: `assign ${variableName} = ${value}`,
+  }
+}
+
+/**
  * Generate liquid instructions which start and end a loop over the provided expression
  * This is used for components states
  */
@@ -117,14 +155,27 @@ export function ifBlock(component: Component, condition: Condition): [start: str
   // Check the second expression
   if (binary && binary.expression2.length === 0) return ['', '']
 
+  // A fixed number compared with a numeric field must be published without quotes
+  // Liquid does not convert "826" to a number so `count == "826"` is always false
+  const fixed1 = getFixedNumber(condition.expression)
+  const fixed2 = binary ? getFixedNumber(binary.expression2) : null
+  const numeric1 = fixed1 === null && isNumericExpression(condition.expression)
+  const numeric2 = binary !== null && fixed2 === null && isNumericExpression(binary.expression2)
+
   // Get liquid for the first expression
-  const statements = getLiquidBlock(component, condition.expression)
+  const statements = fixed1 !== null && numeric2
+    ? [fixedNumberStatement(component, fixed1)]
+    : getLiquidBlock(component, condition.expression)
   const lastVariableName = statements[statements.length - 1].variableName
 
   // Get liquid for the second
   let lastVariableName2 = ''
   if (binary) {
-    statements.push(...getLiquidBlock(component, binary.expression2))
+    if (fixed2 !== null && numeric1) {
+      statements.push(fixedNumberStatement(component, fixed2))
+    } else {
+      statements.push(...getLiquidBlock(component, binary.expression2))
+    }
     lastVariableName2 = statements[statements.length - 1].variableName
   }
 

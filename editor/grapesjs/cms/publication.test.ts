@@ -5,8 +5,8 @@
 import dedent from 'dedent'
 import { expect, jest, test } from '@jest/globals'
 import { buildAttributes, getFrontMatter, isAttribute, linkToPermalink, queryToDataFile } from './publication'
-import { echoBlock } from './liquid'
-import { IDataSource, toExpression } from '@silexlabs/grapesjs-data-source'
+import { echoBlock, ifBlock } from './liquid'
+import { BinaryOperator, IDataSource, toExpression } from '@silexlabs/grapesjs-data-source'
 import grapesjs, { Page } from 'grapesjs'
 import { Silex11tyPluginWebsiteSettings } from './index'
 
@@ -127,6 +127,90 @@ test('SEO field with an expression that contains a filter (echoBlock)', () => {
   const out = echoBlock(body, toExpression(PAGE_DATA_FILTER_TEST)!)
   expect(out).toContain('datasourceIdTest.continents | downcase')
   expect(out).toMatch(/{% liquid[\s\S]*assign [\s\S]*\| downcase[\s\S]*echo /)
+})
+
+// Visibility conditions (issue #1942): a fixed number compared with a numeric field
+// must be published without quotes, else Liquid compares a number to the string "826"
+// and the condition is always false while it is true in the editor
+test('Visibility condition with a numeric field and a fixed number (ifBlock)', () => {
+  const body = PAGE_TEST.getMainComponent()
+  const count = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "count", "label": "count",
+    "kind": "scalar", "typeIds": ["Int"], "dataSourceId": "datasourceIdTest"
+  }]`)!
+  const fixed826 = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "fixed", "label": "Fixed value",
+    "kind": "scalar", "typeIds": ["String"], "options": { "value": "826" }
+  }]`)!
+  const [start] = ifBlock(body, {
+    operator: BinaryOperator.EQUAL,
+    expression: count,
+    expression2: fixed826,
+  })
+  expect(start).toMatch(/assign \w+ = datasourceIdTest\.count/)
+  // The fixed number is published as a number, not as the text "826"
+  expect(start).toMatch(/assign \w+ = 826\b/)
+  expect(start).not.toContain('"826"')
+})
+
+test('Visibility condition with a numeric field and a fixed number on the left (ifBlock)', () => {
+  const body = PAGE_TEST.getMainComponent()
+  const fixed826 = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "fixed", "label": "Fixed value",
+    "kind": "scalar", "typeIds": ["String"], "options": { "value": "826" }
+  }]`)!
+  const count = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "count", "label": "count",
+    "kind": "scalar", "typeIds": ["Float"], "dataSourceId": "datasourceIdTest"
+  }]`)!
+  const [start] = ifBlock(body, {
+    operator: BinaryOperator.EQUAL,
+    expression: fixed826,
+    expression2: count,
+  })
+  // The fixed number on the left is published as a number too
+  expect(start).toMatch(/assign \w+ = 826\b/)
+  expect(start).not.toContain('"826"')
+  expect(start).toMatch(/assign \w+ = datasourceIdTest\.count/)
+})
+
+test('Visibility condition with a string field keeps the quotes (ifBlock)', () => {
+  const body = PAGE_TEST.getMainComponent()
+  const name = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "name", "label": "name",
+    "kind": "scalar", "typeIds": ["String"], "dataSourceId": "datasourceIdTest"
+  }]`)!
+  const fixedAlex = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "fixed", "label": "Fixed value",
+    "kind": "scalar", "typeIds": ["String"], "options": { "value": "Alex" }
+  }]`)!
+  const [start] = ifBlock(body, {
+    operator: BinaryOperator.EQUAL,
+    expression: name,
+    expression2: fixedAlex,
+  })
+  // A string field still gets a quoted string
+  expect(start).toMatch(/assign \w+ = datasourceIdTest\.name/)
+  expect(start).toMatch(/assign \w+ = "Alex"/)
+})
+
+test('Visibility condition with a numeric field and a fixed text keeps the quotes (ifBlock)', () => {
+  const body = PAGE_TEST.getMainComponent()
+  const count = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "count", "label": "count",
+    "kind": "scalar", "typeIds": ["Int"], "dataSourceId": "datasourceIdTest"
+  }]`)!
+  const fixedNotANumber = toExpression(`[{
+    "type": "property", "propType": "field", "fieldId": "fixed", "label": "Fixed value",
+    "kind": "scalar", "typeIds": ["String"], "options": { "value": "Alex" }
+  }]`)!
+  const [start] = ifBlock(body, {
+    operator: BinaryOperator.EQUAL,
+    expression: count,
+    expression2: fixedNotANumber,
+  })
+  // A fixed text is not turned into a number
+  expect(start).toMatch(/assign \w+ = "Alex"/)
 })
 
 test('isAttribute', () => {
