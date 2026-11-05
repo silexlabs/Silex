@@ -30,8 +30,13 @@ export default (editor: Editor) => {
     }
     return prefix + idx
   }
+  // The body (wrapper) is selected when clicking an empty canvas, it can not be a symbol
+  function hasValidSelection() {
+    const selected = editor.getSelected()
+    return !!selected && selected !== editor.getWrapper()
+  }
   function updateCreateButton() {
-    const hasSelection = !!editor.getSelected()
+    const hasSelection = hasValidSelection()
     document.querySelectorAll<HTMLElement>('.symbol-create-button').forEach(button => {
       button.classList.toggle('project-bar__panel-header-button--disabled', !hasSelection)
       button.setAttribute('aria-disabled', String(!hasSelection))
@@ -39,9 +44,12 @@ export default (editor: Editor) => {
     })
   }
   editor.on('load component:toggled', updateCreateButton)
+  // Deleting a component or a symbol, or switching page, can clear the selection
+  // without a component:toggled event, wait for GrapesJS to update the selection
+  editor.on('component:remove page:select', () => setTimeout(updateCreateButton))
   editor.Commands.add(cmdPromptAddSymbol, {
     run: (_) => {
-      if (!editor.getSelected()) {
+      if (!hasValidSelection()) {
         return
       }
       const label = prompt('Label', getNext('Symbol '))?.trim()
