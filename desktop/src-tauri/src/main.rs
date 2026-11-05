@@ -18,7 +18,7 @@ use std::time::{Duration, SystemTime};
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
 use tokio::net::TcpListener;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
 use crate::held::held;
 use crate::locales::{button, tr};
@@ -950,14 +950,22 @@ fn main() {
         .with(tracing_subscriber::fmt::layer())
         // Logs are left out: they carry paths, and so the name of the user
         .with(
-            sentry::integrations::tracing::layer().event_filter(|metadata| {
-                use sentry::integrations::tracing::EventFilter;
-                match *metadata.level() {
-                    tracing::Level::ERROR => EventFilter::Event,
-                    tracing::Level::WARN | tracing::Level::INFO => EventFilter::Breadcrumb,
-                    _ => EventFilter::Ignore,
-                }
-            }),
+            sentry::integrations::tracing::SpanLayer::new()
+                .with_filter(tracing_subscriber::filter::LevelFilter::INFO),
+        )
+        .with(
+            sentry::integrations::tracing::BreadcrumbLayer::new().with_filter(
+                tracing_subscriber::filter::filter_fn(|metadata| {
+                    matches!(
+                        *metadata.level(),
+                        tracing::Level::WARN | tracing::Level::INFO
+                    )
+                }),
+            ),
+        )
+        .with(
+            sentry::integrations::tracing::ErrorLayer::new()
+                .with_filter(tracing_subscriber::filter::LevelFilter::ERROR),
         )
         .init();
 
