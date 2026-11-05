@@ -109,6 +109,8 @@ pub type SaveEnded = watch::Receiver<bool>;
 pub struct SilexActions {
     /// Directory holding one sub directory per website
     data_path: PathBuf,
+    /// Where integrations.json is
+    app_data_dir: PathBuf,
     integrations: Arc<Loading>,
     current_website_id: CurrentWebsiteId,
     syncer: Arc<Syncer>,
@@ -117,6 +119,7 @@ pub struct SilexActions {
 impl SilexActions {
     pub fn new(
         data_path: PathBuf,
+        app_data_dir: PathBuf,
         integrations: Loading,
         current_website_id: CurrentWebsiteId,
         tells: impl Fn(&str, &Failure) + Send + Sync + 'static,
@@ -153,6 +156,7 @@ impl SilexActions {
                 statuses: watch::Sender::new(BTreeMap::new()),
             }),
             data_path,
+            app_data_dir,
             integrations,
             current_website_id,
         }
@@ -164,6 +168,15 @@ impl SilexActions {
 
     pub fn integration_catalog(&self) -> Vec<crate::integrations::CatalogEntry> {
         crate::integrations::now(&self.integrations).catalog_entries()
+    }
+
+    pub fn integration_asked(
+        &self,
+        program: &str,
+        asked: crate::integrations::Asked,
+    ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
+        crate::integrations::asked(&self.integrations, &self.app_data_dir, program, asked)
+            .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
     }
 
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {

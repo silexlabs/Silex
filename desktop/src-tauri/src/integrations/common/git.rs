@@ -16,11 +16,13 @@
 //! the server's, not this.
 
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use git2::{ConfigLevel, ErrorCode, Oid};
 use silex_server::{repository, TEMPLATE_REMOTE};
 
 use super::run::{failure, run, run_fetch, run_transfer_verbatim};
+use crate::held::held;
 use crate::integrations::integration::{SyncError, Synced};
 use crate::locales::{AHEAD, BEHIND, DIVERGED, NOT_PUSHED, PUSHED, SYNC};
 use silex_server::said::Said;
@@ -86,19 +88,32 @@ pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
 }
 
-/// The git of this machine, looked for once and kept
+/// The git of this machine, looked for until it is found and kept
 ///
 /// Not an integration: nothing to turn on, nothing to remember. Asked its
 /// version rather than taken on sight, because a file being there does not
 /// mean it runs.
 fn git_path() -> Option<PathBuf> {
-    static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
-    FOUND
-        .get_or_init(|| {
-            super::programs::found("git")
-                .filter(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
-        })
-        .clone()
+    let mut kept = held(&GIT);
+    if kept.is_none() {
+        let found = super::programs::found("git");
+        // One that is there but does not run is not asked again: on macOS it
+        // is the stub offering the developer tools, in a dialog at every save
+        *kept = found.map(|program| {
+            run(&program, &std::env::temp_dir(), &["--version"])
+                .is_ok()
+                .then_some(program)
+        });
+    }
+    kept.clone().flatten()
+}
+
+/// Not looked for yet, there but not running, or found
+static GIT: Mutex<Option<Option<PathBuf>>> = Mutex::new(None);
+
+/// So that a git installed while Silex runs is found
+pub(crate) fn forget() {
+    *held(&GIT) = None;
 }
 
 /// Push the branch, and the tag when there is one

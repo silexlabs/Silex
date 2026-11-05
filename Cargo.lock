@@ -4602,6 +4602,7 @@ dependencies = [
  "uuid",
  "webkit2gtk",
  "which",
+ "windows-registry",
 ]
 
 [[package]]
