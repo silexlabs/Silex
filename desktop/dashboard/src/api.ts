@@ -121,6 +121,38 @@ export interface SyncPlace {
 
 export const syncPlaces = (websiteId: string) => call<SyncPlace[]>('sync_places', { websiteId })
 
+export type Tag = 'hosting' | 'storage' | 'team'
+
+/** Of the service an integration relies on, not of the program */
+export type Openness = 'digitalCommons' | 'freeSoftware' | 'openSource' | 'openCore' | 'sourceAvailable' | 'proprietary'
+
+/** What a user may not want of the service, after the Anti-Features of F-Droid */
+export type AntiFeature = 'tracking' | 'proprietaryCloud' | 'identityVerification' | 'freeLicenseRequired'
+
+/** An integration of the catalog, with what is known of it on this computer */
+export interface CatalogEntry {
+  program: string
+  /** The service the user knows, not the program */
+  name: string
+  /** In English, a key of the locales */
+  summary: string
+  tags: Tag[]
+  openness: Openness
+  antiFeatures: AntiFeature[]
+  /** For when Silex cannot find the program */
+  installUrl: string
+  /** The logo of the service, an SVG from the integration */
+  icon: string | null
+  /** False when the program cannot be installed on this system */
+  runsHere: boolean
+  enabled: boolean
+  found: boolean
+  broken: boolean
+  version: string | null
+}
+
+export const integrationCatalog = () => call<CatalogEntry[]>('integration_catalog', {})
+
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null
 

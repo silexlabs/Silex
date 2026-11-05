@@ -18,8 +18,10 @@ use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_fi
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
-    silex_tag, Build, Capacity, Integration, Prepared, SyncError, Synced, Urls,
+    silex_tag, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SyncError, Synced,
+    Tag, Urls,
 };
+use crate::locales::key;
 
 /// The instance GitLab runs itself
 ///
@@ -36,6 +38,34 @@ pub struct Glab;
 impl Integration for Glab {
     fn program(&self) -> &'static str {
         "glab"
+    }
+
+    fn name(&self) -> &'static str {
+        "GitLab"
+    }
+
+    fn summary(&self) -> &'static str {
+        key!("Back up your websites in a project on GitLab, with the history of every change. Publish them online with GitLab Pages: free hosting in the US, fast builds, and your own domain name if you have one.")
+    }
+
+    fn tags(&self) -> &'static [Tag] {
+        &[Tag::Hosting, Tag::Storage, Tag::Team]
+    }
+
+    fn openness(&self) -> Openness {
+        Openness::OpenCore
+    }
+
+    fn anti_features(&self) -> &'static [AntiFeature] {
+        &[
+            AntiFeature::Tracking,
+            AntiFeature::ProprietaryCloud,
+            AntiFeature::IdentityVerification,
+        ]
+    }
+
+    fn install_url(&self) -> &'static str {
+        "https://gitlab.com/gitlab-org/cli#installation"
     }
 
     fn capacities(&self) -> &'static [Capacity] {

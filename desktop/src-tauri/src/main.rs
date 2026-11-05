@@ -180,6 +180,16 @@ async fn sync_places(
 }
 
 #[tauri::command]
+async fn integration_catalog(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_catalog())
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
 async fn sync_website(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
     website_id: WebsiteId,
@@ -993,6 +1003,7 @@ fn main() {
             sync_places,
             last_publication,
             sync_website,
+            integration_catalog,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

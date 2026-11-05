@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-integration-catalog"
+description = "Enables the integration_catalog command without any pre-configured scope."
+commands.allow = ["integration_catalog"]
+
+[[permission]]
+identifier = "deny-integration-catalog"
+description = "Denies the integration_catalog command without any pre-configured scope."
+commands.deny = ["integration_catalog"]

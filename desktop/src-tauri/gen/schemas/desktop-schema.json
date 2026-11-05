@@ -195,6 +195,12 @@
           "markdownDescription": "Enables the get_telemetry_context command without any pre-configured scope."
         },
         {
+          "description": "Enables the integration_catalog command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-integration-catalog",
+          "markdownDescription": "Enables the integration_catalog command without any pre-configured scope."
+        },
+        {
           "description": "Enables the last_publication command without any pre-configured scope.",
           "type": "string",
           "const": "allow-last-publication",
@@ -265,6 +271,12 @@
           "type": "string",
           "const": "deny-get-telemetry-context",
           "markdownDescription": "Denies the get_telemetry_context command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the integration_catalog command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-integration-catalog",
+          "markdownDescription": "Denies the integration_catalog command without any pre-configured scope."
         },
         {
           "description": "Denies the last_publication command without any pre-configured scope.",

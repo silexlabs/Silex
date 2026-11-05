@@ -161,6 +161,10 @@ impl SilexActions {
         self.syncer.statuses.subscribe()
     }
 
+    pub fn integration_catalog(&self) -> Vec<crate::integrations::CatalogEntry> {
+        self.integrations.catalog_entries()
+    }
+
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {
         let Some(site) = self.site_path(website_id) else {
             return Vec::new();
