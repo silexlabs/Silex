@@ -22,11 +22,18 @@ use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use super::programs;
 use super::remote::redact;
 use crate::held::held;
 
 /// How long a program has to answer before it is killed
 const LOCAL: Duration = Duration::from_secs(30);
+
+/// How long the shell of the user has to say what its PATH is
+///
+/// Somebody is waiting in front of the integrations screen.
+#[cfg(not(target_os = "windows"))]
+const LOGIN_SHELL: Duration = Duration::from_secs(10);
 
 /// How long a program sending a whole website has
 ///
@@ -55,7 +62,17 @@ const MAX_OUTPUT: usize = 64 * 1024;
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, None, LOCAL)?)
+    said(program, run_within(program, dir, args, None, LOCAL, false)?)
+}
+
+/// Started with the PATH of the app, since it is the shell that is asked for
+/// the fresh one
+#[cfg(not(target_os = "windows"))]
+pub fn run_login_shell(shell: &Path, args: &[&str]) -> Result<String, String> {
+    said(
+        shell,
+        run_within(shell, &env::temp_dir(), args, None, LOGIN_SHELL, true)?,
+    )
 }
 
 /// A question asked over the network, to a program that only takes it on its
@@ -66,11 +83,14 @@ pub fn run_with_input(
     args: &[&str],
     input: &str,
 ) -> Result<String, String> {
-    said(program, run_within(program, dir, args, Some(input), FETCH)?)
+    said(
+        program,
+        run_within(program, dir, args, Some(input), FETCH, false)?,
+    )
 }
 
 pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, None, FETCH)?)
+    said(program, run_within(program, dir, args, None, FETCH, false)?)
 }
 
 /// The same, keeping what the program said even when it failed
@@ -78,7 +98,7 @@ pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, St
 /// A program can say something a caller has to act on rather than show: git
 /// answers `--porcelain` on its standard output and fails all the same.
 pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Result<Ran, String> {
-    run_within(program, dir, args, None, TRANSFER)
+    run_within(program, dir, args, None, TRANSFER, false)
 }
 
 pub struct Ran {
@@ -137,16 +157,27 @@ fn without_appimage_environment(command: &mut Command) {
         if !paths.iter().any(|path| path.starts_with(&appdir)) {
             continue;
         }
-        let users: Vec<PathBuf> = paths
-            .into_iter()
-            // An empty entry is the working directory, here the website folder
-            .filter(|path| !path.as_os_str().is_empty() && !path.starts_with(&appdir))
-            .collect();
+        let users = outside_the_appimage(paths);
         command.env_remove(&name);
         if let (false, Ok(value)) = (users.is_empty(), env::join_paths(&users)) {
             command.env(&name, value);
         }
     }
+}
+
+/// Without what would make a program run from the wrong place: an empty or
+/// relative folder is the working directory, here the website folder, and
+/// those of the AppImage hold what Silex carries for itself
+pub(crate) fn outside_the_appimage(folders: impl IntoIterator<Item = PathBuf>) -> Vec<PathBuf> {
+    let appdir = env::var_os("APPDIR").map(PathBuf::from);
+    let mut kept: Vec<PathBuf> = Vec::new();
+    for folder in folders {
+        let of_the_appimage = appdir.as_ref().is_some_and(|dir| folder.starts_with(dir));
+        if folder.is_absolute() && !of_the_appimage && !kept.contains(&folder) {
+            kept.push(folder);
+        }
+    }
+    kept
 }
 
 /// Opens a folder or a link with what the system chooses, which the
@@ -180,6 +211,7 @@ fn run_within(
     args: &[&str],
     input: Option<&str>,
     timeout: Duration,
+    login_shell: bool,
 ) -> Result<Ran, String> {
     let mut command = Command::new(program);
     command
@@ -207,6 +239,15 @@ fn run_within(
         .env("LC_ALL", "C");
 
     without_appimage_environment(&mut command);
+    if login_shell {
+        // Lets startup files skip what is slow, and oh-my-zsh not ask to update
+        command
+            .env("SILEX_RESOLVING_ENVIRONMENT", "1")
+            .env("DISABLE_AUTO_UPDATE", "true");
+    } else if let Ok(path) = env::join_paths(programs::path()) {
+        // glab starts git, which may have been installed since Silex started
+        command.env("PATH", path);
+    }
 
     // A killed program takes with it whatever it started: git leaves an ssh
     // behind, and that ssh holds the connection and the pipes

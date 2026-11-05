@@ -13,7 +13,7 @@
 //! once the user is fine with it.
 //!
 //! What was found is remembered in `integrations.json` and looked for only
-//! once, the first time the app runs.
+//! once, the first time the app runs, or when the user asks.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -22,7 +22,8 @@ use std::sync::{mpsc, LazyLock, PoisonError, RwLock};
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
 
-use common::programs::found;
+use common::git;
+use common::programs::{self, found};
 use common::run;
 use integration::{AntiFeature, Capacity, Integration, Openness, Tag};
 
@@ -230,76 +231,121 @@ pub fn load(data_dir: &Path) -> Integrations {
             Some(state) => state.path.clone(),
             None => found(id),
         };
-        let Some(path) = path else {
-            if known.is_none() {
-                integrations.known.insert(
-                    id.to_string(),
-                    IntegrationState {
-                        enabled: false,
-                        path: None,
-                        version: None,
-                        broken: false,
-                        rest: Default::default(),
-                    },
-                );
-                changed = true;
-            }
-            continue;
-        };
-
-        // Gone from the disk since it was found: keeping the path would fail
-        // every publication
-        if !path.is_file() {
-            tracing::info!("{} is no longer at {}", id, path.display());
-            let state = integrations.known.get_mut(id).expect("known to be there");
-            state.path = None;
-            state.version = None;
-            state.broken = false;
+        let is_new = known.is_none();
+        let mut state = known.unwrap_or_default();
+        if is_new {
+            state.enabled = path.is_some();
             changed = true;
-            continue;
         }
-
-        // Asking for a version tells a program that is there but does not run
-        // from one Silex can use
-        let answered = run::run(&path, &std::env::temp_dir(), integration.version_args());
-        let was = integrations.known.entry(id.to_string()).or_insert_with(|| {
-            changed = true;
-            IntegrationState {
-                enabled: true,
-                path: Some(path.clone()),
-                version: None,
-                broken: false,
-                rest: Default::default(),
-            }
-        });
-        match answered {
-            Ok(said) => {
-                let version = run::readable(said.lines().next().unwrap_or_default())
-                    .trim()
-                    .to_string();
-                if was.broken {
-                    tracing::info!("{} runs again", id);
-                }
-                if was.version.as_deref() != Some(version.as_str()) || was.broken {
-                    was.version = Some(version);
-                    was.broken = false;
-                    changed = true;
-                }
-            }
-            Err(e) => {
-                if !was.broken {
-                    tracing::warn!("{} is at {} but does not run: {}", id, path.display(), e);
-                    was.broken = true;
-                    changed = true;
-                }
-            }
-        }
+        changed |= looked_at(integration, &mut state, path);
+        integrations.known.insert(id.to_string(), state);
     }
 
     if changed {
         write(data_dir, &integrations);
     }
     integrations
+}
+
+/// What is known of a program, from where it is now and from what it answers
+/// when asked its version, and whether that changed
+fn looked_at(
+    integration: &dyn Integration,
+    state: &mut IntegrationState,
+    path: Option<PathBuf>,
+) -> bool {
+    let id = integration.program();
+    let Some(path) = path.filter(|path| path.is_file()) else {
+        // Gone from the disk since it was found: keeping the path would fail
+        // every publication
+        if let Some(was) = &state.path {
+            tracing::info!("{} is no longer at {}", id, was.display());
+        }
+        let changed = state.path.is_some() || state.version.is_some() || state.broken;
+        state.path = None;
+        state.version = None;
+        state.broken = false;
+        return changed;
+    };
+    let mut changed = state.path.as_ref() != Some(&path);
+    state.path = Some(path.clone());
+
+    // Asking for a version tells a program that is there but does not run
+    // from one Silex can use
+    match run::run(&path, &std::env::temp_dir(), integration.version_args()) {
+        Ok(said) => {
+            let version = run::readable(said.lines().next().unwrap_or_default())
+                .trim()
+                .to_string();
+            if state.broken {
+                tracing::info!("{} runs again", id);
+            }
+            if state.version.as_deref() != Some(version.as_str()) || state.broken {
+                state.version = Some(version);
+                state.broken = false;
+                changed = true;
+            }
+        }
+        Err(e) => {
+            if !state.broken {
+                tracing::warn!("{} is at {} but does not run: {}", id, path.display(), e);
+                state.broken = true;
+                changed = true;
+            }
+        }
+    }
+    changed
+}
+
+/// What the integrations screen asks of one integration
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Asked {
+    CheckAgain,
+    Stop,
+    Use,
+}
+
+/// Done, written down and the catalog as it is now, or None for a program
+/// that is not in the catalog
+pub fn asked(
+    loading: &Loading,
+    data_dir: &Path,
+    program: &str,
+    asked: Asked,
+) -> Option<Vec<CatalogEntry>> {
+    let integration = catalog()
+        .into_iter()
+        .find(|integration| integration.program() == program)?;
+    // Searched for without the lock, which every save takes
+    let looked = matches!(asked, Asked::CheckAgain).then(|| {
+        programs::forget();
+        git::forget();
+        let mut looked = now(loading).known.remove(program).unwrap_or_default();
+        // A path kept after a Stop, even one gone stale, means it was found
+        // once and turned off on purpose
+        let was_found = looked.path.is_some();
+        looked_at(integration, &mut looked, found(program));
+        (looked, was_found)
+    });
+    let mut integrations = loading.write().unwrap_or_else(PoisonError::into_inner);
+    let state = integrations.known.entry(program.to_string()).or_default();
+    match asked {
+        Asked::Stop => state.enabled = false,
+        Asked::Use => state.enabled = true,
+        Asked::CheckAgain => {}
+    }
+    // Only what was looked at, so that a Stop made during the search holds
+    if let Some((looked, was_found)) = looked {
+        if !was_found && looked.path.is_some() {
+            state.enabled = true;
+        }
+        state.path = looked.path;
+        state.version = looked.version;
+        state.broken = looked.broken;
+    }
+    write(data_dir, &integrations);
+    Some(integrations.catalog_entries())
 }
 
 /// The integrations of `load`, waited for by whoever first needs them

@@ -190,6 +190,18 @@ async fn integration_catalog(
 }
 
 #[tauri::command]
+async fn integration_asked(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    asked: integrations::Asked,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&program, asked))
+        .await
+        .map_err(Said::raw)?
+}
+
+#[tauri::command]
 async fn sync_website(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
     website_id: WebsiteId,
@@ -690,6 +702,7 @@ async fn start_server(
     asking_integrations: sentry::Span,
     app_handle: tauri::AppHandle,
 ) -> Result<(u16, Arc<actions::SilexActions>, mcp::LocalFiles), Box<dyn std::error::Error>> {
+    let integrations_dir = app_data_dir.clone();
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -714,6 +727,7 @@ async fn start_server(
     });
     let actions = Arc::new(actions::SilexActions::new(
         data_path.clone(),
+        integrations_dir,
         integrations,
         current_website_id,
         tells_the_editor(app_handle),
@@ -1004,6 +1018,7 @@ fn main() {
             last_publication,
             sync_website,
             integration_catalog,
+            integration_asked,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

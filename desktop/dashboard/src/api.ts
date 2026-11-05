@@ -153,6 +153,12 @@ export interface CatalogEntry {
 
 export const integrationCatalog = () => call<CatalogEntry[]>('integration_catalog', {})
 
+/** stop keeps where the program is, checkAgain turns it on if it was just found */
+export type Asked = 'checkAgain' | 'stop' | 'use'
+
+export const askIntegration = (program: string, asked: Asked) =>
+  call<CatalogEntry[]>('integration_asked', { program, asked })
+
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null
 
