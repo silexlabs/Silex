@@ -33,7 +33,7 @@ function loginFromNoreply(email) {
 }
 
 let ghAvailable = true;
-function resolveViaGh(email) {
+function resolveViaGh(email, tries = 0) {
   if (!ghAvailable) return null;
   try {
     const out = execSync(
@@ -46,7 +46,12 @@ function resolveViaGh(email) {
     return out || null;
   } catch (e) {
     // Silently dropping the links would rewrite the README with fewer of them
-    if (/rate limit/i.test(`${e.stderr ?? ''}${e}`)) throw new Error('GitHub search rate limit reached, run again in a minute')
+    if (/rate limit/i.test(`${e.stderr ?? ''}${e}`)) {
+      if (tries >= 5) throw new Error('GitHub search rate limit reached, run again in a minute')
+      // The secondary limit refuses searches even when `gh api rate_limit` shows a full quota
+      execSync('sleep 65');
+      return resolveViaGh(email, tries + 1);
+    }
     if (/command not found|not found in PATH|executable file not found/i.test(String(e))) {
       ghAvailable = false;
       console.error('[contributors] gh CLI not available — profile links limited to noreply emails');
@@ -75,7 +80,7 @@ function getContributors(dir) {
       const contributions = [{ name, email, date }];
       for (const trailer of (coauthors || '').split('\x1F').filter(Boolean)) {
         const parsed = trailer.match(/^\s*(.+?)\s*<(.+?)>\s*$/);
-        if (parsed) contributions.push({ name: parsed[1], email: parsed[2], date });
+        if (parsed) contributions.push({ name: parsed[1], email: parsed[2], date, coauthor: true });
       }
       return contributions;
     });
@@ -111,6 +116,12 @@ function main() {
   }
   if (resolved) console.error(`[contributors] resolved ${resolved} login(s) via gh`);
 
+  // A machine address (`lexoyo@lexoyo.local`) is unknown to GitHub, but often starts with the login
+  const knownLogins = new Map(Object.values(loginByName).filter(Boolean).map((login) => [login.toLowerCase(), login]));
+  for (const [name, emails] of Object.entries(emailsByName)) {
+    for (const email of emails) loginByName[name] ||= knownLogins.get(email.split('@')[0].toLowerCase()) || null;
+  }
+
   // Identity is the GitHub login, not the name a contributor happened to configure:
   // `lexoyo`, `lexa` and `Alex Hoyau` all resolve to the same profile, so they are one
   // person. Names without a resolved login fall back to their own name as key.
@@ -119,6 +130,8 @@ function main() {
   const displayNameByIdentity = {};
   const latestDateByIdentity = {};
   for (const [name, contributions] of Object.entries(contributionsByName)) {
+    // GitHub adds the local identity of the PR author as a co-author when squashing, and he is already credited
+    if (!loginByName[name] && contributions.every((c) => c.coauthor)) continue;
     const identity = loginByName[name] ? `gh:${loginByName[name]}` : `name:${name}`;
     for (const c of contributions) {
       if (!latestDateByIdentity[identity] || c.date > latestDateByIdentity[identity]) {
