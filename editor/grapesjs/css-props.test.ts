@@ -92,7 +92,12 @@ describe('text-underline-offset', () => {
     // Reload: the values are still in the panel
     selectNewRule(rule.getStyle() as Record<string, string>)
     expect(getProperty('typography', 'text-underline-offset').__getFullValue()).toBe('10px')
-    expect(getProperty('typography', 'text-decoration').__getFullValue()).toBe('underline wavy red 3px')
+    expect(getProperty('typography', 'text-decoration').getValues()).toEqual({
+      'text-decoration-line': 'underline',
+      'text-decoration-style': 'wavy',
+      'text-decoration-color': 'red',
+      'text-decoration-thickness': '3px',
+    })
   })
 })
 

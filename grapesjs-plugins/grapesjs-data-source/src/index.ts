@@ -16,13 +16,14 @@
  */
 
 import commands from './commands'
-import { registerCapabilities } from './capabilities'
+import cms, { cmsCapabilities, CMS_DESCRIPTION } from './mcp/cms'
 import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
 import { DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 import { Editor } from 'grapesjs'
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
 
 /**
  * Export the public API
@@ -73,6 +74,7 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
 
   // Register the commands
   commands(editor, options)
+  cms(editor)
 
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
@@ -91,8 +93,9 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   })
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability: AddCapability, describeTool: DescribeTool) => {
+    describeTool('cms', CMS_DESCRIPTION)
+    cmsCapabilities.forEach(capability => addCapability(capability))
   })
 }
 

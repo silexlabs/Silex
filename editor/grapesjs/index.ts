@@ -42,7 +42,7 @@ import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
 import bodyRemapPlugin from './body-remap'
 import websiteInfoPlugin from './website-info'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
-import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
+import loginDialogPlugin, { LoginDialogOptions } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
 import imgPlugin from './img'
@@ -61,6 +61,7 @@ import parserPostCSS from 'grapesjs-parser-postcss'
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
 import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
+import { createLogoutButton } from './logout-button'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
@@ -79,9 +80,11 @@ import uploadProgress from './upload-progress'
 import cmsPlugin from './cms'
 import { ClientEvent } from '../events'
 import { ClientSideFileWithContent, PublicationData } from '~/common/types'
+import { getLocaleMessages } from '../i18n'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
+  {name: './logout-button', value: createLogoutButton},
   {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
   {name: './website-info', value: websiteInfoPlugin},
@@ -155,6 +158,7 @@ const catComponents = 'Elements'
 
 export function getEditorConfig(config: ClientConfig): EditorConfig {
   const { websiteId, storageId, rootUrl } = config
+  const localeMessages = getLocaleMessages()
 
   // Create dynamic plugins array with conditional CMS plugin
   const dynamicPlugins = [...plugins]
@@ -176,8 +180,13 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     telemetry: false,
 
     i18n: {
+      locale: config.lang,
+      detectLocale: false,
+      localeFallback: 'en',
       messages: {
+        ...localeMessages,
         en: {
+          ...localeMessages.en,
           traitManager: {
             label: '',
           },
@@ -350,11 +359,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             command: () => {
               window.open('https://docs.silex.me/', '_blank')
             },
-          }, {
-            id: 'logout-button',
-            className: 'page-panel-btn fa fa-fw fa-sign-out',
-            attributes: { title: 'Sign out' },
-            command: cmdLogout,
           },
         ],
       },
@@ -506,7 +510,7 @@ export async function initEditor(config: EditorConfig) {
     }
 
     // customize the editor
-    ['text']
+    ;['text']
       .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
     ;['image', 'video']
       .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))

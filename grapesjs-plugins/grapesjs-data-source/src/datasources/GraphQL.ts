@@ -173,6 +173,13 @@ const BACKEND_PROFILES: Record<GraphQLBackendType, BackendProfile> = {
   generic:   { batchSize: DEFAULT_BATCH_SIZE, hiddenFields: [],         rootHiddenFields: [],       secondaryFields: [] },
 }
 
+export const BACKEND_TYPES = Object.keys(BACKEND_PROFILES) as GraphQLBackendType[]
+
+export function bodyStart(text: unknown): string {
+  const flat = (text instanceof Error ? text.message : String(text)).replace(/\s+/g, ' ').trim().replace(/\.+$/, '')
+  return flat.length > 200 ? `${flat.slice(0, 200)}…` : flat
+}
+
 export function getBatchSize(backendType: GraphQLBackendType): number {
   return BACKEND_PROFILES[backendType].batchSize
 }
@@ -336,10 +343,7 @@ export default class GraphQL implements IDataSource {
    */
   async fetchTypeNames(): Promise<LightweightTypesResult> {
     try {
-      const result = await this.call(lightweightTypeNamesQuery) as {data: {__schema: {queryType: {name: string}, types: LightweightType[]}}}
-      if (!result.data?.__schema?.types) {
-        throw new Error(`Invalid response: ${JSON.stringify(result)}`)
-      }
+      const result = await this.introspectTypeNames()
       const queryTypeName = result.data.__schema.queryType?.name || 'Query'
       const types = result.data.__schema.types
         // Filter out introspection types (starting with __)
@@ -349,6 +353,36 @@ export default class GraphQL implements IDataSource {
       console.error('[GraphQL] Failed to fetch type names:', (e as Error).message)
       throw new Error(`Failed to fetch type names: ${(e as Error).message}`, { cause: e })
     }
+  }
+
+  // The failures told apart, without the URL: these messages also go to the logs
+  private async introspectTypeNames(): Promise<{data: {__schema: {queryType: {name: string}, types: LightweightType[]}}}> {
+    let response: Response
+    try {
+      response = await this.request(lightweightTypeNamesQuery)
+    } catch (e) {
+      throw new Error('Cannot reach the server. Check the URL (on WordPress it usually ends with /graphql). The server must also allow requests from Silex (CORS).', { cause: e })
+    }
+    const text = await response.text()
+    if (response.status === 401 || response.status === 403) {
+      throw new Error(`The server refused the request (${response.status}). Set the authorization header, like "Bearer <token>" or "Basic <base64 of user:application-password>".`)
+    }
+    if (response.status === 404) throw new Error('The server answered 404: no GraphQL endpoint there. On WordPress the path is usually /graphql.')
+    if (response.status >= 500) throw new Error(`The server answered ${response.status}: it failed. Try again later.`)
+    let json: { data?: { __schema?: { queryType?: { name: string }, types?: LightweightType[] } }, errors?: { message: string }[] }
+    try {
+      json = JSON.parse(text)
+    } catch {
+      throw new Error(`This is not a GraphQL endpoint (it answered a web page${response.redirected ? ' after a redirection' : ''}). Use the API address, usually ending with /graphql.`)
+    }
+    if (!json.data?.__schema?.types) {
+      const message = json.errors?.[0]?.message ?? ''
+      if (/authentication|introspection|not allowed|permission/i.test(message)) {
+        throw new Error('The schema is private. Set the authorization header, or enable public introspection (in WordPress: GraphQL > Settings).')
+      }
+      throw new Error(`The server answered ${response.status} without a GraphQL schema: ${bodyStart(message || text)}`)
+    }
+    return json as {data: {__schema: {queryType: {name: string}, types: LightweightType[]}}}
   }
 
   /**
@@ -993,6 +1027,19 @@ export default class GraphQL implements IDataSource {
    * Call the GraphQL endpoint
    */
   protected async call(query: string): Promise<unknown> {
+    const response = await this.request(query)
+
+    // Handle non-OK responses with detailed error logging
+    if (!response?.ok) {
+      console.error('GraphQL call failed', response?.status, response?.statusText, query)
+      return this.triggerError(`GraphQL call failed with \`${response?.statusText}\` and status ${response?.status}`)
+    }
+
+    // Return the parsed JSON response
+    return response.json()
+  }
+
+  private async request(query: string): Promise<Response> {
     // Retrieve the URL for the GraphQL endpoint
     const url = this.url
     if (!url) return this.triggerError('Missing GraphQL URL') // Ensure the URL is provided
@@ -1009,7 +1056,7 @@ export default class GraphQL implements IDataSource {
     const method = this.method ?? 'POST'
 
     // Make the HTTP request to the GraphQL endpoint
-    const response = await fetch(url, {
+    return fetch(url, {
       method,
       headers,
       // Include a body only for POST requests
@@ -1017,15 +1064,6 @@ export default class GraphQL implements IDataSource {
         body: JSON.stringify({ query }),
       } : {}),
     })
-
-    // Handle non-OK responses with detailed error logging
-    if (!response?.ok) {
-      console.error('GraphQL call failed', response?.status, response?.statusText, query)
-      return this.triggerError(`GraphQL call failed with \`${response?.statusText}\` and status ${response?.status}`)
-    }
-
-    // Return the parsed JSON response
-    return response.json()
   }
 
   /**
@@ -1114,7 +1152,8 @@ export default class GraphQL implements IDataSource {
   }
 
   async fetchValues(query: string): Promise<unknown[]> {
-    const result = await this.call(query) as { data: unknown[] }
-    return result.data
+    const result = await this.call(query) as { data?: unknown[], errors?: { message: string }[] }
+    if (!result.data && result.errors?.length) throw new Error(result.errors.map(error => error.message).join(' '))
+    return result.data!
   }
 }

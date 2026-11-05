@@ -241,3 +241,11 @@ export function removeState(component: Component, id: StateId, exported: boolean
   component.set(key, newStates)
   fireChange(null, component)
 }
+
+export function newStateId(component: Component): StateId {
+  return `${component.getId()}-${Math.random().toString(36).slice(2)}`
+}
+
+export function previewFirstItem<T>(expression: T[]): T[] {
+  return expression.slice(0, -1).concat({ ...expression[expression.length - 1], previewIndex: 0 })
+}

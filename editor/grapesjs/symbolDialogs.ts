@@ -52,6 +52,10 @@ export default (editor: Editor) => {
       if (!hasValidSelection()) {
         return
       }
+      if (editor.getSelectedAll().length > 1) {
+        alert('Select only one element to create a symbol.')
+        return
+      }
       const label = prompt('Label', getNext('Symbol '))?.trim()
       if (!label) {
         return

@@ -85,6 +85,7 @@ export function fromString(selector: string, atRule: string): ComplexSelector {
   // Extract the related selector and operator
   const relatedSelector = parts.shift()
   const timedOperator = parts.shift()
+  if (parts.some(part => /^[>+~ ]$/.test(part))) throw new Error(`One relation at most: ${selector}`)
 
   // put back the space if it was a space
   const operator = !timedOperator || timedOperator === ' ' ? timedOperator : ` ${ timedOperator } `

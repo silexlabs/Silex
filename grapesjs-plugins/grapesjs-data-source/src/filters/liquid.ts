@@ -426,7 +426,18 @@ export default function(editor: Editor): Filter[] {
       label: 'slice',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
-      apply: (arr, options) => (arr as unknown[]).slice(options.start as number, options.end as number),
+      // Like Liquid, the second option is a length, not an end index
+      // The options typed by the user are strings, e.g. "2"
+      apply: (arr, options) => {
+        const list = arr as unknown[]
+        let start = parseInt(options.start as string) || 0
+        if (start < 0) start = list.length + start
+        // Like Liquid, nothing when start is before the beginning of the list
+        if (start < 0) return []
+        // No length (empty or 0): keep all the items after start
+        const length = parseInt(options.end as string)
+        return length > 0 ? list.slice(start, start + length) : list.slice(start)
+      },
       options: {
         start: 0,
         end: 0,
@@ -455,7 +466,7 @@ export default function(editor: Editor): Filter[] {
           value=${options.end || []}
           name="end"
         >
-          <label slot="label">End index</label>
+          <label slot="label">Length</label>
         </state-editor>
       `,
     }, {

@@ -25,7 +25,7 @@ import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
 import { BinaryOperator, Properties, Token, UnariOperator } from '../types'
-import { getState, setState } from '../model/state'
+import { getState, previewFirstItem, setState } from '../model/state'
 import { getFixedToken } from '../utils'
 
 /**
@@ -222,10 +222,7 @@ export class PropertiesEditor extends LitElement {
         }, publicState)
       } else {
         setState(component, name, {
-          expression: stateEditor.data.slice(0, -1).concat({
-            ...stateEditor.data[stateEditor.data.length - 1],
-            previewIndex: 0,
-          } as unknown as Token),
+          expression: previewFirstItem(stateEditor.data),
         }, publicState)
       }
     } else {
