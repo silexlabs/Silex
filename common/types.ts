@@ -143,7 +143,10 @@ export interface WebsiteSettings {
   'og:title'?: string,
   'og:description'?: string,
   'og:image'?: string,
+  generator?: SiteGenerator, // Written at the first publication, from the default in the client config
 }
+
+export type SiteGenerator = 'eleventy' | 'hugo'
 
 /**
  * A step of the site's build.json, `build` = the Silex build commands of the moment

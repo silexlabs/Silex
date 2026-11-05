@@ -18,7 +18,7 @@
 import { Config } from '~/common/silex-plugins'
 import { getEditor, getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME, DEFAULT_WEBSITE_ID, SILEX_VERSION } from '~/common/constants'
-import { ConnectorId, WebsiteId } from '~/common/types'
+import { ConnectorId, SiteGenerator, WebsiteId } from '~/common/types'
 import { Editor, EditorConfig, Page } from 'grapesjs'
 import { PublicationTransformer, publicationTransformerDefault, validatePublicationTransformer } from './publication-transformers'
 import * as api from './api'
@@ -124,6 +124,11 @@ export class ClientConfig extends Config {
    */
   fontsServerUrl = 'https://fonts.googleapis.com'
   fontsApiUrl = 'https://www.googleapis.com'
+
+  /**
+   * Static site generator of the websites which do not say theirs yet
+   */
+  generator: SiteGenerator = 'eleventy'
 
   /**
    * CMS configuration options
