@@ -1,10 +1,11 @@
-import { removeState, setState, toExpression } from '@silexlabs/grapesjs-data-source'
+import { filterText, fixedText, removeState, setState, StoredProperty, toExpression } from '@silexlabs/grapesjs-data-source'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html, TemplateResult } from 'lit-html'
 import { Page, Editor, Component } from 'grapesjs'
 import { WebsiteSettings } from '~/common/types'
 import { ClientEvent } from '../../events'
 import { cmdAddSection } from '../settings'
+import { SettingsError } from '../settings-sections'
 import { createRef, ref } from 'lit-html/directives/ref.js'
 
 /**
@@ -23,10 +24,33 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
         currentPage = page as Page
         return renderSettingsSection(settings, editor, currentPage)
       },
+      check: checkCmsSettings,
     },
     siteOrPage: 'page',
     position: 'last',
   })
+}
+
+export function checkCmsSettings(settings: Partial<Silex11tyPluginWebsiteSettings>): SettingsError | null {
+  if (settings.eleventyPageData) {
+    const data = toExpression(settings.eleventyPageData)
+    if (data?.length === 0) return null
+    if (!data?.length || data.some(token => token.type !== 'property') || (data[data.length - 1] as StoredProperty).kind !== 'list') {
+      return { field: 'eleventyPageData', message: 'Pagination data must be a list, like the posts of a CMS' }
+    }
+  }
+  return null
+}
+
+// Publication adds a slash around a dynamic permalink, without knowing the text the filters add
+export function permalinkWarning(settings: Partial<Silex11tyPluginWebsiteSettings>): string | null {
+  const permalink = toExpression(settings.eleventyPermalink)
+  if (!permalink?.length || fixedText(permalink) !== null) return null
+  const start = permalink.reduce((text, token) => (filterText(token, 'prepend') ?? '') + text, '')
+  const end = permalink.reduce((text, token) => text + (filterText(token, 'append') ?? ''), '')
+  return start.startsWith('/') || end.endsWith('/')
+    ? 'The permalink starts or ends with a slash. Silex adds one at each end, so the published address may have two slashes in a row.'
+    : null
 }
 
 // Store original settings for revert functionality
@@ -36,6 +60,10 @@ let currentPage: Page | undefined
 function handleSettingsSaveEnd(editor: Editor) {
   return (page: Page) => {
     updateBodyStates(editor, page)
+    const warning = permalinkWarning(page?.get('settings') ?? {})
+    if (warning) editor.runCommand('notifications:add', { type: 'warning', message: warning, group: 'Warnings in your settings' })
+    // Agents save settings while the dialog of another page may be open
+    if (page !== currentPage) return
     currentPage = null
     originalSettings = null
   }

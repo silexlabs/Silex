@@ -75,6 +75,7 @@ export function fromString(selectorStr: string): CompoundSelector {
     } else if (match.startsWith(':')) {
       const pseudoMatch = match.match(/:([-\w]+)(\([^)]*\))?/)
       if (pseudoMatch) {
+        if (pseudoClass) throw new Error(`One state at most: ${selectorStr}`)
         pseudoClass = {
           ...PSEUDO_CLASSES.find(pc => pc.type === pseudoMatch[1]),
         } as PseudoClass

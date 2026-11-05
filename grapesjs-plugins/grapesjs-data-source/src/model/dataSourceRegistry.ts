@@ -57,11 +57,15 @@ export function getAllDataSources(): IDataSource[] {
 }
 
 /**
- * Add a data source
+ * Add a data source, and connect it unless it is already
  */
-export function addDataSource(dataSource: IDataSource): void {
+export function addDataSource(dataSource: IDataSource, { connected = false } = {}): void {
   const registry = getRegistry()
   registry.dataSources.push(dataSource)
+  if (connected) {
+    registry.editor.trigger(DATA_SOURCE_CHANGED)
+    return
+  }
   dataSource.connect()
     .then(() => {
       registry.editor.trigger(DATA_SOURCE_CHANGED)

@@ -19,7 +19,7 @@ import { getPageSlug } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Component, Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
-import { getUser, logout, publicationStatus, publish } from '../api'
+import { connectorList, getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
@@ -42,6 +42,9 @@ import { t } from '../i18n'
 export const cmdPublicationStart = 'publish'
 export const cmdPublicationLogin = 'publish-login'
 export const cmdPublicationLogout = 'publish-logout'
+export const cmdPublicationAgent = 'publish-for-agent'
+// Under the 45 s the desktop gives an editor command that goes online
+const AGENT_WAIT_MS = 35_000
 
 // Types
 export type PublishableEditor = Editor & {
@@ -142,16 +145,21 @@ export class PublicationManager {
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
+    editor.Commands.add(cmdPublicationAgent, (_editor: Editor, _sender: any, options: { hosting_id?: string } = {}) => this.publishForAgent(options.hosting_id))
     editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, connector: ConnectorData) => this.goLogin(connector))
     editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
     // Register AI capabilities
     editor.on('ai-capabilities:ready', (addCapability) => {
       addCapability({
-        id: cmdPublicationStart,
-        command: cmdPublicationStart,
-        description: 'Publish the website',
+        tool: 'website',
+        action: 'publish',
+        command: cmdPublicationAgent,
+        description: 'publish the open website.',
+        inputSchema: {
+          type: 'object',
+          properties: { hosting_id: { type: 'string', description: 'Default: the hosting of the website' } },
+        },
         openWorld: true,
-        tags: ['publication'],
       })
     })
     // Add the publication dialog to the editor
@@ -293,6 +301,39 @@ export class PublicationManager {
     this.editor.trigger(ClientEvent.PUBLISH_DATA, { data, preventDefault, publicationManager: this })
     // Return the data
     return data
+  }
+
+  /**
+   * The publication dialog says how a publication ended, an agent gets it in the answer.
+   * The hosting is taken as the dialog takes it
+   */
+  async publishForAgent(hostingId?: string): Promise<string> {
+    if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('A publication is already in progress, wait for it to end.')
+    const hostings = await connectorList({ type: ConnectorType.HOSTING })
+    const list = hostings.map(hosting => `${hosting.connectorId} (${hosting.displayName})`).join(', ')
+    const chosen = hostingId ?? this.settings.connector?.connectorId
+    if (chosen) {
+      const connector = hostings.find(hosting => hosting.connectorId === chosen)
+      if (!connector) throw new Error(`No hosting ${chosen} here. Hostings: ${list}.`)
+      if (!connector.isLoggedIn) throw new Error(`Hosting ${chosen} is not connected: ask the user to log in from the Publish dialog.`)
+      this.settings = { ...this.settings, connector }
+    } else if (hostings.length === 1 && hostings[0].isLoggedIn) {
+      this.settings = { ...this.settings, connector: hostings[0] }
+    } else if (!hostings.some(hosting => hosting.isLoggedIn)) {
+      throw new Error('No hosting is connected: ask the user to log in from the Publish dialog.')
+    } else {
+      throw new Error(`Several hostings, set hosting_id to one of: ${list}.`)
+    }
+    const ended = new Promise<{ success: boolean, message: string } | null>(resolve => {
+      this.editor.once(ClientEvent.PUBLISH_END, resolve)
+      // A forge can take minutes to build the website, the agent hears back before
+      setTimeout(() => resolve(null), AGENT_WAIT_MS)
+    })
+    await this.startPublication()
+    const end = await ended
+    if (!end) return `Publication started, the hosting is still building the website${this.job?.url ? ` at ${this.job.url}` : ''}.`
+    if (!end.success) throw new Error(`The website was not published: ${end.message || 'the hosting gave no reason'}.`)
+    return this.job?.url ? `Published to ${this.job.url}` : 'Published.'
   }
 
   /**

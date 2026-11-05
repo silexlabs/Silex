@@ -18,7 +18,7 @@
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
 import {property} from 'lit/decorators.js'
-import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
+import { StoredState, getState, getStateIds, newStateId, removeState, setState } from '../model/state'
 import { Token  } from '../types'
 
 import './state-editor'
@@ -352,7 +352,7 @@ export class CustomStatesEditor extends LitElement {
       alert(`The name ${label} is reserved, please choose another name`)
       return null
     }
-    const stateId = `${component.getId()}-${Math.random().toString(36).slice(2)}`
+    const stateId = newStateId(component)
     const state: StoredState = {
       label,
       expression: [],

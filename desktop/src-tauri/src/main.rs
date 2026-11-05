@@ -85,7 +85,8 @@ fn set_current_project(
 }
 
 #[tauri::command]
-fn clear_current_project(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
+fn clear_current_project(app: tauri::AppHandle) {
+    let state = app.state::<AppState>();
     *held(&state.current_website_id) = None;
     *held(&state.current_website_name) = None;
     *held(&state.has_unsaved_changes) = false;
@@ -678,7 +679,7 @@ async fn start_server(
     dashboard_in_development: bool,
     asking_integrations: sentry::Span,
     app_handle: tauri::AppHandle,
-) -> Result<(u16, Arc<actions::SilexActions>), Box<dyn std::error::Error>> {
+) -> Result<(u16, Arc<actions::SilexActions>, mcp::LocalFiles), Box<dyn std::error::Error>> {
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -712,13 +713,19 @@ async fn start_server(
 
     let (app, port) = silex_server::build_app(config).await;
 
-    // Add eval-callback route for JS→Rust result passing (same origin, no CORS)
+    // Routes the editor calls back for MCP (same origin, no CORS)
+    let local_files = mcp::LocalFiles::default();
     let app = app
         .route(
             "/eval-callback/{id}",
             axum::routing::post(mcp::eval_callback),
         )
-        .layer(axum::Extension(pending_evals));
+        .route(
+            "/mcp-file/{token}/{name}",
+            axum::routing::get(mcp::local_file),
+        )
+        .layer(axum::Extension(pending_evals))
+        .layer(axum::Extension(local_files.clone()));
 
     let app = app
         .layer(axum::middleware::from_fn(trace_without_query))
@@ -765,7 +772,7 @@ async fn start_server(
         }
     });
 
-    Ok((port, actions))
+    Ok((port, actions, local_files))
 }
 
 /// Every card reads where its website stands again, on the disk: the watch
@@ -1003,7 +1010,7 @@ fn main() {
             let pending_evals = mcp::PendingEvals::default();
             let dashboard = dashboard_in_development();
             let server = setup.start_child("app.start", "server");
-            let (port, actions) = tauri::async_runtime::block_on(start_server(
+            let (port, actions, local_files) = tauri::async_runtime::block_on(start_server(
                 pending_evals.clone(),
                 data_path,
                 app_data_dir,
@@ -1064,12 +1071,12 @@ fn main() {
             if std::env::args().any(|a| a == "--stdio") {
                 let mcp_handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
-                    mcp::start_mcp_stdio(mcp_handle, pending_evals).await;
+                    mcp::start_mcp_stdio(mcp_handle, pending_evals, local_files).await;
                 });
             } else {
                 let mcp_handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
-                    mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
+                    mcp::start_mcp_server(mcp_handle, pending_evals, local_files, 6807).await;
                 });
             }
 

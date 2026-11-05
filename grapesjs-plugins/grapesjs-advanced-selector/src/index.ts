@@ -5,6 +5,7 @@ import en from './i18n/en'
 import fr from './i18n/fr'
 import registerCommands from './commands'
 import { registerCapabilities } from './capabilities'
+import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'
 
 // For devtools debugging
 export const name = '@silexlabs/grapesjs-advanced-selector'
@@ -41,7 +42,7 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
   registerCommands(editor)
 
   // Register AI capabilities
-  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
-    registerCapabilities(addCapability)
+  editor.on('ai-capabilities:ready', (addCapability: AddCapability, describeTool: DescribeTool) => {
+    registerCapabilities(addCapability, describeTool)
   })
 }

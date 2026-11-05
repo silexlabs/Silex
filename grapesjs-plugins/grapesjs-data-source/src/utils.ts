@@ -1,4 +1,4 @@
-import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId, Type } from './types'
+import { Expression, Field, FieldKind, IDataSource, Options, StoredProperty, StoredToken, Token, TypeId, Type } from './types'
 import { Editor } from 'grapesjs'
 import { getParentByPersistentId, getStateDisplayName, getState } from './model/state'
 import { TemplateResult, html } from 'lit'
@@ -161,6 +161,16 @@ export function getFixedToken(value: string): Token {
         </label>
     `,
   }
+}
+
+export function fixedText(tokens: Expression | null): string | null {
+  if (!tokens?.every(token => token.type === 'property' && token.fieldId === FIXED_TOKEN_ID)) return null
+  return tokens.map(token => String((token as StoredProperty).options?.value ?? '')).join('')
+}
+
+export function filterText(token: StoredToken, id: 'prepend' | 'append'): string | null {
+  if (token.type !== 'filter' || token.id !== id) return null
+  return fixedText(toExpression(token.options?.value))
 }
 
 /**

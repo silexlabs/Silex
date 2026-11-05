@@ -9,7 +9,7 @@ import {
 
 jest.mock('./utils', () => ({
   allowDrop: jest.fn(() => true),
-  createSymbol: jest.fn((_, comp) => ({ instances: [comp, { id: 'inst2' }] })),
+  createSymbol: jest.fn((_, comp) => ({ main: { getId: () => 'symbolId' }, instances: [comp, { id: 'inst2' }] })),
   deleteSymbol: jest.fn(),
   unbindSymbolInstance: jest.fn()
 }))
@@ -33,6 +33,7 @@ describe('SymbolsCommands', () => {
       getName: jest.fn(() => 'compName'),
       getId: jest.fn(() => 'compId'),
       append: jest.fn((inst, _) => [inst]),
+      parent: jest.fn(() => ({})),
     }
     symbol = {
       getId: jest.fn(() => 'symbolId'),
@@ -40,9 +41,13 @@ describe('SymbolsCommands', () => {
     }
     editor = {
       getSelected: jest.fn(() => component),
+      getSelectedAll: jest.fn(() => [component]),
+      Commands: { has: jest.fn(() => false) },
+      runCommand: jest.fn((name: string) => name === 'agent-ids:created' ? { created: [{ id: 'ab' }] } : editor.getSelectedAll()),
       Components: {
         getSymbols: jest.fn(() => [symbol]),
         allById: jest.fn(() => ({ parentId: symbol })),
+        canMove: jest.fn(() => ({ result: true })),
       },
       Modal: {
         open: jest.fn(),
@@ -57,7 +62,7 @@ describe('SymbolsCommands', () => {
       const result = _addSymbol(editor, null, { component, label: 'lbl', icon: 'ico' })
       expect(component.setName).toHaveBeenCalledWith('lbl')
       expect(component.set).toHaveBeenCalledWith('icon', 'ico')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ symbol_id: 'symbolId', label: 'lbl', created: [{ id: 'ab' }] })
     })
 
     it('uses selected component if no component provided', () => {
@@ -65,18 +70,18 @@ describe('SymbolsCommands', () => {
       const result = _addSymbol(editor, null, { label: 'lbl', icon: 'ico' })
       expect(component.setName).toHaveBeenCalledWith('lbl')
       expect(component.set).toHaveBeenCalledWith('icon', 'ico')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ symbol_id: 'symbolId', label: 'lbl', created: [{ id: 'ab' }] })
     })
 
     it('usees selected component and its name if no label provided', () => {
       editor.getSelected.mockReturnValue(component)
       const result = _addSymbol(editor, null, {})
       expect(component.setName).toHaveBeenCalledWith('compName')
-      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+      expect(result).toEqual({ symbol_id: 'symbolId', label: 'compName', created: [{ id: 'ab' }] })
     })
 
     it('throws if missing component', () => {
-      editor.getSelected.mockReturnValue(null)
+      editor.getSelectedAll.mockReturnValue([])
       expect(() => _addSymbol(editor, null, { component: undefined })).toThrow()
     })
   })
@@ -84,19 +89,19 @@ describe('SymbolsCommands', () => {
   describe('_removeSymbol', () => {
     it('removes symbol by id', async () => {
       symbol.getId.mockReturnValue('symbolId')
-      expect(() => _removeSymbol(editor, null, { symbolId: 'symbolId' })).not.toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: 'symbolId' })).not.toThrow()
       // deleteSymbol is called by the command
       const { deleteSymbol } = await import('./utils')
       expect(deleteSymbol).toHaveBeenCalledWith(editor, symbol)
     })
 
     it('throws if missing symbolId', () => {
-      expect(() => _removeSymbol(editor, null, { symbolId: '' })).toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: '' })).toThrow()
     })
 
     it('throws if symbol not found', () => {
       editor.Components.getSymbols.mockReturnValue([])
-      expect(() => _removeSymbol(editor, null, { symbolId: 'notfound' })).toThrow()
+      expect(() => _removeSymbol(editor, null, { symbol_id: 'notfound' })).toThrow()
     })
   })
 
@@ -110,12 +115,11 @@ describe('SymbolsCommands', () => {
     it('uses the selected component when no component is provided', async () => {
       const { unbindSymbolInstance } = await import('./utils')
       expect(() => _unlinkSymbolInstance(editor, null, {})).not.toThrow()
-      expect(editor.getSelected).toHaveBeenCalled()
       expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
     })
 
     it('throws if no component is selected', () => {
-      editor.getSelected.mockReturnValue(null)
+      editor.getSelectedAll.mockReturnValue([])
       expect(() => _unlinkSymbolInstance(editor, null, {})).toThrow('missing param component')
     })
   })
