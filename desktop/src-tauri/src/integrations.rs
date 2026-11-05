@@ -17,7 +17,7 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::{mpsc, LazyLock};
+use std::sync::{mpsc, LazyLock, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
@@ -303,7 +303,15 @@ pub fn load(data_dir: &Path) -> Integrations {
 }
 
 /// The integrations of `load`, waited for by whoever first needs them
-pub type Loading = LazyLock<Integrations, Box<dyn FnOnce() -> Integrations + Send>>;
+pub type Loading = LazyLock<RwLock<Integrations>, Box<dyn FnOnce() -> RwLock<Integrations> + Send>>;
+
+/// A copy, so that a publication taking minutes does not hold back a change
+pub fn now(loading: &Loading) -> Integrations {
+    loading
+        .read()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clone()
+}
 
 /// `load` without holding up the start of the app
 ///
@@ -322,7 +330,7 @@ pub fn load_in_background(
     });
     // Should the thread die, what the user set up last time still holds
     LazyLock::new(Box::new(move || {
-        waited_for.recv().unwrap_or_else(|_| read(&data_dir))
+        RwLock::new(waited_for.recv().unwrap_or_else(|_| read(&data_dir)))
     }))
 }
 
