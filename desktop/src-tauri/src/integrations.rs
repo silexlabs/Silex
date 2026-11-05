@@ -22,7 +22,7 @@ use std::sync::{mpsc, Arc, LazyLock, Mutex, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::said::Said;
-use silex_server::PublicationOptions;
+use silex_server::{OptionsForm, PublicationOptions};
 
 use common::git;
 use common::install;
@@ -35,6 +35,7 @@ use integration::{
 use crate::held::held;
 
 pub mod common;
+mod ftp;
 mod glab;
 pub mod integration;
 // Back in the catalog with the other forges
@@ -84,14 +85,14 @@ pub struct Integrations {
     known: BTreeMap<String, IntegrationState>,
 }
 
-fn catalog() -> [&'static dyn Integration; 1] {
-    [&glab::Glab]
+fn catalog() -> [&'static dyn Integration; 2] {
+    [&glab::Glab, &ftp::Ftp]
 }
 
-fn by_program(program: &str) -> Option<&'static dyn Integration> {
+fn by_id(id: &str) -> Option<&'static dyn Integration> {
     catalog()
         .into_iter()
-        .find(|integration| integration.program() == program)
+        .find(|integration| integration.id() == id)
 }
 
 /// An integration as the integrations screen shows it, with what is known of
@@ -99,6 +100,7 @@ fn by_program(program: &str) -> Option<&'static dyn Integration> {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CatalogEntry {
+    id: &'static str,
     program: &'static str,
     name: &'static str,
     summary: &'static str,
@@ -112,6 +114,8 @@ pub struct CatalogEntry {
     icon: Option<&'static str>,
     runs_here: bool,
     servers: Vec<&'static str>,
+    /// Filled in to add an account, in place of signing in in the browser
+    account_form: Option<OptionsForm>,
     capacities: &'static [Capacity],
     /// Whether the user chose an account of it
     enabled: bool,
@@ -142,7 +146,7 @@ impl Integrations {
             .into_iter()
             .filter(move |integration| integration.capacities().contains(&capacity))
             .filter_map(move |integration| {
-                let cli = self.path_if_used(integration.program())?;
+                let cli = self.path_if_used(integration.id())?;
                 (integration.answers_for(site) && self.chose_account_of(integration, site))
                     .then_some((integration, cli))
             })
@@ -154,7 +158,7 @@ impl Integrations {
             return true;
         };
         self.known
-            .get(integration.program())
+            .get(integration.id())
             .is_some_and(|state| state.accounts.contains(&account))
     }
 
@@ -171,7 +175,7 @@ impl Integrations {
             .filter(move |integration| integration.capacities().contains(&capacity))
             // Used or not: a website on a server the user has an account on is
             // told to use it
-            .filter(|integration| self.usable_path(integration.program()).is_some())
+            .filter(|integration| self.usable_path(integration.id()).is_some())
             .filter_map(move |integration| {
                 if !integration.answers_for(site) {
                     return Some((integration, integration.missing_account(site)?));
@@ -208,7 +212,7 @@ impl Integrations {
         // Scoped rather than set: this runs on a pool thread that the next
         // website to sync inherits
         sentry::with_scope(
-            |scope| scope.set_tag("forge", integration.program()),
+            |scope| scope.set_tag("forge", integration.id()),
             || {
                 say(format!("Getting your website ready for {}", host));
                 let prepared = integration.deploy(&cli, site, options)?;
@@ -234,10 +238,11 @@ impl Integrations {
             .map(|integration| {
                 let state = self
                     .known
-                    .get(integration.program())
+                    .get(integration.id())
                     .cloned()
                     .unwrap_or_default();
                 CatalogEntry {
+                    id: integration.id(),
                     program: integration.program(),
                     name: integration.name(),
                     summary: integration.summary(),
@@ -250,6 +255,7 @@ impl Integrations {
                     icon: integration.icon(),
                     runs_here: integration.runs_here(),
                     servers: integration.servers(),
+                    account_form: integration.account_form(),
                     capacities: integration.capacities(),
                     enabled: !state.accounts.is_empty(),
                     accounts: state.accounts,
@@ -303,7 +309,7 @@ pub fn load(data_dir: &Path) -> Integrations {
     let mut changed = integrations.known.remove("git").is_some();
 
     for integration in catalog() {
-        let id = integration.program();
+        let id = integration.id();
         let known = integrations.known.get(id).cloned();
 
         // One the user does not use is left alone rather than started at every
@@ -356,20 +362,24 @@ fn starts(integration: &dyn Integration, path: &Path) -> bool {
 /// keeps working until then
 pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
     for (id, state) in snapshot(loading).known {
-        let (Some(integration), Some(path)) = (by_program(&id), state.path) else {
+        let (Some(integration), Some(path)) = (by_id(&id), state.path) else {
             continue;
         };
         let Some(release) = integration.release() else {
             continue;
         };
-        if state.accounts.is_empty() || !install::is_old_silex_copy(data_dir, &id, release, &path) {
+        let program = integration.program();
+        if state.accounts.is_empty()
+            || !install::is_old_silex_copy(data_dir, program, release, &path)
+        {
             continue;
         }
         // A program the user installed after the copy of Silex replaces it
-        let theirs = programs::users_own(&id).is_some_and(|theirs| starts(integration, &theirs));
+        let theirs =
+            programs::users_own(program).is_some_and(|theirs| starts(integration, &theirs));
         if !theirs {
-            if let Err(e) = install::install(data_dir, &id, release) {
-                tracing::warn!("Could not update the {} of Silex: {:?}", id, e);
+            if let Err(e) = install::install(data_dir, program, release) {
+                tracing::warn!("Could not update the {} of Silex: {:?}", program, e);
                 continue;
             }
         }
@@ -381,14 +391,14 @@ pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
 pub fn install_silex_copy(
     loading: &Loading,
     data_dir: &Path,
-    program: &str,
+    integration: &str,
 ) -> Result<Vec<CatalogEntry>, Said> {
-    let not_installable = || Said::raw(format!("Silex cannot install {program}"));
-    let integration = by_program(program).ok_or_else(not_installable)?;
+    let not_installable = || Said::raw(format!("Silex cannot install {integration}"));
+    let integration = by_id(integration).ok_or_else(not_installable)?;
     let release = integration.release().ok_or_else(not_installable)?;
-    install::install(data_dir, program, release)?;
+    install::install(data_dir, integration.program(), release)?;
     integration.installed();
-    asked(loading, data_dir, program, Asked::CheckAgain).ok_or_else(not_installable)
+    asked(loading, data_dir, integration.id(), Asked::CheckAgain).ok_or_else(not_installable)
 }
 
 /// What is known of a program, from where it is now and from what it answers
@@ -441,18 +451,17 @@ fn checked(
     changed
 }
 
-fn usable(loading: &Loading, program: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
-    let integration =
-        by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
+fn usable(loading: &Loading, id: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
+    let integration = by_id(id).ok_or_else(|| format!("{} is not an integration of Silex", id))?;
     // Found is enough: an account is signed in to before it is used
     let cli = snapshot(loading)
-        .usable_path(program)
+        .usable_path(id)
         .ok_or_else(|| format!("{} is not on this computer", integration.program()))?;
     Ok((integration, cli))
 }
 
-pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
-    let (integration, cli) = usable(loading, program)?;
+pub fn accounts(loading: &Loading, integration: &str) -> Result<Vec<Account>, Said> {
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     integration.accounts(&cli)
 }
 
@@ -474,12 +483,12 @@ pub struct Connected {
 /// the first and the program would wait for it until it times out.
 pub fn connect(
     loading: &Loading,
-    program: &str,
+    integration: &str,
     server: &str,
     client_id: Option<&str>,
     open: &dyn Fn(String),
-) -> Result<Connected, String> {
-    let (integration, cli) = usable(loading, program)?;
+) -> Result<Connected, Said> {
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     let given_up = Arc::new(AtomicBool::new(false));
     if let Some(before) = held(&GIVE_UP).replace(given_up.clone()) {
         before.store(true, Ordering::Relaxed);
@@ -502,11 +511,25 @@ pub fn connect(
     drop(give_up);
     let account = match connected {
         Err(_) if given_up.load(Ordering::Relaxed) => None,
-        connected => Some(connected?),
+        connected => Some(connected.map_err(Said::raw)?),
     };
     Ok(Connected {
         accounts: integration.accounts(&cli)?,
         account,
+    })
+}
+
+/// Answered like `connect`, once the server took the account
+pub fn add_account(
+    loading: &Loading,
+    integration: &str,
+    values: &PublicationOptions,
+) -> Result<Connected, Said> {
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
+    let account = integration.add_account(&cli, values)?;
+    Ok(Connected {
+        accounts: integration.accounts(&cli)?,
+        account: Some(account),
     })
 }
 
@@ -516,17 +539,17 @@ pub fn stop_connecting() {
     }
 }
 
-pub fn disconnect(loading: &Loading, program: &str, id: &str) -> Result<Vec<Account>, String> {
-    let (integration, cli) = usable(loading, program)?;
+pub fn disconnect(loading: &Loading, integration: &str, id: &str) -> Result<Vec<Account>, Said> {
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     integration.disconnect(&cli, id)?;
     integration.accounts(&cli)
 }
 
 /// Only the accounts the user chose: glab may be signed in to a colleague's
-fn chosen_account(loading: &Loading, program: &str, account: &str) -> Result<(), String> {
+fn chosen_account(loading: &Loading, integration: &str, account: &str) -> Result<(), String> {
     let chosen = snapshot(loading)
         .known
-        .get(program)
+        .get(integration)
         .is_some_and(|state| state.accounts.iter().any(|other| other == account));
     if chosen {
         Ok(())
@@ -537,23 +560,23 @@ fn chosen_account(loading: &Loading, program: &str, account: &str) -> Result<(),
 
 pub fn remote_websites(
     loading: &Loading,
-    program: &str,
+    integration: &str,
     account: &str,
 ) -> Result<Vec<RemoteWebsite>, String> {
-    chosen_account(loading, program, account)?;
-    let (integration, cli) = usable(loading, program)?;
+    chosen_account(loading, integration, account)?;
+    let (integration, cli) = usable(loading, integration)?;
     integration.remote_websites(&cli, account)
 }
 
 pub fn fetch_website(
     loading: &Loading,
-    program: &str,
+    integration: &str,
     account: &str,
     id: &str,
     into: &Path,
 ) -> Result<String, String> {
-    chosen_account(loading, program, account)?;
-    let (integration, cli) = usable(loading, program)?;
+    chosen_account(loading, integration, account)?;
+    let (integration, cli) = usable(loading, integration)?;
     integration.fetch_website(&cli, account, id, into)
 }
 
@@ -565,18 +588,18 @@ pub fn has_destination(site: &Path) -> bool {
 
 pub fn link_website(
     loading: &Loading,
-    program: &str,
+    integration: &str,
     account: &str,
     name: &str,
     site: &Path,
 ) -> Result<(), Said> {
-    chosen_account(loading, program, account).map_err(Said::raw)?;
-    let (integration, cli) = usable(loading, program).map_err(Said::raw)?;
+    chosen_account(loading, integration, account).map_err(Said::raw)?;
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     integration.link_website(&cli, account, name, site)
 }
 
-pub fn check_account(loading: &Loading, program: &str, id: &str) -> Result<SignIn, String> {
-    let (integration, cli) = usable(loading, program)?;
+pub fn check_account(loading: &Loading, integration: &str, id: &str) -> Result<SignIn, Said> {
+    let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     integration.check_account(&cli, id)
 }
 
@@ -589,20 +612,20 @@ pub enum Asked {
     StopUsing(String),
 }
 
-/// Done, written down and the catalog as it is now, or None for a program
-/// that is not in the catalog
+/// Done, written down and the catalog as it is now, or None for an
+/// integration that is not in the catalog
 pub fn asked(
     loading: &Loading,
     data_dir: &Path,
-    program: &str,
+    id: &str,
     asked: Asked,
 ) -> Option<Vec<CatalogEntry>> {
-    let integration = by_program(program)?;
+    let integration = by_id(id)?;
     // Searched for without the lock, which every save takes
     let looked = matches!(asked, Asked::CheckAgain).then(|| {
         programs::forget();
         git::forget();
-        let mut looked = snapshot(loading).known.remove(program).unwrap_or_default();
+        let mut looked = snapshot(loading).known.remove(id).unwrap_or_default();
         checked(
             integration,
             &mut looked,
@@ -611,7 +634,7 @@ pub fn asked(
         looked
     });
     let mut integrations = loading.write().unwrap_or_else(PoisonError::into_inner);
-    let state = integrations.known.entry(program.to_string()).or_default();
+    let state = integrations.known.entry(id.to_string()).or_default();
     match asked {
         Asked::UseAccount(account) if !state.accounts.contains(&account) => {
             state.accounts.push(account);

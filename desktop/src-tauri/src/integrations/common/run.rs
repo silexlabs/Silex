@@ -67,11 +67,35 @@ const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
 /// One page of the projects of a GitLab account is half a megabyte
 const MAX_OUTPUT: usize = 1024 * 1024;
 
+/// A program, and what is added to its environment
+///
+/// A secret goes in the environment, where `ps` does not show it as it shows
+/// the arguments.
+#[derive(Clone, Copy)]
+pub struct Program<'a> {
+    pub path: &'a Path,
+    pub env: &'a [(&'a str, &'a str)],
+}
+
+impl<'a, P: AsRef<Path> + ?Sized> From<&'a P> for Program<'a> {
+    fn from(path: &'a P) -> Self {
+        Program {
+            path: path.as_ref(),
+            env: &[],
+        }
+    }
+}
+
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
-pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+pub fn run<'a>(
+    program: impl Into<Program<'a>>,
+    dir: &Path,
+    args: &[&str],
+) -> Result<String, String> {
+    let program = program.into();
     said(
-        program,
+        program.path,
         run_within(program, dir, args, None, LOCAL, false, None)?,
     )
 }
@@ -119,9 +143,14 @@ pub fn run_with_input(
     )
 }
 
-pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+pub fn run_fetch<'a>(
+    program: impl Into<Program<'a>>,
+    dir: &Path,
+    args: &[&str],
+) -> Result<String, String> {
+    let program = program.into();
     said(
-        program,
+        program.path,
         run_within(program, dir, args, None, FETCH, false, None)?,
     )
 }
@@ -238,8 +267,8 @@ pub fn open_detached(target: impl AsRef<OsStr>) -> io::Result<()> {
     Err(last_error.unwrap_or_else(|| io::Error::other("Nothing on this computer opens it")))
 }
 
-fn run_within(
-    program: &Path,
+fn run_within<'a>(
+    program: impl Into<Program<'a>>,
     dir: &Path,
     args: &[&str],
     input: Option<&str>,
@@ -247,9 +276,11 @@ fn run_within(
     login_shell: bool,
     waiting: Option<&Waiting>,
 ) -> Result<Ran, String> {
+    let Program { path: program, env } = program.into();
     let mut command = Command::new(program);
     command
         .args(args)
+        .envs(env.iter().copied())
         .current_dir(dir)
         // git asking for a password would otherwise freeze a save forever
         .stdin(if input.is_some() {

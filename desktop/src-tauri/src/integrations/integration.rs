@@ -197,6 +197,12 @@ pub enum SignIn {
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
 
+    /// What it is known by in integrations.json and to the dashboard, as
+    /// several integrations can run one program
+    fn id(&self) -> &'static str {
+        self.program()
+    }
+
     /// The service the user knows, not the program
     fn name(&self) -> &'static str;
 
@@ -241,7 +247,7 @@ pub trait Integration: Send + Sync {
         Vec::new()
     }
 
-    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
+    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, Said> {
         let _ = cli;
         Ok(Vec::new())
     }
@@ -266,13 +272,29 @@ pub trait Integration: Send + Sync {
         ))
     }
 
+    /// What the user fills in to add an account, for an integration whose
+    /// accounts are not signed in to in the browser
+    fn account_form(&self) -> Option<OptionsForm> {
+        None
+    }
+
+    /// Kept by its program only once the server took what the user answered
+    /// to `account_form`, and answers the id of the account
+    fn add_account(&self, cli: &Path, values: &PublicationOptions) -> Result<String, Said> {
+        let _ = (cli, values);
+        Err(Said::raw(format!(
+            "Silex cannot add an account to {}",
+            self.name()
+        )))
+    }
+
     /// Signs the account out of its program too, not just out of Silex
-    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), Said> {
         let _ = (cli, id);
-        Err(format!(
+        Err(Said::raw(format!(
             "Silex cannot disconnect an account from {}",
             self.name()
-        ))
+        )))
     }
 
     /// The websites on an account, those changed last first
@@ -312,9 +334,12 @@ pub trait Integration: Send + Sync {
     /// when the user wants to know
     ///
     /// An error means the server could not be asked.
-    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, Said> {
         let _ = (cli, id);
-        Err(format!("Silex cannot check an account of {}", self.name()))
+        Err(Said::raw(format!(
+            "Silex cannot check an account of {}",
+            self.name()
+        )))
     }
 
     /// What to ask the user before publishing, when this program cannot say

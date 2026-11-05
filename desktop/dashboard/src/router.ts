@@ -25,11 +25,11 @@ export const router = createRouter({
       children: [
         { path: '', component: IntegrationsPage, meta: { title: () => i18n.global.t('Integrations') } },
         {
-          path: ':program',
+          path: ':integration',
           component: () => import('./pages/IntegrationPage.vue'),
           meta: {
             title: () =>
-              catalog.value?.find((entry) => entry.program === router.currentRoute.value.params.program)?.name ??
+              catalog.value?.find((entry) => entry.id === router.currentRoute.value.params.integration)?.name ??
               i18n.global.t('Integrations'),
           },
         },

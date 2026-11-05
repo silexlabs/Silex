@@ -314,7 +314,7 @@ export interface OptionsForm {
 /** One thing the user is asked for, kept in the options under `name` */
 export interface OptionsField {
   name: string
-  type: 'text' | 'url' | 'checkbox' | 'select'
+  type: 'text' | 'password' | 'url' | 'checkbox' | 'select'
   label: string
   /** What to start from, until the user writes something of their own */
   value?: string
@@ -322,6 +322,15 @@ export interface OptionsField {
   /** What the field holds when left empty */
   placeholder?: string
   required: boolean
+  /** What a `select` offers */
+  choices?: OptionsChoice[]
+}
+
+/** One of the answers of a `select` */
+export interface OptionsChoice {
+  /** What the field holds once it is chosen */
+  value: string
+  label: string
 }
 
 /**

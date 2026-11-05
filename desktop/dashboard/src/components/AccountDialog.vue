@@ -59,7 +59,7 @@ async function signIn() {
   await nextTick()
   stop.value?.focus()
   try {
-    const connected = await connectAccount(props.integration.program, server, chosen.value === OTHER ? clientId.value.trim() : null, (shown) => {
+    const connected = await connectAccount(props.integration.id, server, chosen.value === OTHER ? clientId.value.trim() : null, (shown) => {
       page.value = shown
     })
     emit('done', connected.accounts, stopped ? null : connected.account)

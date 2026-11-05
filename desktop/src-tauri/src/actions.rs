@@ -132,7 +132,7 @@ impl SilexActions {
             let integrations = integrations.clone();
             Box::new(move |website_id: &str| {
                 let site = site_path(&data_path, website_id).ok_or_else(|| Failure {
-                    program: None,
+                    integration: None,
                     place: None,
                     error: SyncError::Other(format!("Unknown website '{}'", website_id)),
                     url: None,
@@ -175,11 +175,11 @@ impl SilexActions {
 
     pub fn integration_asked(
         &self,
-        program: &str,
+        integration: &str,
         asked: crate::integrations::Asked,
     ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
-        crate::integrations::asked(&self.integrations, &self.app_data_dir, program, asked)
-            .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
+        crate::integrations::asked(&self.integrations, &self.app_data_dir, integration, asked)
+            .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", integration)))
     }
 
     pub fn update_integrations(&self) {
@@ -188,47 +188,54 @@ impl SilexActions {
 
     pub fn integration_install(
         &self,
-        program: &str,
+        integration: &str,
     ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
-        crate::integrations::install_silex_copy(&self.integrations, &self.app_data_dir, program)
+        crate::integrations::install_silex_copy(&self.integrations, &self.app_data_dir, integration)
     }
 
-    pub fn integration_accounts(&self, program: &str) -> Result<Vec<Account>, Said> {
-        crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
+    pub fn integration_accounts(&self, integration: &str) -> Result<Vec<Account>, Said> {
+        crate::integrations::accounts(&self.integrations, integration)
     }
 
     pub fn connect_account(
         &self,
-        program: &str,
+        integration: &str,
         server: &str,
         client_id: Option<&str>,
         open: &dyn Fn(String),
     ) -> Result<crate::integrations::Connected, Said> {
-        crate::integrations::connect(&self.integrations, program, server, client_id, open)
-            .map_err(Said::raw)
+        crate::integrations::connect(&self.integrations, integration, server, client_id, open)
     }
 
-    pub fn disconnect_account(&self, program: &str, id: &str) -> Result<Vec<Account>, Said> {
-        crate::integrations::disconnect(&self.integrations, program, id).map_err(Said::raw)
+    pub fn add_account(
+        &self,
+        integration: &str,
+        values: &PublicationOptions,
+    ) -> Result<crate::integrations::Connected, Said> {
+        crate::integrations::add_account(&self.integrations, integration, values)
+    }
+
+    pub fn disconnect_account(&self, integration: &str, id: &str) -> Result<Vec<Account>, Said> {
+        crate::integrations::disconnect(&self.integrations, integration, id)
     }
 
     pub fn remote_websites(
         &self,
-        program: &str,
+        integration: &str,
         account: &str,
     ) -> Result<Vec<crate::integrations::integration::RemoteWebsite>, Said> {
-        crate::integrations::remote_websites(&self.integrations, program, account)
+        crate::integrations::remote_websites(&self.integrations, integration, account)
             .map_err(Said::raw)
     }
 
     pub fn fetch_website(
         &self,
-        program: &str,
+        integration: &str,
         account: &str,
         id: &str,
         into: &Path,
     ) -> Result<String, Said> {
-        crate::integrations::fetch_website(&self.integrations, program, account, id, into)
+        crate::integrations::fetch_website(&self.integrations, integration, account, id, into)
             .map_err(Said::raw)
     }
 
@@ -236,7 +243,7 @@ impl SilexActions {
     /// queues
     pub fn link_website(
         &self,
-        program: &str,
+        integration: &str,
         account: &str,
         name: &str,
         website_id: &str,
@@ -246,7 +253,7 @@ impl SilexActions {
             .ok_or_else(|| Said::new(silex_server::said::NO_WEBSITE))?;
         self.syncer.alone(website_id, || {
             silex_server::forget_hosting(&site).map_err(Said::raw)?;
-            crate::integrations::link_website(&self.integrations, program, account, name, &site)
+            crate::integrations::link_website(&self.integrations, integration, account, name, &site)
         })
     }
 
@@ -258,10 +265,10 @@ impl SilexActions {
 
     pub fn check_account(
         &self,
-        program: &str,
+        integration: &str,
         id: &str,
     ) -> Result<crate::integrations::integration::SignIn, Said> {
-        crate::integrations::check_account(&self.integrations, program, id).map_err(Said::raw)
+        crate::integrations::check_account(&self.integrations, integration, id)
     }
 
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {
@@ -277,7 +284,7 @@ impl SilexActions {
             .filter_map(|(integration, _)| {
                 let failure = failure
                     .clone()
-                    .filter(|failure| failure.program == Some(integration.program()));
+                    .filter(|failure| failure.integration == Some(integration.id()));
                 let mut synced = integration.synced(&site)?;
                 // What a save left is being sent: nothing to ask of the user
                 if on_its_way {
@@ -353,8 +360,8 @@ pub(crate) fn site_path(data_path: &Path, website_id: &str) -> Option<PathBuf> {
 /// What went wrong, and the web address of where it happened
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Failure {
-    /// The program of the integration that failed
-    pub program: Option<&'static str>,
+    /// The integration that failed
+    pub integration: Option<&'static str>,
     /// Where it was going, as the user knows it
     pub place: Option<String>,
     pub error: SyncError,
@@ -400,7 +407,7 @@ fn failed(integration: &dyn Integration, site: &Path, error: SyncError) -> Failu
         .repo(site)
         .filter(|url| url.starts_with("https://") || url.starts_with("http://"));
     Failure {
-        program: Some(integration.program()),
+        integration: Some(integration.id()),
         place: integration.place(site),
         error,
         url,
@@ -828,7 +835,7 @@ impl SilexActions {
         };
         let integrations = crate::integrations::snapshot(&self.integrations);
         let hosting = |integration: &dyn Integration, unavailable| Hosting {
-            connector_id: integration.program(),
+            connector_id: integration.id(),
             display_name: host.clone(),
             options_form: integration.options_form(&site),
             unavailable,

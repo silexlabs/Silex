@@ -38,7 +38,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-html="entry.icon"
       />
       <h4
-        :id="`card-${entry.program}`"
+        :id="`card-${entry.id}`"
         class="integration-card__name"
       >
         <AppTooltip :text="$t('Details about {name}', { name: entry.name })">
@@ -124,7 +124,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-else-if="usable(entry)"
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('add', $event.currentTarget as Element)"
       >
@@ -134,7 +134,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-else-if="entry.installable"
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('install', $event.currentTarget as Element)"
       >
@@ -144,7 +144,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-else
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('checkAgain')"
       >

@@ -119,6 +119,7 @@ impl Integration for Tea {
                     ),
                     placeholder: None,
                     required: true,
+                    choices: Vec::new(),
                 },
                 OptionsField {
                     name: RUNNER_LABEL.to_string(),
@@ -131,6 +132,7 @@ impl Integration for Tea {
                     ),
                     placeholder: None,
                     required: true,
+                    choices: Vec::new(),
                 },
                 OptionsField {
                     name: WEBSITE_URL.to_string(),
@@ -143,6 +145,7 @@ impl Integration for Tea {
                     ),
                     placeholder: Some("https://www.example.com/".to_string()),
                     required: false,
+                    choices: Vec::new(),
                 },
             ],
         })

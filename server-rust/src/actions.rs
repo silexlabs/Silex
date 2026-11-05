@@ -128,6 +128,14 @@ impl PublicationOptions {
             .map(str::trim)
             .filter(|answer| !answer.is_empty())
     }
+
+    /// The same, as typed: a password can start or end with a space
+    pub fn typed(&self, name: &str) -> Option<&str> {
+        self.more
+            .get(name)
+            .and_then(serde_json::Value::as_str)
+            .filter(|answer| !answer.is_empty())
+    }
 }
 
 /// Where a website is served, as far as its host application knows
@@ -164,7 +172,7 @@ pub struct OptionsField {
     /// The key it is kept under in the options of the publication
     pub name: String,
 
-    /// What the browser makes of it: `text`, `url`, `checkbox` or `select`
+    /// What the browser makes of it: `text`, `password`, `url`, `checkbox` or `select`
     pub r#type: String,
 
     pub label: String,
@@ -181,4 +189,16 @@ pub struct OptionsField {
     pub placeholder: Option<String>,
 
     pub required: bool,
+
+    /// What a `select` offers
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub choices: Vec<OptionsChoice>,
+}
+
+/// One of the answers of a `select`
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct OptionsChoice {
+    /// What the field holds once it is chosen
+    pub value: String,
+    pub label: String,
 }

@@ -35,9 +35,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const id = computed(() => `line-${props.entry.program}-${props.account?.id ?? 'program'}`.replace(/[^\w-]/g, '-'))
+const id = computed(() => `line-${props.entry.id}-${props.account?.id ?? 'program'}`.replace(/[^\w-]/g, '-'))
 
-const signIn = computed(() => (props.account ? signIns.value[accountKey(props.entry.program, props.account.id)] : undefined))
+const signIn = computed(() => (props.account ? signIns.value[accountKey(props.entry.id, props.account.id)] : undefined))
 
 const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; detail: string } => {
   const { entry } = props

@@ -30,7 +30,9 @@ mod storage;
 use axum::Router;
 use tower_http::trace::TraceLayer;
 
-pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
+pub use actions::{
+    Actions, Hosting, OptionsChoice, OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL,
+};
 pub use config::{Config, PORT};
 pub use history::{repository, tag, untag, version, Versioned, TEMPLATE_REMOTE};
 pub use jobs::{Job, JobData, JobStatus, Jobs};

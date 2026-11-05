@@ -12,6 +12,7 @@ import type {
   ApiWebsiteCreateResponse,
   ApiWebsiteDuplicateResponse,
   LastPublication,
+  OptionsForm,
   WebsiteId,
   WebsiteMeta,
 } from '~/common/types'
@@ -132,6 +133,7 @@ export type AntiFeature = 'tracking' | 'proprietaryCloud' | 'identityVerificatio
 
 /** An integration of the catalog, with what is known of it on this computer */
 export interface CatalogEntry {
+  id: string
   program: string
   /** The service the user knows, not the program */
   name: string
@@ -152,6 +154,8 @@ export interface CatalogEntry {
   runsHere: boolean
   /** Offered when adding an account, before any other the user types in */
   servers: string[]
+  /** Filled in to add an account, in place of signing in in the browser */
+  accountForm: OptionsForm | null
   capacities: ('sync' | 'deploy')[]
   /** Whether the user uses it in Silex */
   enabled: boolean
@@ -166,11 +170,11 @@ export const integrationCatalog = () => call<CatalogEntry[]>('integration_catalo
 
 export type Asked = { kind: 'checkAgain' } | { kind: 'useAccount' | 'stopUsing'; account: string }
 
-export const askIntegration = (program: string, asked: Asked) =>
-  call<CatalogEntry[]>('integration_asked', { program, asked })
+export const askIntegration = (integration: string, asked: Asked) =>
+  call<CatalogEntry[]>('integration_asked', { integration, asked })
 
 /** Silex downloads the program into its own folder */
-export const installIntegration = (program: string) => call<CatalogEntry[]>('integration_install', { program })
+export const installIntegration = (integration: string) => call<CatalogEntry[]>('integration_install', { integration })
 
 /** An account or a server an integration was set up with, kept by its program */
 export interface Account {
@@ -180,24 +184,31 @@ export interface Account {
   summary: string | null
 }
 
-export const integrationAccounts = (program: string) => call<Account[]>('integration_accounts', { program })
+export const integrationAccounts = (integration: string) => call<Account[]>('integration_accounts', { integration })
 
 /**
  * Waits for the user to sign in in their browser, and answers the accounts as they are then, also once stopped.
  * `clientId` is the OAuth application the user made on a server Silex does not know.
  * `onPage` is given the page to sign in on when the browser did not open.
  */
-export const connectAccount = (program: string, server: string, clientId: string | null, onPage: (page: string) => void) => {
+export const connectAccount = (integration: string, server: string, clientId: string | null, onPage: (page: string) => void) => {
   const page = new Channel<string>()
   page.onmessage = onPage
   /** `account` is the one signed in to, null once stopped */
-  return call<{ accounts: Account[]; account: string | null }>('connect_account', { program, server, clientId, onPage: page })
+  return call<{ accounts: Account[]; account: string | null }>('connect_account', { integration, server, clientId, onPage: page })
 }
+
+/**
+ * Tested on its server first and kept only when it works, then answered like `connectAccount`.
+ * Every value is a string, as a form sends it: a ticked checkbox is sent with any value, one left empty is not sent.
+ */
+export const addAccount = (integration: string, values: Record<string, string>) =>
+  call<{ accounts: Account[]; account: string }>('add_account', { integration, values })
 
 export const stopConnectingAccount = () => call<void>('stop_connecting_account', {})
 
 /** Signs the account out of its program too */
-export const disconnectAccount = (program: string, id: string) => call<Account[]>('disconnect_account', { program, id })
+export const disconnectAccount = (integration: string, id: string) => call<Account[]>('disconnect_account', { integration, id })
 
 /** A website on an account, that this computer can copy */
 export interface RemoteWebsite {
@@ -211,15 +222,15 @@ export interface RemoteWebsite {
 }
 
 /** Over the network, those changed last first */
-export const remoteWebsites = (program: string, account: string) => call<RemoteWebsite[]>('remote_websites', { program, account })
+export const remoteWebsites = (integration: string, account: string) => call<RemoteWebsite[]>('remote_websites', { integration, account })
 
 /** Copies the website to this computer, and answers its id here */
-export const openRemoteWebsite = (program: string, account: string, website: RemoteWebsite) =>
-  call<string>('open_remote_website', { program, account, id: website.id })
+export const openRemoteWebsite = (integration: string, account: string, website: RemoteWebsite) =>
+  call<string>('open_remote_website', { integration, account, id: website.id })
 
 /** Over the network: a new private project for the website of this computer, and the website sent there */
-export const linkWebsite = (program: string, account: string, name: string, websiteId: string) =>
-  call<void>('link_website', { program, account, name, websiteId })
+export const linkWebsite = (integration: string, account: string, name: string, websiteId: string) =>
+  call<void>('link_website', { integration, account, name, websiteId })
 
 /** Whether the website is sent somewhere, by an integration or not */
 export const websiteHasRemote = (websiteId: string) => call<boolean>('website_has_remote', { websiteId })
@@ -228,7 +239,7 @@ export const websiteHasRemote = (websiteId: string) => call<boolean>('website_ha
 export type SignIn = 'accepted' | 'refused'
 
 /** Over the network, and fails when the server could not be asked */
-export const checkAccount = (program: string, id: string) => call<SignIn>('check_account', { program, id })
+export const checkAccount = (integration: string, id: string) => call<SignIn>('check_account', { integration, id })
 
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null

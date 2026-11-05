@@ -102,6 +102,7 @@ impl Integration for Hut {
                 ),
                 placeholder: None,
                 required: true,
+                choices: Vec::new(),
             }],
         })
     }

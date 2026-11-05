@@ -94,7 +94,7 @@ async function focusPage() {
 }
 
 function checkAgain(entry: CatalogEntry) {
-  return once(entry.program, async () => {
+  return once(entry.id, async () => {
     try {
       await told(entry, await ask(entry, { kind: 'checkAgain' }))
       await focusPage()
@@ -111,16 +111,16 @@ async function installProgram(entry: CatalogEntry, from: Element) {
     await showError({ title: t('Silex could not read the accounts of {name}', { name: entry.name }), ...explain(error) })
   }
   await nextTick()
-  const action = from.isConnected ? from : document.querySelector(`[aria-describedby="card-${entry.program}"]`)
+  const action = from.isConnected ? from : document.querySelector(`[aria-describedby="card-${entry.id}"]`)
   if (action instanceof HTMLElement) action.focus()
   else await focusPage()
 }
 
 function add(entry: CatalogEntry, from: Element) {
-  return once(entry.program, async () => {
+  return once(entry.id, async () => {
     try {
       await loadAccounts(entry)
-      const others = (accounts.value[entry.program] ?? []).filter((account) => !entry.accounts.includes(account.id))
+      const others = (accounts.value[entry.id] ?? []).filter((account) => !entry.accounts.includes(account.id))
       adding.value = { entry, others, from }
     } catch (error) {
       await showError({ title: t('Silex could not read the accounts of {name}', { name: entry.name }), ...explain(error) })
@@ -157,7 +157,7 @@ async function signedIn(found: Account[], id: string | null) {
   const again = adding.value?.account
   await closeDialog()
   if (!entry || !id) return
-  accounts.value[entry.program] = found
+  accounts.value[entry.id] = found
   const account = found.find((other) => other.id === id)
   if (!account) return
   if (again) await check(entry, account)
@@ -172,7 +172,7 @@ async function notSignedIn(error: ReturnType<typeof explain>) {
 async function stopUsing(entry: CatalogEntry, account: Account) {
   try {
     await ask(entry, { kind: 'stopUsing', account: account.id })
-    delete signIns.value[accountKey(entry.program, account.id)]
+    delete signIns.value[accountKey(entry.id, account.id)]
     toast(t('{name}: not used in Silex anymore. It stays signed in on this computer.', { name: account.name }), 'success')
     await focusPage()
   } catch (error) {
@@ -191,9 +191,9 @@ async function signOut(entry: CatalogEntry, account: Account) {
   })
   if (!confirmed) return
   try {
-    accounts.value[entry.program] = await disconnectAccount(entry.program, account.id)
+    accounts.value[entry.id] = await disconnectAccount(entry.id, account.id)
     await ask(entry, { kind: 'stopUsing', account: account.id })
-    delete signIns.value[accountKey(entry.program, account.id)]
+    delete signIns.value[accountKey(entry.id, account.id)]
     toast(t('{name}: signed out.', { name: account.name }), 'success')
     await focusPage()
   } catch (error) {
@@ -201,7 +201,7 @@ async function signOut(entry: CatalogEntry, account: Account) {
   }
 }
 
-const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}`
+const lineKey = (line: Line) => `${line.entry.id} ${line.account?.id ?? ''}`
 </script>
 
 <template>
@@ -274,9 +274,9 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
           :key="lineKey(line)"
           :entry="line.entry"
           :account="line.account"
-          :busy="busy.has(line.entry.program)"
-          :installing="installing.has(line.entry.program)"
-          :failed="installFailed[line.entry.program]"
+          :busy="busy.has(line.entry.id)"
+          :installing="installing.has(line.entry.id)"
+          :failed="installFailed[line.entry.id]"
           @check-again="checkAgain(line.entry)"
           @install="(from) => installProgram(line.entry, from)"
           @sign-in-again="(from) => (adding = { entry: line.entry, account: line.account, from })"
@@ -308,12 +308,12 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
         <ul class="card-grid integration-cards">
           <IntegrationCard
             v-for="entry in group.entries"
-            :key="entry.program"
+            :key="entry.id"
             :entry="entry"
-            :busy="busy.has(entry.program)"
-            :installing="installing.has(entry.program)"
-            :to="`/integrations/${entry.program}`"
-            :failed="installFailed[entry.program]"
+            :busy="busy.has(entry.id)"
+            :installing="installing.has(entry.id)"
+            :to="`/integrations/${entry.id}`"
+            :failed="installFailed[entry.id]"
             @check-again="checkAgain(entry)"
             @install="(from) => installProgram(entry, from)"
             @add="(from) => add(entry, from)"

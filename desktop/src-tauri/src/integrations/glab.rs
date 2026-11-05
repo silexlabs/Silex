@@ -14,6 +14,7 @@ use std::sync::atomic::AtomicBool;
 
 use silex_server::PublicationOptions;
 
+use super::common::address::{host_of, is_plain_host};
 use super::common::git;
 use super::common::install::{Archive, Release};
 use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
@@ -148,7 +149,7 @@ impl Integration for Glab {
         &[Capacity::Sync, Capacity::Deploy]
     }
 
-    fn accounts(&self, _cli: &Path) -> Result<Vec<Account>, String> {
+    fn accounts(&self, _cli: &Path) -> Result<Vec<Account>, Said> {
         Ok(config().as_deref().map(accounts).unwrap_or_default())
     }
 
@@ -166,7 +167,7 @@ impl Integration for Glab {
         given_up: &AtomicBool,
         open: &dyn Fn(String),
     ) -> Result<String, String> {
-        let host = host_of(server)?;
+        let host = host_of(server, &["https://", "http://"])?;
         if host != GITLAB {
             make_known(cli, &host, client_id)?;
         }
@@ -188,9 +189,9 @@ impl Integration for Glab {
         .map(|_| host)
     }
 
-    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), Said> {
         if !self.accounts(cli)?.iter().any(|account| account.id == id) {
-            return Err(format!("glab is not signed in to {}", id));
+            return Err(Said::raw(format!("glab is not signed in to {}", id)));
         }
         run(
             cli,
@@ -198,6 +199,7 @@ impl Integration for Glab {
             &["auth", "logout", &format!("--hostname={}", id)],
         )
         .map(|_| ())
+        .map_err(Said::raw)
     }
 
     fn remote_websites(&self, cli: &Path, account: &str) -> Result<Vec<RemoteWebsite>, String> {
@@ -288,9 +290,9 @@ impl Integration for Glab {
             .map_err(|error| Said::raw(error.to_string()))
     }
 
-    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, Said> {
         if !self.accounts(cli)?.iter().any(|account| account.id == id) {
-            return Err(format!("glab is not signed in to {}", id));
+            return Err(Said::raw(format!("glab is not signed in to {}", id)));
         }
         match run_fetch(
             cli,
@@ -299,7 +301,7 @@ impl Integration for Glab {
         ) {
             Ok(_) => Ok(SignIn::Accepted),
             Err(why) if refused(id, &why) => Ok(SignIn::Refused),
-            Err(why) => Err(why),
+            Err(why) => Err(Said::raw(why)),
         }
     }
 
@@ -530,28 +532,6 @@ fn signed_out(error: SyncError, site: &Path, config: &[String]) -> SyncError {
         ));
     }
     SyncError::Other(why)
-}
-
-fn is_plain_host(host: &str) -> bool {
-    host.starts_with(|c: char| c.is_ascii_alphanumeric())
-        && host
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || ".-:_".contains(c))
-}
-
-/// The host glab is given, from what the user typed or pasted
-fn host_of(server: &str) -> Result<String, String> {
-    let typed = server.trim();
-    let host = typed
-        .strip_prefix("https://")
-        .or_else(|| typed.strip_prefix("http://"))
-        .unwrap_or(typed);
-    // A link to a project is pasted as often as the address of the server
-    let host = host.split('/').next().unwrap_or_default().to_lowercase();
-    if !is_plain_host(&host) {
-        return Err(format!("{} is not the address of a server", typed));
-    }
-    Ok(host)
 }
 
 /// Tells glab which OAuth application to sign in to a server other than
