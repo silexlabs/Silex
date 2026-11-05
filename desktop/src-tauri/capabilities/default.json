@@ -32,6 +32,7 @@
     "allow-sync-website",
     "allow-create-website-from-template",
     "allow-save-ended",
-    "allow-get-telemetry-context"
+    "allow-get-telemetry-context",
+    "allow-integration-catalog"
   ]
 }

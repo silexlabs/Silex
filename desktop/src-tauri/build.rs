@@ -14,6 +14,7 @@ const COMMANDS: &[&str] = &[
     "create_website_from_template",
     "save_ended",
     "get_telemetry_context",
+    "integration_catalog",
 ];
 
 /// `--silex-bg-main` as a `tauri::window::Color`, for the window of the dashboard

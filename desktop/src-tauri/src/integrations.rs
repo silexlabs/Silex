@@ -24,7 +24,7 @@ use silex_server::PublicationOptions;
 
 use common::programs::found;
 use common::run;
-use integration::{Capacity, Integration};
+use integration::{AntiFeature, Capacity, Integration, Openness, Tag};
 
 pub mod common;
 mod glab;
@@ -36,7 +36,7 @@ mod tea;
 ///
 /// Whatever a later version wrote and this one knows nothing of travels in
 /// `rest`, so downgrading once and saving does not lose it.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct IntegrationState {
     /// Whether the user wants Silex to use it
     #[serde(default)]
@@ -71,6 +71,26 @@ pub struct Integrations {
 
 fn catalog() -> [&'static dyn Integration; 3] {
     [&glab::Glab, &tea::Tea, &hut::Hut]
+}
+
+/// An integration as the integrations screen shows it, with what is known of
+/// it on this machine
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatalogEntry {
+    program: &'static str,
+    name: &'static str,
+    summary: &'static str,
+    tags: &'static [Tag],
+    openness: Openness,
+    anti_features: &'static [AntiFeature],
+    install_url: &'static str,
+    icon: Option<&'static str>,
+    runs_here: bool,
+    enabled: bool,
+    found: bool,
+    broken: bool,
+    version: Option<String>,
 }
 
 pub struct Publishing {
@@ -133,6 +153,34 @@ impl Integrations {
                 })
             },
         )
+    }
+
+    pub fn catalog_entries(&self) -> Vec<CatalogEntry> {
+        catalog()
+            .into_iter()
+            .map(|integration| {
+                let state = self
+                    .known
+                    .get(integration.program())
+                    .cloned()
+                    .unwrap_or_default();
+                CatalogEntry {
+                    program: integration.program(),
+                    name: integration.name(),
+                    summary: integration.summary(),
+                    tags: integration.tags(),
+                    openness: integration.openness(),
+                    anti_features: integration.anti_features(),
+                    install_url: integration.install_url(),
+                    icon: integration.icon(),
+                    runs_here: integration.runs_here(),
+                    enabled: state.enabled,
+                    found: state.path.is_some_and(|path| path.is_file()),
+                    broken: state.broken,
+                    version: state.version,
+                }
+            })
+            .collect()
     }
 
     /// The programs Silex can use here, and what version each answered
