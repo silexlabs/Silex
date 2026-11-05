@@ -7,7 +7,7 @@ import { SymbolOptions } from '..'
 
 // Same signature as a grapesjs plugin
 export default function (editor: Editor, options: SymbolOptions) {
-  function unlink(component: Component) {
+  function unlink(component: Component, el: HTMLElement) {
     // FIXME: Handle the case when the component is the main symbol
     confirmDialog({
       editor,
@@ -19,13 +19,14 @@ export default function (editor: Editor, options: SymbolOptions) {
       primaryLabel: 'Unlink',
       cbk: () => {
         unbindSymbolInstance(editor, component)
+        updateUi(el, component)
       },
       lsKey: 'unlink-symbol',
     })
   }
   function updateUi(el: HTMLElement, component?: Component) {
     const symbolInfo = component && getSymbol(editor, component)
-    if(symbolInfo) {
+    if(component && symbolInfo?.isInstance) {
       el.style.display = 'initial'
       render(html`<fieldset class="gjs-trt-trait__wrp gjs-trt-trait__wrp-title" style="
         border-color: ${options.primaryColor};
@@ -39,7 +40,7 @@ export default function (editor: Editor, options: SymbolOptions) {
               margin: 10px 0;
               border: 1px solid ${options.primaryColor};
             "
-            @click=${() => unlink(component)}>Unlink</button>
+            @click=${() => unlink(component, el)}>Unlink</button>
         </div>
       </fieldset>`, el)
     } else {

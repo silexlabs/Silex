@@ -183,7 +183,7 @@ export default class SymbolsView {
       const symbolInfo = getSymbol(this.options.editor, this.options.editor.Components.getById(symbolId))
       if(symbolInfo) {
         const parentId = this.lastTarget?.id
-        if (!parentId) throw new Error('Can not create the symbol: missing param id')
+        if (!parentId) return null
         const parent = this.lastTarget ? this.options.editor.Components.getById(parentId) : null
         if (parent) {
           // Make sure we have a target and position

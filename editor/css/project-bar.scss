@@ -121,8 +121,18 @@
         line-height: 13px;
       }
 
-      &:hover {
+      &:hover:not(.project-bar__panel-header-button--disabled) {
         color: var(--silex-accent-secondary);
+        opacity: 1;
+      }
+      &.project-bar__panel-header-button--disabled {
+        cursor: not-allowed;
+        opacity: 0.25;
+        color: var(--silex-text-disabled, #888);
+        filter: grayscale(100%);
+        &:hover {
+          color: var(--silex-text-disabled, #888);
+        }
       }
     }
   }

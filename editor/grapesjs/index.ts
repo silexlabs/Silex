@@ -275,7 +275,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             buttons: [
               {
                 id: 'symbol-create-button',
-                className: 'gjs-pn-btn',
+                className: 'gjs-pn-btn symbol-create-button',
                 command: cmdPromptAddSymbol,
                 text: '\u271A',
               },
