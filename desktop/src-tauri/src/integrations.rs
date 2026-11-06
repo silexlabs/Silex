@@ -17,7 +17,8 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::{mpsc, LazyLock, PoisonError, RwLock};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{mpsc, Arc, LazyLock, Mutex, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
@@ -26,6 +27,8 @@ use common::git;
 use common::programs::{self, found};
 use common::run;
 use integration::{Account, AntiFeature, Capacity, Integration, Openness, Tag};
+
+use crate::held::held;
 
 pub mod common;
 mod glab;
@@ -303,12 +306,74 @@ fn looked_at(
     changed
 }
 
-pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
+fn in_use(loading: &Loading, program: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
     let integration =
         by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
     let cli = snapshot(loading)
         .program_path(program)
         .ok_or_else(|| format!("{} is not in use in Silex", integration.name()))?;
+    Ok((integration, cli))
+}
+
+pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
+    let (integration, cli) = in_use(loading, program)?;
+    integration.accounts(&cli)
+}
+
+/// One sign-in at a time: glab waits for the browser on one port
+static SIGNING_IN: Mutex<()> = Mutex::new(());
+
+/// What the sign-in under way is stopped with
+static GIVE_UP: Mutex<Option<Arc<AtomicBool>>> = Mutex::new(None);
+
+/// The accounts once the user signed in, or stopped
+///
+/// A sign-in started again stops the one before: the user closed the tab of
+/// the first and the program would wait for it until it times out.
+pub fn connect(
+    loading: &Loading,
+    program: &str,
+    server: &str,
+    client_id: Option<&str>,
+    open: &dyn Fn(String),
+) -> Result<Vec<Account>, String> {
+    let (integration, cli) = in_use(loading, program)?;
+    let given_up = Arc::new(AtomicBool::new(false));
+    if let Some(before) = held(&GIVE_UP).replace(given_up.clone()) {
+        before.store(true, Ordering::Relaxed);
+    }
+    let _alone = held(&SIGNING_IN);
+    let open = |page: String| {
+        if let Err(e) = run::open_detached(&page) {
+            tracing::warn!("Could not open {}: {}", page, e);
+            open(page);
+        }
+    };
+    let connected = integration.connect(&cli, server, client_id, &given_up, &open);
+    let mut give_up = held(&GIVE_UP);
+    if give_up
+        .as_ref()
+        .is_some_and(|it| Arc::ptr_eq(it, &given_up))
+    {
+        *give_up = None;
+    }
+    drop(give_up);
+    match connected {
+        Err(_) if given_up.load(Ordering::Relaxed) => {}
+        connected => connected?,
+    }
+    integration.accounts(&cli)
+}
+
+pub fn stop_connecting() {
+    if let Some(given_up) = held(&GIVE_UP).take() {
+        given_up.store(true, Ordering::Relaxed);
+    }
+}
+
+pub fn disconnect(loading: &Loading, program: &str, id: &str) -> Result<Vec<Account>, String> {
+    let (integration, cli) = in_use(loading, program)?;
+    integration.disconnect(&cli, id)?;
     integration.accounts(&cli)
 }
 

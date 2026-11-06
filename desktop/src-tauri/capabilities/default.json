@@ -35,6 +35,9 @@
     "allow-get-telemetry-context",
     "allow-integration-catalog",
     "allow-integration-asked",
-    "allow-integration-accounts"
+    "allow-integration-accounts",
+    "allow-connect-account",
+    "allow-stop-connecting-account",
+    "allow-disconnect-account"
   ]
 }

@@ -8,6 +8,7 @@
  */
 
 use std::path::Path;
+use std::sync::atomic::AtomicBool;
 
 use serde::Serialize;
 use silex_server::said::Said;
@@ -201,6 +202,34 @@ pub trait Integration: Send + Sync {
     fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
         let _ = cli;
         Ok(Vec::new())
+    }
+
+    /// Waits as long as the user takes to sign in, in their browser
+    ///
+    /// `client_id` is the OAuth application the user made on a server Silex
+    /// does not know.
+    fn connect(
+        &self,
+        cli: &Path,
+        server: &str,
+        client_id: Option<&str>,
+        given_up: &AtomicBool,
+        open: &dyn Fn(String),
+    ) -> Result<(), String> {
+        let _ = (cli, server, client_id, given_up, open);
+        Err(format!(
+            "Silex cannot connect an account to {}",
+            self.name()
+        ))
+    }
+
+    /// Signs the account out of its program too, not just out of Silex
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+        let _ = (cli, id);
+        Err(format!(
+            "Silex cannot disconnect an account from {}",
+            self.name()
+        ))
     }
 
     /// What to ask the user before publishing, when this program cannot say

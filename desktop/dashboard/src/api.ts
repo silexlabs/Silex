@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import {
   API_PATH,
@@ -168,6 +168,22 @@ export interface Account {
 }
 
 export const integrationAccounts = (program: string) => call<Account[]>('integration_accounts', { program })
+
+/**
+ * Waits for the user to sign in in their browser, and answers the accounts as they are then, also once stopped.
+ * `clientId` is the OAuth application the user made on a server Silex does not know.
+ * `onPage` is given the page to sign in on when the browser did not open.
+ */
+export const connectAccount = (program: string, server: string, clientId: string | null, onPage: (page: string) => void) => {
+  const page = new Channel<string>()
+  page.onmessage = onPage
+  return call<Account[]>('connect_account', { program, server, clientId, onPage: page })
+}
+
+export const stopConnectingAccount = () => call<void>('stop_connecting_account', {})
+
+/** Signs the account out of its program too */
+export const disconnectAccount = (program: string, id: string) => call<Account[]>('disconnect_account', { program, id })
 
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null

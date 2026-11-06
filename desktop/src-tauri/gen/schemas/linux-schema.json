@@ -183,10 +183,22 @@
           "markdownDescription": "Enables the clear_current_project command without any pre-configured scope."
         },
         {
+          "description": "Enables the connect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-connect-account",
+          "markdownDescription": "Enables the connect_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the create_website_from_template command without any pre-configured scope.",
           "type": "string",
           "const": "allow-create-website-from-template",
           "markdownDescription": "Enables the create_website_from_template command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the disconnect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-disconnect-account",
+          "markdownDescription": "Enables the disconnect_account command without any pre-configured scope."
         },
         {
           "description": "Enables the get_telemetry_context command without any pre-configured scope.",
@@ -249,6 +261,12 @@
           "markdownDescription": "Enables the show_website_folder command without any pre-configured scope."
         },
         {
+          "description": "Enables the stop_connecting_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-stop-connecting-account",
+          "markdownDescription": "Enables the stop_connecting_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the sync_places command without any pre-configured scope.",
           "type": "string",
           "const": "allow-sync-places",
@@ -273,10 +291,22 @@
           "markdownDescription": "Denies the clear_current_project command without any pre-configured scope."
         },
         {
+          "description": "Denies the connect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-connect-account",
+          "markdownDescription": "Denies the connect_account command without any pre-configured scope."
+        },
+        {
           "description": "Denies the create_website_from_template command without any pre-configured scope.",
           "type": "string",
           "const": "deny-create-website-from-template",
           "markdownDescription": "Denies the create_website_from_template command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the disconnect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-disconnect-account",
+          "markdownDescription": "Denies the disconnect_account command without any pre-configured scope."
         },
         {
           "description": "Denies the get_telemetry_context command without any pre-configured scope.",
@@ -337,6 +367,12 @@
           "type": "string",
           "const": "deny-show-website-folder",
           "markdownDescription": "Denies the show_website_folder command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the stop_connecting_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-stop-connecting-account",
+          "markdownDescription": "Denies the stop_connecting_account command without any pre-configured scope."
         },
         {
           "description": "Denies the sync_places command without any pre-configured scope.",

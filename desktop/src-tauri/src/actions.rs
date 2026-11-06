@@ -185,6 +185,21 @@ impl SilexActions {
         crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
     }
 
+    pub fn connect_account(
+        &self,
+        program: &str,
+        server: &str,
+        client_id: Option<&str>,
+        open: &dyn Fn(String),
+    ) -> Result<Vec<Account>, Said> {
+        crate::integrations::connect(&self.integrations, program, server, client_id, open)
+            .map_err(Said::raw)
+    }
+
+    pub fn disconnect_account(&self, program: &str, id: &str) -> Result<Vec<Account>, Said> {
+        crate::integrations::disconnect(&self.integrations, program, id).map_err(Said::raw)
+    }
+
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {
         let Some(site) = self.site_path(website_id) else {
             return Vec::new();

@@ -10,13 +10,14 @@
 //! The GitLab command line
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::AtomicBool;
 
 use silex_server::PublicationOptions;
 
 use super::common::git;
 use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
 use super::common::remote::Remote;
-use super::common::run::run;
+use super::common::run::{run, run_waiting, Waiting};
 use super::integration::{
     silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SyncError,
     Synced, Tag, Urls,
@@ -28,6 +29,17 @@ use crate::locales::key;
 /// Anywhere else the host says nothing on its own, and what glab was signed in
 /// to is what tells a GitLab of one's own from any other forge.
 const GITLAB: &str = "gitlab.com";
+
+/// The OAuth applications Silex Labs made for Silex, by server
+///
+/// gitlab.com has none: glab signs in there with its own, whatever it is told.
+const OAUTH_APPLICATIONS: &[(&str, &str)] = &[(
+    "framagit.org",
+    "3405aaa4e2090b499ee15fc763e093cc6304a82ca34a2cee032f19811fed7bbe",
+)];
+
+/// What glab writes when it could not open the browser itself
+const COULD_NOT_OPEN: &str = "Failed opening a browser at ";
 
 /// The GitLab logo as Simple Icons draws it: a trademark with no license,
 /// shown only to name the service the website is sent to
@@ -74,6 +86,48 @@ impl Integration for Glab {
 
     fn accounts(&self, _cli: &Path) -> Result<Vec<Account>, String> {
         Ok(config().as_deref().map(accounts).unwrap_or_default())
+    }
+
+    fn connect(
+        &self,
+        cli: &Path,
+        server: &str,
+        client_id: Option<&str>,
+        given_up: &AtomicBool,
+        open: &dyn Fn(String),
+    ) -> Result<(), String> {
+        let host = host_of(server)?;
+        if host != GITLAB {
+            make_known(cli, &host, client_id)?;
+        }
+        let heard = |line: &str| {
+            if let Some(page) = line.trim().strip_prefix(COULD_NOT_OPEN) {
+                open(page.to_string());
+            }
+        };
+        // Without a terminal glab asks nothing, and leaves git alone
+        run_waiting(
+            cli,
+            &std::env::temp_dir(),
+            &["auth", "login", &format!("--hostname={}", host), "--web"],
+            &Waiting {
+                given_up,
+                heard: &heard,
+            },
+        )
+        .map(|_| ())
+    }
+
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+        if !self.accounts(cli)?.iter().any(|account| account.id == id) {
+            return Err(format!("glab is not signed in to {}", id));
+        }
+        run(
+            cli,
+            &std::env::temp_dir(),
+            &["auth", "logout", &format!("--hostname={}", id)],
+        )
+        .map(|_| ())
     }
 
     fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
@@ -208,6 +262,70 @@ impl Integration for Glab {
             _ => urls.ci.clone(),
         }
     }
+}
+
+/// The host glab is given, from what the user typed or pasted
+fn host_of(server: &str) -> Result<String, String> {
+    let typed = server.trim();
+    let host = typed
+        .strip_prefix("https://")
+        .or_else(|| typed.strip_prefix("http://"))
+        .unwrap_or(typed);
+    // A link to a project is pasted as often as the address of the server
+    let host = host.split('/').next().unwrap_or_default().to_lowercase();
+    let readable = !host.is_empty()
+        && host.starts_with(|c: char| c.is_ascii_alphanumeric())
+        && host
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || ".-:_".contains(c));
+    if !readable {
+        return Err(format!("{} is not the address of a server", typed));
+    }
+    Ok(host)
+}
+
+/// Tells glab which OAuth application to sign in to a server other than
+/// gitlab.com with
+///
+/// The one the user gives wins, then the one glab already has, which the user
+/// may have made, then the one of Silex.
+fn make_known(cli: &Path, host: &str, client_id: Option<&str>) -> Result<(), String> {
+    let kept = config()
+        .and_then(|config| host_block(&config, host))
+        .and_then(|block| value_of(&block, "client_id"));
+    let wanted = match client_id.map(str::trim) {
+        Some(given) if !given.is_empty() => given,
+        _ if kept.is_some() => return Ok(()),
+        _ => OAUTH_APPLICATIONS
+            .iter()
+            .find(|(server, _)| *server == host)
+            .map(|(_, id)| *id)
+            .ok_or_else(|| {
+                format!(
+                    "Silex needs the client ID of an OAuth application on {}",
+                    host
+                )
+            })?,
+    };
+    if kept.as_deref() == Some(wanted) {
+        return Ok(());
+    }
+    if !wanted.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err(format!("{} is not a client ID", wanted));
+    }
+    run(
+        cli,
+        &std::env::temp_dir(),
+        &[
+            "config",
+            "set",
+            "--global",
+            &format!("--host={}", host),
+            "client_id",
+            wanted,
+        ],
+    )
+    .map(|_| ())
 }
 
 fn json_string(output: &str, key: &str) -> Option<String> {

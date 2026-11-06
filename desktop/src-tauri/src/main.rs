@@ -213,6 +213,42 @@ async fn integration_accounts(
         .map_err(Said::raw)?
 }
 
+/// `on_page` is told the page to sign in on when the browser did not open
+#[tauri::command]
+async fn connect_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    server: String,
+    client_id: Option<String>,
+    on_page: tauri::ipc::Channel<String>,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        actions.connect_account(&program, &server, client_id.as_deref(), &|page| {
+            let _ = on_page.send(page);
+        })
+    })
+    .await
+    .map_err(Said::raw)?
+}
+
+#[tauri::command]
+fn stop_connecting_account() {
+    integrations::stop_connecting();
+}
+
+#[tauri::command]
+async fn disconnect_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    id: String,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.disconnect_account(&program, &id))
+        .await
+        .map_err(Said::raw)?
+}
+
 #[tauri::command]
 async fn sync_website(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
@@ -1032,6 +1068,9 @@ fn main() {
             integration_catalog,
             integration_asked,
             integration_accounts,
+            connect_account,
+            stop_connecting_account,
+            disconnect_account,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

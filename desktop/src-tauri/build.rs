@@ -17,6 +17,9 @@ const COMMANDS: &[&str] = &[
     "integration_catalog",
     "integration_asked",
     "integration_accounts",
+    "connect_account",
+    "stop_connecting_account",
+    "disconnect_account",
 ];
 
 /// `--silex-bg-main` as a `tauri::window::Color`, for the window of the dashboard
