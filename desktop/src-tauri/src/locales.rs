@@ -45,6 +45,13 @@ pub const DIVERGED: &str =
     "This computer and your repository both have new commits: they have diverged.";
 pub const SYNC: &str = "Sync";
 
+macro_rules! key {
+    ($sentence:literal) => {
+        $sentence
+    };
+}
+pub(crate) use key;
+
 pub fn in_french() -> bool {
     sys_locale::get_locale().is_some_and(|locale| locale.starts_with("fr"))
 }

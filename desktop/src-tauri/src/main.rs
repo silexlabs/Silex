@@ -11,6 +11,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use integrations::common::run::open_detached;
+use integrations::integration::Account;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -177,6 +178,39 @@ async fn sync_places(
     tauri::async_runtime::spawn_blocking(move || actions.sync_places(website_id.as_str()))
         .await
         .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn integration_catalog(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_catalog())
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn integration_asked(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    asked: integrations::Asked,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&program, asked))
+        .await
+        .map_err(Said::raw)?
+}
+
+#[tauri::command]
+async fn integration_accounts(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_accounts(&program))
+        .await
+        .map_err(Said::raw)?
 }
 
 #[tauri::command]
@@ -680,6 +714,7 @@ async fn start_server(
     asking_integrations: sentry::Span,
     app_handle: tauri::AppHandle,
 ) -> Result<(u16, Arc<actions::SilexActions>, mcp::LocalFiles), Box<dyn std::error::Error>> {
+    let integrations_dir = app_data_dir.clone();
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -704,6 +739,7 @@ async fn start_server(
     });
     let actions = Arc::new(actions::SilexActions::new(
         data_path.clone(),
+        integrations_dir,
         integrations,
         current_website_id,
         tells_the_editor(app_handle),
@@ -993,6 +1029,9 @@ fn main() {
             sync_places,
             last_publication,
             sync_website,
+            integration_catalog,
+            integration_asked,
+            integration_accounts,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

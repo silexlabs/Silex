@@ -24,6 +24,41 @@ pub enum Capacity {
     Deploy,
 }
 
+/// What a website gains from an integration, the way the catalog sorts them
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Tag {
+    Hosting,
+    Storage,
+    Team,
+}
+
+/// How open the service an integration relies on is: its license, what of it
+/// is closed, and who decides. The service, not the program, which is free
+/// software in every case
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+// The whole scale, before an integration of each kind is there
+#[allow(dead_code)]
+pub enum Openness {
+    DigitalCommons,
+    FreeSoftware,
+    OpenSource,
+    OpenCore,
+    SourceAvailable,
+    Proprietary,
+}
+
+/// What a user may not want of the service, after the Anti-Features of F-Droid
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AntiFeature {
+    Tracking,
+    ProprietaryCloud,
+    IdentityVerification,
+    FreeLicenseRequired,
+}
+
 pub fn not_provided(program: &str, capacity: Capacity) -> String {
     format!("{} does not provide {:?}", program, capacity)
 }
@@ -122,12 +157,51 @@ pub enum Build {
     },
 }
 
+/// One of the accounts or servers an integration was set up with, kept by its
+/// program rather than by Silex
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Account {
+    pub id: String,
+    pub name: String,
+    /// What tells it apart for the user, like the server it is on
+    pub summary: Option<String>,
+}
+
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
+
+    /// The service the user knows, not the program
+    fn name(&self) -> &'static str;
+
+    fn summary(&self) -> &'static str;
+
+    fn tags(&self) -> &'static [Tag];
+
+    fn openness(&self) -> Openness;
+
+    fn anti_features(&self) -> &'static [AntiFeature] {
+        &[]
+    }
+
+    /// The official page on installing the program, when Silex cannot find it
+    fn install_url(&self) -> &'static str;
+
+    /// Whether the program can be installed on this system: one that cannot
+    /// is still shown, so that a user who read about it learns why it is not
+    /// there for them
+    fn runs_here(&self) -> bool {
+        true
+    }
 
     /// Only those are asked of it: a method of another capacity answers
     /// `not_provided`
     fn capacities(&self) -> &'static [Capacity];
+
+    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
+        let _ = cli;
+        Ok(Vec::new())
+    }
 
     /// What to ask the user before publishing, when this program cannot say
     /// where the website is served

@@ -9,13 +9,19 @@ const saidByRust = ['../../server-rust/src/said.rs', '../src-tauri/src/locales.r
   [...readFileSync(new URL(file, import.meta.url), 'utf8').matchAll(/pub const \w+: &str =\s*("(?:[^"\\]|\\.)*");/g)]
     .map(([, literal]) => JSON.parse(literal)),
 )
+// And those an integration says in its own file, marked with key!
+const desktop = new URL('../src-tauri/src/', import.meta.url)
+const keyedByRust = readdirSync(desktop, { recursive: true }).filter((file) => file.endsWith('.rs')).flatMap((file) =>
+  [...readFileSync(new URL(file, desktop), 'utf8').matchAll(/key!\(\s*("(?:[^"\\]|\\.)*")\s*\)/g)]
+    .map(([, literal]) => JSON.parse(literal)),
+)
 // A sentence of api.ts reaches t() through a Said, where the lint cannot follow it
 const saidByTheDashboard = ['Silex is not answering. Restart it, then try again.']
 // no-missing-keys only sees the keys of .vue and .ts files
 const locales = new URL('./src/locales/', import.meta.url)
 const missing = readdirSync(locales).filter((file) => file.endsWith('.json')).flatMap((file) => {
   const messages = JSON.parse(readFileSync(new URL(file, locales), 'utf8'))
-  return [...saidByRust, ...saidByTheDashboard].filter((key) => !(key in messages)).map((key) => `${file}: ${key}`)
+  return [...saidByRust, ...keyedByRust, ...saidByTheDashboard].filter((key) => !(key in messages)).map((key) => `${file}: ${key}`)
 })
 if (missing.length) throw new Error(`Missing in the locales:\n${missing.join('\n')}`)
 const escape = (text) => text.replace(/[\\^$.*+?()[\]{}|/]/g, '\\$&').replaceAll('\n', '\\n')
@@ -44,7 +50,7 @@ export default defineConfigWithVueTs(
       'vuejs-accessibility/label-has-for': ['error', { required: { some: ['nesting', 'id'] } }],
       '@intlify/vue-i18n/no-raw-text': ['error', { ignorePattern: '^[\\s↗←✓×·⋯]*$', ignoreText: ['Silex', 'Silex Desktop'] }],
       '@intlify/vue-i18n/no-missing-keys': 'error',
-      '@intlify/vue-i18n/no-unused-keys': ['error', { extensions: ['.ts', '.vue'], ignores: [...saidByRust, ...saidByTheDashboard].map(keyPattern) }],
+      '@intlify/vue-i18n/no-unused-keys': ['error', { extensions: ['.ts', '.vue'], ignores: [...saidByRust, ...keyedByRust, ...saidByTheDashboard].map(keyPattern) }],
       '@intlify/vue-i18n/valid-message-syntax': 'error',
     },
   },

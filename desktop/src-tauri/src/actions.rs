@@ -24,7 +24,9 @@ use tokio::sync::watch;
 use silex_server::{Hosting, Job, PublicationOptions};
 
 use crate::integrations::common::remote::Remote;
-use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError, Synced};
+use crate::integrations::integration::{
+    Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
+};
 use crate::integrations::Loading;
 use crate::locales::{CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
@@ -109,6 +111,8 @@ pub type SaveEnded = watch::Receiver<bool>;
 pub struct SilexActions {
     /// Directory holding one sub directory per website
     data_path: PathBuf,
+    /// Where integrations.json is
+    app_data_dir: PathBuf,
     integrations: Arc<Loading>,
     current_website_id: CurrentWebsiteId,
     syncer: Arc<Syncer>,
@@ -117,6 +121,7 @@ pub struct SilexActions {
 impl SilexActions {
     pub fn new(
         data_path: PathBuf,
+        app_data_dir: PathBuf,
         integrations: Loading,
         current_website_id: CurrentWebsiteId,
         tells: impl Fn(&str, &Failure) + Send + Sync + 'static,
@@ -132,6 +137,7 @@ impl SilexActions {
                     error: SyncError::Other(format!("Unknown website '{}'", website_id)),
                     url: None,
                 })?;
+                let integrations = crate::integrations::snapshot(&integrations);
                 let done = integrations
                     .get(Capacity::Sync, &site)
                     .map(|(integration, _)| {
@@ -152,6 +158,7 @@ impl SilexActions {
                 statuses: watch::Sender::new(BTreeMap::new()),
             }),
             data_path,
+            app_data_dir,
             integrations,
             current_website_id,
         }
@@ -161,6 +168,23 @@ impl SilexActions {
         self.syncer.statuses.subscribe()
     }
 
+    pub fn integration_catalog(&self) -> Vec<crate::integrations::CatalogEntry> {
+        crate::integrations::snapshot(&self.integrations).catalog_entries()
+    }
+
+    pub fn integration_asked(
+        &self,
+        program: &str,
+        asked: crate::integrations::Asked,
+    ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
+        crate::integrations::asked(&self.integrations, &self.app_data_dir, program, asked)
+            .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
+    }
+
+    pub fn integration_accounts(&self, program: &str) -> Result<Vec<Account>, Said> {
+        crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
+    }
+
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {
         let Some(site) = self.site_path(website_id) else {
             return Vec::new();
@@ -168,7 +192,7 @@ impl SilexActions {
         let status = self.syncer.statuses.borrow().get(website_id).cloned();
         let on_its_way = status.as_ref().is_some_and(SyncStatus::on_its_way);
         let failure = status.and_then(|status| status.sync_failure);
-        self.integrations
+        crate::integrations::snapshot(&self.integrations)
             .get(Capacity::Sync, &site)
             .filter_map(|(integration, _)| {
                 let failure = failure
@@ -549,8 +573,7 @@ impl silex_server::Actions for SilexActions {
             return;
         };
         job.step("Looking for where your website is kept");
-        let Some((answering, repo)) = self
-            .integrations
+        let Some((answering, repo)) = crate::integrations::snapshot(&self.integrations)
             .get(Capacity::Deploy, &site)
             .next()
             .and_then(|answering| {
@@ -585,9 +608,13 @@ impl silex_server::Actions for SilexActions {
         let sent = self
             .syncer
             .alone(website_id, || {
-                let published =
-                    self.integrations
-                        .publish(answering, &site, &host, options, &|step| job.step(step));
+                let published = crate::integrations::snapshot(&self.integrations).publish(
+                    answering,
+                    &site,
+                    &host,
+                    options,
+                    &|step| job.step(step),
+                );
                 if published.is_ok() {
                     self.syncer.published(website_id);
                 }
@@ -653,7 +680,9 @@ impl silex_server::Actions for SilexActions {
     /// A listing asks this of every website, so no program is run.
     fn repo_url(&self, website_id: &str) -> Option<String> {
         let site = self.site_path(website_id)?;
-        let (integration, _) = self.integrations.get(Capacity::Sync, &site).next()?;
+        let (integration, _) = crate::integrations::snapshot(&self.integrations)
+            .get(Capacity::Sync, &site)
+            .next()?;
         integration.repo(&site)
     }
 
@@ -672,7 +701,9 @@ impl SilexActions {
     /// each time its publication dialog opens
     fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
         let site = self.site_path(website_id)?;
-        let (integration, _) = self.integrations.get(Capacity::Deploy, &site).next()?;
+        let (integration, _) = crate::integrations::snapshot(&self.integrations)
+            .get(Capacity::Deploy, &site)
+            .next()?;
         Some(Hosting {
             connector_id: "fs-hosting",
             display_name: Remote::of(&site)?.host,

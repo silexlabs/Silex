@@ -13,18 +13,19 @@
 //! once the user is fine with it.
 //!
 //! What was found is remembered in `integrations.json` and looked for only
-//! once, the first time the app runs.
+//! once, the first time the app runs, or when the user asks.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::sync::{mpsc, LazyLock};
+use std::sync::{mpsc, LazyLock, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::PublicationOptions;
 
-use common::programs::found;
+use common::git;
+use common::programs::{self, found};
 use common::run;
-use integration::{Capacity, Integration};
+use integration::{Account, AntiFeature, Capacity, Integration, Openness, Tag};
 
 pub mod common;
 mod glab;
@@ -36,7 +37,7 @@ mod tea;
 ///
 /// Whatever a later version wrote and this one knows nothing of travels in
 /// `rest`, so downgrading once and saving does not lose it.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct IntegrationState {
     /// Whether the user wants Silex to use it
     #[serde(default)]
@@ -71,6 +72,32 @@ pub struct Integrations {
 
 fn catalog() -> [&'static dyn Integration; 3] {
     [&glab::Glab, &tea::Tea, &hut::Hut]
+}
+
+fn by_program(program: &str) -> Option<&'static dyn Integration> {
+    catalog()
+        .into_iter()
+        .find(|integration| integration.program() == program)
+}
+
+/// An integration as the integrations screen shows it, with what is known of
+/// it on this machine
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CatalogEntry {
+    program: &'static str,
+    name: &'static str,
+    summary: &'static str,
+    tags: &'static [Tag],
+    openness: Openness,
+    anti_features: &'static [AntiFeature],
+    install_url: &'static str,
+    icon: Option<&'static str>,
+    runs_here: bool,
+    enabled: bool,
+    found: bool,
+    broken: bool,
+    version: Option<String>,
 }
 
 pub struct Publishing {
@@ -135,6 +162,34 @@ impl Integrations {
         )
     }
 
+    pub fn catalog_entries(&self) -> Vec<CatalogEntry> {
+        catalog()
+            .into_iter()
+            .map(|integration| {
+                let state = self
+                    .known
+                    .get(integration.program())
+                    .cloned()
+                    .unwrap_or_default();
+                CatalogEntry {
+                    program: integration.program(),
+                    name: integration.name(),
+                    summary: integration.summary(),
+                    tags: integration.tags(),
+                    openness: integration.openness(),
+                    anti_features: integration.anti_features(),
+                    install_url: integration.install_url(),
+                    icon: integration.icon(),
+                    runs_here: integration.runs_here(),
+                    enabled: state.enabled,
+                    found: state.path.is_some_and(|path| path.is_file()),
+                    broken: state.broken,
+                    version: state.version,
+                }
+            })
+            .collect()
+    }
+
     /// The programs Silex can use here, and what version each answered
     pub fn at_hand(&self) -> impl Iterator<Item = (&str, Option<&str>)> {
         self.known
@@ -182,70 +237,14 @@ pub fn load(data_dir: &Path) -> Integrations {
             Some(state) => state.path.clone(),
             None => found(id),
         };
-        let Some(path) = path else {
-            if known.is_none() {
-                integrations.known.insert(
-                    id.to_string(),
-                    IntegrationState {
-                        enabled: false,
-                        path: None,
-                        version: None,
-                        broken: false,
-                        rest: Default::default(),
-                    },
-                );
-                changed = true;
-            }
-            continue;
-        };
-
-        // Gone from the disk since it was found: keeping the path would fail
-        // every publication
-        if !path.is_file() {
-            tracing::info!("{} is no longer at {}", id, path.display());
-            let state = integrations.known.get_mut(id).expect("known to be there");
-            state.path = None;
-            state.version = None;
-            state.broken = false;
+        let is_new = known.is_none();
+        let mut state = known.unwrap_or_default();
+        if is_new {
+            state.enabled = path.is_some();
             changed = true;
-            continue;
         }
-
-        // Asking for a version tells a program that is there but does not run
-        // from one Silex can use
-        let answered = run::run(&path, &std::env::temp_dir(), integration.version_args());
-        let was = integrations.known.entry(id.to_string()).or_insert_with(|| {
-            changed = true;
-            IntegrationState {
-                enabled: true,
-                path: Some(path.clone()),
-                version: None,
-                broken: false,
-                rest: Default::default(),
-            }
-        });
-        match answered {
-            Ok(said) => {
-                let version = run::readable(said.lines().next().unwrap_or_default())
-                    .trim()
-                    .to_string();
-                if was.broken {
-                    tracing::info!("{} runs again", id);
-                }
-                if was.version.as_deref() != Some(version.as_str()) || was.broken {
-                    was.version = Some(version);
-                    was.broken = false;
-                    changed = true;
-                }
-            }
-            Err(e) => {
-                if !was.broken {
-                    tracing::warn!("{} is at {} but does not run: {}", id, path.display(), e);
-                    was.broken = true;
-                    changed = true;
-                }
-            }
-        }
+        changed |= looked_at(integration, &mut state, path);
+        integrations.known.insert(id.to_string(), state);
     }
 
     if changed {
@@ -254,8 +253,124 @@ pub fn load(data_dir: &Path) -> Integrations {
     integrations
 }
 
+/// What is known of a program, from where it is now and from what it answers
+/// when asked its version, and whether that changed
+fn looked_at(
+    integration: &dyn Integration,
+    state: &mut IntegrationState,
+    path: Option<PathBuf>,
+) -> bool {
+    let id = integration.program();
+    let Some(path) = path.filter(|path| path.is_file()) else {
+        // Gone from the disk since it was found: keeping the path would fail
+        // every publication
+        if let Some(was) = &state.path {
+            tracing::info!("{} is no longer at {}", id, was.display());
+        }
+        let changed = state.path.is_some() || state.version.is_some() || state.broken;
+        state.path = None;
+        state.version = None;
+        state.broken = false;
+        return changed;
+    };
+    let mut changed = state.path.as_ref() != Some(&path);
+    state.path = Some(path.clone());
+
+    // Asking for a version tells a program that is there but does not run
+    // from one Silex can use
+    match run::run(&path, &std::env::temp_dir(), integration.version_args()) {
+        Ok(said) => {
+            let version = run::readable(said.lines().next().unwrap_or_default())
+                .trim()
+                .to_string();
+            if state.broken {
+                tracing::info!("{} runs again", id);
+            }
+            if state.version.as_deref() != Some(version.as_str()) || state.broken {
+                state.version = Some(version);
+                state.broken = false;
+                changed = true;
+            }
+        }
+        Err(e) => {
+            if !state.broken {
+                tracing::warn!("{} is at {} but does not run: {}", id, path.display(), e);
+                state.broken = true;
+                changed = true;
+            }
+        }
+    }
+    changed
+}
+
+pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
+    let integration =
+        by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
+    let cli = snapshot(loading)
+        .program_path(program)
+        .ok_or_else(|| format!("{} is not in use in Silex", integration.name()))?;
+    integration.accounts(&cli)
+}
+
+/// What the integrations screen asks of one integration
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Asked {
+    CheckAgain,
+    Stop,
+    Use,
+}
+
+/// Done, written down and the catalog as it is now, or None for a program
+/// that is not in the catalog
+pub fn asked(
+    loading: &Loading,
+    data_dir: &Path,
+    program: &str,
+    asked: Asked,
+) -> Option<Vec<CatalogEntry>> {
+    let integration = by_program(program)?;
+    // Searched for without the lock, which every save takes
+    let looked = matches!(asked, Asked::CheckAgain).then(|| {
+        programs::forget();
+        git::forget();
+        let mut looked = snapshot(loading).known.remove(program).unwrap_or_default();
+        // A path kept after a Stop, even one gone stale, means it was found
+        // once and turned off on purpose
+        let was_found = looked.path.is_some();
+        looked_at(integration, &mut looked, found(program));
+        (looked, was_found)
+    });
+    let mut integrations = loading.write().unwrap_or_else(PoisonError::into_inner);
+    let state = integrations.known.entry(program.to_string()).or_default();
+    match asked {
+        Asked::Stop => state.enabled = false,
+        Asked::Use => state.enabled = true,
+        Asked::CheckAgain => {}
+    }
+    // Only what was looked at, so that a Stop made during the search holds
+    if let Some((looked, was_found)) = looked {
+        if !was_found && looked.path.is_some() {
+            state.enabled = true;
+        }
+        state.path = looked.path;
+        state.version = looked.version;
+        state.broken = looked.broken;
+    }
+    write(data_dir, &integrations);
+    Some(integrations.catalog_entries())
+}
+
 /// The integrations of `load`, waited for by whoever first needs them
-pub type Loading = LazyLock<Integrations, Box<dyn FnOnce() -> Integrations + Send>>;
+pub type Loading = LazyLock<RwLock<Integrations>, Box<dyn FnOnce() -> RwLock<Integrations> + Send>>;
+
+/// A copy, so that a publication taking minutes does not hold back a change
+pub fn snapshot(loading: &Loading) -> Integrations {
+    loading
+        .read()
+        .unwrap_or_else(PoisonError::into_inner)
+        .clone()
+}
 
 /// `load` without holding up the start of the app
 ///
@@ -274,7 +389,7 @@ pub fn load_in_background(
     });
     // Should the thread die, what the user set up last time still holds
     LazyLock::new(Box::new(move || {
-        waited_for.recv().unwrap_or_else(|_| read(&data_dir))
+        RwLock::new(waited_for.recv().unwrap_or_else(|_| read(&data_dir)))
     }))
 }
 

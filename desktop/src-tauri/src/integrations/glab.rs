@@ -18,8 +18,10 @@ use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_fi
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
-    silex_tag, Build, Capacity, Integration, Prepared, SyncError, Synced, Urls,
+    silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SyncError,
+    Synced, Tag, Urls,
 };
+use crate::locales::key;
 
 /// The instance GitLab runs itself
 ///
@@ -38,8 +40,40 @@ impl Integration for Glab {
         "glab"
     }
 
+    fn name(&self) -> &'static str {
+        "GitLab"
+    }
+
+    fn summary(&self) -> &'static str {
+        key!("Back up your websites in a project on GitLab, with the history of every change. Publish them online with GitLab Pages: free hosting in the US, fast builds, and your own domain name if you have one.")
+    }
+
+    fn tags(&self) -> &'static [Tag] {
+        &[Tag::Hosting, Tag::Storage, Tag::Team]
+    }
+
+    fn openness(&self) -> Openness {
+        Openness::OpenCore
+    }
+
+    fn anti_features(&self) -> &'static [AntiFeature] {
+        &[
+            AntiFeature::Tracking,
+            AntiFeature::ProprietaryCloud,
+            AntiFeature::IdentityVerification,
+        ]
+    }
+
+    fn install_url(&self) -> &'static str {
+        "https://gitlab.com/gitlab-org/cli#installation"
+    }
+
     fn capacities(&self) -> &'static [Capacity] {
         &[Capacity::Sync, Capacity::Deploy]
+    }
+
+    fn accounts(&self, _cli: &Path) -> Result<Vec<Account>, String> {
+        Ok(config().as_deref().map(accounts).unwrap_or_default())
     }
 
     fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
@@ -195,10 +229,13 @@ fn not_found(error: &str) -> bool {
 /// Read from what glab keeps rather than from `glab auth status`, which calls
 /// the instance and costs a third of a second per website opened
 fn signed_in_to(host: &str) -> bool {
-    config_file()
-        .and_then(|file| std::fs::read_to_string(file).ok())
+    config()
         .and_then(|config| host_block(&config, host))
         .is_some_and(|block| holds_a_login(&block))
+}
+
+fn config() -> Option<String> {
+    config_file().and_then(|file| std::fs::read_to_string(file).ok())
 }
 
 /// In the home of the user on every platform, and that one wins over the XDG
@@ -216,18 +253,28 @@ fn config_file() -> Option<PathBuf> {
 }
 
 /// What the configuration of glab holds for one host
+fn host_block(config: &str, host: &str) -> Option<String> {
+    host_blocks(config)
+        .into_iter()
+        .find(|(name, _)| name == host)
+        .map(|(_, block)| block)
+}
+
+/// Each host of the configuration of glab, with what it holds for it
 ///
 /// Its `hosts:` section has one block per host. Read by hand rather than as
 /// YAML: it is one section of one file of another program.
-fn host_block(config: &str, host: &str) -> Option<String> {
+fn host_blocks(config: &str) -> Vec<(String, String)> {
     let mut lines = config
         .lines()
         .skip_while(|line| line.trim_end() != "hosts:");
-    lines.next()?;
+    if lines.next().is_none() {
+        return Vec::new();
+    }
 
     let mut names_at = None;
-    let mut block = Vec::new();
-    let mut theirs = false;
+    let mut hosts: Vec<(String, Vec<&str>)> = Vec::new();
+    let mut in_a_host = false;
     for line in lines {
         let content = line.trim();
         if content.is_empty() || content.starts_with('#') {
@@ -239,20 +286,39 @@ fn host_block(config: &str, host: &str) -> Option<String> {
             break;
         }
         if depth == names {
-            if theirs {
-                break;
+            let name = content.strip_suffix(':');
+            in_a_host = name.is_some();
+            if let Some(name) = name {
+                hosts.push((name.trim_matches(['"', '\'']).to_string(), Vec::new()));
             }
-            theirs = content
-                .strip_suffix(':')
-                .map(|name| name.trim_matches(['"', '\'']))
-                == Some(host);
             continue;
         }
-        if theirs {
+        if let (true, Some((_, block))) = (in_a_host, hosts.last_mut()) {
             block.push(content);
         }
     }
-    theirs.then(|| block.join("\n"))
+    hosts
+        .into_iter()
+        .map(|(name, block)| (name, block.join("\n")))
+        .collect()
+}
+
+/// The hosts glab is signed in to, one account each: glab keeps no more
+fn accounts(config: &str) -> Vec<Account> {
+    host_blocks(config)
+        .into_iter()
+        .filter(|(_, block)| holds_a_login(block))
+        .map(|(host, block)| {
+            let user = value_of(&block, "user");
+            Account {
+                name: user
+                    .as_ref()
+                    .map_or_else(|| host.clone(), |user| format!("@{}", user)),
+                summary: user.map(|_| host.clone()),
+                id: host,
+            }
+        })
+        .collect()
 }
 
 /// What GitLab said of a build that failed, in words a user can act on
