@@ -157,6 +157,17 @@ pub enum Build {
     },
 }
 
+/// One of the accounts or servers an integration was set up with, kept by its
+/// program rather than by Silex
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Account {
+    pub id: String,
+    pub name: String,
+    /// What tells it apart for the user, like the server it is on
+    pub summary: Option<String>,
+}
+
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
 
@@ -186,6 +197,11 @@ pub trait Integration: Send + Sync {
     /// Only those are asked of it: a method of another capacity answers
     /// `not_provided`
     fn capacities(&self) -> &'static [Capacity];
+
+    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
+        let _ = cli;
+        Ok(Vec::new())
+    }
 
     /// What to ask the user before publishing, when this program cannot say
     /// where the website is served

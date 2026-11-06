@@ -159,6 +159,16 @@ export type Asked = 'checkAgain' | 'stop' | 'use'
 export const askIntegration = (program: string, asked: Asked) =>
   call<CatalogEntry[]>('integration_asked', { program, asked })
 
+/** An account or a server an integration was set up with, kept by its program */
+export interface Account {
+  id: string
+  name: string
+  /** What tells it apart, like the server it is on */
+  summary: string | null
+}
+
+export const integrationAccounts = (program: string) => call<Account[]>('integration_accounts', { program })
+
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null
 

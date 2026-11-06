@@ -11,6 +11,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use integrations::common::run::open_detached;
+use integrations::integration::Account;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -197,6 +198,17 @@ async fn integration_asked(
 ) -> Result<Vec<integrations::CatalogEntry>, Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&program, asked))
+        .await
+        .map_err(Said::raw)?
+}
+
+#[tauri::command]
+async fn integration_accounts(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_accounts(&program))
         .await
         .map_err(Said::raw)?
 }
@@ -1019,6 +1031,7 @@ fn main() {
             sync_website,
             integration_catalog,
             integration_asked,
+            integration_accounts,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

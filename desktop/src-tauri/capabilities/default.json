@@ -34,6 +34,7 @@
     "allow-save-ended",
     "allow-get-telemetry-context",
     "allow-integration-catalog",
-    "allow-integration-asked"
+    "allow-integration-asked",
+    "allow-integration-accounts"
   ]
 }
