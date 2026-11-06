@@ -24,6 +24,7 @@ import { linkToPermalink } from './permalink'
 
 // What a static site generator needs at publication, the rest of the CMS is the same for all of them
 export interface PublicationTarget {
+  onStart?(): void
   renderComponent?(component: Component, toHtml: () => string): string | undefined
   transformPath?(path: string, type: ClientSideFileType): string | undefined
   onPage?(data: { page: Page, siteSettings: WebsiteSettings, pageSettings: WebsiteSettings }): void
@@ -39,6 +40,7 @@ export default function (editor: Editor, config: ClientConfig, targets: Record<S
   editor.on(ClientEvent.PUBLISH_START, ({ siteSettings }: { siteSettings: WebsiteSettings }) => {
     const generator = siteSettings.generator ?? config.generator
     target = targets[generator]
+    target.onStart?.()
     if (!siteSettings.generator) {
       siteSettings.generator = generator
       unsaved = generator
