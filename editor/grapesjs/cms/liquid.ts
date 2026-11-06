@@ -9,19 +9,7 @@ import {
 import { Component } from 'grapesjs'
 import { EleventyDataSourceId } from './DataSource'
 import { getSliceOptions } from './slice'
-
-export interface BinaryCondition {
-  operator: BinaryOperator,
-  expression: Expression,
-  expression2: Expression,
-}
-
-export interface UnaryCondition {
-  operator: UnariOperator,
-  expression: Expression,
-}
-
-export type Condition = BinaryCondition | UnaryCondition
+import type { BinaryCondition, Condition, UnaryCondition } from './render'
 
 /**
  * Generate liquid instructions which echo the value of an expression
