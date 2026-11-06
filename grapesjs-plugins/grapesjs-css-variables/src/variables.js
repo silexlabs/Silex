@@ -318,9 +318,13 @@ function getActiveStyleTarget(editor) {
 }
 
 /**
- * Get the current CSS value for a property from the style target.
- * Needed because GrapesJS number-type properties can't parse var() references,
- * so getFullValue() returns empty for those. We read directly from the target style.
+ * Get the CSS value of a Style Manager property on the active target.
+ *
+ * For a sub-property of a non-detached composite (e.g. `border-top` under
+ * `border`), the CSS is written on the parent (`border: 1px solid red`), so the
+ * value comes from the parent declaration at the sub-property's position.
+ * Read it from the target style: number-type properties can't parse `var()`,
+ * so `getFullValue()` returns empty for those.
  */
 export function getTargetStyleValue(editor, property) {
   const propName = property.get ? property.get('property') : ''
@@ -328,18 +332,46 @@ export function getTargetStyleValue(editor, property) {
   const target = getActiveStyleTarget(editor)
   if (!target) return ''
   const style = target.getStyle()
-  return String(style[propName] || '')
+  if (Object.prototype.hasOwnProperty.call(style, propName)) return String(style[propName] || '')
+  const parent = property.getParent ? property.getParent() : null
+  if (!parent || parent.isDetached()) return ''
+  return getCompositePart(style, parent, propName)
 }
 
 /**
- * Set a CSS property value directly on the style target.
- * Needed for number-type properties where upValue() can't handle var() references.
+ * Set the CSS value of a Style Manager property on the active target.
+ *
+ * Writes to the target style rather than through `upValue`, because number-type
+ * properties can't parse `var()`. Sub-property names are not CSS properties, so a
+ * sub-property is written at its position in the parent declaration the browser
+ * understands (`border: 1px solid var(--primary)`), never as a declaration of its
+ * own. Detached composites write their sub-properties directly.
  */
 export function setTargetStyleValue(editor, property, value) {
-  const propName = property.get ? property.get('property') : ''
-  if (!propName) return
   const target = getActiveStyleTarget(editor)
   if (!target) return
+  const propName = property.get ? property.get('property') : ''
+  if (!propName) return
+  const parent = property.getParent ? property.getParent() : null
+
+  // Non-detached composite: write the value at its position in the parent
+  // declaration, e.g. `border: 1px var(--color) red`
+  if (parent && !parent.isDetached()) {
+    const style = target.getStyle()
+    const parts = getCompositeParts(style, parent)
+    parts[indexOfSubProperty(parent, propName)] = value
+    const parentName = parent.get('property')
+    const next = { ...style }
+    const joined = parts.filter(Boolean).join(parent.__getJoin())
+    if (joined) {
+      next[parentName] = joined
+    } else {
+      delete next[parentName]
+    }
+    target.setStyle(next)
+    return
+  }
+
   const style = { ...target.getStyle() }
   if (value) {
     style[propName] = value
@@ -347,6 +379,26 @@ export function setTargetStyleValue(editor, property, value) {
     delete style[propName]
   }
   target.setStyle(style)
+}
+
+/** Split a non-detached composite declaration into its sub-property values. */
+function getCompositeParts(style, parent) {
+  const raw = String(style[parent.get('property')] || '')
+  const subs = parent.getProperties ? parent.getProperties() : []
+  const parts = raw ? raw.split(parent.getSplitSeparator()) : []
+  return subs.map((_, i) => parts[i] || '')
+}
+
+/** Value of one sub-property inside its non-detached parent declaration. */
+function getCompositePart(style, parent, propName) {
+  const index = indexOfSubProperty(parent, propName)
+  if (index < 0) return ''
+  return getCompositeParts(style, parent)[index]
+}
+
+function indexOfSubProperty(parent, propName) {
+  const subs = parent.getProperties ? parent.getProperties() : []
+  return subs.findIndex(sub => sub.get('property') === propName)
 }
 
 /**
