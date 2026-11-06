@@ -24,7 +24,9 @@ use tokio::sync::watch;
 use silex_server::{Hosting, Job, PublicationOptions};
 
 use crate::integrations::common::remote::Remote;
-use crate::integrations::integration::{Build, Capacity, Integration, Prepared, SyncError, Synced};
+use crate::integrations::integration::{
+    Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
+};
 use crate::integrations::Loading;
 use crate::locales::{CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
@@ -177,6 +179,10 @@ impl SilexActions {
     ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
         crate::integrations::asked(&self.integrations, &self.app_data_dir, program, asked)
             .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
+    }
+
+    pub fn integration_accounts(&self, program: &str) -> Result<Vec<Account>, Said> {
+        crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
     }
 
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {

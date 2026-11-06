@@ -25,7 +25,7 @@ use silex_server::PublicationOptions;
 use common::git;
 use common::programs::{self, found};
 use common::run;
-use integration::{AntiFeature, Capacity, Integration, Openness, Tag};
+use integration::{Account, AntiFeature, Capacity, Integration, Openness, Tag};
 
 pub mod common;
 mod glab;
@@ -72,6 +72,12 @@ pub struct Integrations {
 
 fn catalog() -> [&'static dyn Integration; 3] {
     [&glab::Glab, &tea::Tea, &hut::Hut]
+}
+
+fn by_program(program: &str) -> Option<&'static dyn Integration> {
+    catalog()
+        .into_iter()
+        .find(|integration| integration.program() == program)
 }
 
 /// An integration as the integrations screen shows it, with what is known of
@@ -297,6 +303,15 @@ fn looked_at(
     changed
 }
 
+pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
+    let integration =
+        by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
+    let cli = now(loading)
+        .program_path(program)
+        .ok_or_else(|| format!("{} is not in use in Silex", integration.name()))?;
+    integration.accounts(&cli)
+}
+
 /// What the integrations screen asks of one integration
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -314,9 +329,7 @@ pub fn asked(
     program: &str,
     asked: Asked,
 ) -> Option<Vec<CatalogEntry>> {
-    let integration = catalog()
-        .into_iter()
-        .find(|integration| integration.program() == program)?;
+    let integration = by_program(program)?;
     // Searched for without the lock, which every save takes
     let looked = matches!(asked, Asked::CheckAgain).then(|| {
         programs::forget();

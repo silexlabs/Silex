@@ -16,6 +16,7 @@ const COMMANDS: &[&str] = &[
     "get_telemetry_context",
     "integration_catalog",
     "integration_asked",
+    "integration_accounts",
 ];
 
 /// `--silex-bg-main` as a `tauri::window::Color`, for the window of the dashboard
