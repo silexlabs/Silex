@@ -306,7 +306,7 @@ fn looked_at(
 pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
     let integration =
         by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
-    let cli = now(loading)
+    let cli = snapshot(loading)
         .program_path(program)
         .ok_or_else(|| format!("{} is not in use in Silex", integration.name()))?;
     integration.accounts(&cli)
@@ -334,7 +334,7 @@ pub fn asked(
     let looked = matches!(asked, Asked::CheckAgain).then(|| {
         programs::forget();
         git::forget();
-        let mut looked = now(loading).known.remove(program).unwrap_or_default();
+        let mut looked = snapshot(loading).known.remove(program).unwrap_or_default();
         // A path kept after a Stop, even one gone stale, means it was found
         // once and turned off on purpose
         let was_found = looked.path.is_some();
@@ -365,7 +365,7 @@ pub fn asked(
 pub type Loading = LazyLock<RwLock<Integrations>, Box<dyn FnOnce() -> RwLock<Integrations> + Send>>;
 
 /// A copy, so that a publication taking minutes does not hold back a change
-pub fn now(loading: &Loading) -> Integrations {
+pub fn snapshot(loading: &Loading) -> Integrations {
     loading
         .read()
         .unwrap_or_else(PoisonError::into_inner)
