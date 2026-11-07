@@ -3,11 +3,10 @@ import { Component, Page, Editor } from 'grapesjs'
 import { BinaryOperator, Filter, GraphQLOptions, IDataSource, NOTIFICATION_GROUP, Properties, Property, State, StateId, StoredState, Token, UnariOperator, fromStored, getDataSource, getPageQuery, getPersistantId, getState, getStateIds, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
 import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
-import { PublicationTransformer } from '../../publication-transformers'
-import { ClientConfig } from '../../config'
 import { UNWRAP_ID } from './traits'
-import { ClientEvent } from '../../events'
 import { getPageSlug, getPageUrl } from '~/common/page'
+import type { Ssg } from './ssg'
+import { ensureLeadingAndTrailingSlash } from './permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
 
 const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
@@ -35,27 +34,14 @@ function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11
   return settings.eleventyFetch ? { duration: '1s' } : false
 }
 
-export default function (editor: Editor, options: EleventyPluginOptions) {
-  /* @ts-ignore There should be a better way to get Silex config */
-  const config = window.silex.config as ClientConfig
-  // Generate the liquid when the site is published
-  config.addPublicationTransformers({
-    // Render the components when they are published
+export function eleventy(editor: Editor, options: EleventyPluginOptions): Ssg {
+  return {
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, component, toHtml), editor, component.getId()),
-    transformPermalink: (link: string, type: ClientSideFileType) => type === ClientSideFileType.HTML ? linkToPermalink(editor, link) : link,
-  })
-
-  // Generate 11ty data files
-  // FIXME: should this be in the publication transformers
-  editor.on('silex:publish:page', (data, ...args) => {
-    withNotification(() => transformPage(editor, data), editor, null)
-  })
-  editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }, ...args) => {
-    withNotification(() => transformFiles(editor, options, data), editor, null)
-  })
-  editor.on('silex:publish:end', (...args) => {
-    cache.clear()
-  })
+    onPage: data => withNotification(() => transformPage(editor, data), editor, null),
+    // Generate 11ty data files
+    onData: data => withNotification(() => transformFiles(editor, options, data), editor, null),
+    onEnd: () => cache.clear(),
+  }
 }
 
 /**
@@ -67,27 +53,6 @@ function makeAttribute(key: string, value: string | boolean): string {
   case 'boolean': return value ? key : ''
   default: return `${key}="${value}"`
   }
-}
-
-function ensureLeadingAndTrailingSlash(str: string): string {
-  if (str.length === 0) return '/'
-  let s = str
-  if (!s.startsWith('/')) s = '/' + s
-  // No empty file name
-  if (s.endsWith('/.html')) throw new Error('Permalink may not end with "/.html". Your missing a file name!')
-  // If it ends with .html, keep as-is; otherwise ensure trailing slash
-  if (!s.endsWith('/') && !s.endsWith('.html')) s = s + '/'
-  return s
-}
-
-// A page with a fixed permalink is published there, so links to it go there too
-export function linkToPermalink(editor: Editor, link: string): string {
-  const [, path, suffix] = link.match(/^([^?#]*)(.*)$/) ?? []
-  const page = editor.Pages.getAll().find(page => getPageUrl(getPageSlug(page.getName())) === path)
-  const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
-  const tokens = toExpression(settings?.eleventyPermalink) as Property[] | null
-  if (!tokens?.length || !tokens.every(token => token.type === 'property' && token.fieldId === 'fixed')) return link
-  return ensureLeadingAndTrailingSlash(tokens.map(token => token.options?.value ?? '').join('')) + suffix
 }
 
 export function getPermalink(page: Page, permalink: Token[], isCollectionPage: boolean, slug: string): string | null {

@@ -4,7 +4,8 @@
 
 import dedent from 'dedent'
 import { expect, jest, test } from '@jest/globals'
-import { buildAttributes, getFrontMatter, isAttribute, linkToPermalink, queryToDataFile } from './publication'
+import { buildAttributes, getFrontMatter, isAttribute, queryToDataFile } from './eleventy'
+import { linkToPermalink } from './permalink'
 import { echoBlock } from './liquid'
 import { IDataSource, toExpression } from '@silexlabs/grapesjs-data-source'
 import grapesjs, { Page } from 'grapesjs'
