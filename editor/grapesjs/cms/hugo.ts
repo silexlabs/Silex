@@ -23,8 +23,8 @@ import { transformPermalink } from '../../publication-transformers'
 import type { Ssg } from './ssg'
 import { clearRenderCache, renderComponent, withNotification } from './render'
 import { dataSourceVariable, goSyntax } from './gotmpl'
+import { getHugoFilters } from './hugo-filters'
 import type { Silex11tyPluginWebsiteSettings } from './index'
-import { EleventyDataSourceId } from './DataSource'
 
 const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Content | jsonify }}
 {{- $opts := dict "method" "post" "body" $body "headers" (dict "Content-Type" "application/json") }}
@@ -51,8 +51,11 @@ function findPage(editor: Editor, path: string): Page | undefined {
   return editor.Pages.getAll().find(page => `/${getPageSlug(page.getName())}.html` === path)
 }
 
-function usesEleventyData([token]: Expression): boolean {
-  return token?.type === 'property' && token.fieldId !== FIXED_TOKEN_ID && (!token.dataSourceId || token.dataSourceId === EleventyDataSourceId)
+function usesDataWithoutSource(expression: Expression): boolean {
+  return expression.some((token, index) => {
+    if (token.type === 'filter') return Object.values(token.options ?? {}).some(option => usesDataWithoutSource(toExpression(option) ?? []))
+    return index === 0 && token.type === 'property' && token.fieldId !== FIXED_TOKEN_ID && !token.dataSourceId
+  })
 }
 
 function checkSupported(page: Page) {
@@ -60,9 +63,7 @@ function checkSupported(page: Page) {
   if (settings.silexLanguagesList?.split(',').some(lang => lang.trim())) throw new Error(`Page "${page.getName()}" has several languages, which publishing with Hugo does not support`)
   const [setting] = getDataSettings(page)
   if (setting) throw new Error(`Page "${page.getName()}" uses data in its setting "${setting}", which publishing with Hugo does not support yet`)
-  const filtered = getPageExpressions(page).find(({ expression }) => expression.some(token => token.type === 'filter'))
-  if (filtered) throw new Error(`Page "${page.getName()}" uses a filter in the element "${filtered.component.getName()}", which publishing with Hugo does not support yet`)
-  const eleventyData = getPageExpressions(page).find(({ expression }) => usesEleventyData(expression))
+  const eleventyData = getPageExpressions(page).find(({ expression }) => usesDataWithoutSource(expression))
   if (eleventyData) throw new Error(`Page "${page.getName()}" uses data given by Eleventy in the element "${eleventyData.component.getName()}", which publishing with Hugo does not support yet`)
 }
 
@@ -113,8 +114,10 @@ function transformFiles(editor: Editor, data: PublicationData) {
 }
 
 export function hugo(editor: Editor): Ssg {
+  const filters = getHugoFilters(editor)
   return {
-    onStart: () => withNotification(() => editor.Pages.getAll().filter(page => isCmsPage(page)).forEach(checkSupported), editor, null),
+    filters,
+    onStart: () => withNotification(() => editor.Pages.getAll().filter(page => isCmsPage(page)).forEach(page => checkSupported(page)), editor, null),
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, goSyntax, component, toHtml), editor, component.getId()),
     // Hugo copies static/ as is to the root of the website, pages with data become templates
     transformPath: (path, type) => {

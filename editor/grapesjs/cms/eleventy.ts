@@ -1,6 +1,7 @@
 import dedent from 'dedent'
 import { Component, Page, Editor } from 'grapesjs'
 import { Filter, GraphQLOptions, IDataSource, Property, State, Token, getDataSource, getPageQuery, getPersistantId, getState, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { EleventyDataSourceId } from './DataSource'
 import { assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
 import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { getPageSlug, getPageUrl } from '~/common/page'
@@ -25,6 +26,7 @@ const liquidSyntax: TemplateSyntax = {
 
 export function eleventy(editor: Editor, options: EleventyPluginOptions): Ssg {
   return {
+    dataSources: [getDataSource(EleventyDataSourceId)].filter((dataSource): dataSource is IDataSource => !!dataSource),
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, liquidSyntax, component, toHtml), editor, component.getId()),
     onPage: data => withNotification(() => transformPage(editor, data), editor, null),
     // Generate 11ty data files

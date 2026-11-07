@@ -10,7 +10,7 @@ const cmdPauseAutoSave = 'pause-auto-save'
 export default function(editor: Editor, opts: EleventyPluginOptions): void {
   editor.on(`
     ${ ClientEvent.SETTINGS_SAVE_END }
-    storage:after:load
+    storage:end:load
     `, () => {
     updateFilters(editor, opts)
   })

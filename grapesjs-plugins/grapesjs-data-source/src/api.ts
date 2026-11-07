@@ -243,6 +243,14 @@ export function getExpressionResultType(expression: Expression, component: Compo
   return getExpressionResultTypeInternal(expression, component)
 }
 
+export function getFilters(): Filter[] {
+  return getFiltersInternal()
+}
+
+export function setFilters(filters: Filter[]) {
+  setFiltersInternal(filters)
+}
+
 export function addFilters(filters: Filter | Filter[]) {
   const currentFilters = getFiltersInternal()
   const newFilters = Array.isArray(filters) ? filters : [filters]
