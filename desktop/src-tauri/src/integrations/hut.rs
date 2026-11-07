@@ -62,12 +62,12 @@ impl Integration for Hut {
         &[Capacity::Sync, Capacity::Deploy]
     }
 
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        git::push(site, tag)
+    fn push(&self, _cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag, &[])
     }
 
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        git::sync(site)
+    fn sync(&self, _cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site, &[])
     }
 
     fn synced(&self, site: &Path) -> Option<Synced> {

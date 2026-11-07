@@ -268,7 +268,11 @@ fn run_within(
         .env("NO_COLOR", "1")
         // Programs answer in the language of the user otherwise, and Silex
         // reads what they say
-        .env("LC_ALL", "C");
+        .env("LC_ALL", "C")
+        // glab tells GitLab what the user does with it otherwise
+        .env("GLAB_SEND_TELEMETRY", "false")
+        // and writes its update notice in front of the errors Silex shows
+        .env("GLAB_CHECK_UPDATE", "false");
 
     without_appimage_environment(&mut command);
     if login_shell {

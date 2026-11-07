@@ -152,7 +152,7 @@ impl Integrations {
                 say(format!("Sending your website to {}", host));
                 if integration.capacities().contains(&Capacity::Sync) {
                     integration
-                        .push(site, prepared.tag.as_deref())
+                        .push(&cli, site, prepared.tag.as_deref())
                         .map_err(|e| e.to_string())?;
                 }
                 Ok(Publishing {

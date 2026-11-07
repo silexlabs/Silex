@@ -127,7 +127,7 @@ impl SilexActions {
         tells: impl Fn(&str, &Failure) + Send + Sync + 'static,
     ) -> Self {
         let integrations = Arc::new(integrations);
-        let on_its_folder = |does: fn(&dyn Integration, &Path) -> Result<bool, SyncError>| {
+        let on_its_folder = |does: Does| {
             let data_path = data_path.clone();
             let integrations = integrations.clone();
             Box::new(move |website_id: &str| {
@@ -140,18 +140,19 @@ impl SilexActions {
                 let integrations = crate::integrations::snapshot(&integrations);
                 let done = integrations
                     .get(Capacity::Sync, &site)
-                    .map(|(integration, _)| {
-                        does(integration, &site).map_err(|error| failed(integration, &site, error))
+                    .map(|(integration, cli)| {
+                        does(integration, &cli, &site)
+                            .map_err(|error| failed(integration, &site, error))
                     });
                 first_error(&site, done.collect())
             }) as OnAWebsite
         };
         SilexActions {
             syncer: Arc::new(Syncer {
-                pushes: on_its_folder(|integration, site| {
-                    integration.push(site, None).map(|()| true)
+                pushes: on_its_folder(|integration, cli, site| {
+                    integration.push(cli, site, None).map(|()| true)
                 }),
-                syncs: on_its_folder(|integration, site| integration.sync(site)),
+                syncs: on_its_folder(|integration, cli, site| integration.sync(cli, site)),
                 tells: Box::new(tells),
                 busy: Mutex::new(HashMap::new()),
                 freed: Condvar::new(),
@@ -308,6 +309,7 @@ pub struct SyncPlace {
     failure: Option<Said>,
 }
 
+type Does = fn(&dyn Integration, &Path, &Path) -> Result<bool, SyncError>;
 type OnAWebsite = Box<dyn Fn(&str) -> Result<bool, Failure> + Send + Sync>;
 type TellsFailure = Box<dyn Fn(&str, &Failure) + Send + Sync>;
 

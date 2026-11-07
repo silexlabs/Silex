@@ -343,8 +343,8 @@ pub trait Integration: Send + Sync {
     /// Send what was saved, with the tag of a publication when there is one
     ///
     /// Never touches the files of the website: the editor may have it open.
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        let _ = (site, tag);
+    fn push(&self, cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        let _ = (cli, site, tag);
         Err(SyncError::Other(not_provided(
             self.program(),
             Capacity::Sync,
@@ -356,8 +356,8 @@ pub trait Integration: Send + Sync {
     ///
     /// Never makes a merge: a website that moved on both here and there is
     /// left to its user.
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        let _ = site;
+    fn sync(&self, cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        let _ = (cli, site);
         Err(SyncError::Other(not_provided(
             self.program(),
             Capacity::Sync,

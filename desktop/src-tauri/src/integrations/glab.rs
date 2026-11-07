@@ -130,12 +130,14 @@ impl Integration for Glab {
         .map(|_| ())
     }
 
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        git::push(site, tag)
+    fn push(&self, cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        let config = over_https(cli, site);
+        git::push(site, tag, &config).map_err(|error| signed_out(error, site, &config))
     }
 
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        git::sync(site)
+    fn sync(&self, cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        let config = over_https(cli, site);
+        git::sync(site, &config).map_err(|error| signed_out(error, site, &config))
     }
 
     fn synced(&self, site: &Path) -> Option<Synced> {
@@ -264,6 +266,62 @@ impl Integration for Glab {
     }
 }
 
+/// git signed in by glab, for this command only and this server only
+///
+/// So that a user without an ssh key can send their website. A remote over
+/// ssh was set by its user, and stays as it is. Nothing is written to the
+/// configuration of git: the terminal of the user keeps working as it did.
+fn over_https(cli: &Path, site: &Path) -> Vec<String> {
+    let Some(host) = Remote::of(site)
+        .map(|remote| remote.host)
+        // Written into a `-c name=value` of git, where it could move the `=`
+        .filter(|host| is_plain_host(host))
+        .filter(|host| signed_in_to(host))
+    else {
+        return Vec::new();
+    };
+    // git hands the helper to a shell
+    let glab = format!("'{}'", cli.display().to_string().replace('\'', r"'\''"));
+    vec![
+        // The helpers of the user would answer first, with a token of their
+        // own, and keep the one of glab once it worked
+        format!("credential.https://{host}.helper="),
+        format!("credential.https://{host}.helper=!{glab} auth git-credential"),
+    ]
+}
+
+/// git only says that it got no credentials, or that the host refused them:
+/// a token that expired, was revoked or left the configuration of glab, or a
+/// remote that names another account
+fn signed_out(error: SyncError, site: &Path, config: &[String]) -> SyncError {
+    let SyncError::Other(why) = error else {
+        return error;
+    };
+    if config.is_empty() {
+        return SyncError::Other(why);
+    }
+    let host = Remote::of(site).map(|remote| remote.host).unwrap_or_default();
+    if why.contains("doesn't match the one that is configured") {
+        return SyncError::Other(format!(
+            "The address of this website names another account on {host} than the GitLab account you signed in with. Remove that name from the address, or sign in to {host} with that account in Integrations."
+        ));
+    }
+    let refused = ["Authentication failed", "could not read Username", "could not read Password"];
+    if refused.iter().any(|said| why.contains(said)) {
+        return SyncError::Other(format!(
+            "{host} did not accept your GitLab account: it may have expired or been revoked. Sign in to {host} again in Integrations."
+        ));
+    }
+    SyncError::Other(why)
+}
+
+fn is_plain_host(host: &str) -> bool {
+    host.starts_with(|c: char| c.is_ascii_alphanumeric())
+        && host
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || ".-:_".contains(c))
+}
+
 /// The host glab is given, from what the user typed or pasted
 fn host_of(server: &str) -> Result<String, String> {
     let typed = server.trim();
@@ -273,12 +331,7 @@ fn host_of(server: &str) -> Result<String, String> {
         .unwrap_or(typed);
     // A link to a project is pasted as often as the address of the server
     let host = host.split('/').next().unwrap_or_default().to_lowercase();
-    let readable = !host.is_empty()
-        && host.starts_with(|c: char| c.is_ascii_alphanumeric())
-        && host
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || ".-:_".contains(c));
-    if !readable {
+    if !is_plain_host(&host) {
         return Err(format!("{} is not the address of a server", typed));
     }
     Ok(host)
