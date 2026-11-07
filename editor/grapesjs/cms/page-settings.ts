@@ -238,14 +238,13 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
     </style>
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
       <div class="silex-help">
-        <p>The "Silex CMS" feature integrates <a target="_blank" href="https://www.11ty.dev/">11ty</a> static site generator and your favorite headless CMS with Silex.</p>
-        <p>Tip: Click the “?” icons to view inline help about pagination, expressions, and permalinks.</p>
+        <p>The "Silex CMS" feature connects your favorite headless CMS to Silex, and publishes your pages with 11ty or Hugo.</p>
+        <p>Tip: Click the “?” icons to view inline help about collection pages, expressions and permalinks.</p>
         <p>Related links to the docs:
         <ul>
           <li><a target="_blank" href="https://docs.silex.me/designer/cms/overview/">documentation about Silex CMS concepts</a></li>
           <li><a href="https://docs.silex.me/designer/cms/expressions/" target="_blank">Expressions</a></li>
           <li><a href="https://docs.silex.me/designer/cms/collection-pages/" target="_blank">Collection pages</a></li>
-          <li><a href="https://www.11ty.dev/docs/pagination/" target="_blank">11ty pagination</a></li>
         </ul>
         </p>
       </div>
@@ -273,7 +272,6 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
                     <ul>
                       <li>These fields are expressions.</li>
                       <li>Set page data to make this a collection page (like Webflow collections).</li>
-                      <li>Each generated page represents one item from your data source.</li>
                     </ul>
                     <strong style="margin-top:6px;">Collection page expressions</strong>
                     <ul>
@@ -306,7 +304,6 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
                     </ul>
                     <ul>
                       <li><a href="https://docs.silex.me/designer/cms/collection-pages/#permalink-structure" target="_blank">Permalinks in Silex</a></li>
-                      <li><a href="https://www.11ty.dev/docs/pagination/#permalink" target="_blank">11ty permalink docs</a></li>
                     </ul>
                   </div>
                 </details>
@@ -328,7 +325,7 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
         </label>
         <label class="silex-form__element">
           <h3 class="gjs-sm-sector-title">Navigation Plugin</h3>
-          <p class="silex-help">This 11ty plugin enables infinite-depth hierarchical navigation in Eleventy projects. Supports breadcrumbs too! <a target="_blank" href="https://www.11ty.dev/docs/plugins/navigation/">Read more about the Navigation Plugin</a>.</p>
+          <p class="silex-help">Eleventy only. This 11ty plugin enables infinite-depth hierarchical navigation in Eleventy projects. Supports breadcrumbs too! <a target="_blank" href="https://www.11ty.dev/docs/plugins/navigation/">Read more about the Navigation Plugin</a>.</p>
           <label class="silex-form__element">Key
             <input type="text" name="eleventyNavigationKey" .value=${settings.eleventyNavigationKey ?? ''}/>
           </label>

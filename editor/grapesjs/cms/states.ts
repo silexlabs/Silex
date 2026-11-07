@@ -6,6 +6,10 @@ import { ClientEvent } from '../../events'
 // States of the body of a collection page, each SSG provides some of them
 export const PAGE_STATE_IDS = ['item', 'pagination', 'items'] as const
 export type PageStateId = typeof PAGE_STATE_IDS[number]
+
+export function isPageState(stateId: string): stateId is PageStateId {
+  return (PAGE_STATE_IDS as readonly string[]).includes(stateId)
+}
 export const PAGE_ITEM_LABEL = 'Page item'
 
 const providedStates = new WeakMap<Editor, () => readonly PageStateId[]>()

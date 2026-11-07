@@ -19,3 +19,25 @@
 export const PAGE_DATA_KEY = 'eleventyPageData'
 export const PERMALINK_KEY = 'eleventyPermalink'
 export const PAGE_SIZE_KEY = 'eleventyPageSize'
+
+const SETTING_LABELS: Record<string, string> = {
+  [PAGE_DATA_KEY]: 'Page data',
+  [PERMALINK_KEY]: 'Permalink',
+  [PAGE_SIZE_KEY]: 'Size',
+  silexLanguagesList: 'Available languages',
+  eleventySeoTitle: 'SEO title',
+  eleventySeoDescription: 'SEO description',
+  eleventyFavicon: 'Favicon',
+  eleventyOGImage: 'OG image',
+  eleventyOGTitle: 'OG title',
+  eleventyOGDescription: 'OG description',
+  eleventyNavigationKey: 'Navigation key',
+  eleventyNavigationTitle: 'Navigation title',
+  eleventyNavigationOrder: 'Navigation order',
+  eleventyNavigationParent: 'Navigation parent',
+  eleventyNavigationUrl: 'Navigation URL',
+}
+
+export function getSettingLabel(key: string): string {
+  return SETTING_LABELS[key] ?? key
+}
