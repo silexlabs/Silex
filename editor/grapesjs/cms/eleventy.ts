@@ -7,6 +7,7 @@ import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { getPageSlug, getPageUrl } from '~/common/page'
 import type { Ssg } from './ssg'
 import { PAGE_STATE_IDS } from './states'
+import { SEO_OVERRIDES } from './settings-keys'
 import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
 import { ensureLeadingAndTrailingSlash } from './permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
@@ -159,30 +160,10 @@ export function getBodyStates(page: Page): string {
 export function transformPage(editor: Editor, data: { page: Page, siteSettings: WebsiteSettings, pageSettings: Silex11tyPluginWebsiteSettings }): void {
   const { pageSettings, page } = data
   const body = page.getMainComponent()
-  if (pageSettings.eleventySeoTitle) {
-    const expression = toExpression(pageSettings.eleventySeoTitle)
-    if (expression && expression.length) pageSettings.title = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventySeoDescription) {
-    const expression = toExpression(pageSettings.eleventySeoDescription)
-    if (expression && expression.length) pageSettings.description = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyFavicon) {
-    const expression = toExpression(pageSettings.eleventyFavicon)
-    if (expression && expression.length) pageSettings.favicon = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGImage) {
-    const expression = toExpression(pageSettings.eleventyOGImage)
-    if (expression && expression.length) pageSettings['og:image'] = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGTitle) {
-    const expression = toExpression(pageSettings.eleventyOGTitle)
-    if (expression && expression.length) pageSettings['og:title'] = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGDescription) {
-    const expression = toExpression(pageSettings.eleventyOGDescription)
-    if (expression && expression.length) pageSettings['og:description'] = echoBlock(body, expression)
-  }
+  SEO_OVERRIDES.forEach(({ key, target }) => {
+    const expression = toExpression(pageSettings[key])
+    if (expression?.length) pageSettings[target] = echoBlock(body, expression)
+  })
 }
 
 /**

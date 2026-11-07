@@ -207,7 +207,10 @@ export const goSyntax: TemplateSyntax = {
   echo: (component, expression, context) => {
     const fixed = fixedText(expression)
     if (fixed !== null) return fixed
-    return `{{ ${escape(getGoExpression(component, expression), context)} }}`
+    const value = getGoExpression(component, expression)
+    // CMS texts come with HTML entities, like &#8217; from WordPress, which Hugo would escape again in an attribute
+    if (context === EchoContext.ATTRIBUTE && getExpressionResultType(expression, component)?.kind === 'scalar') return `{{ ${value} | htmlUnescape }}`
+    return `{{ ${escape(value, context)} }}`
   },
   assign: (stateId: StateId, component, expression) =>
     `{{ ${stateVariable(component, stateId)} := ${getGoExpression(component, expression)} }}`,

@@ -15,10 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { EchoContext } from './render'
+
 // Keys of the page settings in the website data, named before Hugo was a target
 export const PAGE_DATA_KEY = 'eleventyPageData'
 export const PERMALINK_KEY = 'eleventyPermalink'
 export const PAGE_SIZE_KEY = 'eleventyPageSize'
+
+// Expressions of the CMS tab which replace the values of the SEO tab
+export const SEO_OVERRIDES = [
+  { key: 'eleventySeoTitle', target: 'title', context: EchoContext.TEXT },
+  { key: 'eleventySeoDescription', target: 'description', context: EchoContext.ATTRIBUTE },
+  { key: 'eleventyFavicon', target: 'favicon', context: EchoContext.URL },
+  { key: 'eleventyOGImage', target: 'og:image', context: EchoContext.ATTRIBUTE },
+  { key: 'eleventyOGTitle', target: 'og:title', context: EchoContext.ATTRIBUTE },
+  { key: 'eleventyOGDescription', target: 'og:description', context: EchoContext.ATTRIBUTE },
+] as const
 
 const SETTING_LABELS: Record<string, string> = {
   [PAGE_DATA_KEY]: 'Page data',

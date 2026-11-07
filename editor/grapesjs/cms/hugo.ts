@@ -25,7 +25,7 @@ import { clearRenderCache, renderComponent, withNotification } from './render'
 import { dataSourceVariable, getGoExpression, goSyntax, stateVariable } from './gotmpl'
 import { getHugoFilters } from './hugo-filters'
 import type { Silex11tyPluginWebsiteSettings } from './index'
-import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY, getSettingLabel } from './settings-keys'
+import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY, SEO_OVERRIDES, getSettingLabel } from './settings-keys'
 import { isPageState } from './states'
 
 const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Content | jsonify }}
@@ -39,6 +39,7 @@ const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Conten
 {{- return $res.data }}
 `
 
+const SEO_KEYS: string[] = SEO_OVERRIDES.map(({ key }) => key)
 const COLLECTION_SETTINGS = [PAGE_DATA_KEY, PERMALINK_KEY]
 
 // Hugo gives a meaning to some layout names, like baseof, list or single
@@ -53,7 +54,7 @@ function getPageData(page: Page): Expression {
 function getDataSettings(page: Page): string[] {
   const isCollection = getPageData(page).length > 0
   return Object.entries(page.get('settings') ?? {})
-    .filter(([key]) => !isCollection || !COLLECTION_SETTINGS.includes(key))
+    .filter(([key]) => !SEO_KEYS.includes(key) && (!isCollection || !COLLECTION_SETTINGS.includes(key)))
     .filter(([, value]) => !!toExpression(value) && fixedText(toExpression(value)) === null)
     .map(([key]) => key)
 }
@@ -85,6 +86,15 @@ function checkSupported(page: Page): Problem[] {
     if (!toExpression(settings[PERMALINK_KEY])?.length) problems.push(`Page "${name}" has Page data but no Permalink. Publishing with Hugo needs a Permalink to give each page its address. Set it in the page settings, CMS tab.`)
   }
   problems.push(...getDataSettings(page).map(setting => `Page "${name}" uses data in its setting "${getSettingLabel(setting)}", which publishing with Hugo does not support yet`))
+  const bodyId = getPersistantId(page.getMainComponent())
+  SEO_OVERRIDES.forEach(({ key }) => {
+    const expression = toExpression(settings[key]) ?? []
+    const where = `its setting "${getSettingLabel(key)}"`
+    if (usesDataWithoutSource(expression)) problems.push(`Page "${name}" uses data given by Eleventy in ${where}, which publishing with Hugo does not support yet`)
+    // The head is rendered before the states of the body are assigned
+    const state = findToken(expression, token => token.type === 'state' && !(token.storedStateId === 'item' && token.componentId === bodyId))
+    if (state) problems.push(`Page "${name}" uses "${state.label}" in ${where}, which publishing with Hugo does not support yet`)
+  })
   return [
     ...problems.map(message => ({ message, componentId: null })),
     ...getPageExpressions(page)
@@ -185,6 +195,10 @@ export function hugo(editor: Editor): Ssg {
       const url = transformPermalink(editor, path, ClientSideFileType.HTML, Initiator.HTML)
       return `/static${url.endsWith('/') ? `${url}index.html` : url}`
     },
+    onPage: ({ page, pageSettings }) => withNotification(() => SEO_OVERRIDES.forEach(({ key, target, context }) => {
+      const expression = toExpression((pageSettings as Silex11tyPluginWebsiteSettings)[key])
+      if (expression?.length) pageSettings[target] = goSyntax.echo(page.getMainComponent(), expression, context)
+    }), editor, null),
     onData: data => withNotification(() => transformFiles(editor, data), editor, null),
     onEnd: clearRenderCache,
   }
