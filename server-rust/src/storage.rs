@@ -454,6 +454,19 @@ fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
         .map_err(|why| Error::Said(Said::new(said::COPY_PUBLISHED_OVER).because(why)))
 }
 
+/// Where the last publication put the website online, as the editor keeps it
+///
+/// Files written on this computer are not online, and their `file://` address
+/// is left out.
+async fn online_at(site: &Path) -> Option<String> {
+    let path = site.join(WEBSITE_DATA_FILE);
+    let data: serde_json::Value = parse_file(&path, &fs::read_to_string(&path).await.ok()?).ok()?;
+    data.pointer("/publication/lastPublication/url")?
+        .as_str()
+        .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+        .map(String::from)
+}
+
 /// Take out of a copy the publication settings it inherited, and say it was
 /// never published
 ///
@@ -554,11 +567,6 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         Err(e) => return Err(Error::Io(e)),
     };
 
-    let pages_url = fs::metadata(website_path.join(PUBLIC_FOLDER))
-        .await
-        .is_ok()
-        .then(|| published_files_url(data_path, website_id));
-
     Ok(WebsiteMeta {
         website_id: website_id.clone(),
         name: file_content.name,
@@ -566,7 +574,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         created_at: metadata.created().ok().map(DateTime::<Utc>::from),
         updated_at: metadata.modified().ok().map(DateTime::<Utc>::from),
         repo_url: Some(format!("file://{}", website_path.display())),
-        pages_url,
+        pages_url: online_at(&website_path).await,
     })
 }
 
