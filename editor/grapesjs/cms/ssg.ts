@@ -24,6 +24,7 @@ import { linkToPermalink } from './permalink'
 
 // What a static site generator needs at publication, the rest of the CMS is the same for all of them
 export interface Ssg {
+  onStart?(): void
   renderComponent?(component: Component, toHtml: () => string): string | undefined
   transformPath?(path: string, type: ClientSideFileType): string | undefined
   onPage?(data: { page: Page, siteSettings: WebsiteSettings, pageSettings: WebsiteSettings }): void
@@ -39,6 +40,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   editor.on(ClientEvent.PUBLISH_START, ({ siteSettings }: { siteSettings: WebsiteSettings }) => {
     const ssgId = siteSettings.ssg ?? config.ssg
     ssg = ssgs[ssgId]
+    ssg.onStart?.()
     if (!siteSettings.ssg) {
       siteSettings.ssg = ssgId
       unsaved = ssgId
