@@ -1,0 +1,223 @@
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue'
+import { useI18n } from 'vue-i18n'
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRoot,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from 'reka-ui'
+import ExternalLink from './ExternalLink.vue'
+import { useMenuAction } from '../menu'
+import type { Account, CatalogEntry } from '../api'
+import { accountKey, needsYou, signIns } from '../integrations'
+
+/** A chosen account, or the program of an integration in use that Silex cannot run when there is none */
+const props = defineProps<{
+  entry: CatalogEntry
+  account?: Account
+  busy: boolean
+}>()
+
+const emit = defineEmits<{
+  checkAgain: []
+  signInAgain: [from: Element]
+  check: []
+  stopUsing: []
+  signOut: []
+}>()
+
+const { t } = useI18n()
+
+const id = computed(() => `line-${props.entry.program}-${props.account?.id ?? 'program'}`.replace(/[^\w-]/g, '-'))
+
+const signIn = computed(() => (props.account ? signIns.value[accountKey(props.entry.program, props.account.id)] : undefined))
+
+const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; detail: string } => {
+  const { entry } = props
+  if (!props.account) {
+    return entry.broken
+      ? { tone: 'problem', label: t('Does not start'), detail: t('{program} is on this computer but does not start.', { program: entry.program }) }
+      : { tone: 'problem', label: t('Not found'), detail: t('{program} is not on this computer.', { program: entry.program }) }
+  }
+  const said = signIn.value
+  if (said === 'accepted') return { tone: 'ok', label: t('Signed in'), detail: t('Checked just now') }
+  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: t('Sign in again to use it.') }
+  // What the program said is the only thing that tells a network down from a server that moved
+  if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: said.unreachable.detail ?? '' }
+  return { tone: 'unknown', label: t('Checking…'), detail: '' }
+})
+
+const more = useTemplateRef<InstanceType<typeof DropdownMenuTrigger>>('more')
+const { choose, afterClose } = useMenuAction(more)
+</script>
+
+<template>
+  <li
+    class="account-line"
+    :class="{ 'account-line--problem': needsYou(entry, account) }"
+  >
+    <span
+      class="tile logo"
+      aria-hidden="true"
+      v-html="entry.icon"
+    />
+    <div>
+      <p
+        :id="id"
+        class="account-line__name"
+      >
+        {{ account?.name ?? entry.name }}
+      </p>
+      <p class="account-line__meta">
+        {{ account ? [entry.name, account.summary].filter(Boolean).join(' · ') : $t('Program {program}', { program: entry.program }) }}
+      </p>
+    </div>
+    <p class="account-line__state">
+      <span
+        class="account-line__dot"
+        :class="`account-line__dot--${state.tone}`"
+        aria-hidden="true"
+      />
+      <span>{{ state.label }}</span>
+      <span class="account-line__detail">{{ state.detail }}</span>
+    </p>
+    <div class="account-line__actions">
+      <template v-if="!account">
+        <ExternalLink
+          class="button"
+          :href="entry.installUrl"
+          :name="$t('How to install {program}', { program: entry.program })"
+          arrow
+        />
+        <button
+          type="button"
+          class="button"
+          :aria-describedby="id"
+          :aria-disabled="busy"
+          @click="emit('checkAgain')"
+        >
+          {{ $t('Check again') }}
+        </button>
+      </template>
+      <button
+        v-else-if="signIn === 'refused'"
+        type="button"
+        class="button"
+        :aria-describedby="id"
+        @click="emit('signInAgain', $event.currentTarget as Element)"
+      >
+        {{ $t('Sign in again…') }}
+      </button>
+    </div>
+    <DropdownMenuRoot v-if="account">
+      <DropdownMenuTrigger
+        ref="more"
+        class="card__more"
+        :aria-label="$t('More actions for {name}', { name: account.name })"
+      >
+        <span aria-hidden="true">⋯</span>
+      </DropdownMenuTrigger>
+      <DropdownMenuPortal>
+        <DropdownMenuContent
+          class="menu"
+          align="end"
+          loop
+          :side-offset="4"
+          @close-auto-focus="afterClose"
+        >
+          <DropdownMenuItem
+            class="menu__item"
+            @select="emit('check')"
+          >
+            {{ $t('Check again') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            class="menu__item"
+            @select="emit('stopUsing')"
+          >
+            {{ $t('Stop using in Silex') }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator class="menu__separator" />
+          <DropdownMenuItem
+            class="menu__item menu__item--danger"
+            @select="choose(() => emit('signOut'))"
+          >
+            {{ $t('Sign out…') }}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenuPortal>
+    </DropdownMenuRoot>
+  </li>
+</template>
+
+<style scoped>
+.account-line {
+  display: grid;
+  grid-template-columns: auto minmax(0, 300px) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--silex-space-3);
+  padding: var(--silex-space-3) var(--silex-space-4);
+}
+
+.account-line + .account-line {
+  border-top: 1px solid var(--silex-border-color);
+}
+
+.account-line--problem {
+  box-shadow: inset 3px 0 0 var(--silex-status-error);
+}
+
+.account-line__name,
+.account-line__meta,
+.account-line__state {
+  margin: 0;
+}
+
+.account-line__meta,
+.account-line__detail {
+  color: var(--silex-text-secondary);
+  font-size: 12px;
+}
+
+.account-line__state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--silex-space-2);
+}
+
+.account-line__detail {
+  grid-column: 2;
+}
+
+.account-line__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.account-line__dot--ok {
+  background: var(--silex-status-success);
+}
+
+.account-line__dot--problem {
+  background: var(--silex-status-error);
+}
+
+.account-line__dot--unknown {
+  background: var(--silex-text-secondary);
+}
+
+.account-line__actions {
+  display: flex;
+  gap: var(--silex-space-2);
+}
+
+[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
+}
+</style>

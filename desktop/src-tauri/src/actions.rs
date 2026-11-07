@@ -192,13 +192,21 @@ impl SilexActions {
         server: &str,
         client_id: Option<&str>,
         open: &dyn Fn(String),
-    ) -> Result<Vec<Account>, Said> {
+    ) -> Result<crate::integrations::Connected, Said> {
         crate::integrations::connect(&self.integrations, program, server, client_id, open)
             .map_err(Said::raw)
     }
 
     pub fn disconnect_account(&self, program: &str, id: &str) -> Result<Vec<Account>, Said> {
         crate::integrations::disconnect(&self.integrations, program, id).map_err(Said::raw)
+    }
+
+    pub fn check_account(
+        &self,
+        program: &str,
+        id: &str,
+    ) -> Result<crate::integrations::integration::SignIn, Said> {
+        crate::integrations::check_account(&self.integrations, program, id).map_err(Said::raw)
     }
 
     pub fn sync_places(&self, website_id: &str) -> Vec<SyncPlace> {

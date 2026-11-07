@@ -26,14 +26,17 @@ use silex_server::PublicationOptions;
 use common::git;
 use common::programs::{self, found};
 use common::run;
-use integration::{Account, AntiFeature, Capacity, Integration, Openness, Tag};
+use integration::{Account, AntiFeature, Capacity, Integration, Openness, SignIn, Tag};
 
 use crate::held::held;
 
 pub mod common;
 mod glab;
-mod hut;
 pub mod integration;
+// Back in the catalog with the other forges
+#[allow(dead_code)]
+mod hut;
+#[allow(dead_code)]
 mod tea;
 
 /// What is known of one integration
@@ -42,14 +45,18 @@ mod tea;
 /// `rest`, so downgrading once and saving does not lose it.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct IntegrationState {
-    /// Whether the user wants Silex to use it
-    #[serde(default)]
-    pub enabled: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub path: Option<PathBuf>,
     /// What it answered when asked for its version
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+
+    /// The accounts of its program the user chose to use in Silex
+    ///
+    /// The one thing of the accounts kept here: a program may be signed in to
+    /// accounts that are not the user's, like those of a colleague.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub accounts: Vec<String>,
 
     /// Whether it is there but does not run
     ///
@@ -73,8 +80,8 @@ pub struct Integrations {
     known: BTreeMap<String, IntegrationState>,
 }
 
-fn catalog() -> [&'static dyn Integration; 3] {
-    [&glab::Glab, &tea::Tea, &hut::Hut]
+fn catalog() -> [&'static dyn Integration; 1] {
+    [&glab::Glab]
 }
 
 fn by_program(program: &str) -> Option<&'static dyn Integration> {
@@ -97,7 +104,11 @@ pub struct CatalogEntry {
     install_url: &'static str,
     icon: Option<&'static str>,
     runs_here: bool,
+    servers: Vec<&'static str>,
+    /// Whether the user chose an account of it
     enabled: bool,
+    /// The accounts the user chose, among those of the program
+    accounts: Vec<String>,
     found: bool,
     broken: bool,
     version: Option<String>,
@@ -112,7 +123,7 @@ pub struct Publishing {
 }
 
 impl Integrations {
-    /// The integrations the user enabled that can do this for this website,
+    /// The integrations the user uses that can do this for this website,
     /// with the path of their program
     pub fn get<'a>(
         &'a self,
@@ -124,12 +135,24 @@ impl Integrations {
             .filter(move |integration| integration.capacities().contains(&capacity))
             .filter_map(move |integration| {
                 let cli = self.program_path(integration.program())?;
-                integration.answers_for(site).then_some((integration, cli))
+                (integration.answers_for(site) && self.chose_account_of(integration, site))
+                    .then_some((integration, cli))
             })
     }
 
-    /// The integrations the user enabled that would do this for this website
-    /// if an account of theirs were on this computer, with why it is not
+    /// Whether the account the website goes through is one the user chose
+    fn chose_account_of(&self, integration: &dyn Integration, site: &Path) -> bool {
+        let Some(account) = integration.account_of(site) else {
+            return true;
+        };
+        self.known
+            .get(integration.program())
+            .is_some_and(|state| state.accounts.contains(&account))
+    }
+
+    /// The integrations found here that would do this for this website
+    /// if an account of the user were on this computer and chosen, with why
+    /// it is not
     pub fn wanting_an_account<'a>(
         &'a self,
         capacity: Capacity,
@@ -138,9 +161,26 @@ impl Integrations {
         catalog()
             .into_iter()
             .filter(move |integration| integration.capacities().contains(&capacity))
-            .filter(|integration| self.program_path(integration.program()).is_some())
-            .filter(move |integration| !integration.answers_for(site))
-            .filter_map(move |integration| Some((integration, integration.missing_account(site)?)))
+            // Used or not: a website on a server the user has an account on is
+            // told to use it
+            .filter(|integration| self.found_path(integration.program()).is_some())
+            .filter_map(move |integration| {
+                if !integration.answers_for(site) {
+                    return Some((integration, integration.missing_account(site)?));
+                }
+                if self.chose_account_of(integration, site) {
+                    return None;
+                }
+                let account = integration.account_of(site)?;
+                Some((
+                    integration,
+                    format!(
+                        "Your {} account on {} is not used in Silex. Choose it in Integrations.",
+                        integration.name(),
+                        account
+                    ),
+                ))
+            })
     }
 
     /// Prepare a website for its host and send it
@@ -199,7 +239,9 @@ impl Integrations {
                     install_url: integration.install_url(),
                     icon: integration.icon(),
                     runs_here: integration.runs_here(),
-                    enabled: state.enabled,
+                    servers: integration.servers(),
+                    enabled: !state.accounts.is_empty(),
+                    accounts: state.accounts,
                     found: state.path.is_some_and(|path| path.is_file()),
                     broken: state.broken,
                     version: state.version,
@@ -212,13 +254,21 @@ impl Integrations {
     pub fn at_hand(&self) -> impl Iterator<Item = (&str, Option<&str>)> {
         self.known
             .iter()
-            .filter(|(_, state)| state.enabled && state.path.is_some())
+            .filter(|(_, state)| !state.accounts.is_empty() && state.path.is_some())
             .map(|(id, state)| (id.as_str(), state.version.as_deref()))
     }
 
     fn program_path(&self, id: &str) -> Option<PathBuf> {
+        self.known
+            .get(id)
+            .filter(|state| !state.accounts.is_empty())
+            .and(self.found_path(id))
+    }
+
+    /// Where the program is, whether the user uses it or not
+    fn found_path(&self, id: &str) -> Option<PathBuf> {
         let state = self.known.get(id)?;
-        if !state.enabled || state.broken {
+        if state.broken {
             return None;
         }
         // Uninstalled since it was found: the path would fail every save
@@ -245,9 +295,12 @@ pub fn load(data_dir: &Path) -> Integrations {
         let id = integration.program();
         let known = integrations.known.get(id).cloned();
 
-        // One the user turned off is left alone rather than started at every
+        // One the user does not use is left alone rather than started at every
         // launch
-        if known.as_ref().is_some_and(|state| !state.enabled) {
+        if known
+            .as_ref()
+            .is_some_and(|state| state.accounts.is_empty())
+        {
             continue;
         }
 
@@ -255,12 +308,8 @@ pub fn load(data_dir: &Path) -> Integrations {
             Some(state) => state.path.clone(),
             None => found(id),
         };
-        let is_new = known.is_none();
+        changed |= known.is_none();
         let mut state = known.unwrap_or_default();
-        if is_new {
-            state.enabled = path.is_some();
-            changed = true;
-        }
         changed |= looked_at(integration, &mut state, path);
         integrations.known.insert(id.to_string(), state);
     }
@@ -324,9 +373,10 @@ fn looked_at(
 fn in_use(loading: &Loading, program: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
     let integration =
         by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
+    // Found is enough: an account is signed in to before it is used
     let cli = snapshot(loading)
-        .program_path(program)
-        .ok_or_else(|| format!("{} is not in use in Silex", integration.name()))?;
+        .found_path(program)
+        .ok_or_else(|| format!("{} is not on this computer", integration.program()))?;
     Ok((integration, cli))
 }
 
@@ -345,13 +395,21 @@ static GIVE_UP: Mutex<Option<Arc<AtomicBool>>> = Mutex::new(None);
 ///
 /// A sign-in started again stops the one before: the user closed the tab of
 /// the first and the program would wait for it until it times out.
+/// The accounts once the user signed in or stopped, and the one signed in to
+#[derive(Serialize)]
+pub struct Connected {
+    accounts: Vec<Account>,
+    /// None once stopped
+    account: Option<String>,
+}
+
 pub fn connect(
     loading: &Loading,
     program: &str,
     server: &str,
     client_id: Option<&str>,
     open: &dyn Fn(String),
-) -> Result<Vec<Account>, String> {
+) -> Result<Connected, String> {
     let (integration, cli) = in_use(loading, program)?;
     let given_up = Arc::new(AtomicBool::new(false));
     if let Some(before) = held(&GIVE_UP).replace(given_up.clone()) {
@@ -373,11 +431,14 @@ pub fn connect(
         *give_up = None;
     }
     drop(give_up);
-    match connected {
-        Err(_) if given_up.load(Ordering::Relaxed) => {}
-        connected => connected?,
-    }
-    integration.accounts(&cli)
+    let account = match connected {
+        Err(_) if given_up.load(Ordering::Relaxed) => None,
+        connected => Some(connected?),
+    };
+    Ok(Connected {
+        accounts: integration.accounts(&cli)?,
+        account,
+    })
 }
 
 pub fn stop_connecting() {
@@ -392,13 +453,18 @@ pub fn disconnect(loading: &Loading, program: &str, id: &str) -> Result<Vec<Acco
     integration.accounts(&cli)
 }
 
+pub fn check_account(loading: &Loading, program: &str, id: &str) -> Result<SignIn, String> {
+    let (integration, cli) = in_use(loading, program)?;
+    integration.check_account(&cli, id)
+}
+
 /// What the integrations screen asks of one integration
 #[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(tag = "kind", content = "account", rename_all = "camelCase")]
 pub enum Asked {
     CheckAgain,
-    Stop,
-    Use,
+    UseAccount(String),
+    StopUsing(String),
 }
 
 /// Done, written down and the catalog as it is now, or None for a program
@@ -415,24 +481,20 @@ pub fn asked(
         programs::forget();
         git::forget();
         let mut looked = snapshot(loading).known.remove(program).unwrap_or_default();
-        // A path kept after a Stop, even one gone stale, means it was found
-        // once and turned off on purpose
-        let was_found = looked.path.is_some();
         looked_at(integration, &mut looked, found(program));
-        (looked, was_found)
+        looked
     });
     let mut integrations = loading.write().unwrap_or_else(PoisonError::into_inner);
     let state = integrations.known.entry(program.to_string()).or_default();
     match asked {
-        Asked::Stop => state.enabled = false,
-        Asked::Use => state.enabled = true,
-        Asked::CheckAgain => {}
-    }
-    // Only what was looked at, so that a Stop made during the search holds
-    if let Some((looked, was_found)) = looked {
-        if !was_found && looked.path.is_some() {
-            state.enabled = true;
+        Asked::UseAccount(account) if !state.accounts.contains(&account) => {
+            state.accounts.push(account);
         }
+        Asked::StopUsing(account) => state.accounts.retain(|other| *other != account),
+        _ => {}
+    }
+    // Only what was looked at, so that a choice made during the search holds
+    if let Some(looked) = looked {
         state.path = looked.path;
         state.version = looked.version;
         state.broken = looked.broken;
@@ -481,12 +543,12 @@ fn read(data_dir: &Path) -> Integrations {
     match serde_json::from_str(&content) {
         Ok(integrations) => integrations,
         Err(e) => {
-            // Starting over turns back on what the user had turned off, so
-            // the file they had is kept to be read and put back by hand
+            // Starting over forgets what the user chose, so the file they had
+            // is kept to be read and put back by hand
             let kept = file.with_extension("json.unreadable");
             let _ = std::fs::rename(&file, &kept);
             tracing::error!(
-                "Could not read {}: {}. Kept it as {}, and looking for the programs again: anything that was turned off there is turned back on",
+                "Could not read {}: {}. Kept it as {}, and looking for the programs again: the accounts chosen there are not used anymore",
                 file.display(),
                 e,
                 kept.display()

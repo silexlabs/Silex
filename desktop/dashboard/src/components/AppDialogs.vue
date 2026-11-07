@@ -282,30 +282,6 @@ function submit() {
 </template>
 
 <style scoped>
-.dialog {
-  width: min(480px, calc(100vw - 2 * var(--silex-space-6)));
-  padding: var(--silex-space-6);
-  border: 1px solid var(--silex-border-color-strong);
-  border-radius: var(--silex-radius-md);
-  background: var(--silex-bg-main);
-  color: var(--silex-text-primary);
-}
-
-.dialog::backdrop {
-  background: var(--silex-backdrop);
-}
-
-.dialog__title {
-  margin-bottom: var(--silex-space-4);
-  font-size: 20px;
-  line-height: 28px;
-}
-
-.dialog__message {
-  margin: 0;
-  color: var(--silex-text-secondary);
-}
-
 .dialog__detail {
   max-height: 240px;
   margin: var(--silex-space-3) 0 0;
@@ -353,38 +329,5 @@ function submit() {
 .problem__action[aria-disabled='true'] {
   opacity: 0.6;
   cursor: progress;
-}
-
-.dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--silex-space-2);
-  margin-top: var(--silex-space-6);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--silex-space-1);
-  font-weight: 500;
-}
-
-.field__input {
-  height: 36px;
-  padding: 0 var(--silex-space-3);
-  border: 1px solid var(--silex-input-border);
-  border-radius: var(--silex-radius-sm);
-  background: var(--silex-bg-main);
-  font-weight: 400;
-}
-
-.field__input[aria-invalid='true'] {
-  border-color: var(--silex-status-error);
-  outline-color: var(--silex-status-error);
-}
-
-.field__problem {
-  margin: var(--silex-space-1) 0 0;
-  color: var(--silex-status-error);
 }
 </style>

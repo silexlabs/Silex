@@ -17,10 +17,10 @@ use silex_server::PublicationOptions;
 use super::common::git;
 use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
 use super::common::remote::Remote;
-use super::common::run::{run, run_waiting, Waiting};
+use super::common::run::{run, run_fetch, run_waiting, Waiting};
 use super::integration::{
-    silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SyncError,
-    Synced, Tag, Urls,
+    silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SignIn,
+    SyncError, Synced, Tag, Urls,
 };
 use crate::locales::key;
 
@@ -88,6 +88,12 @@ impl Integration for Glab {
         Ok(config().as_deref().map(accounts).unwrap_or_default())
     }
 
+    fn servers(&self) -> Vec<&'static str> {
+        std::iter::once(GITLAB)
+            .chain(OAUTH_APPLICATIONS.iter().map(|(server, _)| *server))
+            .collect()
+    }
+
     fn connect(
         &self,
         cli: &Path,
@@ -95,7 +101,7 @@ impl Integration for Glab {
         client_id: Option<&str>,
         given_up: &AtomicBool,
         open: &dyn Fn(String),
-    ) -> Result<(), String> {
+    ) -> Result<String, String> {
         let host = host_of(server)?;
         if host != GITLAB {
             make_known(cli, &host, client_id)?;
@@ -115,7 +121,7 @@ impl Integration for Glab {
                 heard: &heard,
             },
         )
-        .map(|_| ())
+        .map(|_| host)
     }
 
     fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
@@ -128,6 +134,21 @@ impl Integration for Glab {
             &["auth", "logout", &format!("--hostname={}", id)],
         )
         .map(|_| ())
+    }
+
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+        if !self.accounts(cli)?.iter().any(|account| account.id == id) {
+            return Err(format!("glab is not signed in to {}", id));
+        }
+        match run_fetch(
+            cli,
+            &std::env::temp_dir(),
+            &["auth", "status", &format!("--hostname={}", id)],
+        ) {
+            Ok(_) => Ok(SignIn::Accepted),
+            Err(why) if refused(id, &why) => Ok(SignIn::Refused),
+            Err(why) => Err(why),
+        }
     }
 
     fn push(&self, cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
@@ -153,13 +174,17 @@ impl Integration for Glab {
     }
 
     fn answers_for(&self, site: &Path) -> bool {
-        Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
+        Remote::of(site).is_some_and(|remote| signed_in_to(&remote.host))
+    }
+
+    fn account_of(&self, site: &Path) -> Option<String> {
+        Remote::of(site).map(|remote| remote.host)
     }
 
     fn missing_account(&self, site: &Path) -> Option<String> {
         let host = Remote::of(site)?.host;
         let block = config().and_then(|config| host_block(&config, &host));
-        let known = OAUTH_APPLICATIONS.iter().any(|(server, _)| *server == host) || block.is_some();
+        let known = self.servers().contains(&host.as_str()) || block.is_some();
         let signed_in = block.is_some_and(|block| holds_a_login(&block));
         (known && !signed_in).then(|| {
             format!(
@@ -415,6 +440,25 @@ fn not_found(error: &str) -> bool {
     })
 }
 
+/// Whether `glab auth status` says the server turned the account down
+///
+/// glab has no output a program can read: one line per server tells what
+/// went wrong, `x <host>: API call failed: <why>`. A token turned down ends
+/// it with `401 Unauthorized`, a sign-in in the browser whose renewal was
+/// turned down with `invalid_grant`; anything else did not reach the server.
+fn refused(host: &str, said: &str) -> bool {
+    let failed = format!("x {}: API call failed:", host);
+    said.lines()
+        .filter_map(|line| line.trim().strip_prefix(&failed))
+        .any(|why| {
+            (why.contains("Unauthorized")
+                && why
+                    .split(|c: char| !c.is_ascii_alphanumeric())
+                    .any(|word| word == "401"))
+                || why.contains("\"invalid_grant\"")
+        })
+}
+
 /// Read from what glab keeps rather than from `glab auth status`, which calls
 /// the instance and costs a third of a second per website opened
 fn signed_in_to(host: &str) -> bool {
@@ -549,4 +593,36 @@ fn value_of(block: &str, key: &str) -> Option<String> {
         .find_map(|line| line.trim().strip_prefix(&format!("{}:", key)))
         .map(|value| value.trim().trim_matches(['"', '\'']).to_string())
         .filter(|value| !value.is_empty())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::refused;
+
+    // What glab 1.114 said, run in a VM with a token and a sign-in made wrong
+    // on purpose, and with a server that does not exist
+
+    #[test]
+    fn tells_a_turned_down_token() {
+        let said = "framagit.org\n  x framagit.org: API call failed: GET https://framagit.org/api/v4/user: 401 {message: 401 Unauthorized}\n  ✓ Git operations for framagit.org configured to use ssh protocol.";
+        assert!(refused("framagit.org", said));
+    }
+
+    #[test]
+    fn tells_a_renewal_turned_down() {
+        let said = "framagit.org\n  x framagit.org: API call failed: oauth2: \"invalid_grant\" \"The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.\"";
+        assert!(refused("framagit.org", said));
+    }
+
+    #[test]
+    fn does_not_take_a_server_out_of_reach_for_a_refusal() {
+        let said = "framagit.invalid\n  x framagit.invalid: API call failed: Get \"https://framagit.invalid/api/v4/user\": dial tcp: lookup framagit.invalid: no such host";
+        assert!(!refused("framagit.invalid", said));
+    }
+
+    #[test]
+    fn reads_only_the_line_of_the_server() {
+        let said = "  x gitlab.com: API call failed: GET https://gitlab.com/api/v4/user: 401 {message: 401 Unauthorized}\n  x framagit.org: API call failed: dial tcp: i/o timeout";
+        assert!(!refused("framagit.org", said));
+    }
 }

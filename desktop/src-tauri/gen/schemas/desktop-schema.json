@@ -177,6 +177,12 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the check_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-check-account",
+          "markdownDescription": "Enables the check_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the clear_current_project command without any pre-configured scope.",
           "type": "string",
           "const": "allow-clear-current-project",
@@ -283,6 +289,12 @@
           "type": "string",
           "const": "allow-trash-website",
           "markdownDescription": "Enables the trash_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the check_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-check-account",
+          "markdownDescription": "Denies the check_account command without any pre-configured scope."
         },
         {
           "description": "Denies the clear_current_project command without any pre-configured scope.",

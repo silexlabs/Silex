@@ -145,7 +145,12 @@ export interface CatalogEntry {
   icon: string | null
   /** False when the program cannot be installed on this system */
   runsHere: boolean
+  /** Offered when adding an account, before any other the user types in */
+  servers: string[]
+  /** Whether the user uses it in Silex */
   enabled: boolean
+  /** The ids of the accounts the user chose, among those of the program */
+  accounts: string[]
   found: boolean
   broken: boolean
   version: string | null
@@ -153,8 +158,7 @@ export interface CatalogEntry {
 
 export const integrationCatalog = () => call<CatalogEntry[]>('integration_catalog', {})
 
-/** stop keeps where the program is, checkAgain turns it on if it was just found */
-export type Asked = 'checkAgain' | 'stop' | 'use'
+export type Asked = { kind: 'checkAgain' } | { kind: 'useAccount' | 'stopUsing'; account: string }
 
 export const askIntegration = (program: string, asked: Asked) =>
   call<CatalogEntry[]>('integration_asked', { program, asked })
@@ -177,13 +181,20 @@ export const integrationAccounts = (program: string) => call<Account[]>('integra
 export const connectAccount = (program: string, server: string, clientId: string | null, onPage: (page: string) => void) => {
   const page = new Channel<string>()
   page.onmessage = onPage
-  return call<Account[]>('connect_account', { program, server, clientId, onPage: page })
+  /** `account` is the one signed in to, null once stopped */
+  return call<{ accounts: Account[]; account: string | null }>('connect_account', { program, server, clientId, onPage: page })
 }
 
 export const stopConnectingAccount = () => call<void>('stop_connecting_account', {})
 
 /** Signs the account out of its program too */
 export const disconnectAccount = (program: string, id: string) => call<Account[]>('disconnect_account', { program, id })
+
+/** What the server of an account said of its sign-in */
+export type SignIn = 'accepted' | 'refused'
+
+/** Over the network, and fails when the server could not be asked */
+export const checkAccount = (program: string, id: string) => call<SignIn>('check_account', { program, id })
 
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null

@@ -221,7 +221,7 @@ async fn connect_account(
     server: String,
     client_id: Option<String>,
     on_page: tauri::ipc::Channel<String>,
-) -> Result<Vec<Account>, Said> {
+) -> Result<integrations::Connected, Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         actions.connect_account(&program, &server, client_id.as_deref(), &|page| {
@@ -245,6 +245,19 @@ async fn disconnect_account(
 ) -> Result<Vec<Account>, Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || actions.disconnect_account(&program, &id))
+        .await
+        .map_err(Said::raw)?
+}
+
+/// Over the network: whether the server still takes the account
+#[tauri::command]
+async fn check_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    id: String,
+) -> Result<integrations::integration::SignIn, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.check_account(&program, &id))
         .await
         .map_err(Said::raw)?
 }
@@ -1071,6 +1084,7 @@ fn main() {
             connect_account,
             stop_connecting_account,
             disconnect_account,
+            check_account,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

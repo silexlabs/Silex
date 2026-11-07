@@ -20,6 +20,7 @@ const COMMANDS: &[&str] = &[
     "connect_account",
     "stop_connecting_account",
     "disconnect_account",
+    "check_account",
 ];
 
 /// `--silex-bg-main` as a `tauri::window::Color`, for the window of the dashboard

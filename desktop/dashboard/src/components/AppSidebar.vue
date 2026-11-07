@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, onMounted, useId } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
+import { problems, startIntegrations } from '../integrations'
 import logo from '~/public/assets/logo-silex-small.png'
 
 const { t, locale } = useI18n()
@@ -20,6 +21,8 @@ useShortcuts({
   'Mod+4': () => router.push('/settings'),
   'Mod+,': () => router.push('/settings'),
 })
+
+onMounted(startIntegrations)
 
 const localized = (urls: Record<Language, string>) => urls[locale.value as Language] ?? urls.en
 
@@ -138,6 +141,11 @@ const links = computed(() => [
             aria-hidden="true"
           ><path d="M9 7V3M15 7V3M7 7h10v4a5 5 0 0 1-10 0z" /><path d="M12 16v5" /></svg>
           {{ $t('Integrations') }}
+          <span
+            v-if="problems"
+            class="sidebar__dot"
+            :title="$t('1 thing needs you | {count} things need you', problems)"
+          />
         </RouterLink>
       </AppTooltip>
       <AppTooltip
@@ -253,6 +261,14 @@ const links = computed(() => [
 
 .sidebar__item:focus-visible {
   outline-offset: -2px;
+}
+
+.sidebar__dot {
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--silex-status-error);
 }
 
 .sidebar__item.router-link-active {

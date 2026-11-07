@@ -169,6 +169,14 @@ pub struct Account {
     pub summary: Option<String>,
 }
 
+/// What the server of an account said of its sign-in
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SignIn {
+    Accepted,
+    Refused,
+}
+
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
 
@@ -199,12 +207,19 @@ pub trait Integration: Send + Sync {
     /// `not_provided`
     fn capacities(&self) -> &'static [Capacity];
 
+    /// The servers offered when the user adds an account, before any other
+    /// they type in
+    fn servers(&self) -> Vec<&'static str> {
+        Vec::new()
+    }
+
     fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
         let _ = cli;
         Ok(Vec::new())
     }
 
-    /// Waits as long as the user takes to sign in, in their browser
+    /// Waits as long as the user takes to sign in, in their browser, and
+    /// answers the id of the account signed in to
     ///
     /// `client_id` is the OAuth application the user made on a server Silex
     /// does not know.
@@ -215,7 +230,7 @@ pub trait Integration: Send + Sync {
         client_id: Option<&str>,
         given_up: &AtomicBool,
         open: &dyn Fn(String),
-    ) -> Result<(), String> {
+    ) -> Result<String, String> {
         let _ = (cli, server, client_id, given_up, open);
         Err(format!(
             "Silex cannot connect an account to {}",
@@ -230,6 +245,15 @@ pub trait Integration: Send + Sync {
             "Silex cannot disconnect an account from {}",
             self.name()
         ))
+    }
+
+    /// Whether the server still takes this account, asked over the network
+    /// when the user wants to know
+    ///
+    /// An error means the server could not be asked.
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+        let _ = (cli, id);
+        Err(format!("Silex cannot check an account of {}", self.name()))
     }
 
     /// What to ask the user before publishing, when this program cannot say
@@ -251,6 +275,12 @@ pub trait Integration: Send + Sync {
     /// this. Every integration answering yes that can sync sends the website,
     /// even when two send it to the same remote.
     fn answers_for(&self, site: &Path) -> bool;
+
+    /// The account a website goes through, among those `accounts` lists
+    fn account_of(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
 
     /// Why it does not answer for a website on one of its hosts, when the
     /// account it would need is not on this computer

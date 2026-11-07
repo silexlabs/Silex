@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-check-account"
+description = "Enables the check_account command without any pre-configured scope."
+commands.allow = ["check_account"]
+
+[[permission]]
+identifier = "deny-check-account"
+description = "Denies the check_account command without any pre-configured scope."
+commands.deny = ["check_account"]

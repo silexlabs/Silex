@@ -350,23 +350,6 @@ const { choose, afterClose } = useMenuAction(more)
   cursor: pointer;
 }
 
-/* The whole card opens the website, the button stays the one thing to focus */
-.card__open::after {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--silex-radius-md);
-  content: '';
-}
-
-.card__open:focus-visible {
-  outline: none;
-}
-
-.card__open:focus-visible::after {
-  outline: 2px solid var(--silex-focus-outline);
-  outline-offset: 2px;
-}
-
 /* Above the link of the whole card, on an opaque ground that reads the same on any thumbnail */
 .card__state {
   position: absolute;
@@ -455,25 +438,5 @@ const { choose, afterClose } = useMenuAction(more)
   background: var(--silex-danger-hover);
 }
 
-.card__more {
-  position: relative;
-  z-index: 1;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  margin-top: calc(-1 * var(--silex-space-1));
-  border: none;
-  border-radius: var(--silex-radius-sm);
-  background: none;
-  color: var(--silex-text-secondary);
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.card__more:hover,
-.card__more[aria-expanded='true'] {
-  background: var(--silex-hover-bg);
-  color: var(--silex-text-primary);
-}
 </style>
 
