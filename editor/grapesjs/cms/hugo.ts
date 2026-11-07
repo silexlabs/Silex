@@ -16,16 +16,16 @@
  */
 
 import type { Component, Editor, Page } from 'grapesjs'
-import { Expression, FIXED_TOKEN_ID, GraphQLOptions, fixedText, getDataSource, getPageExpressions, getPageQuery, getPersistantId, getState, toExpression } from '@silexlabs/grapesjs-data-source'
+import { Expression, FIXED_TOKEN_ID, findToken, GraphQLOptions, fixedText, getDataSource, getPageExpressions, getPageQuery, getPersistantId, getState, toExpression } from '@silexlabs/grapesjs-data-source'
 import { ClientSideFileType, ClientSideFileWithContent, Initiator, PublicationData } from '~/common/types'
 import { getPageSlug } from '~/common/page'
 import { transformPermalink } from '../../publication-transformers'
-import { findToken, type Problem, type Ssg } from './ssg'
+import type { Problem, Ssg } from './ssg'
 import { clearRenderCache, renderComponent, withNotification } from './render'
 import { dataSourceVariable, getGoExpression, goSyntax, stateVariable } from './gotmpl'
 import { getHugoFilters } from './hugo-filters'
 import type { Silex11tyPluginWebsiteSettings } from './index'
-import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY, SEO_OVERRIDES, getSettingLabel } from './settings-keys'
+import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY, SEO_OVERRIDES, applySeoOverrides, getSettingLabel } from './settings-keys'
 import { isPageState } from './states'
 import { SHORTCODE_ID } from './blocks'
 
@@ -93,7 +93,7 @@ function checkSupported(page: Page): Problem[] {
     const where = `its setting "${getSettingLabel(key)}"`
     if (usesDataWithoutSource(expression)) problems.push(`Page "${name}" uses data given by Eleventy in ${where}, which publishing with Hugo does not support yet`)
     // The head is rendered before the states of the body are assigned
-    const state = findToken(expression, token => token.type === 'state' && !(token.storedStateId === 'item' && token.componentId === bodyId))
+    const state = findToken(expression, token => token.type === 'state' && !(isPageState(token.storedStateId) && token.componentId === bodyId))
     if (state) problems.push(`Page "${name}" uses "${state.label}" in ${where}, which publishing with Hugo does not support yet`)
   })
   return [
@@ -202,10 +202,7 @@ export function hugo(editor: Editor): Ssg {
       const url = transformPermalink(editor, path, ClientSideFileType.HTML, Initiator.HTML)
       return `/static${url.endsWith('/') ? `${url}index.html` : url}`
     },
-    onPage: ({ page, pageSettings }) => withNotification(() => SEO_OVERRIDES.forEach(({ key, target, context }) => {
-      const expression = toExpression((pageSettings as Silex11tyPluginWebsiteSettings)[key])
-      if (expression?.length) pageSettings[target] = goSyntax.echo(page.getMainComponent(), expression, context)
-    }), editor, null),
+    onPage: ({ page, pageSettings }) => withNotification(() => applySeoOverrides(goSyntax, page, pageSettings), editor, null),
     onData: data => withNotification(() => transformFiles(editor, data), editor, null),
     onEnd: clearRenderCache,
   }

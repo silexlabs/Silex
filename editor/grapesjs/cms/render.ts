@@ -16,7 +16,7 @@
  */
 
 import type { Component, Editor } from 'grapesjs'
-import { BinaryOperator, Expression, NOTIFICATION_GROUP, Properties, State, StateId, StoredState, Token, UnariOperator, fromStored, getState, getStateIds } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, NOTIFICATION_GROUP, Properties, State, StateId, StoredState, Token, UnariOperator, fromStored, getExpressionResultType, getState, getStateIds } from '@silexlabs/grapesjs-data-source'
 import { UNWRAP_ID } from './traits'
 
 export interface BinaryCondition {
@@ -180,6 +180,12 @@ export function withNotification<T>(cbk: () => T, editor: Editor, componentId: s
 /**
  * Render the components when they are published
  */
+function checkLoopData(component: Component, expression: Expression) {
+  const field = getExpressionResultType(expression, component)
+  if (!field) throw new Error(`Expression ${expression.map(token => token.label).join(' -> ')} is invalid`)
+  if (field.kind !== 'list') throw new Error(`Provided property needs to be a list in order to loop, not a ${field.kind}`)
+}
+
 export function renderComponent(editor: Editor, syntax: TemplateSyntax, component: Component, toHtml: () => string): string | undefined {
   if(cache.has(component.getId())) {
     return cache.get(component.getId())
@@ -225,14 +231,17 @@ export function renderComponent(editor: Editor, syntax: TemplateSyntax, componen
       const innerHtml = hasInnerHtml ? syntax.echo(component, statesObj.innerHTML.tokens, EchoContext.TEXT) : component.getInnerHTML()
       const operator = component.get('conditionOperator') ?? UnariOperator.TRUTHY
       const binary = operator && Object.values(BinaryOperator).includes(operator)
-      const [ifStart, ifEnd] = hasCondition ? syntax.if(component, binary ? {
+      const expression2 = statesObj.condition2?.tokens ?? []
+      // A comparison with nothing yet is not a condition
+      const [ifStart, ifEnd] = hasCondition && !(binary && !expression2.length) ? syntax.if(component, binary ? {
         expression: statesObj.condition.tokens,
-        expression2: statesObj.condition2?.tokens ?? [],
+        expression2,
         operator,
       } : {
         expression: statesObj.condition.tokens,
         operator,
       }) : []
+      if (hasData) checkLoopData(component, statesObj.__data.tokens)
       const [forStart, forEnd] = hasData ? syntax.loop(component, statesObj.__data.tokens) : []
       const states = statesPublic
         .map(({ stateId, tokens }) => syntax.assign(stateId, component, tokens))

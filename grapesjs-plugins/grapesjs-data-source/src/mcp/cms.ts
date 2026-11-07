@@ -24,12 +24,12 @@ import { StoredState } from '../model/state'
 import { getFilters } from '../model/dataSourceManager'
 import { isComponentVisible } from '../view/canvas'
 import { getPageExpressions, getPageQuery, getValue } from '../api'
-import { cleanStateName, getFixedToken } from '../utils'
+import { cleanStateName, findToken, getFixedToken } from '../utils'
 import { getPreviewErrors } from '../model/previewDataLoader'
 import { SchemaLookup, expressionToPath, filterTokens, parsePath, resolvePath, splitTopLevel, typeLabel } from './path'
 import { itemFields, listBelow, searchSchema, summarizeRoot, summarizeType } from './schema'
 import { checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
-import { elementId, isLoopItem, itemScope, itemUsers, someToken } from './item'
+import { elementId, isLoopItem, itemScope, itemUsers } from './item'
 
 export const CMD_CMS = 'data-source:cms'
 
@@ -207,7 +207,7 @@ async function update(editor: Editor, opts: CmsOptions): Promise<string> {
 function remove(editor: Editor, opts: CmsOptions): string {
   const ds = editableSource(opts.source)
   const users = editor.Pages.getAll().flatMap(page => getPageExpressions(page)
-    .filter(({ expression }) => someToken(expression, token => token.type === 'property' && token.dataSourceId === ds.id))
+    .filter(({ expression }) => !!findToken(expression, token => token.type === 'property' && token.dataSourceId === ds.id))
     .map(({ component }) => ({ component, page })))
   const elements = [...new Map(users.map(user => [user.component, user])).values()]
   if (elements.length) {

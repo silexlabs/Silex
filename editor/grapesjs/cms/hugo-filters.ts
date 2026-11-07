@@ -16,7 +16,7 @@
  */
 
 import type { Component, Editor } from 'grapesjs'
-import { Field, Filter, Options, toExpression } from '@silexlabs/grapesjs-data-source'
+import { Field, Filter, Options, isString, toExpression } from '@silexlabs/grapesjs-data-source'
 import { html } from 'lit-html'
 import { hasNumberType, type GoOptions } from './gotmpl'
 
@@ -33,10 +33,6 @@ interface OptionForm {
   label: string
   // Read in each item of the input list
   itemKey?: boolean
-}
-
-function isString(field: Field | null): boolean {
-  return field?.kind === 'scalar' && field.typeIds.some(typeId => typeId.toLowerCase().includes('string') || typeId.toLowerCase() === 'id')
 }
 
 function isNumber(field: Field | null): boolean {

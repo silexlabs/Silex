@@ -16,7 +16,7 @@
  */
 
 import type { Block, Component, Editor, Page } from 'grapesjs'
-import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSource, getAllDataSources, NOTIFICATION_GROUP, getFilters, getPageExpressions, getPersistantId, removeDataSource, setFilters, toExpression } from '@silexlabs/grapesjs-data-source'
+import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSource, getAllDataSources, NOTIFICATION_GROUP, getFilters, findToken, getPageExpressions, getPersistantId, removeDataSource, setFilters, toExpression } from '@silexlabs/grapesjs-data-source'
 import type { ClientConfig } from '../../config'
 import { ClientEvent } from '../../events'
 import { ClientSideFileType, type PublicationData, type SsgId, type WebsiteSettings } from '~/common/types'
@@ -52,16 +52,6 @@ interface Available {
   dataSourceIds: DataSourceId[]
   pageStates: readonly PageStateId[]
   bodyId: string | null
-}
-
-// Also looks inside the options of the filters
-export function findToken(expression: Expression, test: (token: StoredToken, index: number) => boolean): StoredToken | undefined {
-  for (const [index, token] of expression.entries()) {
-    if (test(token, index)) return token
-    if (token.type !== 'filter') continue
-    const nested = Object.values(token.options ?? {}).map(option => findToken(toExpression(option) ?? [], test)).find(Boolean)
-    if (nested) return nested
-  }
 }
 
 function findUnavailable(expression: Expression, { filterIds, dataSourceIds, pageStates, bodyId }: Available): StoredToken | undefined {
@@ -142,7 +132,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   })
 
   editor.on(ClientEvent.PUBLISH_START, ({ siteSettings }: { siteSettings: WebsiteSettings }) => {
-    const ssgId = siteSettings.ssg ?? config.ssg
+    const ssgId = getSsgId(editor, config)
     ssg = ssgs[ssgId]
     report(editor, ssgId, [...checkAvailable(editor, ssgId, ssg.pageStates), ...(ssg.check?.() ?? [])])
     if (!siteSettings.ssg) {

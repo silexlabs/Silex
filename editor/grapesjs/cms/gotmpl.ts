@@ -215,14 +215,9 @@ export const goSyntax: TemplateSyntax = {
   assign: (stateId: StateId, component, expression) =>
     `{{ ${stateVariable(component, stateId)} := ${getGoExpression(component, expression)} }}`,
   loop: (component, expression) => {
-    const field = getExpressionResultType(expression, component)
-    if (!field) throw new Error(`Expression ${expression.map(token => token.label).join(' -> ')} is invalid`)
-    if (field.kind !== 'list') throw new Error(`Provided property needs to be a list in order to loop, not a ${field.kind}`)
     return [`{{ range ${goVariable(getStateVariableName(persistantId(component), '__data'))} := ${getGoExpression(component, expression)} }}`, '{{ end }}']
   },
   if: (component, condition) => {
-    if (condition.expression.length === 0) throw new Error('If block expression is empty')
-    if ('expression2' in condition && condition.expression2.length === 0) return ['', '']
     return [`{{ if ${goCondition(component, condition)} }}`, '{{ end }}']
   },
 }

@@ -360,7 +360,8 @@ export function toExpression(json: unknown | string): Expression | null {
   return toExpressionInternal(json)
 }
 
-export { fixedText, filterText } from './utils'
+export { fixedText, filterText, findToken } from './utils'
+export { isString } from './filters/liquid'
 
 // ===============================
 // UTILITY FUNCTIONS

@@ -2,6 +2,7 @@ import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, S
 import { Silex11tyPluginWebsiteSettings } from './index'
 import { Component, Editor } from 'grapesjs'
 import { ClientEvent } from '../../events'
+import { PAGE_DATA_KEY, PAGE_SIZE_KEY } from './settings-keys'
 
 // States of the body of a collection page, each SSG provides some of them
 export const PAGE_STATE_IDS = ['item', 'pagination', 'items'] as const
@@ -92,9 +93,9 @@ export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTri
   // Store pagination data in the body component
   // This is for the GraphQL query to include it
   const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
-  const pageData = toExpression(settings?.eleventyPageData) as (Property[] | null)
+  const pageData = toExpression(settings?.[PAGE_DATA_KEY]) as (Property[] | null)
   const provided = providedStates.get(editor)?.() ?? PAGE_STATE_IDS
-  const states = pageData?.length ? getPageStates(pageData, pageIndex, parseInt(settings?.eleventyPageSize || '1')) : null
+  const states = pageData?.length ? getPageStates(pageData, pageIndex, parseInt(settings?.[PAGE_SIZE_KEY] || '1')) : null
 
   try {
     // FIXME: should we let UndoManager save?

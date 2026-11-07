@@ -15,7 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { EchoContext } from './render'
+import type { Page } from 'grapesjs'
+import { toExpression } from '@silexlabs/grapesjs-data-source'
+import type { WebsiteSettings } from '~/common/types'
+import { EchoContext, type TemplateSyntax } from './render'
 
 // Keys of the page settings in the website data, named before Hugo was a target
 export const PAGE_DATA_KEY = 'eleventyPageData'
@@ -32,22 +35,22 @@ export const SEO_OVERRIDES = [
   { key: 'eleventyOGDescription', target: 'og:description', context: EchoContext.ATTRIBUTE },
 ] as const
 
+export function applySeoOverrides(syntax: TemplateSyntax, page: Page, pageSettings: WebsiteSettings): void {
+  SEO_OVERRIDES.forEach(({ key, target, context }) => {
+    const expression = toExpression((pageSettings as Record<string, unknown>)[key])
+    if (expression?.length) pageSettings[target] = syntax.echo(page.getMainComponent(), expression, context)
+  })
+}
+
 const SETTING_LABELS: Record<string, string> = {
   [PAGE_DATA_KEY]: 'Page data',
   [PERMALINK_KEY]: 'Permalink',
-  [PAGE_SIZE_KEY]: 'Size',
-  silexLanguagesList: 'Available languages',
   eleventySeoTitle: 'SEO title',
   eleventySeoDescription: 'SEO description',
   eleventyFavicon: 'Favicon',
   eleventyOGImage: 'OG image',
   eleventyOGTitle: 'OG title',
   eleventyOGDescription: 'OG description',
-  eleventyNavigationKey: 'Navigation key',
-  eleventyNavigationTitle: 'Navigation title',
-  eleventyNavigationOrder: 'Navigation order',
-  eleventyNavigationParent: 'Navigation parent',
-  eleventyNavigationUrl: 'Navigation URL',
 }
 
 export function getSettingLabel(key: string): string {

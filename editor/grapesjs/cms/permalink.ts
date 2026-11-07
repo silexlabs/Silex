@@ -16,9 +16,10 @@
  */
 
 import type { Editor } from 'grapesjs'
-import { fixedText, toExpression } from '@silexlabs/grapesjs-data-source'
+import { type Property, toExpression } from '@silexlabs/grapesjs-data-source'
 import { getPageSlug, getPageUrl } from '~/common/page'
 import type { Silex11tyPluginWebsiteSettings } from './index'
+import { PERMALINK_KEY } from './settings-keys'
 
 export function ensureLeadingAndTrailingSlash(str: string): string {
   if (str.length === 0) return '/'
@@ -36,7 +37,7 @@ export function linkToPermalink(editor: Editor, link: string): string {
   const [, path, suffix] = link.match(/^([^?#]*)(.*)$/) ?? []
   const page = editor.Pages.getAll().find(page => getPageUrl(getPageSlug(page.getName())) === path)
   const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
-  const permalink = fixedText(toExpression(settings?.eleventyPermalink))
-  if (!permalink) return link
-  return ensureLeadingAndTrailingSlash(permalink) + suffix
+  const tokens = toExpression(settings?.[PERMALINK_KEY]) as Property[] | null
+  if (!tokens?.length || !tokens.every(token => token.type === 'property' && token.fieldId === 'fixed')) return link
+  return ensureLeadingAndTrailingSlash(tokens.map(token => token.options?.value ?? '').join('')) + suffix
 }

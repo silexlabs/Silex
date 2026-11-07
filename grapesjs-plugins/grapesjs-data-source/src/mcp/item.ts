@@ -20,6 +20,7 @@ import { Field, IDataSource, Properties, State, StoredToken } from '../types'
 import { getDataSource } from '../model/dataSourceRegistry'
 import { getOrCreatePersistantId, getPersistantId, getState, getStateIds } from '../model/state'
 import { getExpressionResultType } from '../model/token'
+import { findToken } from '../utils'
 
 /**
  * `item` in a path: the item of the closest loop, or else the item of the collection page
@@ -34,17 +35,6 @@ interface ItemScope {
   tokens: StoredToken[]
   field: Field
   ds: IDataSource
-}
-
-export function someToken(value: unknown, test: (token: StoredToken) => boolean): boolean {
-  if (Array.isArray(value)) return value.some(v => someToken(v, test))
-  if (typeof value === 'string' && value.startsWith('[')) {
-    try { return someToken(JSON.parse(value), test) } catch { return false }
-  }
-  if (value && typeof value === 'object') {
-    return test(value as StoredToken) || Object.values(value).some(v => someToken(v, test))
-  }
-  return false
 }
 
 function loopAround(component: Component, includeSelf: boolean): Component | null {
@@ -114,6 +104,6 @@ export function itemUsers(loop: Component): Component[] {
   const loopId = getPersistantId(loop)
   const usesItem = (c: Component) => [false, true].some(exported => getStateIds(c, exported)
     .some(id => !(c === loop && !exported && id === Properties.__data)
-      && someToken(getState(c, id, exported)?.expression, token => token.type === 'state' && token.componentId === loopId)))
+      && !!findToken(getState(c, id, exported)?.expression, token => token.type === 'state' && token.componentId === loopId)))
   return [loop, ...loop.find('*')].filter(usesItem)
 }

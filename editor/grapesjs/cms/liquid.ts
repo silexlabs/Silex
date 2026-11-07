@@ -3,7 +3,6 @@ import {
   Filter, Property, State, StateId, Token, getPersistantId, getStateVariableName, toExpression,
   FIXED_TOKEN_ID,
   UnariOperator,
-  getExpressionResultType,
   BinaryOperator,
 } from '@silexlabs/grapesjs-data-source'
 import { Component } from 'grapesjs'
@@ -74,11 +73,6 @@ export function assignBlock(stateId: StateId, component: Component, expression: 
  * This is used for components states
  */
 export function loopBlock(component: Component, expression: Expression): [start: string, end: string] {
-  if (expression.length === 0) throw new Error('Expression is empty')
-  // Check data to loop over
-  const field = getExpressionResultType(expression, component)
-  if (!field) throw new Error(`Expression ${expression.map(token => token.label).join(' -> ')} is invalid`)
-  if (field.kind !== 'list') throw new Error(`Provided property needs to be a list in order to loop, not a ${field.kind}`)
   const statements = getLiquidBlock(component, expression)
   const loopDataVariableName = statements[statements.length - 1].variableName
   const persistantId = getPersistantId(component)
@@ -101,16 +95,10 @@ export function loopBlock(component: Component, expression: Expression): [start:
  * This is used for components states
  */
 export function ifBlock(component: Component, condition: Condition): [start: string, end: string] {
-  // Check the first expression
-  if (condition.expression.length === 0) throw new Error('If block expression is empty')
-
   // Check the operator
   const unary = Object.values(UnariOperator).includes(condition.operator as UnariOperator) ? condition as UnaryCondition : null
   const binary = Object.values(BinaryOperator).includes(condition.operator as BinaryOperator) ? condition as BinaryCondition : null
   if (!unary && !binary) throw new Error(`If block operator is invalid: ${condition.operator}`)
-
-  // Check the second expression
-  if (binary && binary.expression2.length === 0) return ['', '']
 
   // Get liquid for the first expression
   const statements = getLiquidBlock(component, condition.expression)

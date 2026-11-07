@@ -7,7 +7,7 @@ import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { getPageSlug, getPageUrl } from '~/common/page'
 import type { Ssg } from './ssg'
 import { PAGE_STATE_IDS } from './states'
-import { SEO_OVERRIDES } from './settings-keys'
+import { applySeoOverrides } from './settings-keys'
 import { SHORTCODE_ID } from './blocks'
 import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
 import { ensureLeadingAndTrailingSlash } from './permalink'
@@ -160,12 +160,7 @@ export function getBodyStates(page: Page): string {
 }
 
 export function transformPage(editor: Editor, data: { page: Page, siteSettings: WebsiteSettings, pageSettings: Silex11tyPluginWebsiteSettings }): void {
-  const { pageSettings, page } = data
-  const body = page.getMainComponent()
-  SEO_OVERRIDES.forEach(({ key, target }) => {
-    const expression = toExpression(pageSettings[key])
-    if (expression?.length) pageSettings[target] = echoBlock(body, expression)
-  })
+  applySeoOverrides(liquidSyntax, data.page, data.pageSettings)
 }
 
 /**
