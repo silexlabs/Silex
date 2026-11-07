@@ -27,6 +27,7 @@ import { getHugoFilters } from './hugo-filters'
 import type { Silex11tyPluginWebsiteSettings } from './index'
 import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY, SEO_OVERRIDES, getSettingLabel } from './settings-keys'
 import { isPageState } from './states'
+import { SHORTCODE_ID } from './blocks'
 
 const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Content | jsonify }}
 {{- $opts := dict "method" "post" "body" $body "headers" (dict "Content-Type" "application/json") }}
@@ -185,7 +186,13 @@ export function hugo(editor: Editor): Ssg {
   return {
     pageStates: ['item'],
     filters,
-    check: () => editor.Pages.getAll().filter(page => isCmsPage(page)).flatMap(page => checkSupported(page)),
+    check: () => [
+      ...editor.Pages.getAll().filter(page => isCmsPage(page)).flatMap(page => checkSupported(page)),
+      ...editor.Pages.getAll().flatMap(page => page.getMainComponent().findType(SHORTCODE_ID).map(component => ({
+        message: `Page "${page.getName()}" uses a Liquid shortcode in the element "${component.getName()}", which publishing with Hugo does not support`,
+        componentId: component.getId(),
+      }))),
+    ],
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, goSyntax, component, toHtml), editor, component.getId()),
     // Hugo copies static/ as is to the root of the website, pages with data become templates
     transformPath: (path, type) => {

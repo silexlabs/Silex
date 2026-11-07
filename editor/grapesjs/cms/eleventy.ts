@@ -8,6 +8,7 @@ import { getPageSlug, getPageUrl } from '~/common/page'
 import type { Ssg } from './ssg'
 import { PAGE_STATE_IDS } from './states'
 import { SEO_OVERRIDES } from './settings-keys'
+import { SHORTCODE_ID } from './blocks'
 import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
 import { ensureLeadingAndTrailingSlash } from './permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
@@ -30,6 +31,7 @@ export function eleventy(editor: Editor, options: EleventyPluginOptions): Ssg {
   return {
     pageStates: PAGE_STATE_IDS,
     dataSources: [getDataSource(EleventyDataSourceId)].filter((dataSource): dataSource is IDataSource => !!dataSource),
+    blocks: [SHORTCODE_ID],
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, liquidSyntax, component, toHtml), editor, component.getId()),
     onPage: data => withNotification(() => transformPage(editor, data), editor, null),
     // Generate 11ty data files

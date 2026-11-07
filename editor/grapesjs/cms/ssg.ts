@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import type { Component, Editor, Page } from 'grapesjs'
+import type { Block, Component, Editor, Page } from 'grapesjs'
 import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSource, getAllDataSources, NOTIFICATION_GROUP, getFilters, getPageExpressions, getPersistantId, removeDataSource, setFilters, toExpression } from '@silexlabs/grapesjs-data-source'
 import type { ClientConfig } from '../../config'
 import { ClientEvent } from '../../events'
@@ -39,6 +39,7 @@ export interface Ssg {
   filters?: Filter[]
   // Removed from the editor with another SSG
   dataSources?: IDataSource[]
+  blocks?: string[]
   renderComponent?(component: Component, toHtml: () => string): string | undefined
   transformPath?(path: string, type: ClientSideFileType): string | undefined
   onPage?(data: { page: Page, siteSettings: WebsiteSettings, pageSettings: WebsiteSettings }): void
@@ -111,6 +112,8 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   let ssg: Ssg | undefined
   let unsaved: SsgId | null = null
   let editorFilters: Filter[] | null = null
+  // Kept to put them back when the SSG changes again
+  const ssgBlocks = new Map<string, Block>()
 
   editor.on(`${ClientEvent.SETTINGS_SAVE_END} storage:end:load`, () => {
     const ssgId = getSsgId(editor, config)
@@ -118,6 +121,16 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
     const others = Object.values(ssgs).flatMap(({ dataSources }) => dataSources ?? []).filter(dataSource => !own.includes(dataSource))
     others.filter(dataSource => getAllDataSources().includes(dataSource)).forEach(removeDataSource)
     own.filter(dataSource => !getAllDataSources().includes(dataSource)).forEach(dataSource => addDataSource(dataSource))
+    const ownBlocks = ssgs[ssgId].blocks ?? []
+    Object.values(ssgs).flatMap(({ blocks }) => blocks ?? []).forEach(id => {
+      const block = editor.Blocks.get(id) ?? ssgBlocks.get(id)
+      if (!block) return
+      ssgBlocks.set(id, block)
+      if (!ownBlocks.includes(id)) editor.Blocks.remove(id)
+      else if (!editor.Blocks.get(id)) editor.Blocks.getAll().add(block)
+    })
+    // The block manager view does not remove a category left empty
+    editor.Blocks.render()
     const filters = ssgs[ssgId].filters
     if (filters) {
       editorFilters ??= getFilters()
