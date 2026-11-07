@@ -72,7 +72,7 @@ function checkSupported(page: Page) {
   if (settings.silexLanguagesList?.split(',').some(lang => lang.trim())) throw new Error(`Page "${page.getName()}" has several languages, which publishing with Hugo does not support`)
   if (getCollectionData(page).length) {
     if (parseInt(settings[PAGE_SIZE_KEY] || '1') > 1) throw new Error(`Page "${page.getName()}" shows several items per page, which publishing with Hugo does not support yet`)
-    if (!toExpression(settings[PERMALINK_KEY])?.length) throw new Error(`Page "${page.getName()}" is a collection page without a permalink, which publishing with Hugo needs`)
+    if (!toExpression(settings[PERMALINK_KEY])?.length) throw new Error(`Page "${page.getName()}" has Page data but no Permalink. Publishing with Hugo needs a Permalink to give each page its address. Set it in the page settings, CMS tab.`)
   }
   const [setting] = getDataSettings(page)
   if (setting) throw new Error(`Page "${page.getName()}" uses data in its setting "${setting}", which publishing with Hugo does not support yet`)

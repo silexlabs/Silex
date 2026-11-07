@@ -7,6 +7,7 @@ import { ClientEvent } from '../../events'
 import { cmdAddSection } from '../settings'
 import { SettingsError } from '../settings-sections'
 import { createRef, ref } from 'lit-html/directives/ref.js'
+import { PAGE_ITEM_LABEL } from './states'
 
 /**
  * Main function to add the settings to the page
@@ -36,7 +37,7 @@ export function checkCmsSettings(settings: Partial<Silex11tyPluginWebsiteSetting
     const data = toExpression(settings.eleventyPageData)
     if (data?.length === 0) return null
     if (!data?.length || data.some(token => token.type !== 'property') || (data[data.length - 1] as StoredProperty).kind !== 'list') {
-      return { field: 'eleventyPageData', message: 'Pagination data must be a list, like the posts of a CMS' }
+      return { field: 'eleventyPageData', message: 'Page data must be a list, like the posts of a CMS' }
     }
   }
   return null
@@ -263,28 +264,27 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             no-filters
           >
             <label slot="label">
-              Pagination Data
+              Page data
               <span class="help-wrapper">
                 <details class="help-popover">
                   <summary class="help-icon" aria-label="Help">?</summary>
                   <div class="help-content">
-                    <strong>Pagination data</strong>
+                    <strong>Page data</strong>
                     <ul>
                       <li>These fields are expressions.</li>
-                      <li>Set pagination data to make this a collection page (like Webflow collections).</li>
+                      <li>Set page data to make this a collection page (like Webflow collections).</li>
                       <li>Each generated page represents one item from your data source.</li>
                     </ul>
                     <strong style="margin-top:6px;">Collection page expressions</strong>
                     <ul>
-                      <li>When pagination is enabled, you can use <b>Pagination items</b>.</li>
-                      <li>“Pagination items” is an array — the items shown on the current page.</li>
-                      <li>This follows <a href="https://www.11ty.dev/docs/pagination/" target="_blank">11ty’s pagination model</a>.</li>
+                      <li>In the expressions of this page, <b>${PAGE_ITEM_LABEL}</b> is the item of the current page.</li>
                     </ul>
                   </div>
                 </details>
               </span>
             </label>
           </state-editor>
+          <p class="silex-help">One page is generated for each item of this list.</p>
 
           <state-editor
             id="eleventyPermalink"
@@ -314,10 +314,13 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             </label>
           </state-editor>
 
-          <details class="silex-more"><summary>Advanced params</summary>
+          <details class="silex-more"><summary>Deprecated</summary>
           <label class="silex-form__element">Size
+            <p class="silex-help">Number of items per page, Eleventy only. To paginate a list, <a target="_blank" href="https://docs.silex.me/designer/cms/pagination/">use Pagebreak</a>.</p>
             <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1} placeholder="1" />
           </label>
+          </details>
+          <details class="silex-more"><summary>Advanced params</summary>
           <label class="silex-form__element">Available languages
             <p class="silex-help">Silex can duplicate this page for each language and generate a different URL for each language. Provide a comma separated list of languages. For example: <code>en,fr</code>. An empty value will deactivate this feature.</p>
             <input type="text" name="silexLanguagesList" .value=${settings.silexLanguagesList ?? ''} placeholder="en, fr, es" />

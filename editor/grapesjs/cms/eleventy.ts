@@ -108,6 +108,7 @@ export function getFrontMatter(page: Page, settings: Silex11tyPluginWebsiteSetti
     // because it is in double quotes in the front matter
     ?.replace(/"/g, '\\"')
 
+  // Size > 1 is deprecated, lists are paginated with Pagebreak: kept for the websites which use it
   return dedent`---
     ${data && data.length > 0 ? `pagination:
       addAllPagesToCollections: true
