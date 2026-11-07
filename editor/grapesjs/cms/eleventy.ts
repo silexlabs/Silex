@@ -2,10 +2,11 @@ import dedent from 'dedent'
 import { Component, Page, Editor } from 'grapesjs'
 import { Filter, GraphQLOptions, IDataSource, Property, State, Token, getDataSource, getPageQuery, getPersistantId, getState, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { EleventyDataSourceId } from './DataSource'
-import { assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
+import { ELEVENTY_PAGE_STATES, assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
 import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { getPageSlug, getPageUrl } from '~/common/page'
 import type { Ssg } from './ssg'
+import { PAGE_STATE_IDS } from './states'
 import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
 import { ensureLeadingAndTrailingSlash } from './permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
@@ -26,6 +27,7 @@ const liquidSyntax: TemplateSyntax = {
 
 export function eleventy(editor: Editor, options: EleventyPluginOptions): Ssg {
   return {
+    pageStates: PAGE_STATE_IDS,
     dataSources: [getDataSource(EleventyDataSourceId)].filter((dataSource): dataSource is IDataSource => !!dataSource),
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, liquidSyntax, component, toHtml), editor, component.getId()),
     onPage: data => withNotification(() => transformPage(editor, data), editor, null),
@@ -43,13 +45,7 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
       // Replace states which will be one from ./states.ts
       // For permalink, we need to use the actual 11ty variable names, not state references
       if(token.type === 'state') {
-        // Map known 11ty pagination states to their variable names
-        const stateToFieldId: Record<string, string> = {
-          'pagination': 'pagination',
-          'items': 'pagination.items',
-          'pages': 'pagination.pages',
-        }
-        const fieldId = stateToFieldId[token.storedStateId]
+        const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
         if (fieldId) {
           // Create a clean Property token for known 11ty pagination states
           return {

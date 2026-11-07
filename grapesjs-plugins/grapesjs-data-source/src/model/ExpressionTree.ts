@@ -44,6 +44,7 @@ export function getPageExpressions(manager: DataSourceManagerState, page: Page):
           result.push({
             expression: state.expression,
             component,
+            hidden: state.hidden,
           })
         }
       })

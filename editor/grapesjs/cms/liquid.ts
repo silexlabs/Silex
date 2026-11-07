@@ -11,6 +11,13 @@ import { EleventyDataSourceId } from './DataSource'
 import { getSliceOptions } from './slice'
 import type { BinaryCondition, Condition, UnaryCondition } from './render'
 
+export const ELEVENTY_PAGE_STATES: Record<string, string> = {
+  'item': 'pagination.items[0]',
+  'pagination': 'pagination',
+  'items': 'pagination.items',
+  'pages': 'pagination.pages',
+}
+
 /**
  * Generate liquid instructions which echo the value of an expression
  */
@@ -243,13 +250,7 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
     switch (token.type) {
     case 'state': {
       if (index !== 0) throw new Error('State can only be the first token in an expression')
-      // Map known 11ty pagination states to their variable names
-      const stateToFieldId: Record<string, string> = {
-        'pagination': 'pagination',
-        'items': 'pagination.items',
-        'pages': 'pagination.pages',
-      }
-      const fieldId = stateToFieldId[token.storedStateId]
+      const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
       if (fieldId) {
         return fieldId
       }
@@ -338,13 +339,7 @@ function handleFilterOption(filter: Filter, key: string, value: string, componen
           return token.fieldId
         }
         case 'state': {
-          // Map known 11ty pagination states to their variable names
-          const stateToFieldId: Record<string, string> = {
-            'pagination': 'pagination',
-            'items': 'pagination.items',
-            'pages': 'pagination.pages',
-          }
-          const fieldId = stateToFieldId[token.storedStateId]
+          const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
           if (fieldId) {
             return fieldId
           }

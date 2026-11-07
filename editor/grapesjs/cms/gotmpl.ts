@@ -32,6 +32,10 @@ function goVariable(name: string): string {
   return `$${name.replace(/[^A-Za-z0-9_]/g, '_')}`
 }
 
+export function stateVariable(component: Component, stateId: StateId): string {
+  return goVariable(getStateVariableName(persistantId(component), stateId))
+}
+
 export function dataSourceVariable(dataSourceId: string): string {
   return goVariable(`ds_${dataSourceId}`)
 }
@@ -206,7 +210,7 @@ export const goSyntax: TemplateSyntax = {
     return `{{ ${escape(getGoExpression(component, expression), context)} }}`
   },
   assign: (stateId: StateId, component, expression) =>
-    `{{ ${goVariable(getStateVariableName(persistantId(component), stateId))} := ${getGoExpression(component, expression)} }}`,
+    `{{ ${stateVariable(component, stateId)} := ${getGoExpression(component, expression)} }}`,
   loop: (component, expression) => {
     const field = getExpressionResultType(expression, component)
     if (!field) throw new Error(`Expression ${expression.map(token => token.label).join(' -> ')} is invalid`)

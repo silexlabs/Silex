@@ -16,16 +16,18 @@
  */
 
 import type { Component, Editor, Page } from 'grapesjs'
-import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSource, getAllDataSources, getFilters, getPageExpressions, removeDataSource, setFilters, toExpression } from '@silexlabs/grapesjs-data-source'
+import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSource, getAllDataSources, getFilters, getPageExpressions, getPersistantId, removeDataSource, setFilters, toExpression } from '@silexlabs/grapesjs-data-source'
 import type { ClientConfig } from '../../config'
 import { ClientEvent } from '../../events'
 import { ClientSideFileType, type PublicationData, type SsgId, type WebsiteSettings } from '~/common/types'
 import { setSettingsOf } from '../settings'
 import { linkToPermalink } from './permalink'
 import { withNotification } from './render'
+import { PAGE_ITEM_LABEL, PAGE_STATE_IDS, type PageStateId } from './states'
 
 // What a static site generator needs, the rest of the CMS is the same for all of them
 export interface Ssg {
+  pageStates: readonly PageStateId[]
   // Replace the filters of the editor
   filters?: Filter[]
   // Removed from the editor with another SSG
@@ -38,25 +40,54 @@ export interface Ssg {
   onEnd?(): void
 }
 
-function findUnavailable(expression: Expression, filterIds: string[], dataSourceIds: DataSourceId[]): StoredToken | undefined {
+interface Available {
+  filterIds: string[]
+  dataSourceIds: DataSourceId[]
+  pageStates: readonly PageStateId[]
+  bodyId: string | null
+}
+
+function findUnavailable(expression: Expression, available: Available): StoredToken | undefined {
+  const { filterIds, dataSourceIds, pageStates, bodyId } = available
   for (const token of expression) {
     if (token.type === 'property' && token.dataSourceId && !dataSourceIds.includes(token.dataSourceId)) return token
+    if (token.type === 'state' && token.componentId === bodyId && isPageState(token.storedStateId) && !pageStates.includes(token.storedStateId)) return token
     if (token.type !== 'filter') continue
     if (!filterIds.includes(token.id)) return token
-    const nested = Object.values(token.options ?? {}).map(option => findUnavailable(toExpression(option) ?? [], filterIds, dataSourceIds)).find(Boolean)
+    const nested = Object.values(token.options ?? {}).map(option => findUnavailable(toExpression(option) ?? [], available)).find(Boolean)
     if (nested) return nested
   }
 }
 
-function checkAvailable(editor: Editor, ssgId: SsgId) {
+function getCheckedExpressions(page: Page): { expression: Expression, where: string }[] {
+  const settings = Object.entries(page.get('settings') ?? {})
+    .map(([key, value]) => ({ expression: toExpression(value) ?? [], where: `its setting "${key}"` }))
+  const elements = getPageExpressions(page)
+    // Hidden states are copies of the page settings
+    .filter(({ hidden }) => !hidden)
+    .map(({ expression, component }) => ({ expression, where: `the element "${component.getName()}"` }))
+  return [...settings, ...elements]
+}
+
+function isPageState(stateId: string): stateId is PageStateId {
+  return (PAGE_STATE_IDS as readonly string[]).includes(stateId)
+}
+
+function checkAvailable(editor: Editor, ssgId: SsgId, pageStates: readonly PageStateId[]) {
   const filterIds = getFilters().map(({ id }) => id)
   const dataSourceIds = getAllDataSources().map(({ id }) => id)
   for (const page of editor.Pages.getAll()) {
-    for (const { expression, component } of getPageExpressions(page)) {
-      const token = findUnavailable(expression, filterIds, dataSourceIds)
-      if (token) throw new Error(`Page "${page.getName()}" uses "${token.label || ('id' in token ? token.id : '') || ('fieldId' in token ? token.fieldId : '')}" in the element "${component.getName()}", which is not available with ${ssgId}`)
+    const available = { filterIds, dataSourceIds, pageStates, bodyId: getPersistantId(page.getMainComponent()) }
+    for (const { expression, where } of getCheckedExpressions(page)) {
+      const token = findUnavailable(expression, available)
+      const hint = token?.type === 'state' && pageStates.includes('item') ? `, use "${PAGE_ITEM_LABEL}" instead` : ''
+      if (token) throw new Error(`Page "${page.getName()}" uses "${token.label || ('id' in token ? token.id : '') || ('fieldId' in token ? token.fieldId : '')}" in ${where}, which is not available with ${ssgId}${hint}`)
     }
   }
+}
+
+export function getSsgId(editor: Editor, config: ClientConfig): SsgId {
+  return (editor.getModel().get('settings') as WebsiteSettings | undefined)?.ssg ?? config.ssg
 }
 
 export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgId, Ssg>) {
@@ -66,7 +97,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   let editorFilters: Filter[] | null = null
 
   editor.on(`${ClientEvent.SETTINGS_SAVE_END} storage:end:load`, () => {
-    const ssgId = (editor.getModel().get('settings') as WebsiteSettings | undefined)?.ssg ?? config.ssg
+    const ssgId = getSsgId(editor, config)
     const own = ssgs[ssgId].dataSources ?? []
     const others = Object.values(ssgs).flatMap(({ dataSources }) => dataSources ?? []).filter(dataSource => !own.includes(dataSource))
     others.filter(dataSource => getAllDataSources().includes(dataSource)).forEach(removeDataSource)
@@ -84,7 +115,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   editor.on(ClientEvent.PUBLISH_START, ({ siteSettings }: { siteSettings: WebsiteSettings }) => {
     const ssgId = siteSettings.ssg ?? config.ssg
     ssg = ssgs[ssgId]
-    withNotification(() => checkAvailable(editor, ssgId), editor, null)
+    withNotification(() => checkAvailable(editor, ssgId, ssgs[ssgId].pageStates), editor, null)
     ssg.onStart?.()
     if (!siteSettings.ssg) {
       siteSettings.ssg = ssgId

@@ -22,9 +22,10 @@ import { getPageSlug } from '~/common/page'
 import { transformPermalink } from '../../publication-transformers'
 import type { Ssg } from './ssg'
 import { clearRenderCache, renderComponent, withNotification } from './render'
-import { dataSourceVariable, goSyntax } from './gotmpl'
+import { dataSourceVariable, getGoExpression, goSyntax, stateVariable } from './gotmpl'
 import { getHugoFilters } from './hugo-filters'
 import type { Silex11tyPluginWebsiteSettings } from './index'
+import { PAGE_DATA_KEY, PAGE_SIZE_KEY, PERMALINK_KEY } from './settings-keys'
 
 const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Content | jsonify }}
 {{- $opts := dict "method" "post" "body" $body "headers" (dict "Content-Type" "application/json") }}
@@ -37,8 +38,16 @@ const GRAPHQL_PARTIAL = `{{- $body := dict "query" (resources.Get .query).Conten
 {{- return $res.data }}
 `
 
+const COLLECTION_SETTINGS = [PAGE_DATA_KEY, PERMALINK_KEY]
+
+function getCollectionData(page: Page): Expression {
+  return toExpression((page.get('settings') as Silex11tyPluginWebsiteSettings | undefined)?.[PAGE_DATA_KEY]) ?? []
+}
+
 function getDataSettings(page: Page): string[] {
+  const isCollection = getCollectionData(page).length > 0
   return Object.entries(page.get('settings') ?? {})
+    .filter(([key]) => !isCollection || !COLLECTION_SETTINGS.includes(key))
     .filter(([, value]) => !!toExpression(value) && fixedText(toExpression(value)) === null)
     .map(([key]) => key)
 }
@@ -61,6 +70,10 @@ function usesDataWithoutSource(expression: Expression): boolean {
 function checkSupported(page: Page) {
   const settings = (page.get('settings') ?? {}) as Silex11tyPluginWebsiteSettings
   if (settings.silexLanguagesList?.split(',').some(lang => lang.trim())) throw new Error(`Page "${page.getName()}" has several languages, which publishing with Hugo does not support`)
+  if (getCollectionData(page).length) {
+    if (parseInt(settings[PAGE_SIZE_KEY] || '1') > 1) throw new Error(`Page "${page.getName()}" shows several items per page, which publishing with Hugo does not support yet`)
+    if (!toExpression(settings[PERMALINK_KEY])?.length) throw new Error(`Page "${page.getName()}" is a collection page without a permalink, which publishing with Hugo needs`)
+  }
   const [setting] = getDataSettings(page)
   if (setting) throw new Error(`Page "${page.getName()}" uses data in its setting "${setting}", which publishing with Hugo does not support yet`)
   const eleventyData = getPageExpressions(page).find(({ expression }) => usesDataWithoutSource(expression))
@@ -76,11 +89,25 @@ function getEndpoint(dataSourceId: string): string {
   return options.url
 }
 
-function getLayout(slug: string, queries: Record<string, string>, html: string): string {
-  const calls = Object.keys(queries)
+function getQueryCalls(slug: string, queries: Record<string, string>): string {
+  return Object.keys(queries)
     .map(dataSourceId => `{{ ${dataSourceVariable(dataSourceId)} := partial "silex/graphql.html" (dict "endpoint" ${JSON.stringify(getEndpoint(dataSourceId))} "query" "silex/${slug}-${dataSourceId}.graphql") -}}\n`)
     .join('')
-  return calls + html
+}
+
+// The item of the page is given by the content adapter
+function getItemState(page: Page): string {
+  return `{{ ${stateVariable(page.getMainComponent(), 'item')} := .Params.item -}}\n`
+}
+
+function getContentAdapter(page: Page, slug: string, queries: Record<string, string>): string {
+  const body = page.getMainComponent()
+  const permalink = toExpression((page.get('settings') as Silex11tyPluginWebsiteSettings)[PERMALINK_KEY])!
+  return `${getQueryCalls(slug, queries)}{{ range $index, $item := ${getGoExpression(body, getCollectionData(page))} -}}
+{{ ${stateVariable(body, 'item')} := $item -}}
+{{ $.AddPage (dict "path" (string $index) "url" ${getGoExpression(body, permalink)} "layout" ${JSON.stringify(slug)} "params" (dict "item" $item)) -}}
+{{ end -}}
+`
 }
 
 function transformFiles(editor: Editor, data: PublicationData) {
@@ -91,14 +118,28 @@ function transformFiles(editor: Editor, data: PublicationData) {
     const queries = getPageQuery(page, editor)
     const layout = data.files!.find(file => file.path === `/layouts/${slug}.html`) as ClientSideFileWithContent | undefined
     if (!layout) throw new Error(`No file for page "${page.getName()}"`)
-    layout.content = getLayout(slug, queries, layout.content)
+    const isCollection = getCollectionData(page).length > 0
+    layout.content = getQueryCalls(slug, queries) + (isCollection ? getItemState(page) : '') + layout.content
     const url = transformPermalink(editor, `/${slug}.html`, ClientSideFileType.HTML, Initiator.HTML)
-    data.files!.push({
-      type: ClientSideFileType.OTHER,
-      // The home page of a Hugo site is content/_index.md, a section with the same URL would be ignored
-      path: url === '/' ? '/content/_index.md' : `/content/${slug}/_index.md`,
-      content: `---\nurl: ${JSON.stringify(url)}\nlayout: ${JSON.stringify(slug)}\n---\n`,
-    } as ClientSideFileWithContent, ...Object.entries(queries).map(([dataSourceId, query]) => ({
+    if (isCollection) {
+      data.files!.push({
+        type: ClientSideFileType.OTHER,
+        path: `/content/${slug}/_index.md`,
+        content: '---\nbuild:\n  render: never\n  list: never\n---\n',
+      } as ClientSideFileWithContent, {
+        type: ClientSideFileType.OTHER,
+        path: `/content/${slug}/_content.gotmpl`,
+        content: getContentAdapter(page, slug, queries),
+      } as ClientSideFileWithContent)
+    } else {
+      data.files!.push({
+        type: ClientSideFileType.OTHER,
+        // The home page of a Hugo site is content/_index.md, a section with the same URL would be ignored
+        path: url === '/' ? '/content/_index.md' : `/content/${slug}/_index.md`,
+        content: `---\nurl: ${JSON.stringify(url)}\nlayout: ${JSON.stringify(slug)}\n---\n`,
+      } as ClientSideFileWithContent)
+    }
+    data.files!.push(...Object.entries(queries).map(([dataSourceId, query]) => ({
       type: ClientSideFileType.OTHER,
       path: `/assets/silex/${slug}-${dataSourceId}.graphql`,
       content: query,
@@ -116,6 +157,7 @@ function transformFiles(editor: Editor, data: PublicationData) {
 export function hugo(editor: Editor): Ssg {
   const filters = getHugoFilters(editor)
   return {
+    pageStates: ['item'],
     filters,
     onStart: () => withNotification(() => editor.Pages.getAll().filter(page => isCmsPage(page)).forEach(page => checkSupported(page)), editor, null),
     renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, goSyntax, component, toHtml), editor, component.getId()),

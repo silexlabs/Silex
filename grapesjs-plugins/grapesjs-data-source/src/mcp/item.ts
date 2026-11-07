@@ -25,7 +25,9 @@ import { getExpressionResultType } from '../model/token'
  * `item` in a path: the item of the closest loop, or else the item of the collection page
  */
 
-// Silex keeps the items of a collection page in a state of the body (cms/states.ts)
+// Silex keeps the item of a collection page in a state of the body (cms/states.ts)
+const PAGE_ITEM = 'item'
+// Sites made before the item state: the items of the page, then the filter first
 const PAGE_ITEMS = 'items'
 
 interface ItemScope {
@@ -80,30 +82,31 @@ export function itemScope(editor: Editor, component: Component | undefined, ownL
 
 function pageItem(editor: Editor, component: Component | undefined): ItemScope {
   const body = (component ? component.parents().pop() ?? component : undefined) ?? editor.Pages.getSelected()?.getMainComponent()
-  const items = body && getState(body, PAGE_ITEMS, true)
-  const itemsField = items?.expression?.length ? getExpressionResultType(items.expression, body!) : null
-  if (!body || !itemsField) {
+  const item = body && getState(body, PAGE_ITEM, true)
+  const itemField = item?.expression?.length ? getExpressionResultType(item.expression, body!) : null
+  if (!body || !item || !itemField) {
     throw new Error('No loop around the element, and this page is not a collection page. Bind an element with bind_to "loop", or the page with page(action:\'bind\', bind_to:\'collection\').')
   }
-  const ds = itemsField.dataSourceId === undefined ? undefined : getDataSource(itemsField.dataSourceId)
+  const ds = itemField.dataSourceId === undefined ? undefined : getDataSource(itemField.dataSourceId)
   if (!ds) throw new Error('The collection of this page has an unknown type. Bind the page again with bind_to "collection".')
   const state: State = {
     type: 'state',
-    storedStateId: PAGE_ITEMS,
+    storedStateId: PAGE_ITEM,
     componentId: getOrCreatePersistantId(body),
     exposed: true,
-    label: 'Pagination items',
+    forceKind: 'object',
+    label: item.label ?? PAGE_ITEM,
   }
-  const firstItem = { type: 'filter', id: 'first', label: 'first', options: {} } as unknown as StoredToken
-  return { tokens: [state, firstItem], field: { ...itemsField, kind: 'object' }, ds }
+  return { tokens: [state], field: { ...itemField, kind: 'object' }, ds }
 }
 
 // How many tokens of the expression stand for item: 0 when it does not start with item
 export function itemLength(expression: StoredToken[], pageBodyId: string | undefined): number {
   const [first, second] = expression
   if (isLoopItem(first)) return 1
-  const pageItems = first?.type === 'state' && first.storedStateId === PAGE_ITEMS && !!first.exposed && first.componentId === pageBodyId
-  return pageItems && second?.type === 'filter' && second.id === 'first' ? 2 : 0
+  const pageState = first?.type === 'state' && !!first.exposed && first.componentId === pageBodyId ? first.storedStateId : null
+  if (pageState === PAGE_ITEM) return 1
+  return pageState === PAGE_ITEMS && second?.type === 'filter' && second.id === 'first' ? 2 : 0
 }
 
 // The elements in the loop that use its item, its own loop binding aside

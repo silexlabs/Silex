@@ -28,14 +28,18 @@ export function getContext(component: Component, manager: DataSourceManagerState
     // Get explicitely set states
     states
       .push(...(getStateIds(parent, true, parent === component ? currentStateId : undefined)
-        .map((stateId: StateId): State => ({
-          type: 'state',
-          storedStateId: stateId,
-          previewIndex: 8888,
-          label: getState(parent, stateId, true)?.label || stateId,
-          componentId: getOrCreatePersistantId(parent),
-          exposed: true,
-        }))))
+        .map((stateId: StateId): State => {
+          const state = getState(parent, stateId, true)
+          return {
+            type: 'state',
+            storedStateId: stateId,
+            previewIndex: 8888,
+            label: state?.label || stateId,
+            componentId: getOrCreatePersistantId(parent),
+            exposed: true,
+            ...(state?.kind ? { forceKind: state.kind } : {}),
+          }
+        })))
     // Get states from loops
     if (parent !== component || !hideLoopData) { // If it is a loop on the parent or if we don't hide the loop data
       const loopDataState = getState(parent, '__data', false)
