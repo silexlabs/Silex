@@ -167,7 +167,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
   // Add CMS plugin if enabled
   if (config.cmsConfig?.enabled !== false) {
     dynamicPlugins.push({name: './cms', value: cmsPlugin})
-    dynamicPluginsOpts[cmsPlugin.toString()] = config.cmsConfig
+    dynamicPluginsOpts[cmsPlugin.toString()] = { ...config.cmsConfig, clientConfig: config }
   }
 
   return {

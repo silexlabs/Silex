@@ -303,4 +303,5 @@ export enum Properties {
 export interface ComponentExpression {
   expression: Expression
   component: Component
+  hidden?: boolean
 }

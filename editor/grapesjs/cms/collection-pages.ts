@@ -107,7 +107,7 @@ function getHtml(editor: Editor): TemplateResult {
     })
   }}
           >
-          Add pagination data in the page settings
+          Add page data in the page settings
         </a>
     </div>`
     : groups.map((items, index) => {

@@ -3,25 +3,19 @@ import {
   Filter, Property, State, StateId, Token, getPersistantId, getStateVariableName, toExpression,
   FIXED_TOKEN_ID,
   UnariOperator,
-  getExpressionResultType,
   BinaryOperator,
 } from '@silexlabs/grapesjs-data-source'
 import { Component } from 'grapesjs'
 import { EleventyDataSourceId } from './DataSource'
 import { getSliceOptions } from './slice'
+import type { BinaryCondition, Condition, UnaryCondition } from './render'
 
-export interface BinaryCondition {
-  operator: BinaryOperator,
-  expression: Expression,
-  expression2: Expression,
+export const ELEVENTY_PAGE_STATES: Record<string, string> = {
+  'item': 'pagination.items[0]',
+  'pagination': 'pagination',
+  'items': 'pagination.items',
+  'pages': 'pagination.pages',
 }
-
-export interface UnaryCondition {
-  operator: UnariOperator,
-  expression: Expression,
-}
-
-export type Condition = BinaryCondition | UnaryCondition
 
 /**
  * Generate liquid instructions which echo the value of an expression
@@ -79,11 +73,6 @@ export function assignBlock(stateId: StateId, component: Component, expression: 
  * This is used for components states
  */
 export function loopBlock(component: Component, expression: Expression): [start: string, end: string] {
-  if (expression.length === 0) throw new Error('Expression is empty')
-  // Check data to loop over
-  const field = getExpressionResultType(expression, component)
-  if (!field) throw new Error(`Expression ${expression.map(token => token.label).join(' -> ')} is invalid`)
-  if (field.kind !== 'list') throw new Error(`Provided property needs to be a list in order to loop, not a ${field.kind}`)
   const statements = getLiquidBlock(component, expression)
   const loopDataVariableName = statements[statements.length - 1].variableName
   const persistantId = getPersistantId(component)
@@ -106,16 +95,10 @@ export function loopBlock(component: Component, expression: Expression): [start:
  * This is used for components states
  */
 export function ifBlock(component: Component, condition: Condition): [start: string, end: string] {
-  // Check the first expression
-  if (condition.expression.length === 0) throw new Error('If block expression is empty')
-
   // Check the operator
   const unary = Object.values(UnariOperator).includes(condition.operator as UnariOperator) ? condition as UnaryCondition : null
   const binary = Object.values(BinaryOperator).includes(condition.operator as BinaryOperator) ? condition as BinaryCondition : null
   if (!unary && !binary) throw new Error(`If block operator is invalid: ${condition.operator}`)
-
-  // Check the second expression
-  if (binary && binary.expression2.length === 0) return ['', '']
 
   // Get liquid for the first expression
   const statements = getLiquidBlock(component, condition.expression)
@@ -255,13 +238,7 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
     switch (token.type) {
     case 'state': {
       if (index !== 0) throw new Error('State can only be the first token in an expression')
-      // Map known 11ty pagination states to their variable names
-      const stateToFieldId: Record<string, string> = {
-        'pagination': 'pagination',
-        'items': 'pagination.items',
-        'pages': 'pagination.pages',
-      }
-      const fieldId = stateToFieldId[token.storedStateId]
+      const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
       if (fieldId) {
         return fieldId
       }
@@ -350,13 +327,7 @@ function handleFilterOption(filter: Filter, key: string, value: string, componen
           return token.fieldId
         }
         case 'state': {
-          // Map known 11ty pagination states to their variable names
-          const stateToFieldId: Record<string, string> = {
-            'pagination': 'pagination',
-            'items': 'pagination.items',
-            'pages': 'pagination.pages',
-          }
-          const fieldId = stateToFieldId[token.storedStateId]
+          const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
           if (fieldId) {
             return fieldId
           }

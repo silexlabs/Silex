@@ -1,7 +1,9 @@
 import dataSourcePlugin, { DataSourceEditorOptions, DATA_SOURCE_ERROR, IDataSource } from '@silexlabs/grapesjs-data-source'
 import { ClientConfig } from '../../config'
 import { getZeroConfig } from './config'
-import publication from './publication'
+import { eleventy } from './eleventy'
+import { hugo } from './hugo'
+import ssgs, { getSsgId } from './ssg'
 import pageSettings from './page-settings'
 import siteSettings from './site-settings'
 import states from './states'
@@ -58,7 +60,7 @@ export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {
   eleventyImage?: boolean,
 }
 
-export default function (editor: Editor, options: Partial<EleventyPluginOptions> = {}) {
+export default function (editor: Editor, { clientConfig, ...options }: Partial<EleventyPluginOptions> & { clientConfig: ClientConfig }) {
   const filters = [
     ...eleventyFilters,
     'liquid',
@@ -78,12 +80,13 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
   } as DataSourceEditorOptions)
 
   DataSource(editor, opts)
+  const ssgList = { eleventy: eleventy(editor, opts), hugo: hugo(editor) }
   pageSettings(editor, opts)
-  siteSettings(editor, opts)
+  siteSettings(editor, opts, () => getSsgId(editor, clientConfig) === 'eleventy')
   collectionPages(editor, opts)
   pageBindings(editor)
-  states(editor)
-  publication(editor, opts)
+  states(editor, () => ssgList[getSsgId(editor, clientConfig)].pageStates)
+  ssgs(editor, clientConfig, ssgList)
   blocks(editor)
   buttons(editor)
   traits(editor)

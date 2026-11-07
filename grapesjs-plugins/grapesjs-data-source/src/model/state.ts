@@ -16,7 +16,7 @@
  */
 
 import { Component, Editor } from 'grapesjs'
-import { Expression, StateId, State } from '../types'
+import { Expression, FieldKind, StateId, State } from '../types'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -46,6 +46,8 @@ export interface StoredState {
   label?: string
   hidden?: boolean
   expression: Expression
+  // Overrides the kind of the expression result, e.g. one item of a list
+  kind?: FieldKind
 }
 
 export interface StoredStateWithId extends StoredState {
@@ -163,6 +165,7 @@ export function getStates(component: Component, exported: boolean = true): Store
     label: state.label,
     hidden: state.hidden,
     expression: state.expression,
+    kind: state.kind,
   }))
 }
 
@@ -187,6 +190,7 @@ export function getState(component: Component, id: StateId, exported: boolean = 
     label: state.label,
     hidden: state.hidden,
     expression: state.expression,
+    kind: state.kind,
   }
 }
 

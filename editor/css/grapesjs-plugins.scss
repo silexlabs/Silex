@@ -199,6 +199,8 @@
     // publication, and an accordion that scrolls is no place for them
     .silex-publication-message {
       margin: 10px 0;
+      // The CSS file names end with a long hash
+      overflow-wrap: anywhere;
 
       p:first-child {
         margin-top: 0;

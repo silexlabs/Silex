@@ -1,32 +1,17 @@
 import dedent from 'dedent'
 import { Component, Page, Editor } from 'grapesjs'
-import { BinaryOperator, Filter, GraphQLOptions, IDataSource, NOTIFICATION_GROUP, Properties, Property, State, StateId, StoredState, Token, UnariOperator, fromStored, getDataSource, getPageQuery, getPersistantId, getState, getStateIds, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
-import { assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
+import { Filter, GraphQLOptions, IDataSource, Property, State, Token, getDataSource, getPageQuery, getPersistantId, getState, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { EleventyDataSourceId } from './DataSource'
+import { ELEVENTY_PAGE_STATES, assignBlock, echoBlock, echoBlock1line, getPaginationData, ifBlock, loopBlock } from './liquid'
 import { EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
-import { PublicationTransformer } from '../../publication-transformers'
-import { ClientConfig } from '../../config'
-import { UNWRAP_ID } from './traits'
-import { ClientEvent } from '../../events'
 import { getPageSlug, getPageUrl } from '~/common/page'
+import type { Ssg } from './ssg'
+import { PAGE_STATE_IDS } from './states'
+import { applySeoOverrides } from './settings-keys'
+import { SHORTCODE_ID } from './blocks'
+import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
+import { ensureLeadingAndTrailingSlash } from './permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
-
-const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
-
-/**
- * A memoization mechanism to avoid rendering the same component multiple times
- * The cache is cleared every time the publication is done
- * This is a workaround because grapesjs editor.getHtml will call each component's toHtml method multiple times
- */
-const cache = new Map<string, string>()
-
-/**
- * A state with the real tokens instead of the stored tokens
- */
-interface RealState {
-  stateId: StateId,
-  label?: string,
-  tokens: Token[]
-}
 
 function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11tyPluginWebsiteSettings): object | false {
   if(typeof options.fetchPluginSettings !== 'undefined') {
@@ -35,59 +20,24 @@ function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11
   return settings.eleventyFetch ? { duration: '1s' } : false
 }
 
-export default function (editor: Editor, options: EleventyPluginOptions) {
-  /* @ts-ignore There should be a better way to get Silex config */
-  const config = window.silex.config as ClientConfig
-  // Generate the liquid when the site is published
-  config.addPublicationTransformers({
-    // Render the components when they are published
-    renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, component, toHtml), editor, component.getId()),
-    transformPermalink: (link: string, type: ClientSideFileType) => type === ClientSideFileType.HTML ? linkToPermalink(editor, link) : link,
-  })
-
-  // Generate 11ty data files
-  // FIXME: should this be in the publication transformers
-  editor.on('silex:publish:page', (data, ...args) => {
-    withNotification(() => transformPage(editor, data), editor, null)
-  })
-  editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }, ...args) => {
-    withNotification(() => transformFiles(editor, options, data), editor, null)
-  })
-  editor.on('silex:publish:end', (...args) => {
-    cache.clear()
-  })
+const liquidSyntax: TemplateSyntax = {
+  echo: echoBlock,
+  assign: assignBlock,
+  loop: loopBlock,
+  if: ifBlock,
 }
 
-/**
- * Make html attribute
- * Quote strings, no values for boolean
- */
-function makeAttribute(key: string, value: string | boolean): string {
-  switch (typeof value) {
-  case 'boolean': return value ? key : ''
-  default: return `${key}="${value}"`
+export function eleventy(editor: Editor, options: EleventyPluginOptions): Ssg {
+  return {
+    pageStates: PAGE_STATE_IDS,
+    dataSources: [getDataSource(EleventyDataSourceId)].filter((dataSource): dataSource is IDataSource => !!dataSource),
+    blocks: [SHORTCODE_ID],
+    renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, liquidSyntax, component, toHtml), editor, component.getId()),
+    onPage: data => withNotification(() => transformPage(editor, data), editor, null),
+    // Generate 11ty data files
+    onData: data => withNotification(() => transformFiles(editor, options, data), editor, null),
+    onEnd: clearRenderCache,
   }
-}
-
-function ensureLeadingAndTrailingSlash(str: string): string {
-  if (str.length === 0) return '/'
-  let s = str
-  if (!s.startsWith('/')) s = '/' + s
-  // No empty file name
-  if (s.endsWith('/.html')) throw new Error('Permalink may not end with "/.html". Your missing a file name!')
-  // If it ends with .html, keep as-is; otherwise ensure trailing slash
-  if (!s.endsWith('/') && !s.endsWith('.html')) s = s + '/'
-  return s
-}
-
-// A page with a fixed permalink is published there, so links to it go there too
-export function linkToPermalink(editor: Editor, link: string): string {
-  const [, path, suffix] = link.match(/^([^?#]*)(.*)$/) ?? []
-  const page = editor.Pages.getAll().find(page => getPageUrl(getPageSlug(page.getName())) === path)
-  const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
-  const tokens = toExpression(settings?.eleventyPermalink) as Property[] | null
-  if (!tokens?.length || !tokens.every(token => token.type === 'property' && token.fieldId === 'fixed')) return link
-  return ensureLeadingAndTrailingSlash(tokens.map(token => token.options?.value ?? '').join('')) + suffix
 }
 
 export function getPermalink(page: Page, permalink: Token[], isCollectionPage: boolean, slug: string): string | null {
@@ -98,13 +48,7 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
       // Replace states which will be one from ./states.ts
       // For permalink, we need to use the actual 11ty variable names, not state references
       if(token.type === 'state') {
-        // Map known 11ty pagination states to their variable names
-        const stateToFieldId: Record<string, string> = {
-          'pagination': 'pagination',
-          'items': 'pagination.items',
-          'pages': 'pagination.pages',
-        }
-        const fieldId = stateToFieldId[token.storedStateId]
+        const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]
         if (fieldId) {
           // Create a clean Property token for known 11ty pagination states
           return {
@@ -167,6 +111,7 @@ export function getFrontMatter(page: Page, settings: Silex11tyPluginWebsiteSetti
     // because it is in double quotes in the front matter
     ?.replace(/"/g, '\\"')
 
+  // Size > 1 is deprecated, lists are paginated with Pagebreak: kept for the websites which use it
   return dedent`---
     ${data && data.length > 0 ? `pagination:
       addAllPagesToCollections: true
@@ -215,32 +160,7 @@ export function getBodyStates(page: Page): string {
 }
 
 export function transformPage(editor: Editor, data: { page: Page, siteSettings: WebsiteSettings, pageSettings: Silex11tyPluginWebsiteSettings }): void {
-  const { pageSettings, page } = data
-  const body = page.getMainComponent()
-  if (pageSettings.eleventySeoTitle) {
-    const expression = toExpression(pageSettings.eleventySeoTitle)
-    if (expression && expression.length) pageSettings.title = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventySeoDescription) {
-    const expression = toExpression(pageSettings.eleventySeoDescription)
-    if (expression && expression.length) pageSettings.description = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyFavicon) {
-    const expression = toExpression(pageSettings.eleventyFavicon)
-    if (expression && expression.length) pageSettings.favicon = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGImage) {
-    const expression = toExpression(pageSettings.eleventyOGImage)
-    if (expression && expression.length) pageSettings['og:image'] = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGTitle) {
-    const expression = toExpression(pageSettings.eleventyOGTitle)
-    if (expression && expression.length) pageSettings['og:title'] = echoBlock(body, expression)
-  }
-  if (pageSettings.eleventyOGDescription) {
-    const expression = toExpression(pageSettings.eleventyOGDescription)
-    if (expression && expression.length) pageSettings['og:description'] = echoBlock(body, expression)
-  }
+  applySeoOverrides(liquidSyntax, data.page, data.pageSettings)
 }
 
 /**
@@ -448,191 +368,4 @@ export function makeFetchCallEleventy(options: {key: string, url: string, method
     throw e
   }
 `
-}
-
-/**
- * Make stored states into real states
- * Filter out hidden states and empty expressions
- */
-function getRealStates(states: { stateId: StateId, state: StoredState }[]): { stateId: StateId, label: string, tokens: State[] }[] {
-  return states
-    .filter(({ state }) => !state.hidden)
-    .filter(({ state }) => state.expression.length > 0)
-    // From expression of stored tokens to tokens (with methods not only data)
-    .map(({ stateId, state }) => ({
-      stateId,
-      label: state.label || stateId,
-      tokens: state.expression.map(token => {
-        const componentId = state.expression[0].type === 'state' ? state.expression[0].componentId : null
-        return fromStored(token, componentId)
-      }),
-    }))
-}
-
-/**
- * Check if a state is an attribute
- * Exported for unit tests
- */
-export function isAttribute(label: string): boolean {
-  if (!label) return false
-  return !Object.values(Properties).includes(label as Properties)
-}
-
-/**
- * Build the attributes string for a given component
- * Handle attributes which appear multiple times (class, style)
- * Append to the original attributes
- * Exported for unit tests
- */
-export function buildAttributes(originalAttributes: Record<string, string>, attributeStates: { stateId: StateId, label: string, value: string }[]): string {
-  const attributesArr = Object.entries(originalAttributes)
-    // Start with the original attributes
-    .map(([label, value]) => ({
-      stateId: label,
-      label,
-      value,
-    }))
-    // Override or add state attributes
-    .concat(attributeStates)
-    // Handle attributes which appear multiple times
-    .reduce((final, { stateId, label, value }) => {
-      const existing = final.find(({ label: existingLabel }) => existingLabel === label)
-      if (existing) {
-        if (ATTRIBUTE_MULTIPLE_VALUES.includes(label)) {
-          // Add to the original value
-          existing.value += ' ' + value
-        } else {
-          // Override the original value
-          existing.value = value
-        }
-      } else {
-        // First time we see this attribute
-        final.push({
-          stateId,
-          label,
-          value,
-        })
-      }
-      // Return the original array
-      return final
-    }, [] as ({ stateId: StateId, value: string | boolean, label: string })[])
-  // Build final result
-  return attributesArr
-    // Convert to key="value" string
-    .map(({ label, value }) => makeAttribute(label, value))
-    // Back to string
-    .join(' ')
-}
-
-function withNotification<T>(cbk: () => T, editor: Editor, componentId: string | null): T {
-  try {
-    return cbk()
-  } catch (e) {
-    editor.runCommand('notifications:add', {
-      type: 'error',
-      message: `Error rendering component: ${e.message}`,
-      group: NOTIFICATION_GROUP,
-      componentId,
-    })
-    throw e
-  }
-}
-
-/**
- * Render the components when they are published
- */
-function renderComponent(editor: Editor, component: Component, toHtml: () => string): string | undefined {
-  if(cache.has(component.getId())) {
-    return cache.get(component.getId())
-  }
-
-  const statesPrivate = withNotification(() => getRealStates(getStateIds(component, false)
-    .map(stateId => ({
-      stateId,
-      state: getState(component, stateId, false)!,
-    }))), editor, component.getId())
-
-  const statesPublic = withNotification(() => getRealStates(getStateIds(component, true)
-    .map(stateId => ({
-      stateId,
-      state: getState(component, stateId, true)!,
-    }))), editor, component.getId())
-
-  const unwrap = component.get(UNWRAP_ID)
-
-  if (statesPrivate.length > 0 || statesPublic.length > 0 || unwrap) {
-    const tagName = component.get('tagName')?.toLowerCase()
-    if (tagName) {
-      // Convenience key value object
-      const statesObj = statesPrivate
-        // Filter out attributes, keep only properties
-        .filter(({ label }) => !isAttribute(label))
-        // Add states
-        .concat(statesPublic)
-        .reduce((final, { stateId, label, tokens }) => ({
-          ...final,
-          [stateId]: {
-            stateId,
-            label,
-            tokens,
-          },
-        }), {} as Record<Properties, RealState>)
-
-      const hasInnerHtml = !!statesObj.innerHTML?.tokens.length
-      const hasCondition = !!statesObj.condition?.tokens.length
-      const hasData = !!statesObj.__data?.tokens.length
-
-      // Style attribute
-      const innerHtml = hasInnerHtml ? echoBlock(component, statesObj.innerHTML.tokens) : component.getInnerHTML()
-      const operator = component.get('conditionOperator') ?? UnariOperator.TRUTHY
-      const binary = operator && Object.values(BinaryOperator).includes(operator)
-      const [ifStart, ifEnd] = hasCondition ? ifBlock(component, binary ? {
-        expression: statesObj.condition.tokens,
-        expression2: statesObj.condition2?.tokens ?? [],
-        operator,
-      } : {
-        expression: statesObj.condition.tokens,
-        operator,
-      }) : []
-      const [forStart, forEnd] = hasData ? loopBlock(component, statesObj.__data.tokens) : []
-      const states = statesPublic
-        .map(({ stateId, tokens }) => assignBlock(stateId, component, tokens))
-        .join('\n')
-      const before = (states ?? '') + (forStart ?? '') + (ifStart ?? '')
-      const after = (ifEnd ?? '') + (forEnd ?? '')
-
-      // Attributes
-      const originalAttributes = component.get('attributes') as Record<string, string>
-      // Add css classes
-      originalAttributes.class = component.getClasses().join(' ')
-      // Make the list of attributes
-      const attributes = buildAttributes(originalAttributes, statesPrivate
-        // Filter out properties, keep only attributes
-        .filter(({ label }) => isAttribute(label))
-        // Make tokens a string
-        .map(({ stateId, tokens, label }) => ({
-          stateId,
-          label,
-          value: echoBlock(component, tokens),
-        }))
-      )
-      if (unwrap) {
-        const html = `${before}${innerHtml}${after}`
-        cache.set(component.getId(), html)
-        return html
-      } else {
-        const html = `${before}<${tagName}${attributes ? ` ${attributes}` : ''}>${innerHtml}</${tagName}>${after}`
-        cache.set(component.getId(), html)
-        return html
-      }
-    } else {
-      // Not a real component
-      // FIXME: understand why
-      throw new Error('Why no tagName?')
-    }
-  } else {
-    const html = toHtml()
-    cache.set(component.getId(), html)
-    return html
-  }
 }

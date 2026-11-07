@@ -163,6 +163,28 @@ export function getFixedToken(value: string): Token {
   }
 }
 
+// Also looks inside the options of the filters, which are expressions stored as JSON
+export function findToken(value: unknown, test: (token: StoredToken, index: number) => boolean, index = 0): StoredToken | undefined {
+  if (Array.isArray(value)) {
+    for (const [i, item] of value.entries()) {
+      const found = findToken(item, test, i)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (typeof value === 'string' && value.startsWith('[')) {
+    try { return findToken(JSON.parse(value), test) } catch { return undefined }
+  }
+  if (value && typeof value === 'object') {
+    if (test(value as StoredToken, index)) return value as StoredToken
+    for (const item of Object.values(value)) {
+      const found = findToken(item, test)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
 export function fixedText(tokens: Expression | null): string | null {
   if (!tokens?.every(token => token.type === 'property' && token.fieldId === FIXED_TOKEN_ID)) return null
   return tokens.map(token => String((token as StoredProperty).options?.value ?? '')).join('')

@@ -1,11 +1,11 @@
 import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
-import { html } from 'lit-html'
+import { html, nothing } from 'lit-html'
 import { COMMAND_ADD_DATA_SOURCE } from '@silexlabs/grapesjs-data-source'
 import { Editor } from 'grapesjs'
 import { cmdAddSection } from '../settings'
 
-export default function(editor: Editor, opts: EleventyPluginOptions): void {
+export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy: () => boolean): void {
   editor.runCommand(cmdAddSection, {
     section: {
       id: CMS_SETTINGS_SECTION_ID,
@@ -39,6 +39,7 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
             </div>
             ${opts.view?.settingsEl ? (opts.view.settingsEl as () => HTMLElement)() : ''}
 
+            ${isEleventy() ? html`
             <details class="silex-more">
             <summary>11ty Config</summary>
             <div class="silex-help">
@@ -58,8 +59,9 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
             </label>
             <div class="silex-form__group col2">
             </div>
+            </details>
+            ` : nothing}
           </div>
-          </details>
           </div>
           `
       }
