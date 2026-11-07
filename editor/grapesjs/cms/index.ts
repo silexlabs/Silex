@@ -82,7 +82,7 @@ export default function (editor: Editor, { clientConfig, ...options }: Partial<E
   DataSource(editor, opts)
   const ssgList = { eleventy: eleventy(editor, opts), hugo: hugo(editor) }
   pageSettings(editor, opts)
-  siteSettings(editor, opts)
+  siteSettings(editor, opts, () => getSsgId(editor, clientConfig) === 'eleventy')
   collectionPages(editor, opts)
   pageBindings(editor)
   states(editor, () => ssgList[getSsgId(editor, clientConfig)].pageStates)
