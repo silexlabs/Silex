@@ -252,6 +252,13 @@ pub trait Integration: Send + Sync {
     /// even when two send it to the same remote.
     fn answers_for(&self, site: &Path) -> bool;
 
+    /// Why it does not answer for a website on one of its hosts, when the
+    /// account it would need is not on this computer
+    fn missing_account(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
+
     /// Where the website goes, as the user knows it
     fn place(&self, site: &Path) -> Option<String> {
         let _ = site;

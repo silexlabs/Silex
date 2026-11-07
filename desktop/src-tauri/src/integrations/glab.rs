@@ -156,6 +156,18 @@ impl Integration for Glab {
         Remote::of(site).is_some_and(|remote| remote.host == GITLAB || signed_in_to(&remote.host))
     }
 
+    fn missing_account(&self, site: &Path) -> Option<String> {
+        let host = Remote::of(site)?.host;
+        let block = config().and_then(|config| host_block(&config, &host));
+        let known = OAUTH_APPLICATIONS.iter().any(|(server, _)| *server == host) || block.is_some();
+        let signed_in = block.is_some_and(|block| holds_a_login(&block));
+        (known && !signed_in).then(|| {
+            format!(
+                "No GitLab account for {host} on this computer. Sign in to {host} in Integrations."
+            )
+        })
+    }
+
     fn urls(
         &self,
         cli: &Path,
@@ -300,13 +312,19 @@ fn signed_out(error: SyncError, site: &Path, config: &[String]) -> SyncError {
     if config.is_empty() {
         return SyncError::Other(why);
     }
-    let host = Remote::of(site).map(|remote| remote.host).unwrap_or_default();
+    let host = Remote::of(site)
+        .map(|remote| remote.host)
+        .unwrap_or_default();
     if why.contains("doesn't match the one that is configured") {
         return SyncError::Other(format!(
             "The address of this website names another account on {host} than the GitLab account you signed in with. Remove that name from the address, or sign in to {host} with that account in Integrations."
         ));
     }
-    let refused = ["Authentication failed", "could not read Username", "could not read Password"];
+    let refused = [
+        "Authentication failed",
+        "could not read Username",
+        "could not read Password",
+    ];
     if refused.iter().any(|said| why.contains(said)) {
         return SyncError::Other(format!(
             "{host} did not accept your GitLab account: it may have expired or been revoked. Sign in to {host} again in Integrations."

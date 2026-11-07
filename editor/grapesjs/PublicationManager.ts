@@ -19,7 +19,7 @@ import { getPageSlug } from '~/common/page'
 import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '~/common/types'
 import { Component, Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
-import { connectorList, getUser, logout, publicationStatus, publish } from '../api'
+import { connectorList, getUser, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '~/common/constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
@@ -35,7 +35,7 @@ import { t } from '../i18n'
  * Useful commands:
  * - publish: starts the publication process and optionally open the dialog
  * - publish-login: open the login dialog
- * - publish-logout: logout from the hosting service and let the user choose a hosting service again
+ * - publish-logout: forget the hosting of this website and let the user choose one again
  */
 
 // Constants
@@ -127,9 +127,10 @@ export class PublicationManager {
     } as PublicationManagerOptions
     // Save the publication settings in the website settings
     editor.on('storage:start:store', (data: WebsiteData) => {
-      // The OAuth address carries the state of one login, nothing the website keeps
+      // The OAuth address carries the state of one login, and why a hosting
+      // cannot publish is about this computer now: nothing the website keeps
       const { connector } = this.settings
-      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null } } : this.settings
+      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null, unavailable: undefined } } : this.settings
     })
     // load publication settings from the website
     editor.on('storage:end:load', (data: WebsiteData) => {
@@ -232,21 +233,11 @@ export class PublicationManager {
     })
   }
 
-  async goLogout() {
-    try {
-      // Logging out of the hosting would also kill the storage session when both
-      // use the same connector (e.g. gitlab): switching hosting must not log out (#1712)
-      const storageId = (this.editor.getModel().get('user') as ConnectorUser)?.storage?.connectorId
-      if (this.settings.connector.connectorId !== storageId) {
-        await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
-      }
-      this.forgetHosting()
-      this.dialog && this.dialog.displayPending(this.job, this.status)
-    } catch (e) {
-      console.error('logout error', e)
-      this.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(e.message, this.job, this.status)
-    }
+  goLogout() {
+    // Only this website stops publishing there: the session of the hosting
+    // serves the other websites too
+    this.forgetHosting()
+    this.dialog && this.dialog.displayPending(this.job, this.status)
   }
 
   async getPublicationData(projectData, siteSettings, preventDefault: () => void): Promise<PublicationData> {
@@ -343,6 +334,7 @@ export class PublicationManager {
   async startPublication() {
     try {
       if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
+      if (this.settings.connector?.unavailable) throw new Error(this.settings.connector.unavailable)
       this.status = PublicationStatus.STATUS_PENDING
       this.job = null
       this.dialog && this.dialog.displayPending(this.job, this.status)

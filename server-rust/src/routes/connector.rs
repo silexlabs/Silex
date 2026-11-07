@@ -70,6 +70,10 @@ pub struct ConnectorData {
     /// the website is served. Silex Desktop only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options_form: Option<OptionsForm>,
+
+    /// Why this hosting cannot publish the website. Silex Desktop only.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unavailable: Option<String>,
 }
 
 /// User as the editor expects it. `storage` is read by the publication code,
@@ -80,47 +84,52 @@ pub struct ConnectorUser {
     pub storage: ConnectorData,
 }
 
-async fn connector_data(state: &AppState, connector_type: ConnectorType) -> ConnectorData {
-    // Only the hosting is asked about: the storage is these files whoever
-    // embeds the crate, while what serves a website depends on the machine
-    let hosting = match (connector_type, state.actions.clone()) {
-        // Answering reads the files of the website and of the programs that
-        // publish it, which is no work for the async runtime
-        (ConnectorType::Hosting, Some(actions)) => {
-            tokio::task::spawn_blocking(move || actions.hosting())
-                .await
-                .unwrap_or_else(|e| {
-                    tracing::warn!("Could not tell what hosts the website: {}", e);
-                    None
-                })
-        }
-        _ => None,
-    };
+/// The hosting the editor publishes to when no host application takes the
+/// files further, and the one id the publication tells apart
+pub const LOCAL_FOLDER: &str = "local-folder";
+const LOCAL_FOLDER_NAME: &str = "File system hosting";
 
-    let (connector_id, display_name, options_form) = match hosting {
-        Some(hosting) => (
-            hosting.connector_id,
-            hosting.display_name,
-            hosting.options_form,
-        ),
-        None => {
-            let (connector_id, display_name) = match connector_type {
-                ConnectorType::Storage => ("fs-storage", "File system storage"),
-                ConnectorType::Hosting => ("fs-hosting", "File system hosting"),
-            };
-            (connector_id, display_name.to_string(), None)
-        }
-    };
-
-    ConnectorData {
+async fn connectors(state: &AppState, connector_type: ConnectorType) -> Vec<ConnectorData> {
+    let local = |connector_id, display_name: &str| ConnectorData {
         connector_id,
         connector_type,
-        display_name,
+        display_name: display_name.to_string(),
         disable_logout: true,
         is_logged_in: true,
         oauth_url: None,
-        options_form,
-    }
+        options_form: None,
+        unavailable: None,
+    };
+    // Only the hosting is asked about: the storage is these files whoever
+    // embeds the crate, while what serves a website depends on the machine
+    let (ConnectorType::Hosting, Some(actions)) = (connector_type, state.actions.clone()) else {
+        return vec![match connector_type {
+            ConnectorType::Storage => local("fs-storage", "File system storage"),
+            ConnectorType::Hosting => local(LOCAL_FOLDER, LOCAL_FOLDER_NAME),
+        }];
+    };
+    // Answering reads the files of the website and of the programs that
+    // publish it, which is no work for the async runtime
+    let hostings = tokio::task::spawn_blocking(move || actions.hostings())
+        .await
+        .unwrap_or_else(|e| {
+            tracing::warn!("Could not tell what hosts the website: {}", e);
+            Vec::new()
+        });
+    hostings
+        .into_iter()
+        .map(|hosting| ConnectorData {
+            connector_id: hosting.connector_id,
+            connector_type,
+            display_name: hosting.display_name,
+            disable_logout: true,
+            is_logged_in: true,
+            oauth_url: None,
+            options_form: hosting.options_form,
+            unavailable: hosting.unavailable,
+        })
+        .chain([local(LOCAL_FOLDER, LOCAL_FOLDER_NAME)])
+        .collect()
 }
 
 /// List the connectors of a given type
@@ -130,7 +139,7 @@ async fn list_connectors(
     State(state): State<AppState>,
     Query(query): Query<ConnectorTypeQuery>,
 ) -> Json<Vec<ConnectorData>> {
-    Json(vec![connector_data(&state, query.connector_type).await])
+    Json(connectors(&state, query.connector_type).await)
 }
 
 /// Get the current user
@@ -142,7 +151,7 @@ async fn get_user(
 ) -> Json<ConnectorUser> {
     Json(ConnectorUser {
         name: user_name(),
-        storage: connector_data(&state, query.connector_type).await,
+        storage: connectors(&state, query.connector_type).await.remove(0),
     })
 }
 

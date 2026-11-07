@@ -32,6 +32,7 @@ use crate::error::{Error, Result};
 use crate::jobs::{JobData, JobStatus};
 use crate::models::{File, WebsiteId};
 use crate::publish;
+use crate::routes::connector::LOCAL_FOLDER;
 use crate::routes::AppState;
 use crate::storage;
 
@@ -46,6 +47,8 @@ pub fn routes() -> Router<AppState> {
 #[serde(rename_all = "camelCase")]
 pub struct PublishQuery {
     pub website_id: WebsiteId,
+
+    pub hosting_id: String,
 
     /// The publication options, as JSON
     ///
@@ -164,20 +167,21 @@ async fn publish_website(
         .read(job.id())
         .expect("the publication was just opened");
 
-    if let Some(actions) = state.actions.clone() {
-        let website_id = query.website_id.clone();
-        let options = query.options();
-        let data_path = state.data_path.clone();
-        // Sending a website runs git over the network, on a thread of its own
-        // so that a slow push does not freeze the server
-        tokio::task::spawn_blocking(move || {
-            actions.deploy(website_id.as_str(), &options, &job);
-            // A host that returned without saying how it went leaves the
-            // publication where it really is rather than open forever
-            job.succeeded(published_message(&data_path, &website_id));
-        });
-    } else {
-        job.succeeded(published_message(&state.data_path, &query.website_id));
+    match state.actions.clone() {
+        Some(actions) if query.hosting_id != LOCAL_FOLDER => {
+            let website_id = query.website_id.clone();
+            let options = query.options();
+            let data_path = state.data_path.clone();
+            // Sending a website runs git over the network, on a thread of its own
+            // so that a slow push does not freeze the server
+            tokio::task::spawn_blocking(move || {
+                actions.deploy(website_id.as_str(), &options, &job);
+                // A host that returned without saying how it went leaves the
+                // publication where it really is rather than open forever
+                job.succeeded(published_message(&data_path, &website_id));
+            });
+        }
+        _ => job.succeeded(published_message(&state.data_path, &query.website_id)),
     }
 
     Ok(Json(PublishResponse {

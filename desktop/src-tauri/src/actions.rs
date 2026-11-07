@@ -704,11 +704,10 @@ impl silex_server::Actions for SilexActions {
     }
 
     /// Where the website being edited is kept, named to the editor
-    ///
-    /// None for a website no integration speaks for: the editor then shows the
-    /// file system hosting it showed before, which publishes just as well.
-    fn hosting(&self) -> Option<Hosting> {
-        let website_id = held(&self.current_website_id).clone()?;
+    fn hostings(&self) -> Vec<Hosting> {
+        let Some(website_id) = held(&self.current_website_id).clone() else {
+            return Vec::new();
+        };
         self.who_hosts(&website_id)
     }
 }
@@ -716,16 +715,29 @@ impl silex_server::Actions for SilexActions {
 impl SilexActions {
     /// Read on this computer, without running a program: the editor asks
     /// each time its publication dialog opens
-    fn who_hosts(&self, website_id: &str) -> Option<Hosting> {
-        let site = self.site_path(website_id)?;
-        let (integration, _) = crate::integrations::snapshot(&self.integrations)
-            .get(Capacity::Deploy, &site)
-            .next()?;
-        Some(Hosting {
-            connector_id: "fs-hosting",
-            display_name: Remote::of(&site)?.host,
+    fn who_hosts(&self, website_id: &str) -> Vec<Hosting> {
+        let Some(site) = self.site_path(website_id) else {
+            return Vec::new();
+        };
+        let Some(host) = Remote::of(&site).map(|remote| remote.host) else {
+            return Vec::new();
+        };
+        let integrations = crate::integrations::snapshot(&self.integrations);
+        let hosting = |integration: &dyn Integration, unavailable| Hosting {
+            connector_id: integration.program(),
+            display_name: host.clone(),
             options_form: integration.options_form(&site),
-        })
+            unavailable,
+        };
+        integrations
+            .get(Capacity::Deploy, &site)
+            .map(|(integration, _)| hosting(integration, None))
+            .chain(
+                integrations
+                    .wanting_an_account(Capacity::Deploy, &site)
+                    .map(|(integration, why)| hosting(integration, Some(why))),
+            )
+            .collect()
     }
 }
 

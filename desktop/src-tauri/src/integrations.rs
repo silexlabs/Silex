@@ -128,6 +128,21 @@ impl Integrations {
             })
     }
 
+    /// The integrations the user enabled that would do this for this website
+    /// if an account of theirs were on this computer, with why it is not
+    pub fn wanting_an_account<'a>(
+        &'a self,
+        capacity: Capacity,
+        site: &'a Path,
+    ) -> impl Iterator<Item = (&'static dyn Integration, String)> + 'a {
+        catalog()
+            .into_iter()
+            .filter(move |integration| integration.capacities().contains(&capacity))
+            .filter(|integration| self.program_path(integration.program()).is_some())
+            .filter(move |integration| !integration.answers_for(site))
+            .filter_map(move |integration| Some((integration, integration.missing_account(site)?)))
+    }
+
     /// Prepare a website for its host and send it
     ///
     /// `say` is told each step as it starts, for whoever is waiting on it.
