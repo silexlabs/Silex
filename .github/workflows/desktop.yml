@@ -1,6 +1,7 @@
 name: Desktop release
 
 on:
+  workflow_dispatch:
   push:
     tags: ['v*']
   pull_request:
@@ -28,8 +29,8 @@ permissions:
 
 jobs:
   # Linux-only on PRs (Rust+TS is shared, so linux catches almost all breakage);
-  # full 4-platform matrix only on v* tags, where the costly macOS/Windows
-  # runners are worth it. No per-commit main build — the PR already covered it.
+  # full 4-platform matrix on v* tags and manual runs, where the costly
+  # macOS/Windows runners are worth it. No per-commit main build — the PR already covered it.
   set-matrix:
     runs-on: ubuntu-latest
     outputs:
@@ -38,7 +39,7 @@ jobs:
       - id: m
         shell: bash
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/v* || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"},{"platform":"macos-arm","os":"macos-latest"},{"platform":"macos-x64","os":"macos-latest","rust-target":"x86_64-apple-darwin"},{"platform":"windows","os":"windows-latest"}]}' >> "$GITHUB_OUTPUT"
           else
             echo 'matrix={"include":[{"platform":"linux","os":"ubuntu-latest"}]}' >> "$GITHUB_OUTPUT"
