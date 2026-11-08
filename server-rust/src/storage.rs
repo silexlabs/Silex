@@ -292,6 +292,22 @@ async fn adopt(data_path: &Path, website_id: &WebsiteId, name: String) -> Result
     set_website_meta(data_path, website_id, &meta).await
 }
 
+/// Have the next publication ask where to publish
+pub fn forget_hosting(site: &Path) -> std::result::Result<(), String> {
+    let path = site.join(WEBSITE_DATA_FILE);
+    let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+    let mut data: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    let forgotten = data
+        .pointer_mut("/publication")
+        .and_then(|publication| publication.as_object_mut())
+        .is_some_and(|publication| publication.remove("connector").is_some());
+    if !forgotten {
+        return Ok(());
+    }
+    let content = serialize_json(&data).map_err(|e| e.to_string())?;
+    std::fs::write(&path, content).map_err(|e| e.to_string())
+}
+
 /// Far above the templates of today, which are all under 2 MB once unpacked
 const MAX_TEMPLATE_BYTES: u64 = 200 * 1024 * 1024;
 const MAX_TEMPLATE_ENTRIES: usize = 10_000;

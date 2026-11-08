@@ -28,7 +28,7 @@ use crate::integrations::integration::{
     Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
 };
 use crate::integrations::Loading;
-use crate::locales::{key, CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
+use crate::locales::{key, tr, CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 use silex_server::said::Said;
 
@@ -234,6 +234,7 @@ impl SilexActions {
             .site_path(website_id)
             .ok_or_else(|| Said::new(silex_server::said::NO_WEBSITE))?;
         self.syncer.alone(website_id, || {
+            silex_server::forget_hosting(&site).map_err(Said::raw)?;
             crate::integrations::link_website(&self.integrations, program, account, name, &site)
         })
     }
@@ -274,6 +275,7 @@ impl SilexActions {
                 Some(SyncPlace {
                     place: integration.place(&site)?,
                     icon: integration.icon(),
+                    repo_url: integration.repo(&site),
                     synced,
                     failure: failure.as_ref().map(Failure::what_happened),
                 })
@@ -286,6 +288,7 @@ impl SilexActions {
                 Some(SyncPlace {
                     place: integration.place(&site)?,
                     icon: integration.icon(),
+                    repo_url: integration.repo(&site),
                     synced,
                     failure: Some(Said::new(key!(
                         "Silex does not send this website anymore. Choose its account in the Integrations screen."
@@ -369,6 +372,7 @@ impl Failure {
 pub struct SyncPlace {
     place: String,
     icon: Option<&'static str>,
+    repo_url: Option<String>,
     #[serde(flatten)]
     synced: Synced,
     /// What the last failed sending through this integration said, until one works
@@ -775,6 +779,14 @@ impl silex_server::Actions for SilexActions {
             return Vec::new();
         };
         self.who_hosts(&website_id)
+    }
+
+    fn more_hostings(&self) -> Option<String> {
+        let link = format!("<a href=\"/#/integrations\">{}</a>", tr("Integrations"));
+        Some(silex_server::said::fill(
+            &tr(key!("You can add more hostings in {link}.")),
+            [("link", link.as_str())],
+        ))
     }
 }
 

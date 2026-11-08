@@ -68,6 +68,11 @@ pub trait Actions: Send + Sync {
     fn hostings(&self) -> Vec<Hosting> {
         Vec::new()
     }
+
+    /// HTML the publication dialog shows under the list of the hostings
+    fn more_hostings(&self) -> Option<String> {
+        None
+    }
 }
 
 /// The key the address of a website is asked and kept under

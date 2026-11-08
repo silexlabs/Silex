@@ -296,6 +296,8 @@ export interface ConnectorData {
    * Only Silex Desktop sends this.
    */
   unavailable?: string
+  /** HTML under the list of the hostings. Silex Desktop only. */
+  afterList?: string
 }
 
 /**

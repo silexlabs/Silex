@@ -74,6 +74,8 @@ pub struct ConnectorData {
     /// Why this hosting cannot publish the website. Silex Desktop only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unavailable: Option<String>,
+    /// HTML under the list of the hostings. Silex Desktop only.
+    pub after_list: Option<String>,
 }
 
 /// User as the editor expects it. `storage` is read by the publication code,
@@ -99,6 +101,7 @@ async fn connectors(state: &AppState, connector_type: ConnectorType) -> Vec<Conn
         oauth_url: None,
         options_form: None,
         unavailable: None,
+        after_list: None,
     };
     // Only the hosting is asked about: the storage is these files whoever
     // embeds the crate, while what serves a website depends on the machine
@@ -110,6 +113,7 @@ async fn connectors(state: &AppState, connector_type: ConnectorType) -> Vec<Conn
     };
     // Answering reads the files of the website and of the programs that
     // publish it, which is no work for the async runtime
+    let after_list = actions.more_hostings();
     let hostings = tokio::task::spawn_blocking(move || actions.hostings())
         .await
         .unwrap_or_else(|e| {
@@ -127,8 +131,12 @@ async fn connectors(state: &AppState, connector_type: ConnectorType) -> Vec<Conn
             oauth_url: None,
             options_form: hosting.options_form,
             unavailable: hosting.unavailable,
+            after_list: None,
         })
-        .chain([local(LOCAL_FOLDER, LOCAL_FOLDER_NAME)])
+        .chain([ConnectorData {
+            after_list,
+            ..local(LOCAL_FOLDER, LOCAL_FOLDER_NAME)
+        }])
         .collect()
 }
 

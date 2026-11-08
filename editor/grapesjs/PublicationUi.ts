@@ -196,7 +196,7 @@ export class PublicationUi {
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
         @click=${() => this.editor.Commands.run(cmdPublicationLogout)}
-      >Disconnect
+      >Change hosting
       </button>` : nothing}
     </header>
     <main>
@@ -278,6 +278,7 @@ export class PublicationUi {
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       this.hostingCount = hostingConnectors.length
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
+      const afterList = hostingConnectors.find(connector => connector.afterList)?.afterList
       // `notice` says the server refused the hosting this website was saved
       // with, and the user then picks from the list themselves
       if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && !this.notice) {
@@ -306,6 +307,7 @@ export class PublicationUi {
           >${connector.displayName}</button>
         `)}
         </div>
+        ${afterList ? html`<p>${unsafeHTML(afterList)}</p>` : nothing}
       </main>
       <footer>
         <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>

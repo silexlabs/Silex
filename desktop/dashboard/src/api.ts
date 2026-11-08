@@ -111,6 +111,7 @@ export interface SyncPlace {
   place: string
   /** The logo of the place, an SVG from the integration */
   icon: string | null
+  repoUrl: string | null
   label: Words
   action: Words | null
   /** Where the changes made elsewhere can be seen, when they keep it from syncing */

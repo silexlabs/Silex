@@ -296,7 +296,8 @@ impl Integration for Glab {
         };
 
         // GitLab answers 404 rather than 403 about a private repository
-        let repo = run(cli, site, &["repo", "view", "-F", "json"]).map_err(|e| {
+        let address = format!("https://{}/{}/{}", remote.host, remote.owner, remote.repo);
+        let repo = run(cli, site, &["repo", "view", &address, "-F", "json"]).map_err(|e| {
             if not_found(&e) {
                 format!(
                     "glab is signed in to {} with an account that cannot open this repository.",
@@ -319,7 +320,8 @@ impl Integration for Glab {
     }
 
     fn address(&self, cli: &Path, site: &Path, _options: &PublicationOptions) -> Option<String> {
-        run(cli, site, &["api", "projects/:fullpath/pages"])
+        let (host, project) = project_of(site)?;
+        run(cli, site, &["api", &host, &format!("{project}/pages")])
             .ok()
             .and_then(|pages| json_string(&pages, "url"))
     }
@@ -355,7 +357,9 @@ impl Integration for Glab {
             return Ok(Build::Unknown);
         };
 
-        let jobs = run(cli, site, &["api", "projects/:fullpath/jobs"])?;
+        let (host, project) =
+            project_of(site).ok_or_else(|| "This website has no repository".to_string())?;
+        let jobs = run(cli, site, &["api", &host, &format!("{project}/jobs")])?;
         let jobs: serde_json::Value = serde_json::from_str(&jobs).map_err(|e| {
             format!(
                 "Could not read what {} said about the builds: {}",
@@ -393,6 +397,20 @@ impl Integration for Glab {
             _ => urls.ci.clone(),
         }
     }
+}
+
+/// Named rather than left to glab, which would pick the remote `upstream` of a
+/// website made from a template over the one the website is sent to
+fn project_of(site: &Path) -> Option<(String, String)> {
+    let remote = Remote::of(site)?;
+    Some((
+        format!("--hostname={}", remote.host),
+        format!(
+            "projects/{}%2F{}",
+            remote.owner.replace('/', "%2F"),
+            remote.repo
+        ),
+    ))
 }
 
 /// git signed in by glab, for this command only and this server only

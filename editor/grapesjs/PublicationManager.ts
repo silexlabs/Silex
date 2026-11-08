@@ -130,7 +130,7 @@ export class PublicationManager {
       // The OAuth address carries the state of one login, and why a hosting
       // cannot publish is about this computer now: nothing the website keeps
       const { connector } = this.settings
-      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null, unavailable: undefined } } : this.settings
+      data.publication = connector ? { ...this.settings, connector: { ...connector, oauthUrl: null, unavailable: undefined, afterList: undefined } } : this.settings
     })
     // load publication settings from the website
     editor.on('storage:end:load', (data: WebsiteData) => {

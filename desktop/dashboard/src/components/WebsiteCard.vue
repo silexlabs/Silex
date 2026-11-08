@@ -68,6 +68,13 @@ const edited = computed(() => {
 
 const places = ref<SyncPlace[]>([])
 const hasRemote = ref(true)
+const repoUrl = computed(() => places.value.find((place) => place.repoUrl)?.repoUrl)
+
+function showRepository(url: string) {
+  openLink(url).catch((error: unknown) =>
+    showError({ title: t('Silex could not open {name}', { name: url }), ...explain(error) }),
+  )
+}
 const lastPublication = ref<Publication>(null)
 // Apart, so that one failing does not hide the other
 async function readSync() {
@@ -279,6 +286,13 @@ const { choose, afterClose } = useMenuAction(more)
               @select="choose(() => emit('link'))"
             >
               {{ $t('Sync…') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="repoUrl"
+              class="menu__item"
+              @select="choose(() => showRepository(repoUrl!))"
+            >
+              {{ $t('See the repository') }}
             </DropdownMenuItem>
             <DropdownMenuSeparator class="menu__separator" />
             <DropdownMenuItem
