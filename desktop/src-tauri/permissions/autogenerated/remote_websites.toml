@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-remote-websites"
+description = "Enables the remote_websites command without any pre-configured scope."
+commands.allow = ["remote_websites"]
+
+[[permission]]
+identifier = "deny-remote-websites"
+description = "Denies the remote_websites command without any pre-configured scope."
+commands.deny = ["remote_websites"]

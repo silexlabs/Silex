@@ -249,6 +249,35 @@ async fn disconnect_account(
         .map_err(Said::raw)?
 }
 
+#[tauri::command]
+async fn remote_websites(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    account: String,
+) -> Result<Vec<integrations::integration::RemoteWebsite>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.remote_websites(&program, &account))
+        .await
+        .map_err(Said::raw)?
+}
+
+/// A copy of a website of an account, made a website of this computer
+#[tauri::command]
+async fn open_remote_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    folder: tauri::State<'_, WebsitesFolder>,
+    program: String,
+    account: String,
+    id: String,
+) -> Result<WebsiteId, Said> {
+    let actions = actions.inner().clone();
+    silex_server::create_website_from_copy(&folder.0, move |into| {
+        actions.fetch_website(&program, &account, &id, into)
+    })
+    .await
+    .map_err(Said::from)
+}
+
 /// Over the network: whether the server still takes the account
 #[tauri::command]
 async fn check_account(
@@ -1085,6 +1114,8 @@ fn main() {
             stop_connecting_account,
             disconnect_account,
             check_account,
+            remote_websites,
+            open_remote_website,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

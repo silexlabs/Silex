@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import WebsiteCard from '../components/WebsiteCard.vue'
+import RemoteWebsitesDialog from '../components/RemoteWebsitesDialog.vue'
 import AppTooltip from '../components/AppTooltip.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
 import { useMenuAction } from '../menu'
 import { confirm, prompt, showError } from '../components/AppDialogs.vue'
 import { toast } from '../components/AppToasts.vue'
+import { catalog, chosen } from '../integrations'
 import {
+  type Account,
+  type CatalogEntry,
   type Website,
   createWebsite,
   duplicateWebsite,
@@ -101,6 +105,16 @@ async function create() {
 
 const newWebsite = useTemplateRef<InstanceType<typeof DropdownMenuTrigger>>('newWebsite')
 const newWebsiteMenu = useMenuAction(newWebsite)
+
+/** The integrations a website can be opened from: those that sync, with an account the user chose */
+const remoteSources = computed(() => (catalog.value ?? []).filter((entry) => entry.capacities.includes('sync') && chosen(entry).length))
+
+const openingFrom = ref<{ integration: CatalogEntry; accounts: Account[] } | null>(null)
+
+async function notOpened(title: string, error: ReturnType<typeof explain>) {
+  openingFrom.value = null
+  await showError({ title, ...error })
+}
 
 async function rename(website: Website) {
   const name = await prompt({
@@ -276,6 +290,14 @@ async function showFolder(website: Website) {
             >
               {{ $t('From a template…') }}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              v-for="remoteSource in remoteSources"
+              :key="remoteSource.program"
+              class="menu__item"
+              @select="newWebsiteMenu.choose(() => (openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }))"
+            >
+              {{ $t('From {name}…', { name: remoteSource.name }) }}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
       </DropdownMenuRoot>
@@ -348,6 +370,15 @@ async function showFolder(website: Website) {
       >
         {{ $t('See the templates') }}
       </RouterLink>
+      <button
+        v-for="remoteSource in remoteSources"
+        :key="remoteSource.program"
+        type="button"
+        class="button"
+        @click="openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }"
+      >
+        {{ $t('From {name}…', { name: remoteSource.name }) }}
+      </button>
     </div>
   </div>
 
@@ -380,6 +411,14 @@ async function showFolder(website: Website) {
       />
     </div>
   </template>
+  <RemoteWebsitesDialog
+    v-if="openingFrom"
+    :integration="openingFrom.integration"
+    :accounts="openingFrom.accounts"
+    @opened="openEditor"
+    @closed="openingFrom = null"
+    @failed="notOpened"
+  />
 </template>
 
 <style scoped>

@@ -133,6 +133,23 @@ pub fn push(site: &Path, tag: Option<&str>, config: &[String]) -> Result<(), Syn
     pushed
 }
 
+/// Copy a repository into a folder that does not exist yet
+///
+/// `config` is set for this command only, as `name=value`.
+pub fn clone(url: &str, into: &Path, config: &[String]) -> Result<(), String> {
+    let git = git_path().ok_or_else(|| {
+        "Silex could not find git on this computer, and it is git that copies a website from its host."
+            .to_string()
+    })?;
+    let into = into.to_string_lossy();
+    let args = with_config(config, &["clone", "--end-of-options", url, &into]);
+    let ran = run_transfer_verbatim(&git, &std::env::temp_dir(), &args)?;
+    if ran.failed {
+        return Err(failure(&git, &ran));
+    }
+    Ok(())
+}
+
 /// Fast-forward only: a website that moved on both here and there is left
 /// to its user and the git client they already have.
 ///

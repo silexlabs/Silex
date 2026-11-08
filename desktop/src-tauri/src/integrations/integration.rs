@@ -17,7 +17,8 @@ use silex_server::{OptionsForm, PublicationOptions};
 use super::common::remote::Remote;
 
 /// What an integration can do for a website
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Capacity {
     /// Keep a website the same here and where it is kept
     Sync,
@@ -158,6 +159,21 @@ pub enum Build {
     },
 }
 
+/// A website on an account, that this computer can copy
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteWebsite {
+    /// What `fetch_website` is given back, never an address: the dashboard
+    /// does not choose what is copied
+    pub id: String,
+    pub name: String,
+    /// Where it is on its host, as the user knows it
+    pub place: String,
+    /// When it last changed, as the host writes it
+    pub changed_at: Option<String>,
+    pub private: bool,
+}
+
 /// One of the accounts or servers an integration was set up with, kept by its
 /// program rather than by Silex
 #[derive(Serialize)]
@@ -245,6 +261,25 @@ pub trait Integration: Send + Sync {
             "Silex cannot disconnect an account from {}",
             self.name()
         ))
+    }
+
+    /// The websites on an account, those changed last first
+    fn remote_websites(&self, cli: &Path, account: &str) -> Result<Vec<RemoteWebsite>, String> {
+        let _ = (cli, account);
+        Err(not_provided(self.program(), Capacity::Sync))
+    }
+
+    /// Copy one of `remote_websites` into a folder that does not exist yet, and
+    /// answer its name
+    fn fetch_website(
+        &self,
+        cli: &Path,
+        account: &str,
+        id: &str,
+        into: &Path,
+    ) -> Result<String, String> {
+        let _ = (cli, account, id, into);
+        Err(not_provided(self.program(), Capacity::Sync))
     }
 
     /// Whether the server still takes this account, asked over the network

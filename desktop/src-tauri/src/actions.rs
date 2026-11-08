@@ -201,6 +201,26 @@ impl SilexActions {
         crate::integrations::disconnect(&self.integrations, program, id).map_err(Said::raw)
     }
 
+    pub fn remote_websites(
+        &self,
+        program: &str,
+        account: &str,
+    ) -> Result<Vec<crate::integrations::integration::RemoteWebsite>, Said> {
+        crate::integrations::remote_websites(&self.integrations, program, account)
+            .map_err(Said::raw)
+    }
+
+    pub fn fetch_website(
+        &self,
+        program: &str,
+        account: &str,
+        id: &str,
+        into: &Path,
+    ) -> Result<String, Said> {
+        crate::integrations::fetch_website(&self.integrations, program, account, id, into)
+            .map_err(Said::raw)
+    }
+
     pub fn check_account(
         &self,
         program: &str,

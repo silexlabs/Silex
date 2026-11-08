@@ -231,22 +231,7 @@ pub async fn create_website_from_template(
         tokio::task::spawn_blocking(move || unpack_template(&archive, &into))
             .await
             .map_err(std::io::Error::other)??;
-
-        if !fs::metadata(site.join(WEBSITE_DATA_FILE))
-            .await
-            .is_ok_and(|m| m.is_file())
-        {
-            return Err(Error::Said(
-                Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
-            ));
-        }
-        forget_where_the_original_is_published(&site).await?;
-
-        let meta = WebsiteMetaFileContent {
-            name,
-            image_url: None,
-        };
-        set_website_meta(data_path, &website_id, &meta).await?;
+        adopt(data_path, &website_id, name).await?;
         history::start_from_template(&site, &template_repo)
             .map_err(|why| Error::Said(Said::raw(why)))
     }
@@ -257,6 +242,63 @@ pub async fn create_website_from_template(
         let _ = fs::remove_dir_all(&site).await;
     }
     created.map(|()| website_id)
+}
+
+/// Make a website of a repository that `fetch` copies, with its history, into
+/// the folder it is given, answering the name of the website
+///
+/// Desktop only: the hosted Silex works on the repository itself.
+pub async fn create_website_from_copy(
+    data_path: &Path,
+    fetch: impl FnOnce(&Path) -> std::result::Result<String, Said> + Send + 'static,
+) -> Result<WebsiteId> {
+    let website_id = WebsiteId::fresh();
+    let site = website_path(data_path, &website_id);
+
+    let into = site.clone();
+    let created = async {
+        let name = tokio::task::spawn_blocking(move || fetch(&into))
+            .await
+            .map_err(std::io::Error::other)?
+            .map_err(Error::Said)?;
+        adopt(data_path, &website_id, name).await?;
+        // What adopting changed is saved, as a save would, so that the website
+        // does not say it is sent while it is not
+        history::version(&site, "Open website on this computer")
+            .map(|_| ())
+            .map_err(|why| Error::Said(Said::raw(why)))
+    }
+    .await;
+
+    if created.is_err() {
+        let _ = fs::remove_dir_all(&site).await;
+    }
+    created.map(|()| website_id)
+}
+
+/// What makes a folder that arrived from elsewhere a website of this computer:
+/// its name, and no publication until it is published from here. The picture
+/// it came with stays.
+async fn adopt(data_path: &Path, website_id: &WebsiteId, name: String) -> Result<()> {
+    let site = website_path(data_path, website_id);
+    if !fs::metadata(site.join(WEBSITE_DATA_FILE))
+        .await
+        .is_ok_and(|m| m.is_file())
+    {
+        return Err(Error::Said(
+            Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
+        ));
+    }
+    forget_where_the_original_is_published(&site).await?;
+    let meta_path = website_meta_path(data_path, website_id);
+    let image_url = match fs::read_to_string(&meta_path).await {
+        Ok(content) => parse_file::<WebsiteMetaFileContent>(&meta_path, &content)
+            .ok()
+            .and_then(|meta| meta.image_url),
+        Err(_) => None,
+    };
+    let meta = WebsiteMetaFileContent { name, image_url };
+    set_website_meta(data_path, website_id, &meta).await
 }
 
 /// Far above the templates of today, which are all under 2 MB once unpacked

@@ -26,7 +26,9 @@ use silex_server::PublicationOptions;
 use common::git;
 use common::programs::{self, found};
 use common::run;
-use integration::{Account, AntiFeature, Capacity, Integration, Openness, SignIn, Tag};
+use integration::{
+    Account, AntiFeature, Capacity, Integration, Openness, RemoteWebsite, SignIn, Tag,
+};
 
 use crate::held::held;
 
@@ -105,6 +107,7 @@ pub struct CatalogEntry {
     icon: Option<&'static str>,
     runs_here: bool,
     servers: Vec<&'static str>,
+    capacities: &'static [Capacity],
     /// Whether the user chose an account of it
     enabled: bool,
     /// The accounts the user chose, among those of the program
@@ -240,6 +243,7 @@ impl Integrations {
                     icon: integration.icon(),
                     runs_here: integration.runs_here(),
                     servers: integration.servers(),
+                    capacities: integration.capacities(),
                     enabled: !state.accounts.is_empty(),
                     accounts: state.accounts,
                     found: state.path.is_some_and(|path| path.is_file()),
@@ -451,6 +455,41 @@ pub fn disconnect(loading: &Loading, program: &str, id: &str) -> Result<Vec<Acco
     let (integration, cli) = in_use(loading, program)?;
     integration.disconnect(&cli, id)?;
     integration.accounts(&cli)
+}
+
+/// Only the accounts the user chose: glab may be signed in to a colleague's
+fn chosen_account(loading: &Loading, program: &str, account: &str) -> Result<(), String> {
+    let chosen = snapshot(loading)
+        .known
+        .get(program)
+        .is_some_and(|state| state.accounts.iter().any(|other| other == account));
+    if chosen {
+        Ok(())
+    } else {
+        Err(format!("{} is not used in Silex", account))
+    }
+}
+
+pub fn remote_websites(
+    loading: &Loading,
+    program: &str,
+    account: &str,
+) -> Result<Vec<RemoteWebsite>, String> {
+    chosen_account(loading, program, account)?;
+    let (integration, cli) = in_use(loading, program)?;
+    integration.remote_websites(&cli, account)
+}
+
+pub fn fetch_website(
+    loading: &Loading,
+    program: &str,
+    account: &str,
+    id: &str,
+    into: &Path,
+) -> Result<String, String> {
+    chosen_account(loading, program, account)?;
+    let (integration, cli) = in_use(loading, program)?;
+    integration.fetch_website(&cli, account, id, into)
 }
 
 pub fn check_account(loading: &Loading, program: &str, id: &str) -> Result<SignIn, String> {

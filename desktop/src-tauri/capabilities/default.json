@@ -39,6 +39,8 @@
     "allow-connect-account",
     "allow-stop-connecting-account",
     "allow-disconnect-account",
-    "allow-check-account"
+    "allow-check-account",
+    "allow-remote-websites",
+    "allow-open-remote-website"
   ]
 }

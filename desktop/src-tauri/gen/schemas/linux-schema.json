@@ -243,6 +243,18 @@
           "markdownDescription": "Enables the open_link command without any pre-configured scope."
         },
         {
+          "description": "Enables the open_remote_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-open-remote-website",
+          "markdownDescription": "Enables the open_remote_website command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the remote_websites command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remote-websites",
+          "markdownDescription": "Enables the remote_websites command without any pre-configured scope."
+        },
+        {
           "description": "Enables the save_ended command without any pre-configured scope.",
           "type": "string",
           "const": "allow-save-ended",
@@ -355,6 +367,18 @@
           "type": "string",
           "const": "deny-open-link",
           "markdownDescription": "Denies the open_link command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the open_remote_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-open-remote-website",
+          "markdownDescription": "Denies the open_remote_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remote_websites command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remote-websites",
+          "markdownDescription": "Denies the remote_websites command without any pre-configured scope."
         },
         {
           "description": "Denies the save_ended command without any pre-configured scope.",

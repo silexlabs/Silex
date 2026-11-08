@@ -147,6 +147,7 @@ export interface CatalogEntry {
   runsHere: boolean
   /** Offered when adding an account, before any other the user types in */
   servers: string[]
+  capacities: ('sync' | 'deploy')[]
   /** Whether the user uses it in Silex */
   enabled: boolean
   /** The ids of the accounts the user chose, among those of the program */
@@ -189,6 +190,24 @@ export const stopConnectingAccount = () => call<void>('stop_connecting_account',
 
 /** Signs the account out of its program too */
 export const disconnectAccount = (program: string, id: string) => call<Account[]>('disconnect_account', { program, id })
+
+/** A website on an account, that this computer can copy */
+export interface RemoteWebsite {
+  id: string
+  name: string
+  /** Where it is on its host, as the user knows it */
+  place: string
+  /** As the host writes it, an ISO date */
+  changedAt: string | null
+  private: boolean
+}
+
+/** Over the network, those changed last first */
+export const remoteWebsites = (program: string, account: string) => call<RemoteWebsite[]>('remote_websites', { program, account })
+
+/** Copies the website to this computer, and answers its id here */
+export const openRemoteWebsite = (program: string, account: string, website: RemoteWebsite) =>
+  call<string>('open_remote_website', { program, account, id: website.id })
 
 /** What the server of an account said of its sign-in */
 export type SignIn = 'accepted' | 'refused'

@@ -19,8 +19,8 @@ use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_fi
 use super::common::remote::Remote;
 use super::common::run::{run, run_fetch, run_waiting, Waiting};
 use super::integration::{
-    silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SignIn,
-    SyncError, Synced, Tag, Urls,
+    silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared,
+    RemoteWebsite, SignIn, SyncError, Synced, Tag, Urls,
 };
 use crate::locales::key;
 
@@ -29,6 +29,9 @@ use crate::locales::key;
 /// Anywhere else the host says nothing on its own, and what glab was signed in
 /// to is what tells a GitLab of one's own from any other forge.
 const GITLAB: &str = "gitlab.com";
+
+/// What the hosted Silex starts the name of the project of a website with
+const SAAS_PREFIX: &str = "silex_";
 
 /// The OAuth applications Silex Labs made for Silex, by server
 ///
@@ -134,6 +137,30 @@ impl Integration for Glab {
             &["auth", "logout", &format!("--hostname={}", id)],
         )
         .map(|_| ())
+    }
+
+    fn remote_websites(&self, cli: &Path, account: &str) -> Result<Vec<RemoteWebsite>, String> {
+        Ok(projects(cli, account)?
+            .into_iter()
+            .map(|(website, _)| website)
+            .collect())
+    }
+
+    fn fetch_website(
+        &self,
+        cli: &Path,
+        account: &str,
+        id: &str,
+        into: &Path,
+    ) -> Result<String, String> {
+        // Asked again rather than taken from the dashboard: any page on
+        // localhost could name another address to copy
+        let (website, url) = projects(cli, account)?
+            .into_iter()
+            .find(|(website, _)| website.id == id)
+            .ok_or_else(|| format!("No Silex website {} on {}", id, account))?;
+        git::clone(&url, into, &credentials(cli, account))?;
+        Ok(website.name)
     }
 
     fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
@@ -309,14 +336,17 @@ impl Integration for Glab {
 /// ssh was set by its user, and stays as it is. Nothing is written to the
 /// configuration of git: the terminal of the user keeps working as it did.
 fn over_https(cli: &Path, site: &Path) -> Vec<String> {
-    let Some(host) = Remote::of(site)
-        .map(|remote| remote.host)
-        // Written into a `-c name=value` of git, where it could move the `=`
-        .filter(|host| is_plain_host(host))
-        .filter(|host| signed_in_to(host))
-    else {
+    Remote::of(site)
+        .map(|remote| credentials(cli, &remote.host))
+        .unwrap_or_default()
+}
+
+/// The account glab is signed in to on a host, as git asks for it
+fn credentials(cli: &Path, host: &str) -> Vec<String> {
+    // Written into a `-c name=value` of git, where it could move the `=`
+    if !is_plain_host(host) || !signed_in_to(host) {
         return Vec::new();
-    };
+    }
     // git hands the helper to a shell
     let glab = format!("'{}'", cli.display().to_string().replace('\'', r"'\''"));
     vec![
@@ -593,6 +623,62 @@ fn value_of(block: &str, key: &str) -> Option<String> {
         .find_map(|line| line.trim().strip_prefix(&format!("{}:", key)))
         .map(|value| value.trim().trim_matches(['"', '\'']).to_string())
         .filter(|value| !value.is_empty())
+}
+
+/// The websites of the user on a host, as the hosted Silex lists them, with
+/// the address each is copied from
+fn projects(cli: &Path, account: &str) -> Result<Vec<(RemoteWebsite, String)>, String> {
+    let signed_in = config()
+        .as_deref()
+        .map(accounts)
+        .unwrap_or_default()
+        .iter()
+        .any(|known| known.id == account);
+    if !signed_in {
+        return Err(format!("glab is not signed in to {}", account));
+    }
+    let mut websites = Vec::new();
+    // 100 at a time, as many as GitLab gives; a user with more than a
+    // thousand websites sees those changed last
+    for page in 1..=10 {
+        let said = run_fetch(
+            cli,
+            &std::env::temp_dir(),
+            &[
+                "api",
+                &format!("--hostname={}", account),
+                &format!(
+                    "projects?owned=true&order_by=last_activity_at&per_page=100&page={}&search={}",
+                    page, SAAS_PREFIX
+                ),
+            ],
+        )?;
+        let projects: Vec<serde_json::Value> =
+            serde_json::from_str(&said).map_err(|e| format!("{}: {}", e, said))?;
+        let last = projects.len() < 100;
+        websites.extend(projects.iter().filter_map(|project| {
+            let deleted = !project["marked_for_deletion_on"].is_null()
+                || !project["marked_for_deletion_at"].is_null();
+            // `owned` also answers the projects of the groups the user owns
+            let personal = project["namespace"]["kind"].as_str() == Some("user");
+            let name = project["name"].as_str()?.strip_prefix(SAAS_PREFIX)?;
+            (personal && !deleted).then_some(())?;
+            Some((
+                RemoteWebsite {
+                    id: project["id"].as_u64()?.to_string(),
+                    name: name.to_string(),
+                    place: project["path_with_namespace"].as_str()?.to_string(),
+                    changed_at: project["last_activity_at"].as_str().map(String::from),
+                    private: project["visibility"].as_str() != Some("public"),
+                },
+                project["http_url_to_repo"].as_str()?.to_string(),
+            ))
+        }));
+        if last {
+            break;
+        }
+    }
+    Ok(websites)
 }
 
 #[cfg(test)]
