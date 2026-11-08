@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { type Account, type CatalogEntry, type RemoteWebsite, explain, remoteWebsites, openRemoteWebsite } from '../api'
 
@@ -42,6 +42,7 @@ async function load() {
     // Another account chosen while this one answered
     if (account.value === from) websites.value = found
   } catch (error) {
+    if (account.value !== from) return
     emit('failed', t('Silex could not list the websites of {name}', { name: accountOf(from)?.summary ?? from }), explain(error))
   }
 }
@@ -58,6 +59,8 @@ onBeforeUnmount(() => element.value?.close())
 
 async function open(website: RemoteWebsite) {
   opening.value = website
+  await nextTick()
+  element.value?.querySelector<HTMLElement>('.dialog__actions button')?.focus()
   try {
     emit('opened', await openRemoteWebsite(props.integration.program, account.value, website))
   } catch (error) {
@@ -119,6 +122,7 @@ function close() {
         class="field__input remote-websites__search"
         :aria-label="t('Search your websites')"
         :placeholder="t('Search your websites')"
+        @keydown.esc.prevent="close"
       >
 
       <p

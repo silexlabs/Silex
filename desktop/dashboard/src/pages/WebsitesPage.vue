@@ -122,6 +122,7 @@ const openingFrom = ref<{ integration: CatalogEntry; accounts: Account[] } | nul
 
 async function notOpened(title: string, error: ReturnType<typeof explain>) {
   openingFrom.value = null
+  await nextTick()
   await showError({ title, ...error })
 }
 

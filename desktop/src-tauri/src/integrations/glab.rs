@@ -34,10 +34,6 @@ const GITLAB: &str = "gitlab.com";
 /// What the hosted Silex starts the name of the project of a website with
 const SAAS_PREFIX: &str = "silex_";
 
-const NAME_TAKEN: &str = key!(
-    "A project for a website named “{name}” already exists on {server}. Rename this website, then sync it again."
-);
-
 /// The OAuth applications Silex Labs made for Silex, by server
 ///
 /// gitlab.com has none: glab signs in there with its own, whatever it is told.
@@ -168,6 +164,10 @@ impl Integration for Glab {
         Ok(website.name)
     }
 
+    fn has_destination(&self, site: &Path) -> bool {
+        git::remote_name(site).is_some()
+    }
+
     fn link_website(&self, cli: &Path, account: &str, name: &str, site: &Path) -> Result<(), Said> {
         if !signed_in_to(account) {
             return Err(Said::raw(format!("glab is not signed in to {}", account)));
@@ -179,6 +179,9 @@ impl Integration for Glab {
                 redact(&sent_to)
             )));
         }
+        // A website made a moment ago has no version yet, and there would be
+        // nothing to send
+        silex_server::version(site, "Create website").map_err(Said::raw)?;
         // Named as the hosted Silex names them, and private whatever the
         // server makes by default
         let said = run_fetch(
@@ -198,9 +201,16 @@ impl Integration for Glab {
         )
         .map_err(|why| {
             if why.contains("has already been taken") {
-                Said::new(NAME_TAKEN)
+                Said::new(key!(
+                    "A project for a website named “{name}” already exists on {server}. Rename this website, then sync it again."
+                ))
                     .with("name", name)
                     .with("server", account)
+            } else if why.contains("can contain only") {
+                Said::new(key!(
+                    "GitLab does not accept the name “{name}”. Rename this website with letters, digits, dots, dashes or spaces, then sync it again."
+                ))
+                .with("name", name)
             } else {
                 Said::raw(why)
             }
@@ -213,9 +223,6 @@ impl Integration for Glab {
                 said
             ))
         })?;
-        // A website made a moment ago has no version yet, and there would be
-        // nothing to send
-        silex_server::version(site, "Create website").map_err(Said::raw)?;
         git::set_origin(site, url).map_err(Said::raw)?;
         self.push(cli, site, None)
             .map_err(|error| Said::raw(error.to_string()))
@@ -559,8 +566,8 @@ fn config() -> Option<String> {
     config_file().and_then(|file| std::fs::read_to_string(file).ok())
 }
 
-/// In the home of the user on every platform, and that one wins over the XDG
-/// folder when both exist
+/// In the home of the user first, which wins over the XDG folder and the
+/// folder of the system when they exist too
 fn config_file() -> Option<PathBuf> {
     if let Some(named) = std::env::var_os("GLAB_CONFIG_DIR") {
         return Some(PathBuf::from(named).join("config.yml"));
@@ -569,6 +576,7 @@ fn config_file() -> Option<PathBuf> {
         .map(|home| home.join(".config"))
         .into_iter()
         .chain(std::env::var_os("XDG_CONFIG_HOME").map(PathBuf::from))
+        .chain(dirs::config_local_dir())
         .map(|folder| folder.join("glab-cli").join("config.yml"))
         .find(|file| file.is_file())
 }
@@ -686,13 +694,7 @@ fn value_of(block: &str, key: &str) -> Option<String> {
 /// The websites of the user on a host, as the hosted Silex lists them, with
 /// the address each is copied from
 fn projects(cli: &Path, account: &str) -> Result<Vec<(RemoteWebsite, String)>, String> {
-    let signed_in = config()
-        .as_deref()
-        .map(accounts)
-        .unwrap_or_default()
-        .iter()
-        .any(|known| known.id == account);
-    if !signed_in {
+    if !signed_in_to(account) {
         return Err(format!("glab is not signed in to {}", account));
     }
     let mut websites = Vec::new();
@@ -712,7 +714,7 @@ fn projects(cli: &Path, account: &str) -> Result<Vec<(RemoteWebsite, String)>, S
             ],
         )?;
         let projects: Vec<serde_json::Value> =
-            serde_json::from_str(&said).map_err(|e| format!("{}: {}", e, said))?;
+            serde_json::from_str(&said).map_err(|e| format!("{}: {}", e, account))?;
         let last = projects.len() < 100;
         websites.extend(projects.iter().filter_map(|project| {
             let deleted = !project["marked_for_deletion_on"].is_null()

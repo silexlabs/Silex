@@ -28,7 +28,7 @@ use crate::integrations::integration::{
     Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
 };
 use crate::integrations::Loading;
-use crate::locales::{CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
+use crate::locales::{key, CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 use silex_server::said::Said;
 
@@ -241,7 +241,7 @@ impl SilexActions {
     /// Whether the website is sent somewhere, by an integration or not
     pub fn website_has_remote(&self, website_id: &str) -> bool {
         self.site_path(website_id)
-            .is_some_and(|site| crate::integrations::common::git::remote_name(&site).is_some())
+            .is_some_and(|site| crate::integrations::has_destination(&site))
     }
 
     pub fn check_account(
@@ -259,7 +259,8 @@ impl SilexActions {
         let status = self.syncer.statuses.borrow().get(website_id).cloned();
         let on_its_way = status.as_ref().is_some_and(SyncStatus::on_its_way);
         let failure = status.and_then(|status| status.sync_failure);
-        crate::integrations::snapshot(&self.integrations)
+        let integrations = crate::integrations::snapshot(&self.integrations);
+        let sent = integrations
             .get(Capacity::Sync, &site)
             .filter_map(|(integration, _)| {
                 let failure = failure
@@ -276,8 +277,22 @@ impl SilexActions {
                     synced,
                     failure: failure.as_ref().map(Failure::what_happened),
                 })
-            })
-            .collect()
+            });
+        let waiting_for_an_account = integrations
+            .wanting_an_account(Capacity::Sync, &site)
+            .filter_map(|(integration, _)| {
+                let mut synced = integration.synced(&site)?;
+                synced.action = None;
+                Some(SyncPlace {
+                    place: integration.place(&site)?,
+                    icon: integration.icon(),
+                    synced,
+                    failure: Some(Said::new(key!(
+                        "Silex does not send this website anymore. Choose its account in the Integrations screen."
+                    ))),
+                })
+            });
+        sent.chain(waiting_for_an_account).collect()
     }
 
     /// What opening the website does, waited for: the dashboard opens the

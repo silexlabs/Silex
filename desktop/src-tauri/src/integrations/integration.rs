@@ -282,6 +282,12 @@ pub trait Integration: Send + Sync {
         Err(not_provided(self.program(), Capacity::Sync))
     }
 
+    /// Whether the website is already sent somewhere
+    fn has_destination(&self, site: &Path) -> bool {
+        let _ = site;
+        false
+    }
+
     /// Make a new private place on an account for a website of this computer
     /// that is sent nowhere yet, send the website there and sync with it from
     /// then on

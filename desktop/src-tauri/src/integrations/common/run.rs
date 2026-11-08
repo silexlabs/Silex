@@ -63,7 +63,9 @@ const OUTPUT: Duration = Duration::from_secs(2);
 const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
 
 /// How much of the output of a program is kept, the rest is read and dropped
-const MAX_OUTPUT: usize = 64 * 1024;
+///
+/// One page of the projects of a GitLab account is half a megabyte
+const MAX_OUTPUT: usize = 1024 * 1024;
 
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository

@@ -396,10 +396,6 @@ static SIGNING_IN: Mutex<()> = Mutex::new(());
 /// What the sign-in under way is stopped with
 static GIVE_UP: Mutex<Option<Arc<AtomicBool>>> = Mutex::new(None);
 
-/// The accounts once the user signed in, or stopped
-///
-/// A sign-in started again stops the one before: the user closed the tab of
-/// the first and the program would wait for it until it times out.
 /// The accounts once the user signed in or stopped, and the one signed in to
 #[derive(Serialize)]
 pub struct Connected {
@@ -408,6 +404,8 @@ pub struct Connected {
     account: Option<String>,
 }
 
+/// A sign-in started again stops the one before: the user closed the tab of
+/// the first and the program would wait for it until it times out.
 pub fn connect(
     loading: &Loading,
     program: &str,
@@ -491,6 +489,12 @@ pub fn fetch_website(
     chosen_account(loading, program, account)?;
     let (integration, cli) = in_use(loading, program)?;
     integration.fetch_website(&cli, account, id, into)
+}
+
+pub fn has_destination(site: &Path) -> bool {
+    catalog()
+        .iter()
+        .any(|integration| integration.has_destination(site))
 }
 
 pub fn link_website(

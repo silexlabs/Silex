@@ -232,6 +232,7 @@ pub async fn create_website_from_template(
             .await
             .map_err(std::io::Error::other)??;
         adopt(data_path, &website_id, name).await?;
+        forget_where_the_original_is_published(&site).await?;
         history::start_from_template(&site, &template_repo)
             .map_err(|why| Error::Said(Said::raw(why)))
     }
@@ -261,12 +262,7 @@ pub async fn create_website_from_copy(
             .await
             .map_err(std::io::Error::other)?
             .map_err(Error::Said)?;
-        adopt(data_path, &website_id, name).await?;
-        // What adopting changed is saved, as a save would, so that the website
-        // does not say it is sent while it is not
-        history::version(&site, "Open website on this computer")
-            .map(|_| ())
-            .map_err(|why| Error::Said(Said::raw(why)))
+        adopt(data_path, &website_id, name).await
     }
     .await;
 
@@ -277,8 +273,7 @@ pub async fn create_website_from_copy(
 }
 
 /// What makes a folder that arrived from elsewhere a website of this computer:
-/// its name, and no publication until it is published from here. The picture
-/// it came with stays.
+/// its name. The picture it came with stays.
 async fn adopt(data_path: &Path, website_id: &WebsiteId, name: String) -> Result<()> {
     let site = website_path(data_path, website_id);
     if !fs::metadata(site.join(WEBSITE_DATA_FILE))
@@ -289,14 +284,10 @@ async fn adopt(data_path: &Path, website_id: &WebsiteId, name: String) -> Result
             Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
         ));
     }
-    forget_where_the_original_is_published(&site).await?;
-    let meta_path = website_meta_path(data_path, website_id);
-    let image_url = match fs::read_to_string(&meta_path).await {
-        Ok(content) => parse_file::<WebsiteMetaFileContent>(&meta_path, &content)
-            .ok()
-            .and_then(|meta| meta.image_url),
-        Err(_) => None,
-    };
+    let image_url = get_website_meta(data_path, website_id)
+        .await
+        .ok()
+        .and_then(|meta| meta.image_url);
     let meta = WebsiteMetaFileContent { name, image_url };
     set_website_meta(data_path, website_id, &meta).await
 }
