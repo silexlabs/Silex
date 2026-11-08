@@ -150,6 +150,14 @@ pub fn clone(url: &str, into: &Path, config: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+/// Send to this repository from now on a website that is sent nowhere yet
+pub fn set_origin(site: &Path, url: &str) -> Result<(), String> {
+    let repo = repository(site).map_err(|e| e.to_string())?;
+    repo.remote("origin", url)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
 /// Fast-forward only: a website that moved on both here and there is left
 /// to its user and the git client they already have.
 ///

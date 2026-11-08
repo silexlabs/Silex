@@ -278,6 +278,35 @@ async fn open_remote_website(
     .map_err(Said::from)
 }
 
+#[tauri::command]
+async fn website_has_remote(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<bool, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.website_has_remote(website_id.as_str()))
+        .await
+        .map_err(Said::raw)
+}
+
+/// Over the network: a new private place for a website of this computer, and
+/// the website sent there
+#[tauri::command]
+async fn link_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    account: String,
+    name: String,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        actions.link_website(&program, &account, &name, website_id.as_str())
+    })
+    .await
+    .map_err(Said::raw)?
+}
+
 /// Over the network: whether the server still takes the account
 #[tauri::command]
 async fn check_account(
@@ -1116,6 +1145,8 @@ fn main() {
             check_account,
             remote_websites,
             open_remote_website,
+            link_website,
+            website_has_remote,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

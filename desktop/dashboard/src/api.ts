@@ -209,6 +209,13 @@ export const remoteWebsites = (program: string, account: string) => call<RemoteW
 export const openRemoteWebsite = (program: string, account: string, website: RemoteWebsite) =>
   call<string>('open_remote_website', { program, account, id: website.id })
 
+/** Over the network: a new private project for the website of this computer, and the website sent there */
+export const linkWebsite = (program: string, account: string, name: string, websiteId: string) =>
+  call<void>('link_website', { program, account, name, websiteId })
+
+/** Whether the website is sent somewhere, by an integration or not */
+export const websiteHasRemote = (websiteId: string) => call<boolean>('website_has_remote', { websiteId })
+
 /** What the server of an account said of its sign-in */
 export type SignIn = 'accepted' | 'refused'
 

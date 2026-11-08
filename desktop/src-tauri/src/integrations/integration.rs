@@ -282,6 +282,14 @@ pub trait Integration: Send + Sync {
         Err(not_provided(self.program(), Capacity::Sync))
     }
 
+    /// Make a new private place on an account for a website of this computer
+    /// that is sent nowhere yet, send the website there and sync with it from
+    /// then on
+    fn link_website(&self, cli: &Path, account: &str, name: &str, site: &Path) -> Result<(), Said> {
+        let _ = (cli, account, name, site);
+        Err(Said::raw(not_provided(self.program(), Capacity::Sync)))
+    }
+
     /// Whether the server still takes this account, asked over the network
     /// when the user wants to know
     ///

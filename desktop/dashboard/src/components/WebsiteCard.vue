@@ -16,6 +16,7 @@ import {
   onSyncStatus,
   openLink,
   syncPlaces,
+  websiteHasRemote,
   syncWebsite,
   thumbnailOf,
   translate,
@@ -27,9 +28,10 @@ import { useMenuAction } from '../menu'
 import { type Problem, showError } from './AppDialogs.vue'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
+import { places as linkablePlaces } from '../integrations'
 
 const props = defineProps<{ website: Website }>()
-const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
+const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: []; link: [] }>()
 
 const { t, locale } = useI18n()
 const nameId = useId()
@@ -65,6 +67,7 @@ const edited = computed(() => {
 })
 
 const places = ref<SyncPlace[]>([])
+const hasRemote = ref(true)
 const lastPublication = ref<Publication>(null)
 // Apart, so that one failing does not hide the other
 async function readSync() {
@@ -72,6 +75,7 @@ async function readSync() {
     lastPublication.value = last
   }, console.error)
   places.value = await syncPlaces(props.website.websiteId)
+  hasRemote.value = await websiteHasRemote(props.website.websiteId)
 }
 // The list gives new objects when it is refreshed, and the same one when a website is renamed
 watch(() => props.website, readSync, { immediate: true })
@@ -268,6 +272,13 @@ const { choose, afterClose } = useMenuAction(more)
               @select="choose(open)"
             >
               {{ $t('Edit') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="!hasRemote && linkablePlaces.length"
+              class="menu__item"
+              @select="choose(() => emit('link'))"
+            >
+              {{ $t('Sync…') }}
             </DropdownMenuItem>
             <DropdownMenuSeparator class="menu__separator" />
             <DropdownMenuItem

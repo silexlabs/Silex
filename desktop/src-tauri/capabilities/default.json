@@ -41,6 +41,8 @@
     "allow-disconnect-account",
     "allow-check-account",
     "allow-remote-websites",
-    "allow-open-remote-website"
+    "allow-open-remote-website",
+    "allow-link-website",
+    "allow-website-has-remote"
   ]
 }

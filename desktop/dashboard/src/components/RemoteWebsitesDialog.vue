@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { type Account, type CatalogEntry, type RemoteWebsite, explain, remoteWebsites, openRemoteWebsite } from '../api'
 
@@ -52,6 +52,9 @@ onMounted(() => {
   element.value?.showModal()
   load()
 })
+
+// Removed by its parent without closing: only closing gives the focus back
+onBeforeUnmount(() => element.value?.close())
 
 async function open(website: RemoteWebsite) {
   opening.value = website

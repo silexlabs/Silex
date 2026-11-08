@@ -16,7 +16,7 @@ import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
 import { useMenuAction } from '../menu'
 import { confirm, prompt, showError } from '../components/AppDialogs.vue'
 import { toast } from '../components/AppToasts.vue'
-import { catalog, chosen } from '../integrations'
+import { askPlace, catalog, chosen, placeLabel, sendNewWebsite, sendToPlace } from '../integrations'
 import {
   type Account,
   type CatalogEntry,
@@ -89,18 +89,27 @@ async function refresh() {
 }
 
 async function create() {
-  const name = await prompt({
-    title: t('New website'),
-    label: t('Name'),
-    value: t('My website'),
-    confirmLabel: t('Create and open'),
-  })
-  if (!name) return
+  const asked = await askPlace({ title: t('New website'), label: t('Name'), value: t('My website'), confirmLabel: t('Create and open') })
+  if (!asked) return
+  let websiteId: string
   try {
-    openEditor(await createWebsite(name))
+    websiteId = await createWebsite(asked.name)
   } catch (error) {
     await showError({ title: t('Silex could not create the website'), ...explain(error) })
+    return
   }
+  if (await sendNewWebsite(asked, websiteId)) openEditor(websiteId)
+  else await load()
+}
+
+async function link(website: Website) {
+  const asked = await askPlace({ title: t('Sync “{name}”', { name: website.name }), value: website.name, confirmLabel: t('Create project and sync') })
+  if (!asked?.place) return
+  const failure = await sendToPlace(asked.place, website.name, website.websiteId)
+  await load()
+  const server = placeLabel(asked.place)
+  if (failure) await showError({ title: t('Silex could not send “{name}” to {server}', { name: website.name, server }), ...failure })
+  else toast(t('“{name}” is synced with {server}.', { name: website.name, server }), 'success')
 }
 
 const newWebsite = useTemplateRef<InstanceType<typeof DropdownMenuTrigger>>('newWebsite')
@@ -408,6 +417,7 @@ async function showFolder(website: Website) {
         @rename="rename(website)"
         @duplicate="duplicate(website)"
         @delete="remove(website)"
+        @link="link(website)"
       />
     </div>
   </template>

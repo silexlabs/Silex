@@ -237,6 +237,12 @@
           "markdownDescription": "Enables the last_publication command without any pre-configured scope."
         },
         {
+          "description": "Enables the link_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-link-website",
+          "markdownDescription": "Enables the link_website command without any pre-configured scope."
+        },
+        {
           "description": "Enables the open_link command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-link",
@@ -303,6 +309,12 @@
           "markdownDescription": "Enables the trash_website command without any pre-configured scope."
         },
         {
+          "description": "Enables the website_has_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-website-has-remote",
+          "markdownDescription": "Enables the website_has_remote command without any pre-configured scope."
+        },
+        {
           "description": "Denies the check_account command without any pre-configured scope.",
           "type": "string",
           "const": "deny-check-account",
@@ -361,6 +373,12 @@
           "type": "string",
           "const": "deny-last-publication",
           "markdownDescription": "Denies the last_publication command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the link_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-link-website",
+          "markdownDescription": "Denies the link_website command without any pre-configured scope."
         },
         {
           "description": "Denies the open_link command without any pre-configured scope.",
@@ -427,6 +445,12 @@
           "type": "string",
           "const": "deny-trash-website",
           "markdownDescription": "Denies the trash_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the website_has_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-website-has-remote",
+          "markdownDescription": "Denies the website_has_remote command without any pre-configured scope."
         },
         {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",

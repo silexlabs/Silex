@@ -16,13 +16,14 @@ use silex_server::PublicationOptions;
 
 use super::common::git;
 use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
-use super::common::remote::Remote;
+use super::common::remote::{redact, Remote};
 use super::common::run::{run, run_fetch, run_waiting, Waiting};
 use super::integration::{
     silex_tag, Account, AntiFeature, Build, Capacity, Integration, Openness, Prepared,
     RemoteWebsite, SignIn, SyncError, Synced, Tag, Urls,
 };
 use crate::locales::key;
+use silex_server::said::Said;
 
 /// The instance GitLab runs itself
 ///
@@ -32,6 +33,10 @@ const GITLAB: &str = "gitlab.com";
 
 /// What the hosted Silex starts the name of the project of a website with
 const SAAS_PREFIX: &str = "silex_";
+
+const NAME_TAKEN: &str = key!(
+    "A project for a website named “{name}” already exists on {server}. Rename this website, then sync it again."
+);
 
 /// The OAuth applications Silex Labs made for Silex, by server
 ///
@@ -161,6 +166,59 @@ impl Integration for Glab {
             .ok_or_else(|| format!("No Silex website {} on {}", id, account))?;
         git::clone(&url, into, &credentials(cli, account))?;
         Ok(website.name)
+    }
+
+    fn link_website(&self, cli: &Path, account: &str, name: &str, site: &Path) -> Result<(), Said> {
+        if !signed_in_to(account) {
+            return Err(Said::raw(format!("glab is not signed in to {}", account)));
+        }
+        // Before anything is made on the server, where it would stay
+        if let Some(sent_to) = git::remote_url(site) {
+            return Err(Said::raw(format!(
+                "This website is already sent to {}",
+                redact(&sent_to)
+            )));
+        }
+        // Named as the hosted Silex names them, and private whatever the
+        // server makes by default
+        let said = run_fetch(
+            cli,
+            &std::env::temp_dir(),
+            &[
+                "api",
+                &format!("--hostname={}", account),
+                "-X",
+                "POST",
+                "projects",
+                "-f",
+                &format!("name={}{}", SAAS_PREFIX, name),
+                "-f",
+                "visibility=private",
+            ],
+        )
+        .map_err(|why| {
+            if why.contains("has already been taken") {
+                Said::new(NAME_TAKEN)
+                    .with("name", name)
+                    .with("server", account)
+            } else {
+                Said::raw(why)
+            }
+        })?;
+        let created: serde_json::Value =
+            serde_json::from_str(&said).map_err(|e| Said::raw(format!("{}: {}", e, said)))?;
+        let url = created["http_url_to_repo"].as_str().ok_or_else(|| {
+            Said::raw(format!(
+                "GitLab did not say which project it made: {}",
+                said
+            ))
+        })?;
+        // A website made a moment ago has no version yet, and there would be
+        // nothing to send
+        silex_server::version(site, "Create website").map_err(Said::raw)?;
+        git::set_origin(site, url).map_err(Said::raw)?;
+        self.push(cli, site, None)
+            .map_err(|error| Said::raw(error.to_string()))
     }
 
     fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {

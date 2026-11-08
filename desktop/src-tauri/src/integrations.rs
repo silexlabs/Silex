@@ -21,6 +21,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{mpsc, Arc, LazyLock, Mutex, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
+use silex_server::said::Said;
 use silex_server::PublicationOptions;
 
 use common::git;
@@ -490,6 +491,18 @@ pub fn fetch_website(
     chosen_account(loading, program, account)?;
     let (integration, cli) = in_use(loading, program)?;
     integration.fetch_website(&cli, account, id, into)
+}
+
+pub fn link_website(
+    loading: &Loading,
+    program: &str,
+    account: &str,
+    name: &str,
+    site: &Path,
+) -> Result<(), Said> {
+    chosen_account(loading, program, account).map_err(Said::raw)?;
+    let (integration, cli) = in_use(loading, program).map_err(Said::raw)?;
+    integration.link_website(&cli, account, name, site)
 }
 
 pub fn check_account(loading: &Loading, program: &str, id: &str) -> Result<SignIn, String> {

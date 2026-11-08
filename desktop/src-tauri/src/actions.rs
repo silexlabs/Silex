@@ -221,6 +221,29 @@ impl SilexActions {
             .map_err(Said::raw)
     }
 
+    /// Waits for what is running on the website: git refuses rather than
+    /// queues
+    pub fn link_website(
+        &self,
+        program: &str,
+        account: &str,
+        name: &str,
+        website_id: &str,
+    ) -> Result<(), Said> {
+        let site = self
+            .site_path(website_id)
+            .ok_or_else(|| Said::new(silex_server::said::NO_WEBSITE))?;
+        self.syncer.alone(website_id, || {
+            crate::integrations::link_website(&self.integrations, program, account, name, &site)
+        })
+    }
+
+    /// Whether the website is sent somewhere, by an integration or not
+    pub fn website_has_remote(&self, website_id: &str) -> bool {
+        self.site_path(website_id)
+            .is_some_and(|site| crate::integrations::common::git::remote_name(&site).is_some())
+    }
+
     pub fn check_account(
         &self,
         program: &str,

@@ -23,6 +23,8 @@ const COMMANDS: &[&str] = &[
     "check_account",
     "remote_websites",
     "open_remote_website",
+    "link_website",
+    "website_has_remote",
 ];
 
 /// `--silex-bg-main` as a `tauri::window::Color`, for the window of the dashboard
