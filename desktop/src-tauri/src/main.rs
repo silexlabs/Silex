@@ -32,6 +32,7 @@ mod held;
 mod integrations;
 mod locales;
 mod mcp;
+pub mod snapshot;
 mod templates;
 
 // ==================

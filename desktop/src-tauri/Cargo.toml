@@ -45,6 +45,9 @@ dirs = "7"
 # Anonymous install id (persistent UUID for telemetry user count)
 uuid = { version = "1", features = ["v4"] }
 
+# Base64 encoding for screenshot image data
+base64 = "0.23"
+
 # Look for the programs of the integrations in PATH, with the extensions
 # Windows expects (.exe, .cmd, .bat)
 which = "8"
@@ -71,5 +74,22 @@ rust-embed = "8"
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Memory",
+] }
+
 [target.'cfg(target_os = "linux")'.dependencies]
+cairo-rs = { version = "0.18", features = ["png"] }
 webkit2gtk = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+block2 = "0.6"
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSData", "NSError", "NSDictionary"] }
+objc2-app-kit = { version = "0.3", features = ["NSImage", "NSBitmapImageRep"] }
+objc2-web-kit = { version = "0.3", features = ["WKWebView"] }
