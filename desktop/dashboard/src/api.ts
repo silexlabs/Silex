@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { Channel, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import {
   API_PATH,
@@ -111,6 +111,7 @@ export interface SyncPlace {
   place: string
   /** The logo of the place, an SVG from the integration */
   icon: string | null
+  repoUrl: string | null
   label: Words
   action: Words | null
   /** Where the changes made elsewhere can be seen, when they keep it from syncing */
@@ -120,6 +121,107 @@ export interface SyncPlace {
 }
 
 export const syncPlaces = (websiteId: string) => call<SyncPlace[]>('sync_places', { websiteId })
+
+export type Tag = 'hosting' | 'storage' | 'team'
+
+/** Of the service an integration relies on, not of the program */
+export type Openness = 'digitalCommons' | 'freeSoftware' | 'openSource' | 'openCore' | 'sourceAvailable' | 'proprietary'
+
+/** What a user may not want of the service, after the Anti-Features of F-Droid */
+export type AntiFeature = 'tracking' | 'proprietaryCloud' | 'identityVerification' | 'freeLicenseRequired'
+
+/** An integration of the catalog, with what is known of it on this computer */
+export interface CatalogEntry {
+  program: string
+  /** The service the user knows, not the program */
+  name: string
+  /** In English, a key of the locales */
+  summary: string
+  tags: Tag[]
+  openness: Openness
+  antiFeatures: AntiFeature[]
+  /** For when Silex cannot find the program */
+  installUrl: string
+  /** The logo of the service, an SVG from the integration */
+  icon: string | null
+  /** False when the program cannot be installed on this system */
+  runsHere: boolean
+  /** Offered when adding an account, before any other the user types in */
+  servers: string[]
+  capacities: ('sync' | 'deploy')[]
+  /** Whether the user uses it in Silex */
+  enabled: boolean
+  /** The ids of the accounts the user chose, among those of the program */
+  accounts: string[]
+  found: boolean
+  broken: boolean
+  version: string | null
+}
+
+export const integrationCatalog = () => call<CatalogEntry[]>('integration_catalog', {})
+
+export type Asked = { kind: 'checkAgain' } | { kind: 'useAccount' | 'stopUsing'; account: string }
+
+export const askIntegration = (program: string, asked: Asked) =>
+  call<CatalogEntry[]>('integration_asked', { program, asked })
+
+/** An account or a server an integration was set up with, kept by its program */
+export interface Account {
+  id: string
+  name: string
+  /** What tells it apart, like the server it is on */
+  summary: string | null
+}
+
+export const integrationAccounts = (program: string) => call<Account[]>('integration_accounts', { program })
+
+/**
+ * Waits for the user to sign in in their browser, and answers the accounts as they are then, also once stopped.
+ * `clientId` is the OAuth application the user made on a server Silex does not know.
+ * `onPage` is given the page to sign in on when the browser did not open.
+ */
+export const connectAccount = (program: string, server: string, clientId: string | null, onPage: (page: string) => void) => {
+  const page = new Channel<string>()
+  page.onmessage = onPage
+  /** `account` is the one signed in to, null once stopped */
+  return call<{ accounts: Account[]; account: string | null }>('connect_account', { program, server, clientId, onPage: page })
+}
+
+export const stopConnectingAccount = () => call<void>('stop_connecting_account', {})
+
+/** Signs the account out of its program too */
+export const disconnectAccount = (program: string, id: string) => call<Account[]>('disconnect_account', { program, id })
+
+/** A website on an account, that this computer can copy */
+export interface RemoteWebsite {
+  id: string
+  name: string
+  /** Where it is on its host, as the user knows it */
+  place: string
+  /** As the host writes it, an ISO date */
+  changedAt: string | null
+  private: boolean
+}
+
+/** Over the network, those changed last first */
+export const remoteWebsites = (program: string, account: string) => call<RemoteWebsite[]>('remote_websites', { program, account })
+
+/** Copies the website to this computer, and answers its id here */
+export const openRemoteWebsite = (program: string, account: string, website: RemoteWebsite) =>
+  call<string>('open_remote_website', { program, account, id: website.id })
+
+/** Over the network: a new private project for the website of this computer, and the website sent there */
+export const linkWebsite = (program: string, account: string, name: string, websiteId: string) =>
+  call<void>('link_website', { program, account, name, websiteId })
+
+/** Whether the website is sent somewhere, by an integration or not */
+export const websiteHasRemote = (websiteId: string) => call<boolean>('website_has_remote', { websiteId })
+
+/** What the server of an account said of its sign-in */
+export type SignIn = 'accepted' | 'refused'
+
+/** Over the network, and fails when the server could not be asked */
+export const checkAccount = (program: string, id: string) => call<SignIn>('check_account', { program, id })
 
 /** Null for a website made before Silex kept it */
 export type Publication = ({ neverPublished: boolean } & Pick<LastPublication, 'url'>) | null

@@ -18,8 +18,10 @@ use super::common::pipeline::{ensure_pipeline_file, write_build_files};
 use super::common::remote::Remote;
 use super::common::run::{run, run_with_input};
 use super::integration::{
-    silex_tag, Build, Capacity, Integration, Prepared, Refusal, SyncError, Synced, Urls,
+    silex_tag, Build, Capacity, Integration, Openness, Prepared, Refusal, SyncError, Synced, Tag,
+    Urls,
 };
+use crate::locales::key;
 
 /// The SourceHut logo, CC0, with a thicker ring that reads at the size of text
 const SOURCEHUT_LOGO: &str = r#"<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.371 0 0 5.371 0 12s5.371 12 12 12 12-5.371 12-12S18.629 0 12 0Zm0 20a8 8 0 1 1 0-16 8 8 0 1 1 0 16Z"/></svg>"#;
@@ -31,16 +33,41 @@ impl Integration for Hut {
         "hut"
     }
 
+    fn name(&self) -> &'static str {
+        "SourceHut"
+    }
+
+    fn summary(&self) -> &'static str {
+        key!("Back up your websites in a repository on SourceHut, with the history of every change. Publish them online with SourceHut Pages (paid accounts only): hosting in the Netherlands, and your own domain name if you have one.")
+    }
+
+    fn tags(&self) -> &'static [Tag] {
+        &[Tag::Hosting, Tag::Storage, Tag::Team]
+    }
+
+    fn openness(&self) -> Openness {
+        Openness::OpenSource
+    }
+
+    fn install_url(&self) -> &'static str {
+        "https://sr.ht/~xenrox/hut/"
+    }
+
+    /// hut has no package for Windows
+    fn runs_here(&self) -> bool {
+        !cfg!(windows)
+    }
+
     fn capacities(&self) -> &'static [Capacity] {
         &[Capacity::Sync, Capacity::Deploy]
     }
 
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        git::push(site, tag)
+    fn push(&self, _cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag, &[])
     }
 
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        git::sync(site)
+    fn sync(&self, _cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site, &[])
     }
 
     fn synced(&self, site: &Path) -> Option<Synced> {

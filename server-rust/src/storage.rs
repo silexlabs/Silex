@@ -231,22 +231,8 @@ pub async fn create_website_from_template(
         tokio::task::spawn_blocking(move || unpack_template(&archive, &into))
             .await
             .map_err(std::io::Error::other)??;
-
-        if !fs::metadata(site.join(WEBSITE_DATA_FILE))
-            .await
-            .is_ok_and(|m| m.is_file())
-        {
-            return Err(Error::Said(
-                Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
-            ));
-        }
+        adopt(data_path, &website_id, name).await?;
         forget_where_the_original_is_published(&site).await?;
-
-        let meta = WebsiteMetaFileContent {
-            name,
-            image_url: None,
-        };
-        set_website_meta(data_path, &website_id, &meta).await?;
         history::start_from_template(&site, &template_repo)
             .map_err(|why| Error::Said(Said::raw(why)))
     }
@@ -257,6 +243,69 @@ pub async fn create_website_from_template(
         let _ = fs::remove_dir_all(&site).await;
     }
     created.map(|()| website_id)
+}
+
+/// Make a website of a repository that `fetch` copies, with its history, into
+/// the folder it is given, answering the name of the website
+///
+/// Desktop only: the hosted Silex works on the repository itself.
+pub async fn create_website_from_copy(
+    data_path: &Path,
+    fetch: impl FnOnce(&Path) -> std::result::Result<String, Said> + Send + 'static,
+) -> Result<WebsiteId> {
+    let website_id = WebsiteId::fresh();
+    let site = website_path(data_path, &website_id);
+
+    let into = site.clone();
+    let created = async {
+        let name = tokio::task::spawn_blocking(move || fetch(&into))
+            .await
+            .map_err(std::io::Error::other)?
+            .map_err(Error::Said)?;
+        adopt(data_path, &website_id, name).await
+    }
+    .await;
+
+    if created.is_err() {
+        let _ = fs::remove_dir_all(&site).await;
+    }
+    created.map(|()| website_id)
+}
+
+/// What makes a folder that arrived from elsewhere a website of this computer:
+/// its name. The picture it came with stays.
+async fn adopt(data_path: &Path, website_id: &WebsiteId, name: String) -> Result<()> {
+    let site = website_path(data_path, website_id);
+    if !fs::metadata(site.join(WEBSITE_DATA_FILE))
+        .await
+        .is_ok_and(|m| m.is_file())
+    {
+        return Err(Error::Said(
+            Said::new(said::NOT_A_WEBSITE).with("file", WEBSITE_DATA_FILE),
+        ));
+    }
+    let image_url = get_website_meta(data_path, website_id)
+        .await
+        .ok()
+        .and_then(|meta| meta.image_url);
+    let meta = WebsiteMetaFileContent { name, image_url };
+    set_website_meta(data_path, website_id, &meta).await
+}
+
+/// Have the next publication ask where to publish
+pub fn forget_hosting(site: &Path) -> std::result::Result<(), String> {
+    let path = site.join(WEBSITE_DATA_FILE);
+    let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+    let mut data: serde_json::Value = serde_json::from_str(&content).map_err(|e| e.to_string())?;
+    let forgotten = data
+        .pointer_mut("/publication")
+        .and_then(|publication| publication.as_object_mut())
+        .is_some_and(|publication| publication.remove("connector").is_some());
+    if !forgotten {
+        return Ok(());
+    }
+    let content = serialize_json(&data).map_err(|e| e.to_string())?;
+    std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 /// Far above the templates of today, which are all under 2 MB once unpacked
@@ -454,6 +503,19 @@ fn keep_the_history_drop_the_remotes(site: &Path) -> Result<()> {
         .map_err(|why| Error::Said(Said::new(said::COPY_PUBLISHED_OVER).because(why)))
 }
 
+/// Where the last publication put the website online, as the editor keeps it
+///
+/// Files written on this computer are not online, and their `file://` address
+/// is left out.
+async fn online_at(site: &Path) -> Option<String> {
+    let path = site.join(WEBSITE_DATA_FILE);
+    let data: serde_json::Value = parse_file(&path, &fs::read_to_string(&path).await.ok()?).ok()?;
+    data.pointer("/publication/lastPublication/url")?
+        .as_str()
+        .filter(|url| url.starts_with("https://") || url.starts_with("http://"))
+        .map(String::from)
+}
+
 /// Take out of a copy the publication settings it inherited, and say it was
 /// never published
 ///
@@ -554,11 +616,6 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         Err(e) => return Err(Error::Io(e)),
     };
 
-    let pages_url = fs::metadata(website_path.join(PUBLIC_FOLDER))
-        .await
-        .is_ok()
-        .then(|| published_files_url(data_path, website_id));
-
     Ok(WebsiteMeta {
         website_id: website_id.clone(),
         name: file_content.name,
@@ -566,7 +623,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         created_at: metadata.created().ok().map(DateTime::<Utc>::from),
         updated_at: metadata.modified().ok().map(DateTime::<Utc>::from),
         repo_url: Some(format!("file://{}", website_path.display())),
-        pages_url,
+        pages_url: online_at(&website_path).await,
     })
 }
 

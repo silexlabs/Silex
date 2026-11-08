@@ -8,6 +8,7 @@
  */
 
 use std::path::Path;
+use std::sync::atomic::AtomicBool;
 
 use serde::Serialize;
 use silex_server::said::Said;
@@ -16,12 +17,48 @@ use silex_server::{OptionsForm, PublicationOptions};
 use super::common::remote::Remote;
 
 /// What an integration can do for a website
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Capacity {
     /// Keep a website the same here and where it is kept
     Sync,
     /// Put a website online
     Deploy,
+}
+
+/// What a website gains from an integration, the way the catalog sorts them
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Tag {
+    Hosting,
+    Storage,
+    Team,
+}
+
+/// How open the service an integration relies on is: its license, what of it
+/// is closed, and who decides. The service, not the program, which is free
+/// software in every case
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+// The whole scale, before an integration of each kind is there
+#[allow(dead_code)]
+pub enum Openness {
+    DigitalCommons,
+    FreeSoftware,
+    OpenSource,
+    OpenCore,
+    SourceAvailable,
+    Proprietary,
+}
+
+/// What a user may not want of the service, after the Anti-Features of F-Droid
+#[derive(Clone, Copy, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum AntiFeature {
+    Tracking,
+    ProprietaryCloud,
+    IdentityVerification,
+    FreeLicenseRequired,
 }
 
 pub fn not_provided(program: &str, capacity: Capacity) -> String {
@@ -122,12 +159,151 @@ pub enum Build {
     },
 }
 
+/// A website on an account, that this computer can copy
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RemoteWebsite {
+    /// What `fetch_website` is given back, never an address: the dashboard
+    /// does not choose what is copied
+    pub id: String,
+    pub name: String,
+    /// Where it is on its host, as the user knows it
+    pub place: String,
+    /// When it last changed, as the host writes it
+    pub changed_at: Option<String>,
+    pub private: bool,
+}
+
+/// One of the accounts or servers an integration was set up with, kept by its
+/// program rather than by Silex
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Account {
+    pub id: String,
+    pub name: String,
+    /// What tells it apart for the user, like the server it is on
+    pub summary: Option<String>,
+}
+
+/// What the server of an account said of its sign-in
+#[derive(Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SignIn {
+    Accepted,
+    Refused,
+}
+
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
+
+    /// The service the user knows, not the program
+    fn name(&self) -> &'static str;
+
+    fn summary(&self) -> &'static str;
+
+    fn tags(&self) -> &'static [Tag];
+
+    fn openness(&self) -> Openness;
+
+    fn anti_features(&self) -> &'static [AntiFeature] {
+        &[]
+    }
+
+    /// The official page on installing the program, when Silex cannot find it
+    fn install_url(&self) -> &'static str;
+
+    /// Whether the program can be installed on this system: one that cannot
+    /// is still shown, so that a user who read about it learns why it is not
+    /// there for them
+    fn runs_here(&self) -> bool {
+        true
+    }
 
     /// Only those are asked of it: a method of another capacity answers
     /// `not_provided`
     fn capacities(&self) -> &'static [Capacity];
+
+    /// The servers offered when the user adds an account, before any other
+    /// they type in
+    fn servers(&self) -> Vec<&'static str> {
+        Vec::new()
+    }
+
+    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
+        let _ = cli;
+        Ok(Vec::new())
+    }
+
+    /// Waits as long as the user takes to sign in, in their browser, and
+    /// answers the id of the account signed in to
+    ///
+    /// `client_id` is the OAuth application the user made on a server Silex
+    /// does not know.
+    fn connect(
+        &self,
+        cli: &Path,
+        server: &str,
+        client_id: Option<&str>,
+        given_up: &AtomicBool,
+        open: &dyn Fn(String),
+    ) -> Result<String, String> {
+        let _ = (cli, server, client_id, given_up, open);
+        Err(format!(
+            "Silex cannot connect an account to {}",
+            self.name()
+        ))
+    }
+
+    /// Signs the account out of its program too, not just out of Silex
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+        let _ = (cli, id);
+        Err(format!(
+            "Silex cannot disconnect an account from {}",
+            self.name()
+        ))
+    }
+
+    /// The websites on an account, those changed last first
+    fn remote_websites(&self, cli: &Path, account: &str) -> Result<Vec<RemoteWebsite>, String> {
+        let _ = (cli, account);
+        Err(not_provided(self.program(), Capacity::Sync))
+    }
+
+    /// Copy one of `remote_websites` into a folder that does not exist yet, and
+    /// answer its name
+    fn fetch_website(
+        &self,
+        cli: &Path,
+        account: &str,
+        id: &str,
+        into: &Path,
+    ) -> Result<String, String> {
+        let _ = (cli, account, id, into);
+        Err(not_provided(self.program(), Capacity::Sync))
+    }
+
+    /// Whether the website is already sent somewhere
+    fn has_destination(&self, site: &Path) -> bool {
+        let _ = site;
+        false
+    }
+
+    /// Make a new private place on an account for a website of this computer
+    /// that is sent nowhere yet, send the website there and sync with it from
+    /// then on
+    fn link_website(&self, cli: &Path, account: &str, name: &str, site: &Path) -> Result<(), Said> {
+        let _ = (cli, account, name, site);
+        Err(Said::raw(not_provided(self.program(), Capacity::Sync)))
+    }
+
+    /// Whether the server still takes this account, asked over the network
+    /// when the user wants to know
+    ///
+    /// An error means the server could not be asked.
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+        let _ = (cli, id);
+        Err(format!("Silex cannot check an account of {}", self.name()))
+    }
 
     /// What to ask the user before publishing, when this program cannot say
     /// where the website is served
@@ -148,6 +324,19 @@ pub trait Integration: Send + Sync {
     /// this. Every integration answering yes that can sync sends the website,
     /// even when two send it to the same remote.
     fn answers_for(&self, site: &Path) -> bool;
+
+    /// The account a website goes through, among those `accounts` lists
+    fn account_of(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
+
+    /// Why it does not answer for a website on one of its hosts, when the
+    /// account it would need is not on this computer
+    fn missing_account(&self, site: &Path) -> Option<String> {
+        let _ = site;
+        None
+    }
 
     /// Where the website goes, as the user knows it
     fn place(&self, site: &Path) -> Option<String> {
@@ -240,8 +429,8 @@ pub trait Integration: Send + Sync {
     /// Send what was saved, with the tag of a publication when there is one
     ///
     /// Never touches the files of the website: the editor may have it open.
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        let _ = (site, tag);
+    fn push(&self, cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        let _ = (cli, site, tag);
         Err(SyncError::Other(not_provided(
             self.program(),
             Capacity::Sync,
@@ -253,8 +442,8 @@ pub trait Integration: Send + Sync {
     ///
     /// Never makes a merge: a website that moved on both here and there is
     /// left to its user.
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        let _ = site;
+    fn sync(&self, cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        let _ = (cli, site);
         Err(SyncError::Other(not_provided(
             self.program(),
             Capacity::Sync,

@@ -20,9 +20,11 @@ use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_fi
 use super::common::remote::Remote;
 use super::common::run::run;
 use super::integration::{
-    silex_tag, Build, Capacity, Integration, Prepared, SyncError, Synced, Urls,
+    silex_tag, AntiFeature, Build, Capacity, Integration, Openness, Prepared, SyncError, Synced,
+    Tag, Urls,
 };
 use crate::held::held;
+use crate::locales::key;
 
 const CODEBERG: &str = "codeberg.org";
 
@@ -49,16 +51,40 @@ impl Integration for Tea {
         "tea"
     }
 
+    fn name(&self) -> &'static str {
+        "Forgejo"
+    }
+
+    fn summary(&self) -> &'static str {
+        key!("Back up your websites in a repository on Codeberg or another Forgejo server, with the history of every change. Publish them online with Codeberg Pages: free hosting in Germany by a non-profit, and your own domain name if you have one.")
+    }
+
+    fn tags(&self) -> &'static [Tag] {
+        &[Tag::Hosting, Tag::Storage, Tag::Team]
+    }
+
+    fn openness(&self) -> Openness {
+        Openness::DigitalCommons
+    }
+
+    fn anti_features(&self) -> &'static [AntiFeature] {
+        &[AntiFeature::FreeLicenseRequired]
+    }
+
+    fn install_url(&self) -> &'static str {
+        "https://gitea.com/gitea/tea#installation"
+    }
+
     fn capacities(&self) -> &'static [Capacity] {
         &[Capacity::Sync, Capacity::Deploy]
     }
 
-    fn push(&self, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
-        git::push(site, tag)
+    fn push(&self, _cli: &Path, site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+        git::push(site, tag, &[])
     }
 
-    fn sync(&self, site: &Path) -> Result<bool, SyncError> {
-        git::sync(site)
+    fn sync(&self, _cli: &Path, site: &Path) -> Result<bool, SyncError> {
+        git::sync(site, &[])
     }
 
     fn synced(&self, site: &Path) -> Option<Synced> {

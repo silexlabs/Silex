@@ -3,7 +3,8 @@ import { reactive, ref, useId } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Language } from '../i18n'
 import { createWebsiteFromTemplate, explain, openEditor } from '../api'
-import { prompt, showError } from '../components/AppDialogs.vue'
+import { showError } from '../components/AppDialogs.vue'
+import { askPlace, sendNewWebsite } from '../integrations'
 import { dismiss, toast } from '../components/AppToasts.vue'
 import ExternalLink from '../components/ExternalLink.vue'
 import list from '../templates.json'
@@ -32,17 +33,20 @@ const localized = (template: Template) => template[locale.value as Language] ?? 
 
 async function use(template: Template) {
   if (copying.value) return
-  const name = await prompt({
+  const asked = await askPlace({
     title: t('New website from “{name}”', { name: template.name }),
     label: t('Name'),
     value: template.name,
     confirmLabel: t('Create and open'),
   })
-  if (!name) return
+  if (!asked) return
   copying.value = true
   const copyingToast = toast(t('Copying the template…'))
   try {
-    openEditor(await createWebsiteFromTemplate(name, template.repo))
+    const websiteId = await createWebsiteFromTemplate(asked.name, template.repo)
+    if (asked.place) dismiss(copyingToast)
+    if (await sendNewWebsite(asked, websiteId)) openEditor(websiteId)
+    else copying.value = false
   } catch (error) {
     dismiss(copyingToast)
     await showError({ title: t('Silex could not copy the template'), ...explain(error) })

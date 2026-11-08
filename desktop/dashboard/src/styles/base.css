@@ -221,3 +221,116 @@ select {
   margin: var(--silex-space-1) 0;
   border-top: 1px solid var(--silex-border-color);
 }
+
+/* The dialogs of the dashboard, whichever component opens them */
+.dialog {
+  width: min(480px, calc(100vw - 2 * var(--silex-space-6)));
+  padding: var(--silex-space-6);
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: var(--silex-radius-md);
+  background: var(--silex-bg-main);
+  color: var(--silex-text-primary);
+}
+
+.dialog::backdrop {
+  background: var(--silex-backdrop);
+}
+
+.dialog__title {
+  margin-bottom: var(--silex-space-4);
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.dialog__message {
+  margin: 0;
+  color: var(--silex-text-secondary);
+}
+
+.dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--silex-space-2);
+  margin-top: var(--silex-space-6);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--silex-space-1);
+  font-weight: 500;
+}
+
+.field__input {
+  height: 36px;
+  padding: 0 var(--silex-space-3);
+  border: 1px solid var(--silex-input-border);
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-bg-main);
+  font-weight: 400;
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--silex-status-error);
+  outline-color: var(--silex-status-error);
+}
+
+.field__problem {
+  margin: var(--silex-space-1) 0 0;
+  color: var(--silex-status-error);
+}
+
+/* Cards: a menu button, and a button that answers a click anywhere on its card */
+/* The whole card opens the website, the button stays the one thing to focus */
+.card__open::after {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--silex-radius-md);
+  content: '';
+}
+
+.card__open:focus-visible {
+  outline: none;
+}
+
+.card__open:focus-visible::after {
+  outline: 2px solid var(--silex-focus-outline);
+  outline-offset: 2px;
+}
+
+.card__more {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-top: calc(-1 * var(--silex-space-1));
+  border: none;
+  border-radius: var(--silex-radius-sm);
+  background: none;
+  color: var(--silex-text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card__more:hover,
+.card__more[aria-expanded='true'] {
+  background: var(--silex-hover-bg);
+  color: var(--silex-text-primary);
+}
+
+/* The logo of a service, on a neutral ground the same for all */
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-badge-bg);
+}
+
+.tile--large {
+  width: 40px;
+  height: 40px;
+}

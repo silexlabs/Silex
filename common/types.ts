@@ -291,6 +291,13 @@ export interface ConnectorData {
    * website is served. Only Silex Desktop sends this.
    */
   optionsForm?: OptionsForm
+  /**
+   * Why this hosting cannot publish the website, in words the user can act on.
+   * Only Silex Desktop sends this.
+   */
+  unavailable?: string
+  /** HTML under the list of the hostings. Silex Desktop only. */
+  afterList?: string
 }
 
 /**

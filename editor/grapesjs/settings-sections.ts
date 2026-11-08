@@ -147,9 +147,7 @@ export const defaultSections: SettingsSection[] = [{
                     Published Website
                     ${websiteMeta.lastJob ? html`
                       <span class="silex-repo-field__status silex-repo-field__status--${websiteMeta.lastJob.status?.toLowerCase() ?? 'unknown'}">${websiteMeta.lastJob.status ?? 'unknown'}</span>
-                    ` : html`
-                      <span class="silex-repo-field__status silex-repo-field__status--unknown">not published yet</span>
-                    `}
+                    ` : nothing}
                   </label>
                   <div class="silex-repo-field__input-wrapper">
                     <input type="text" class="silex-repo-field__input" value="${websiteMeta.pagesUrl}" readonly />

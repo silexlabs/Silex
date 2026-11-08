@@ -24,7 +24,7 @@ export function keyLabel(shortcut: Shortcut) {
 
 /** Ignored while a dialog is open, which has keys of its own */
 export function handleShortcut(event: KeyboardEvent, actions: Record<Shortcut, () => void>) {
-  if (dialog.value || event.defaultPrevented) return
+  if (dialog.value || document.querySelector('dialog[open]') || event.defaultPrevented) return
   const shortcut = Object.keys(actions).find((candidate) => matches(event, candidate))
   if (!shortcut) return
   event.preventDefault()

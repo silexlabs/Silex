@@ -1,11 +1,21 @@
 <script lang="ts">
-import { shallowRef } from 'vue'
+import { ref, shallowRef } from 'vue'
+
+interface Choices {
+  legend: string
+  options: { value: string; label: string; tag?: string; detail: string }[]
+  initial: string
+  /** Under the choices, from the name being typed */
+  note: (name: string) => string
+}
 
 interface PromptOptions {
   title: string
-  label: string
+  /** Without one, no name is asked and `value` is answered */
+  label?: string
   value?: string
   confirmLabel: string
+  choices?: Choices
 }
 
 interface ConfirmOptions {
@@ -47,6 +57,8 @@ type Request =
 
 export const dialog = shallowRef<(Request & { id: number }) | null>(null)
 
+const choice = ref('')
+
 const waiting: (Request & { id: number })[] = []
 let last = 0
 
@@ -69,6 +81,10 @@ export function prompt(options: PromptOptions): Promise<string | null> {
   return new Promise((resolve) => open({ kind: 'prompt', ...options, resolve }))
 }
 
+export function promptChoice(options: PromptOptions): Promise<{ name: string; choice: string } | null> {
+  return prompt(options).then((name) => (name === null ? null : { name, choice: choice.value }))
+}
+
 export function confirm(options: ConfirmOptions): Promise<boolean> {
   return new Promise((resolve) => open({ kind: 'confirm', ...options, resolve }))
 }
@@ -79,7 +95,7 @@ export function showError(options: ErrorOptions): Promise<void> {
 </script>
 
 <script setup lang="ts">
-import { nextTick, ref, useId, useTemplateRef, watch } from 'vue'
+import { nextTick, useId, useTemplateRef, watch } from 'vue'
 const element = useTemplateRef<HTMLDialogElement>('element')
 const name = ref('')
 const empty = ref(false)
@@ -106,6 +122,7 @@ watch(
     }
     empty.value = false
     name.value = dialog.value?.kind === 'prompt' ? (dialog.value.value ?? '') : ''
+    choice.value = dialog.value?.kind === 'prompt' ? (dialog.value.choices?.initial ?? '') : ''
     await nextTick()
     if (id === undefined) return focusBack()
     element.value?.showModal()
@@ -165,7 +182,10 @@ function submit() {
       novalidate
       @submit.prevent="submit"
     >
-      <label class="field">
+      <label
+        v-if="dialog.label"
+        class="field"
+      >
         {{ dialog.label }}
         <input
           v-model="name"
@@ -182,6 +202,39 @@ function submit() {
       >
         {{ $t('This field is required.') }}
       </p>
+      <template v-if="dialog.choices">
+        <fieldset
+          class="choices"
+          :class="{ 'choices--alone': !dialog.label }"
+        >
+          <legend class="choices__legend">
+            {{ dialog.choices.legend }}
+          </legend>
+          <label
+            v-for="option in dialog.choices.options"
+            :key="option.value"
+            class="choices__option"
+            :class="{ 'choices__option--chosen': choice === option.value }"
+          >
+            <input
+              v-model="choice"
+              type="radio"
+              name="choice"
+              :value="option.value"
+            >
+            <span>
+              {{ option.label }} <span
+                v-if="option.tag"
+                class="choices__tag"
+              >{{ option.tag }}</span>
+              <small class="choices__detail">{{ option.detail }}</small>
+            </span>
+          </label>
+        </fieldset>
+        <p class="dialog__message choices__note">
+          {{ dialog.choices.note(name.trim()) }}
+        </p>
+      </template>
       <div class="dialog__actions">
         <button
           type="button"
@@ -282,28 +335,60 @@ function submit() {
 </template>
 
 <style scoped>
-.dialog {
-  width: min(480px, calc(100vw - 2 * var(--silex-space-6)));
-  padding: var(--silex-space-6);
-  border: 1px solid var(--silex-border-color-strong);
-  border-radius: var(--silex-radius-md);
-  background: var(--silex-bg-main);
-  color: var(--silex-text-primary);
+.choices {
+  display: grid;
+  gap: var(--silex-space-2);
+  margin: var(--silex-space-4) 0 0;
+  padding: 0;
+  border: none;
 }
 
-.dialog::backdrop {
-  background: var(--silex-backdrop);
+.choices--alone {
+  margin-top: 0;
 }
 
-.dialog__title {
-  margin-bottom: var(--silex-space-4);
-  font-size: 20px;
-  line-height: 28px;
+.choices__legend {
+  margin-bottom: var(--silex-space-2);
+  padding: 0;
+  font-weight: 500;
 }
 
-.dialog__message {
-  margin: 0;
+.choices__option {
+  display: flex;
+  gap: var(--silex-space-3);
+  align-items: flex-start;
+  padding: var(--silex-space-3);
+  border: 1px solid var(--silex-border-color);
+  border-radius: var(--silex-radius-sm);
+  cursor: pointer;
+}
+
+.choices__option--chosen {
+  border-color: var(--silex-accent-primary);
+}
+
+.choices__option input {
+  margin-top: 4px;
+}
+
+.choices__detail {
+  display: block;
   color: var(--silex-text-secondary);
+  font-size: 12px;
+}
+
+.choices__tag {
+  margin-left: var(--silex-space-1);
+  padding: 1px var(--silex-space-2);
+  border-radius: 999px;
+  background: var(--silex-badge-bg);
+  color: var(--silex-badge-text);
+  font-size: 12px;
+}
+
+.choices__note {
+  margin-top: var(--silex-space-3);
+  font-size: 13px;
 }
 
 .dialog__detail {
@@ -353,38 +438,5 @@ function submit() {
 .problem__action[aria-disabled='true'] {
   opacity: 0.6;
   cursor: progress;
-}
-
-.dialog__actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--silex-space-2);
-  margin-top: var(--silex-space-6);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--silex-space-1);
-  font-weight: 500;
-}
-
-.field__input {
-  height: 36px;
-  padding: 0 var(--silex-space-3);
-  border: 1px solid var(--silex-input-border);
-  border-radius: var(--silex-radius-sm);
-  background: var(--silex-bg-main);
-  font-weight: 400;
-}
-
-.field__input[aria-invalid='true'] {
-  border-color: var(--silex-status-error);
-  outline-color: var(--silex-status-error);
-}
-
-.field__problem {
-  margin: var(--silex-space-1) 0 0;
-  color: var(--silex-status-error);
 }
 </style>

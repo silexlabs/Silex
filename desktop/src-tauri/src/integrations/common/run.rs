@@ -18,15 +18,23 @@ use std::ffi::OsStr;
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{self, Receiver};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use super::programs;
 use super::remote::redact;
 use crate::held::held;
 
 /// How long a program has to answer before it is killed
 const LOCAL: Duration = Duration::from_secs(30);
+
+/// How long the shell of the user has to say what its PATH is
+///
+/// Somebody is waiting in front of the integrations screen.
+#[cfg(not(target_os = "windows"))]
+const LOGIN_SHELL: Duration = Duration::from_secs(10);
 
 /// How long a program sending a whole website has
 ///
@@ -40,6 +48,11 @@ const TRANSFER: Duration = Duration::from_secs(600);
 /// short: what it does not bring back arrives at the next opening.
 const FETCH: Duration = Duration::from_secs(15);
 
+/// How long a program waiting on the user to sign in, in their browser, has
+///
+/// They may close the tab and never come back, and nothing tells the program.
+const SIGNING_IN: Duration = Duration::from_secs(15 * 60);
+
 /// How long the output of a program is waited for once it exited
 ///
 /// A program can leave a child of its own holding the pipe, and that child is
@@ -50,12 +63,46 @@ const OUTPUT: Duration = Duration::from_secs(2);
 const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
 
 /// How much of the output of a program is kept, the rest is read and dropped
-const MAX_OUTPUT: usize = 64 * 1024;
+///
+/// One page of the projects of a GitLab account is half a megabyte
+const MAX_OUTPUT: usize = 1024 * 1024;
 
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
 pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, None, LOCAL)?)
+    said(
+        program,
+        run_within(program, dir, args, None, LOCAL, false, None)?,
+    )
+}
+
+/// A program that waits on the user, until they are done or give up
+pub struct Waiting<'a> {
+    pub given_up: &'a AtomicBool,
+    /// What the program says while it waits, it says on its error stream
+    pub heard: &'a dyn Fn(&str),
+}
+
+pub fn run_waiting(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    waiting: &Waiting,
+) -> Result<String, String> {
+    said(
+        program,
+        run_within(program, dir, args, None, SIGNING_IN, false, Some(waiting))?,
+    )
+}
+
+/// Started with the PATH of the app, since it is the shell that is asked for
+/// the fresh one
+#[cfg(not(target_os = "windows"))]
+pub fn run_login_shell(shell: &Path, args: &[&str]) -> Result<String, String> {
+    said(
+        shell,
+        run_within(shell, &env::temp_dir(), args, None, LOGIN_SHELL, true, None)?,
+    )
 }
 
 /// A question asked over the network, to a program that only takes it on its
@@ -66,11 +113,17 @@ pub fn run_with_input(
     args: &[&str],
     input: &str,
 ) -> Result<String, String> {
-    said(program, run_within(program, dir, args, Some(input), FETCH)?)
+    said(
+        program,
+        run_within(program, dir, args, Some(input), FETCH, false, None)?,
+    )
 }
 
 pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
-    said(program, run_within(program, dir, args, None, FETCH)?)
+    said(
+        program,
+        run_within(program, dir, args, None, FETCH, false, None)?,
+    )
 }
 
 /// The same, keeping what the program said even when it failed
@@ -78,7 +131,7 @@ pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, St
 /// A program can say something a caller has to act on rather than show: git
 /// answers `--porcelain` on its standard output and fails all the same.
 pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Result<Ran, String> {
-    run_within(program, dir, args, None, TRANSFER)
+    run_within(program, dir, args, None, TRANSFER, false, None)
 }
 
 pub struct Ran {
@@ -137,16 +190,27 @@ fn without_appimage_environment(command: &mut Command) {
         if !paths.iter().any(|path| path.starts_with(&appdir)) {
             continue;
         }
-        let users: Vec<PathBuf> = paths
-            .into_iter()
-            // An empty entry is the working directory, here the website folder
-            .filter(|path| !path.as_os_str().is_empty() && !path.starts_with(&appdir))
-            .collect();
+        let users = outside_the_appimage(paths);
         command.env_remove(&name);
         if let (false, Ok(value)) = (users.is_empty(), env::join_paths(&users)) {
             command.env(&name, value);
         }
     }
+}
+
+/// Without what would make a program run from the wrong place: an empty or
+/// relative folder is the working directory, here the website folder, and
+/// those of the AppImage hold what Silex carries for itself
+pub(crate) fn outside_the_appimage(folders: impl IntoIterator<Item = PathBuf>) -> Vec<PathBuf> {
+    let appdir = env::var_os("APPDIR").map(PathBuf::from);
+    let mut kept: Vec<PathBuf> = Vec::new();
+    for folder in folders {
+        let of_the_appimage = appdir.as_ref().is_some_and(|dir| folder.starts_with(dir));
+        if folder.is_absolute() && !of_the_appimage && !kept.contains(&folder) {
+            kept.push(folder);
+        }
+    }
+    kept
 }
 
 /// Opens a folder or a link with what the system chooses, which the
@@ -180,6 +244,8 @@ fn run_within(
     args: &[&str],
     input: Option<&str>,
     timeout: Duration,
+    login_shell: bool,
+    waiting: Option<&Waiting>,
 ) -> Result<Ran, String> {
     let mut command = Command::new(program);
     command
@@ -204,9 +270,22 @@ fn run_within(
         .env("NO_COLOR", "1")
         // Programs answer in the language of the user otherwise, and Silex
         // reads what they say
-        .env("LC_ALL", "C");
+        .env("LC_ALL", "C")
+        // glab tells GitLab what the user does with it otherwise
+        .env("GLAB_SEND_TELEMETRY", "false")
+        // and writes its update notice in front of the errors Silex shows
+        .env("GLAB_CHECK_UPDATE", "false");
 
     without_appimage_environment(&mut command);
+    if login_shell {
+        // Lets startup files skip what is slow, and oh-my-zsh not ask to update
+        command
+            .env("SILEX_RESOLVING_ENVIRONMENT", "1")
+            .env("DISABLE_AUTO_UPDATE", "true");
+    } else if let Ok(path) = env::join_paths(programs::path()) {
+        // glab starts git, which may have been installed since Silex started
+        command.env("PATH", path);
+    }
 
     // A killed program takes with it whatever it started: git leaves an ssh
     // behind, and that ssh holds the connection and the pipes
@@ -246,6 +325,7 @@ fn run_within(
 
     let start = Instant::now();
     let mut asked_again_after = Duration::from_millis(1);
+    let mut told = 0;
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -255,6 +335,13 @@ fn run_within(
                 stop(&mut child);
                 return Err(message);
             }
+        }
+        if let Some(waiting) = waiting {
+            if waiting.given_up.load(Ordering::Relaxed) {
+                stop(&mut child);
+                return Err(format!("{} was stopped", name));
+            }
+            told = tell_lines(&stderr, told, waiting.heard);
         }
         if start.elapsed() >= timeout {
             stop(&mut child);
@@ -320,6 +407,21 @@ fn drain(pipe: Option<impl Read + Send + 'static>) -> Draining {
         read_so_far,
         closed: wait_for_it,
     }
+}
+
+/// The lines written since `told`, each once it is whole
+fn tell_lines(output: &Draining, told: usize, heard: &dyn Fn(&str)) -> usize {
+    let new = {
+        let kept = held(&output.read_so_far);
+        let Some(end) = kept[told..].iter().rposition(|&byte| byte == b'\n') else {
+            return told;
+        };
+        kept[told..told + end + 1].to_vec()
+    };
+    for line in String::from_utf8_lossy(&new).lines() {
+        heard(&readable(line));
+    }
+    told + new.len()
 }
 
 /// What a pipe gave, waiting only for what a finished program can still owe

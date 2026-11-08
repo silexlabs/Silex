@@ -11,6 +11,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use integrations::common::run::open_detached;
+use integrations::integration::Account;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -177,6 +178,146 @@ async fn sync_places(
     tauri::async_runtime::spawn_blocking(move || actions.sync_places(website_id.as_str()))
         .await
         .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn integration_catalog(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_catalog())
+        .await
+        .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn integration_asked(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    asked: integrations::Asked,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&program, asked))
+        .await
+        .map_err(Said::raw)?
+}
+
+#[tauri::command]
+async fn integration_accounts(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_accounts(&program))
+        .await
+        .map_err(Said::raw)?
+}
+
+/// `on_page` is told the page to sign in on when the browser did not open
+#[tauri::command]
+async fn connect_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    server: String,
+    client_id: Option<String>,
+    on_page: tauri::ipc::Channel<String>,
+) -> Result<integrations::Connected, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        actions.connect_account(&program, &server, client_id.as_deref(), &|page| {
+            let _ = on_page.send(page);
+        })
+    })
+    .await
+    .map_err(Said::raw)?
+}
+
+#[tauri::command]
+fn stop_connecting_account() {
+    integrations::stop_connecting();
+}
+
+#[tauri::command]
+async fn disconnect_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    id: String,
+) -> Result<Vec<Account>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.disconnect_account(&program, &id))
+        .await
+        .map_err(Said::raw)?
+}
+
+#[tauri::command]
+async fn remote_websites(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    account: String,
+) -> Result<Vec<integrations::integration::RemoteWebsite>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.remote_websites(&program, &account))
+        .await
+        .map_err(Said::raw)?
+}
+
+/// A copy of a website of an account, made a website of this computer
+#[tauri::command]
+async fn open_remote_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    folder: tauri::State<'_, WebsitesFolder>,
+    program: String,
+    account: String,
+    id: String,
+) -> Result<WebsiteId, Said> {
+    let actions = actions.inner().clone();
+    silex_server::create_website_from_copy(&folder.0, move |into| {
+        actions.fetch_website(&program, &account, &id, into)
+    })
+    .await
+    .map_err(Said::from)
+}
+
+#[tauri::command]
+async fn website_has_remote(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    website_id: WebsiteId,
+) -> Result<bool, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.website_has_remote(website_id.as_str()))
+        .await
+        .map_err(Said::raw)
+}
+
+/// Over the network: a new private place for a website of this computer, and
+/// the website sent there
+#[tauri::command]
+async fn link_website(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    account: String,
+    name: String,
+    website_id: WebsiteId,
+) -> Result<(), Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        actions.link_website(&program, &account, &name, website_id.as_str())
+    })
+    .await
+    .map_err(Said::raw)?
+}
+
+/// Over the network: whether the server still takes the account
+#[tauri::command]
+async fn check_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+    id: String,
+) -> Result<integrations::integration::SignIn, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.check_account(&program, &id))
+        .await
+        .map_err(Said::raw)?
 }
 
 #[tauri::command]
@@ -680,6 +821,7 @@ async fn start_server(
     asking_integrations: sentry::Span,
     app_handle: tauri::AppHandle,
 ) -> Result<(u16, Arc<actions::SilexActions>, mcp::LocalFiles), Box<dyn std::error::Error>> {
+    let integrations_dir = app_data_dir.clone();
     // Which programs Silex works with was settled the first time the app ran
     let integrations = integrations::load_in_background(app_data_dir, move |integrations| {
         asking_integrations.finish();
@@ -704,6 +846,7 @@ async fn start_server(
     });
     let actions = Arc::new(actions::SilexActions::new(
         data_path.clone(),
+        integrations_dir,
         integrations,
         current_website_id,
         tells_the_editor(app_handle),
@@ -993,6 +1136,17 @@ fn main() {
             sync_places,
             last_publication,
             sync_website,
+            integration_catalog,
+            integration_asked,
+            integration_accounts,
+            connect_account,
+            stop_connecting_account,
+            disconnect_account,
+            check_account,
+            remote_websites,
+            open_remote_website,
+            link_website,
+            website_has_remote,
             templates::create_website_from_template,
             save_ended,
             get_telemetry_context,

@@ -86,6 +86,13 @@ export class PublicationUi {
    */
   private notice = ''
   /**
+   * How many hostings the server offers, as last asked
+   *
+   * With only one, the list takes it again at once: going back to the list
+   * would look like doing nothing.
+   */
+  private hostingCount = 0
+  /**
    * Dialog element
    * This is the DOM element of the dialog
    */
@@ -183,17 +190,19 @@ export class PublicationUi {
   async renderOpenDialog(job: PublicationJobData, status: PublicationStatus): Promise<TemplateResult> {
     return html`
     <header>
-      <span>${unsafeHTML(svgConnector)} Connected to <span class="connector">${this.settings.connector.displayName}</span></span>
-      ${this.settings.connector.disableLogout ? nothing : html`
+      <span>${unsafeHTML(svgConnector)} <span class="connector">${this.settings.connector.displayName}</span></span>
+      ${this.hostingCount > 1 ? html`
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
         @click=${() => this.editor.Commands.run(cmdPublicationLogout)}
-      >Disconnect
-      </button>`}
+      >Change hosting
+      </button>` : nothing}
     </header>
     <main>
-      ${this.userContent || html`
+      ${this.userContent || (this.settings.connector.unavailable ? html`
+        <p>${this.settings.connector.unavailable}</p>
+      ` : html`
         ${this.isPending(status) ? html`
           <p>Publication in progress...</p>
         ` : nothing}
@@ -244,7 +253,7 @@ export class PublicationUi {
             @click=${() => this.requestPublish()}
           >${this.isSuccess(status) ? 'Publish again' : 'Publish'}</button>
         `}
-      `}
+      `)}
     </main>
     <footer>
       ${this.isLoggedOut(status) ? html`
@@ -267,7 +276,9 @@ export class PublicationUi {
     try {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
+      this.hostingCount = hostingConnectors.length
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
+      const afterList = hostingConnectors.find(connector => connector.afterList)?.afterList
       // `notice` says the server refused the hosting this website was saved
       // with, and the user then picks from the list themselves
       if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && !this.notice) {
@@ -296,6 +307,7 @@ export class PublicationUi {
           >${connector.displayName}</button>
         `)}
         </div>
+        ${afterList ? html`<p>${unsafeHTML(afterList)}</p>` : nothing}
       </main>
       <footer>
         <a href="https://docs.silex.me/designer/publishing/overview/" target="_blank">Help</a>
@@ -468,6 +480,7 @@ export class PublicationUi {
     let connectors: ConnectorData[]
     try {
       connectors = await connectorList({ type: ConnectorType.HOSTING })
+      this.hostingCount = connectors.length
     } catch (err) {
       // A server that did not answer must not stop the user: what was saved
       // still publishes

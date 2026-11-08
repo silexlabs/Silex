@@ -10,12 +10,16 @@ import {
   DropdownMenuTrigger,
 } from 'reka-ui'
 import WebsiteCard from '../components/WebsiteCard.vue'
+import RemoteWebsitesDialog from '../components/RemoteWebsitesDialog.vue'
 import AppTooltip from '../components/AppTooltip.vue'
 import { ariaKeys, keyLabel, useShortcuts } from '../shortcuts'
 import { useMenuAction } from '../menu'
 import { confirm, prompt, showError } from '../components/AppDialogs.vue'
 import { toast } from '../components/AppToasts.vue'
+import { askPlace, catalog, chosen, placeLabel, sendNewWebsite, sendToPlace } from '../integrations'
 import {
+  type Account,
+  type CatalogEntry,
   type Website,
   createWebsite,
   duplicateWebsite,
@@ -85,22 +89,42 @@ async function refresh() {
 }
 
 async function create() {
-  const name = await prompt({
-    title: t('New website'),
-    label: t('Name'),
-    value: t('My website'),
-    confirmLabel: t('Create and open'),
-  })
-  if (!name) return
+  const asked = await askPlace({ title: t('New website'), label: t('Name'), value: t('My website'), confirmLabel: t('Create and open') })
+  if (!asked) return
+  let websiteId: string
   try {
-    openEditor(await createWebsite(name))
+    websiteId = await createWebsite(asked.name)
   } catch (error) {
     await showError({ title: t('Silex could not create the website'), ...explain(error) })
+    return
   }
+  if (await sendNewWebsite(asked, websiteId)) openEditor(websiteId)
+  else await load()
+}
+
+async function link(website: Website) {
+  const asked = await askPlace({ title: t('Sync “{name}”', { name: website.name }), value: website.name, confirmLabel: t('Create project and sync') })
+  if (!asked?.place) return
+  const failure = await sendToPlace(asked.place, website.name, website.websiteId)
+  await load()
+  const server = placeLabel(asked.place)
+  if (failure) await showError({ title: t('Silex could not send “{name}” to {server}', { name: website.name, server }), ...failure })
+  else toast(t('“{name}” is synced with {server}.', { name: website.name, server }), 'success')
 }
 
 const newWebsite = useTemplateRef<InstanceType<typeof DropdownMenuTrigger>>('newWebsite')
 const newWebsiteMenu = useMenuAction(newWebsite)
+
+/** The integrations a website can be opened from: those that sync, with an account the user chose */
+const remoteSources = computed(() => (catalog.value ?? []).filter((entry) => entry.capacities.includes('sync') && chosen(entry).length))
+
+const openingFrom = ref<{ integration: CatalogEntry; accounts: Account[] } | null>(null)
+
+async function notOpened(title: string, error: ReturnType<typeof explain>) {
+  openingFrom.value = null
+  await nextTick()
+  await showError({ title, ...error })
+}
 
 async function rename(website: Website) {
   const name = await prompt({
@@ -276,6 +300,14 @@ async function showFolder(website: Website) {
             >
               {{ $t('From a template…') }}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              v-for="remoteSource in remoteSources"
+              :key="remoteSource.program"
+              class="menu__item"
+              @select="newWebsiteMenu.choose(() => (openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }))"
+            >
+              {{ $t('From {name}…', { name: remoteSource.name }) }}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>
       </DropdownMenuRoot>
@@ -348,6 +380,15 @@ async function showFolder(website: Website) {
       >
         {{ $t('See the templates') }}
       </RouterLink>
+      <button
+        v-for="remoteSource in remoteSources"
+        :key="remoteSource.program"
+        type="button"
+        class="button"
+        @click="openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }"
+      >
+        {{ $t('From {name}…', { name: remoteSource.name }) }}
+      </button>
     </div>
   </div>
 
@@ -377,9 +418,18 @@ async function showFolder(website: Website) {
         @rename="rename(website)"
         @duplicate="duplicate(website)"
         @delete="remove(website)"
+        @link="link(website)"
       />
     </div>
   </template>
+  <RemoteWebsitesDialog
+    v-if="openingFrom"
+    :integration="openingFrom.integration"
+    :accounts="openingFrom.accounts"
+    @opened="openEditor"
+    @closed="openingFrom = null"
+    @failed="notOpened"
+  />
 </template>
 
 <style scoped>

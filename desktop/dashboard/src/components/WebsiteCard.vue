@@ -16,6 +16,7 @@ import {
   onSyncStatus,
   openLink,
   syncPlaces,
+  websiteHasRemote,
   syncWebsite,
   thumbnailOf,
   translate,
@@ -27,9 +28,10 @@ import { useMenuAction } from '../menu'
 import { type Problem, showError } from './AppDialogs.vue'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
+import { places as linkablePlaces } from '../integrations'
 
 const props = defineProps<{ website: Website }>()
-const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: [] }>()
+const emit = defineEmits<{ open: []; showFolder: []; rename: []; duplicate: []; delete: []; link: [] }>()
 
 const { t, locale } = useI18n()
 const nameId = useId()
@@ -65,6 +67,14 @@ const edited = computed(() => {
 })
 
 const places = ref<SyncPlace[]>([])
+const hasRemote = ref(true)
+const repoUrl = computed(() => places.value.find((place) => place.repoUrl)?.repoUrl)
+
+function showRepository(url: string) {
+  openLink(url).catch((error: unknown) =>
+    showError({ title: t('Silex could not open {name}', { name: url }), ...explain(error) }),
+  )
+}
 const lastPublication = ref<Publication>(null)
 // Apart, so that one failing does not hide the other
 async function readSync() {
@@ -72,6 +82,7 @@ async function readSync() {
     lastPublication.value = last
   }, console.error)
   places.value = await syncPlaces(props.website.websiteId)
+  hasRemote.value = await websiteHasRemote(props.website.websiteId)
 }
 // The list gives new objects when it is refreshed, and the same one when a website is renamed
 watch(() => props.website, readSync, { immediate: true })
@@ -269,6 +280,20 @@ const { choose, afterClose } = useMenuAction(more)
             >
               {{ $t('Edit') }}
             </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="!hasRemote && linkablePlaces.length"
+              class="menu__item"
+              @select="choose(() => emit('link'))"
+            >
+              {{ $t('Sync…') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="repoUrl"
+              class="menu__item"
+              @select="choose(() => showRepository(repoUrl!))"
+            >
+              {{ $t('See the repository') }}
+            </DropdownMenuItem>
             <DropdownMenuSeparator class="menu__separator" />
             <DropdownMenuItem
               class="menu__item"
@@ -348,23 +373,6 @@ const { choose, afterClose } = useMenuAction(more)
   text-align: left;
   overflow-wrap: anywhere;
   cursor: pointer;
-}
-
-/* The whole card opens the website, the button stays the one thing to focus */
-.card__open::after {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--silex-radius-md);
-  content: '';
-}
-
-.card__open:focus-visible {
-  outline: none;
-}
-
-.card__open:focus-visible::after {
-  outline: 2px solid var(--silex-focus-outline);
-  outline-offset: 2px;
 }
 
 /* Above the link of the whole card, on an opaque ground that reads the same on any thumbnail */
@@ -455,25 +463,5 @@ const { choose, afterClose } = useMenuAction(more)
   background: var(--silex-danger-hover);
 }
 
-.card__more {
-  position: relative;
-  z-index: 1;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  margin-top: calc(-1 * var(--silex-space-1));
-  border: none;
-  border-radius: var(--silex-radius-sm);
-  background: none;
-  color: var(--silex-text-secondary);
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.card__more:hover,
-.card__more[aria-expanded='true'] {
-  background: var(--silex-hover-bg);
-  color: var(--silex-text-primary);
-}
 </style>
 

@@ -59,13 +59,18 @@ pub trait Actions: Send + Sync {
         None
     }
 
-    /// What serves the website currently open, told to the editor as its
-    /// hosting connector.
+    /// What can serve the website currently open, told to the editor as its
+    /// hosting connectors, next to the folder on this computer it can always
+    /// be published to.
     ///
     /// No website id is passed: the editor asks without naming the website it
-    /// has open. None when nothing is known of where it goes, and the editor
-    /// is then told of a plain file system hosting.
-    fn hosting(&self) -> Option<Hosting> {
+    /// has open.
+    fn hostings(&self) -> Vec<Hosting> {
+        Vec::new()
+    }
+
+    /// HTML the publication dialog shows under the list of the hostings
+    fn more_hostings(&self) -> Option<String> {
         None
     }
 }
@@ -104,7 +109,7 @@ impl PublicationOptions {
 /// Where a website is served, as far as its host application knows
 #[derive(Debug, Clone)]
 pub struct Hosting {
-    /// Which connector publishes it, the only one this server answers for
+    /// Which connector publishes it
     pub connector_id: &'static str,
 
     /// The name of the host, as the user knows it
@@ -112,6 +117,9 @@ pub struct Hosting {
 
     /// What the user is asked, when the host cannot say it itself
     pub options_form: Option<OptionsForm>,
+
+    /// Why it cannot publish this website, in words the user can act on
+    pub unavailable: Option<String>,
 }
 
 /// A form the editor shows before publishing

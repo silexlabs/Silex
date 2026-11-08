@@ -16,11 +16,13 @@
 //! the server's, not this.
 
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use git2::{ConfigLevel, ErrorCode, Oid};
 use silex_server::{repository, TEMPLATE_REMOTE};
 
 use super::run::{failure, run, run_fetch, run_transfer_verbatim};
+use crate::held::held;
 use crate::integrations::integration::{SyncError, Synced};
 use crate::locales::{AHEAD, BEHIND, DIVERGED, NOT_PUSHED, PUSHED, SYNC};
 use silex_server::said::Said;
@@ -86,28 +88,43 @@ pub fn remote_url(site: &Path) -> Option<String> {
     published_to(site).map(|(_, url)| url)
 }
 
-/// The git of this machine, looked for once and kept
+/// The git of this machine, looked for until it is found and kept
 ///
 /// Not an integration: nothing to turn on, nothing to remember. Asked its
 /// version rather than taken on sight, because a file being there does not
 /// mean it runs.
 fn git_path() -> Option<PathBuf> {
-    static FOUND: std::sync::OnceLock<Option<PathBuf>> = std::sync::OnceLock::new();
-    FOUND
-        .get_or_init(|| {
-            super::programs::found("git")
-                .filter(|program| run(program, &std::env::temp_dir(), &["--version"]).is_ok())
-        })
-        .clone()
+    let mut kept = held(&GIT);
+    if kept.is_none() {
+        let found = super::programs::found("git");
+        // One that is there but does not run is not asked again: on macOS it
+        // is the stub offering the developer tools, in a dialog at every save
+        *kept = found.map(|program| {
+            run(&program, &std::env::temp_dir(), &["--version"])
+                .is_ok()
+                .then_some(program)
+        });
+    }
+    kept.clone().flatten()
+}
+
+/// Not looked for yet, there but not running, or found
+static GIT: Mutex<Option<Option<PathBuf>>> = Mutex::new(None);
+
+/// So that a git installed while Silex runs is found
+pub(crate) fn forget() {
+    *held(&GIT) = None;
 }
 
 /// Push the branch, and the tag when there is one
 ///
 /// A tag nothing was pushed with would be left behind at every failed
 /// attempt, so it goes with the failure.
-pub fn push(site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
+///
+/// `config` is set for this command only, as `name=value`.
+pub fn push(site: &Path, tag: Option<&str>, config: &[String]) -> Result<(), SyncError> {
     let (git, remote) = git_and_remote(site)?;
-    let pushed = push_branch(&git, site, &remote, tag);
+    let pushed = push_branch(&git, site, &remote, tag, config);
     if pushed.is_err() {
         if let Some(tag) = tag {
             silex_server::untag(site, tag);
@@ -116,17 +133,43 @@ pub fn push(site: &Path, tag: Option<&str>) -> Result<(), SyncError> {
     pushed
 }
 
+/// Copy a repository into a folder that does not exist yet
+///
+/// `config` is set for this command only, as `name=value`.
+pub fn clone(url: &str, into: &Path, config: &[String]) -> Result<(), String> {
+    let git = git_path().ok_or_else(|| {
+        "Silex could not find git on this computer, and it is git that copies a website from its host."
+            .to_string()
+    })?;
+    let into = into.to_string_lossy();
+    let args = with_config(config, &["clone", "--end-of-options", url, &into]);
+    let ran = run_transfer_verbatim(&git, &std::env::temp_dir(), &args)?;
+    if ran.failed {
+        return Err(failure(&git, &ran));
+    }
+    Ok(())
+}
+
+/// Send to this repository from now on a website that is sent nowhere yet
+pub fn set_origin(site: &Path, url: &str) -> Result<(), String> {
+    let repo = repository(site).map_err(|e| e.to_string())?;
+    repo.remote("origin", url)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
+}
+
 /// Fast-forward only: a website that moved on both here and there is left
 /// to its user and the git client they already have.
 ///
 /// False only once it is known that nothing is left to push: what could not be
 /// compared is an error.
-pub fn sync(site: &Path) -> Result<bool, SyncError> {
+pub fn sync(site: &Path, config: &[String]) -> Result<bool, SyncError> {
     let (git, remote) = git_and_remote(site)?;
     // Fetched then merged rather than pulled: only the fetch reaches a
     // network, and `pull` reads settings of the user that are not Silex's
     // business to inherit.
-    run_fetch(&git, site, &["fetch", "--end-of-options", &remote]).map_err(SyncError::Other)?;
+    let args = with_config(config, &["fetch", "--end-of-options", &remote]);
+    run_fetch(&git, site, &args).map_err(SyncError::Other)?;
     let Some((ahead, behind, upstream)) = compared(site, &remote)? else {
         // Never sent: all of it is left to push
         return Ok(true);
@@ -220,7 +263,13 @@ fn git_and_remote(site: &Path) -> Result<(PathBuf, String), SyncError> {
 ///
 /// Nothing is merged or rebased here: a merge Silex started would leave the
 /// folder in a state its user has no terminal to get out of.
-fn push_branch(git: &Path, site: &Path, remote: &str, tag: Option<&str>) -> Result<(), SyncError> {
+fn push_branch(
+    git: &Path,
+    site: &Path,
+    remote: &str,
+    tag: Option<&str>,
+    config: &[String],
+) -> Result<(), SyncError> {
     let mut args = vec!["push", "--porcelain", "--set-upstream"];
     // A tag that leaves without its branch starts a build of a commit the
     // branch does not have
@@ -229,13 +278,24 @@ fn push_branch(git: &Path, site: &Path, remote: &str, tag: Option<&str>) -> Resu
     }
     // The remote's name comes from .git/config: never read as an option
     args.extend(["--end-of-options", remote, "HEAD"]);
-    // Together, because two pushes mean two handshakes with the host
-    args.extend(tag);
+    // Together, because two pushes mean two handshakes with the host. In
+    // full, or a branch of the same name makes git refuse to choose
+    let tag = tag.map(|tag| format!("refs/tags/{tag}"));
+    args.extend(tag.as_deref());
+    let args = with_config(config, &args);
     let ran = run_transfer_verbatim(git, site, &args).map_err(SyncError::Other)?;
     if !ran.failed {
         return Ok(());
     }
     Err(refusal(&ran.stdout, failure(git, &ran)))
+}
+
+fn with_config<'a>(config: &'a [String], command: &[&'a str]) -> Vec<&'a str> {
+    config
+        .iter()
+        .flat_map(|set| ["-c", set.as_str()])
+        .chain(command.iter().copied())
+        .collect()
 }
 
 /// Why git refused, read from `--porcelain`, which writes one line per ref as

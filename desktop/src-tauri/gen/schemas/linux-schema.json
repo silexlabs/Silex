@@ -177,10 +177,22 @@
       "description": "Permission identifier",
       "oneOf": [
         {
+          "description": "Enables the check_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-check-account",
+          "markdownDescription": "Enables the check_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the clear_current_project command without any pre-configured scope.",
           "type": "string",
           "const": "allow-clear-current-project",
           "markdownDescription": "Enables the clear_current_project command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the connect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-connect-account",
+          "markdownDescription": "Enables the connect_account command without any pre-configured scope."
         },
         {
           "description": "Enables the create_website_from_template command without any pre-configured scope.",
@@ -189,10 +201,34 @@
           "markdownDescription": "Enables the create_website_from_template command without any pre-configured scope."
         },
         {
+          "description": "Enables the disconnect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-disconnect-account",
+          "markdownDescription": "Enables the disconnect_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_telemetry_context command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-telemetry-context",
           "markdownDescription": "Enables the get_telemetry_context command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the integration_accounts command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-integration-accounts",
+          "markdownDescription": "Enables the integration_accounts command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the integration_asked command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-integration-asked",
+          "markdownDescription": "Enables the integration_asked command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the integration_catalog command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-integration-catalog",
+          "markdownDescription": "Enables the integration_catalog command without any pre-configured scope."
         },
         {
           "description": "Enables the last_publication command without any pre-configured scope.",
@@ -201,10 +237,28 @@
           "markdownDescription": "Enables the last_publication command without any pre-configured scope."
         },
         {
+          "description": "Enables the link_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-link-website",
+          "markdownDescription": "Enables the link_website command without any pre-configured scope."
+        },
+        {
           "description": "Enables the open_link command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-link",
           "markdownDescription": "Enables the open_link command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the open_remote_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-open-remote-website",
+          "markdownDescription": "Enables the open_remote_website command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the remote_websites command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-remote-websites",
+          "markdownDescription": "Enables the remote_websites command without any pre-configured scope."
         },
         {
           "description": "Enables the save_ended command without any pre-configured scope.",
@@ -231,6 +285,12 @@
           "markdownDescription": "Enables the show_website_folder command without any pre-configured scope."
         },
         {
+          "description": "Enables the stop_connecting_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-stop-connecting-account",
+          "markdownDescription": "Enables the stop_connecting_account command without any pre-configured scope."
+        },
+        {
           "description": "Enables the sync_places command without any pre-configured scope.",
           "type": "string",
           "const": "allow-sync-places",
@@ -249,10 +309,28 @@
           "markdownDescription": "Enables the trash_website command without any pre-configured scope."
         },
         {
+          "description": "Enables the website_has_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-website-has-remote",
+          "markdownDescription": "Enables the website_has_remote command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the check_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-check-account",
+          "markdownDescription": "Denies the check_account command without any pre-configured scope."
+        },
+        {
           "description": "Denies the clear_current_project command without any pre-configured scope.",
           "type": "string",
           "const": "deny-clear-current-project",
           "markdownDescription": "Denies the clear_current_project command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the connect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-connect-account",
+          "markdownDescription": "Denies the connect_account command without any pre-configured scope."
         },
         {
           "description": "Denies the create_website_from_template command without any pre-configured scope.",
@@ -261,10 +339,34 @@
           "markdownDescription": "Denies the create_website_from_template command without any pre-configured scope."
         },
         {
+          "description": "Denies the disconnect_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-disconnect-account",
+          "markdownDescription": "Denies the disconnect_account command without any pre-configured scope."
+        },
+        {
           "description": "Denies the get_telemetry_context command without any pre-configured scope.",
           "type": "string",
           "const": "deny-get-telemetry-context",
           "markdownDescription": "Denies the get_telemetry_context command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the integration_accounts command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-integration-accounts",
+          "markdownDescription": "Denies the integration_accounts command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the integration_asked command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-integration-asked",
+          "markdownDescription": "Denies the integration_asked command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the integration_catalog command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-integration-catalog",
+          "markdownDescription": "Denies the integration_catalog command without any pre-configured scope."
         },
         {
           "description": "Denies the last_publication command without any pre-configured scope.",
@@ -273,10 +375,28 @@
           "markdownDescription": "Denies the last_publication command without any pre-configured scope."
         },
         {
+          "description": "Denies the link_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-link-website",
+          "markdownDescription": "Denies the link_website command without any pre-configured scope."
+        },
+        {
           "description": "Denies the open_link command without any pre-configured scope.",
           "type": "string",
           "const": "deny-open-link",
           "markdownDescription": "Denies the open_link command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the open_remote_website command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-open-remote-website",
+          "markdownDescription": "Denies the open_remote_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the remote_websites command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-remote-websites",
+          "markdownDescription": "Denies the remote_websites command without any pre-configured scope."
         },
         {
           "description": "Denies the save_ended command without any pre-configured scope.",
@@ -303,6 +423,12 @@
           "markdownDescription": "Denies the show_website_folder command without any pre-configured scope."
         },
         {
+          "description": "Denies the stop_connecting_account command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-stop-connecting-account",
+          "markdownDescription": "Denies the stop_connecting_account command without any pre-configured scope."
+        },
+        {
           "description": "Denies the sync_places command without any pre-configured scope.",
           "type": "string",
           "const": "deny-sync-places",
@@ -319,6 +445,12 @@
           "type": "string",
           "const": "deny-trash-website",
           "markdownDescription": "Denies the trash_website command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the website_has_remote command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-website-has-remote",
+          "markdownDescription": "Denies the website_has_remote command without any pre-configured scope."
         },
         {
           "description": "Default core plugins set.\n#### This default permission set includes:\n\n- `core:path:default`\n- `core:event:default`\n- `core:window:default`\n- `core:webview:default`\n- `core:app:default`\n- `core:image:default`\n- `core:resources:default`\n- `core:menu:default`\n- `core:tray:default`",

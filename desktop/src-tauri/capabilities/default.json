@@ -32,6 +32,17 @@
     "allow-sync-website",
     "allow-create-website-from-template",
     "allow-save-ended",
-    "allow-get-telemetry-context"
+    "allow-get-telemetry-context",
+    "allow-integration-catalog",
+    "allow-integration-asked",
+    "allow-integration-accounts",
+    "allow-connect-account",
+    "allow-stop-connecting-account",
+    "allow-disconnect-account",
+    "allow-check-account",
+    "allow-remote-websites",
+    "allow-open-remote-website",
+    "allow-link-website",
+    "allow-website-has-remote"
   ]
 }
