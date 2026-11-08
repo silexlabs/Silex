@@ -167,7 +167,7 @@ fn flat_schema(schema: serde_json::Value) -> Arc<JsonObject> {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ScreenshotTarget {
     #[default]
@@ -1096,7 +1096,20 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        let target = params.target.unwrap_or_default().as_str();
+        let target = params.target.unwrap_or_default();
+
+        if target == ScreenshotTarget::Ui {
+            let png_bytes = match crate::snapshot::capture_webview_ui(&self.app_handle).await {
+                Ok(bytes) => bytes,
+                Err(e) => return Ok(tool_error(format!("UI screenshot failed: {}", e))),
+            };
+
+            use base64::Engine;
+            let base64_data = base64::engine::general_purpose::STANDARD.encode(&png_bytes);
+            let content = vec![ContentBlock::image(base64_data, "image/png")];
+            return Ok(CallToolResult::success(content));
+        }
+
         let Some(html2canvas) = crate::frontend::html2canvas() else {
             return Ok(tool_error(
                 "Screenshot failed: html2canvas is not in the dashboard build",
@@ -1107,22 +1120,16 @@ impl SilexMcp {
         let screenshot_js = r#"
 (async function() {
     const { default: html2canvas } = await import(__HTML2CANVAS__);
-    let element;
-    if ('__TARGET__' === 'canvas') {
-        const frame = document.querySelector('.gjs-frame');
-        if (frame && frame.contentDocument && frame.contentDocument.body) {
-            element = frame.contentDocument.body;
-        } else {
-            throw new Error('GrapesJS canvas iframe not found or not accessible');
-        }
+    const frame = document.querySelector('.gjs-frame');
+    if (frame && frame.contentDocument && frame.contentDocument.body) {
+        const element = frame.contentDocument.body;
+        const canvas = await html2canvas(element, { useCORS: true, allowTaint: true });
+        return canvas.toDataURL('image/png');
     } else {
-        element = document.body;
+        throw new Error('GrapesJS canvas iframe not found or not accessible');
     }
-    const canvas = await html2canvas(element, { useCORS: true, allowTaint: true });
-    return canvas.toDataURL('image/png');
 })()
 "#
-        .replace("__TARGET__", target)
         .replace("__HTML2CANVAS__", &html2canvas);
 
         let data_url = match self.eval_js_internal(&screenshot_js, 30).await {
