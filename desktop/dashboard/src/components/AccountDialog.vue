@@ -72,7 +72,7 @@ async function signIn() {
 async function useAnother() {
   choosing.value = false
   await nextTick()
-  element.value?.querySelector<HTMLInputElement>('input[type=radio]')?.focus()
+  element.value?.querySelector<HTMLInputElement>('input[type=radio]:not(:disabled)')?.focus()
 }
 
 function stopSigningIn() {
@@ -190,7 +190,7 @@ function cancel() {
           {{ t('Where is your account?') }}
         </legend>
         <label
-          v-for="known in integration.servers.filter((server) => !integration.accounts.includes(server))"
+          v-for="known in integration.servers"
           :key="known"
           class="account__choice"
         >
@@ -199,8 +199,13 @@ function cancel() {
             type="radio"
             name="server"
             :value="known"
+            :disabled="integration.accounts.includes(known)"
           >
           {{ known }}
+          <span
+            v-if="integration.accounts.includes(known)"
+            class="account__added"
+          >{{ t('Already added') }}</span>
         </label>
         <label class="account__choice">
           <input
@@ -287,6 +292,12 @@ function cancel() {
 </template>
 
 <style scoped>
+.account__added {
+  margin-left: var(--silex-space-1);
+  color: var(--silex-text-secondary);
+  font-size: 12px;
+}
+
 .account__choices {
   display: grid;
   gap: var(--silex-space-2);
