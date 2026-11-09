@@ -21,7 +21,7 @@ import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSour
 import type { ClientConfig } from '../../config'
 import { ClientEvent } from '../../events'
 import { ClientSideFileType, type PublicationData, type SsgId, type WebsiteSettings } from '~/common/types'
-import { linkToPermalink } from './permalink'
+import { linkToPermalink } from '~/editor/grapesjs/permalink'
 import { PAGE_ITEM_LABEL, isPageState, type PageStateId } from './states'
 import { getSettingLabel } from './settings-keys'
 import { openCmsSettingsDialog } from './index'

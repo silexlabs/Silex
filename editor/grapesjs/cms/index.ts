@@ -38,7 +38,6 @@ export interface EleventyPluginOptions extends DataSourceEditorOptions {
 
 export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {
   eleventyPageData?: string,
-  eleventyPermalink?: string,
   eleventyPageSize?: string,
   silexLanguagesList?: string,
   silexLanguagesDefault?: string,

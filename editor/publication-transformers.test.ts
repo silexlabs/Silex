@@ -9,10 +9,42 @@ import {
   transformFiles,
   transformBgImage,
   publicationTransformerDefault,
+  transformPath,
+  transformPermalink,
 } from './publication-transformers'
 import { ClientConfig } from './config'
 import grapesjs, { Component, Editor, StyleProps, Page } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '~/common/types'
+
+describe('fixed permalinks without expressions', () => {
+  it.each([
+    ['about/team', '/about/team/index.html', '/about/team/'],
+    ['/about.html', '/about.html', '/about.html'],
+    ['/', '/index.html', '/'],
+    ['0', '/0/index.html', '/0/'],
+    ['', '/team.html', '/team/'],
+  ])('publishes "%s" and links to the same URL', (permalink, filePath, url) => {
+    const editor = grapesjs.init({ headless: true, storageManager: false })
+    editor.getModel().set('config', { cmsConfig: { enabled: false }, publicationTransformers: [publicationTransformerDefault] })
+    editor.Pages.add({ name: 'Team', settings: { eleventyPermalink: JSON.stringify([{ type: 'property', propType: 'field', fieldId: 'fixed', options: { value: permalink } }]) } })
+    expect(transformPath(editor, '/team.html', ClientSideFileType.HTML)).toBe(filePath)
+    expect(transformPermalink(editor, './team.html?lang=en#people', ClientSideFileType.HTML, Initiator.HTML)).toBe(`${url}?lang=en#people`)
+    expect(transformPath(editor, '/css/team.css', ClientSideFileType.CSS)).toBe('/css/team.css')
+    expect(transformPermalink(editor, 'https://example.com/team.html', ClientSideFileType.HTML, Initiator.HTML)).toBe('https://example.com/team.html')
+    editor.destroy()
+  })
+
+  it('refuses to silently discard a dynamic permalink when expressions are disabled', () => {
+    const editor = grapesjs.init({ headless: true, storageManager: false })
+    const config = { cmsConfig: { enabled: false }, publicationTransformers: [publicationTransformerDefault] }
+    editor.getModel().set('config', config)
+    editor.Pages.add({ name: 'Team', settings: { eleventyPermalink: JSON.stringify([{ type: 'property', propType: 'field', fieldId: 'slug', dataSourceId: 'posts' }]) } })
+    expect(() => transformPath(editor, '/team.html', ClientSideFileType.HTML)).toThrow('expressions are disabled')
+    config.cmsConfig.enabled = true
+    expect(transformPath(editor, '/team.html', ClientSideFileType.HTML)).toBe('/team.html')
+    editor.destroy()
+  })
+})
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
