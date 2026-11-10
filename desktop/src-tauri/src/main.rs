@@ -863,6 +863,8 @@ async fn start_server(
         current_website_id,
         tells_the_editor(app_handle),
     ));
+    let updating = actions.clone();
+    std::thread::spawn(move || updating.update_integrations());
 
     let config = Config::new(data_path).with_actions(actions.clone());
 

@@ -182,6 +182,10 @@ impl SilexActions {
             .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
     }
 
+    pub fn update_integrations(&self) {
+        crate::integrations::update_silex_copies(&self.integrations, &self.app_data_dir)
+    }
+
     pub fn integration_install(
         &self,
         program: &str,

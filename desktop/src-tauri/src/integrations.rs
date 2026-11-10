@@ -328,23 +328,42 @@ pub fn load(data_dir: &Path) -> Integrations {
     integrations
 }
 
-/// The path remembered, unless it is a copy Silex installed before an update
-/// of Silex; else the program of the user, else the copy of Silex
+/// The path remembered, else the program of the user, else the copy of Silex
 fn located(
     data_dir: &Path,
     integration: &dyn Integration,
     remembered: Option<&IntegrationState>,
 ) -> Option<PathBuf> {
-    let id = integration.program();
     if let Some(state) = remembered {
-        let old = state.path.as_deref().is_some_and(|path| {
-            install::is_old_silex_copy(data_dir, id, integration.release(), path)
-        });
-        if !old {
-            return state.path.clone();
+        return state.path.clone();
+    }
+    let id = integration.program();
+    programs::users_own(id).or_else(|| install::silex_copy(data_dir, id, integration.release()?))
+}
+
+/// The version of this Silex in place of the copy an older one installed,
+/// without a word: the older copy keeps working until then
+pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
+    for (id, state) in snapshot(loading).known {
+        let (Some(integration), Some(path)) = (by_program(&id), state.path) else {
+            continue;
+        };
+        let Some(release) = integration.release() else {
+            continue;
+        };
+        if state.accounts.is_empty()
+            || !install::is_old_silex_copy(data_dir, &id, Some(release), &path)
+            || programs::users_own(&id).is_some()
+        {
+            continue;
+        }
+        match install::install(data_dir, &id, release) {
+            Ok(_) => {
+                asked(loading, data_dir, &id, Asked::CheckAgain);
+            }
+            Err(e) => tracing::warn!("Could not update the {} of Silex: {:?}", id, e),
         }
     }
-    programs::users_own(id).or_else(|| install::silex_copy(data_dir, id, integration.release()?))
 }
 
 /// Downloads the program into the folder of Silex, then looks for it again
