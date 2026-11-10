@@ -817,7 +817,9 @@ impl silex_server::Actions for SilexActions {
     fn more_hostings(&self) -> Option<String> {
         let link = format!("<a href=\"/#/integrations\">{}</a>", tr("Integrations"));
         Some(silex_server::said::fill(
-            &tr(key!("To publish your website online, you need a hosting service. To add one, connect an account in {link}, then click Sync… on this website in Your websites.")),
+            &tr(key!(
+                "To publish your website online, you need a hosting service. Add one in {link}."
+            )),
             [("link", link.as_str())],
         ))
     }

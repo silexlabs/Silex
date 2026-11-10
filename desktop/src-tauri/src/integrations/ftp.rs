@@ -67,6 +67,10 @@ const RELEASE: Release = Release {
     max_bytes: 200 * 1024 * 1024,
 };
 
+/// The server icon of Lucide, ISC license: a server rather than the logo of a
+/// web host
+const SERVER_ICON: &str = r#"<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>"#;
+
 pub struct Ftp;
 
 impl Integration for Ftp {
@@ -97,6 +101,10 @@ impl Integration for Ftp {
     /// Of rclone: the server of the host is unknown to Silex
     fn openness(&self) -> Openness {
         Openness::OpenSource
+    }
+
+    fn icon(&self) -> Option<&'static str> {
+        Some(SERVER_ICON)
     }
 
     fn install_url(&self) -> &'static str {
@@ -842,7 +850,9 @@ fn failed(host: &str, why: String, otherwise: &'static str) -> Said {
         .with("name", name)
         .because(why);
     }
-    let sentence = if said.contains("x509") {
+    let sentence = if said.contains("host key mismatch") {
+        key!("The key of {host} has changed. If this is normal, for example after the server was reinstalled, remove this server in Integrations, then add it again.")
+    } else if said.contains("x509") {
         key!("Silex does not trust the security certificate of {host}.")
     } else if refused(&why) {
         key!("{host} refused this user name or password.")
@@ -1016,6 +1026,14 @@ mod tests {
         assert_eq!(
             sentence("NewFs: couldn't connect SSH: ssh: handshake failed: ssh: unexpected message type 51 (expected 60)"),
             refused
+        );
+    }
+
+    #[test]
+    fn tells_a_changed_key() {
+        assert_eq!(
+            not_connected("h", "NewFs: couldn't connect SSH: ssh: handshake failed: sftp: host key mismatch for h:22: server offered ssh-rsa key with fingerprint SHA256:6kjo; pinned fingerprints for this algorithm: SHA256:AIDt".to_string()).sentence,
+            Some("The key of {host} has changed. If this is normal, for example after the server was reinstalled, remove this server in Integrations, then add it again.")
         );
     }
 }
