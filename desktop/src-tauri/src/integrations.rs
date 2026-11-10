@@ -338,7 +338,17 @@ fn located(
         return state.path.clone();
     }
     let id = integration.program();
-    programs::users_own(id).or_else(|| install::silex_copy(data_dir, id, integration.release()?))
+    let ours = integration
+        .release()
+        .and_then(|release| install::silex_copy(data_dir, id, release));
+    match (programs::users_own(id), ours) {
+        (Some(theirs), Some(ours)) if !starts(integration, &theirs) => Some(ours),
+        (theirs, ours) => theirs.or(ours),
+    }
+}
+
+fn starts(integration: &dyn Integration, path: &Path) -> bool {
+    run::run(path, &std::env::temp_dir(), integration.version_args()).is_ok()
 }
 
 /// The version of this Silex in place of the copy an older one installed,
@@ -353,7 +363,7 @@ pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
         };
         if state.accounts.is_empty()
             || !install::is_old_silex_copy(data_dir, &id, Some(release), &path)
-            || programs::users_own(&id).is_some()
+            || programs::users_own(&id).is_some_and(|theirs| starts(integration, &theirs))
         {
             continue;
         }

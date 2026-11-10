@@ -218,9 +218,9 @@ export async function told(entry: CatalogEntry, now?: CatalogEntry) {
 export function install(entry: CatalogEntry) {
   return once(entry.program, async () => {
     installing.value.add(entry.program)
+    delete installFailed.value[entry.program]
     try {
       catalog.value = await installIntegration(entry.program)
-      delete installFailed.value[entry.program]
       const now = catalog.value.find((other) => other.program === entry.program)
       if (now) await loadAccounts(now)
       await told(entry, now)
