@@ -49,10 +49,11 @@ pub trait Actions: Send + Sync {
     fn build(
         &self,
         website_id: &str,
+        hosting_id: &str,
         options: &PublicationOptions,
         job: &crate::jobs::Job,
     ) -> Result<Option<std::path::PathBuf>, String> {
-        let _ = (website_id, options, job);
+        let _ = (website_id, hosting_id, options, job);
         Ok(None)
     }
 

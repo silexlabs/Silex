@@ -648,6 +648,7 @@ impl silex_server::Actions for SilexActions {
     fn build(
         &self,
         website_id: &str,
+        hosting_id: &str,
         options: &PublicationOptions,
         job: &Job,
     ) -> Result<Option<std::path::PathBuf>, String> {
@@ -657,7 +658,12 @@ impl silex_server::Actions for SilexActions {
                 &[],
             ));
         };
-        crate::generators::build(&site, options.ssg, options.no_ci, job)
+        // Without a push no CI runs, what is sent has to be built here
+        let no_ci = options.no_ci
+            || crate::integrations::snapshot(&self.integrations)
+                .host(hosting_id, &site)
+                .is_some_and(|host| !host.integration.capacities().contains(&Capacity::Sync));
+        crate::generators::build(&site, options.ssg, no_ci, job)
     }
 
     /// Sending is not publishing: a repository with its builds turned off

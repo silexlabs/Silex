@@ -193,10 +193,11 @@ async fn publish_website(
             // of their own so that the server answers meanwhile
             tokio::task::spawn_blocking(move || {
                 let publishing = std::panic::AssertUnwindSafe(|| {
-                    let built = match actions.build(website_id.as_str(), &options, &job) {
-                        Ok(built) => built,
-                        Err(message) => return job.failed(message),
-                    };
+                    let built =
+                        match actions.build(website_id.as_str(), &hosting_id, &options, &job) {
+                            Ok(built) => built,
+                            Err(message) => return job.failed(message),
+                        };
                     if !local {
                         let published =
                             storage::website_path(&data_path, &website_id).join(PUBLIC_FOLDER);
@@ -334,6 +335,7 @@ mod tests {
     impl crate::Actions for Panicking {
         fn build(
             &self,
+            _: &str,
             _: &str,
             _: &crate::actions::PublicationOptions,
             _: &crate::jobs::Job,
