@@ -116,4 +116,4 @@ $ npm start
 
 ## License
 
-[AGPL-3.0-or-later](LICENSE)
+[AGPL-3.0-only](LICENSE)

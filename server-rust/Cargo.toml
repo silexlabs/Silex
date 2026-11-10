@@ -3,7 +3,7 @@ name = "silex-server"
 version = "0.1.0"
 edition = "2021"
 description = "Silex website builder server - Rust implementation"
-license = "AGPL-3.0-or-later"
+license = "AGPL-3.0-only"
 authors = ["Silex Labs Foundation"]
 
 [dependencies]
