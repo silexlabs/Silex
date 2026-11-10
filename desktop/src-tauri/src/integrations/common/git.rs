@@ -96,7 +96,7 @@ pub fn remote_url(site: &Path) -> Option<String> {
 fn git_path() -> Option<PathBuf> {
     let mut kept = held(&GIT);
     if kept.is_none() {
-        let found = super::programs::found("git");
+        let found = super::programs::users_own("git");
         // One that is there but does not run is not asked again: on macOS it
         // is the stub offering the developer tools, in a dialog at every save
         *kept = found.map(|program| {

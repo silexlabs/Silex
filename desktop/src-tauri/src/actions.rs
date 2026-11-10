@@ -182,6 +182,13 @@ impl SilexActions {
             .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
     }
 
+    pub fn integration_install(
+        &self,
+        program: &str,
+    ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
+        crate::integrations::install_silex_copy(&self.integrations, &self.app_data_dir, program)
+    }
+
     pub fn integration_accounts(&self, program: &str) -> Result<Vec<Account>, Said> {
         crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
     }

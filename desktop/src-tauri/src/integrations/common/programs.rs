@@ -19,10 +19,10 @@ use super::run::outside_the_appimage;
 use crate::held::held;
 
 /// Every place this program could be, the likeliest first
-pub(crate) fn found(name: &str) -> Option<PathBuf> {
+pub(crate) fn users_own(name: &str) -> Option<PathBuf> {
     let a_file = |path: PathBuf| path.is_file().then_some(path);
 
-    env::join_paths(path())
+    env::join_paths(search_path())
         .ok()
         .and_then(|path| which::which_in(name, Some(path), env::temp_dir()).ok())
         .and_then(a_file)
@@ -30,7 +30,7 @@ pub(crate) fn found(name: &str) -> Option<PathBuf> {
 }
 
 /// The PATH every program is started with
-pub(crate) fn path() -> Vec<PathBuf> {
+pub(crate) fn search_path() -> Vec<PathBuf> {
     if let Some(folders) = &*held(&LOOKED_UP) {
         return folders.clone();
     }

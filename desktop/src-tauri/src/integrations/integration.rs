@@ -14,6 +14,7 @@ use serde::Serialize;
 use silex_server::said::Said;
 use silex_server::{OptionsForm, PublicationOptions};
 
+use super::common::install::Release;
 use super::common::remote::Remote;
 
 /// What an integration can do for a website
@@ -211,6 +212,11 @@ pub trait Integration: Send + Sync {
 
     /// The official page on installing the program, when Silex cannot find it
     fn install_url(&self) -> &'static str;
+
+    /// The version of the program Silex installs itself, for a user who has none
+    fn release(&self) -> Option<&'static Release> {
+        None
+    }
 
     /// Whether the program can be installed on this system: one that cannot
     /// is still shown, so that a user who read about it learns why it is not

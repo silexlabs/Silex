@@ -4576,6 +4576,7 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "dirs",
+ "flate2",
  "git2",
  "libc",
  "open",
@@ -4585,9 +4586,11 @@ dependencies = [
  "sentry",
  "serde",
  "serde_json",
+ "sha2 0.11.1",
  "silex-server",
  "strip-ansi-escapes",
  "sys-locale",
+ "tar",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
@@ -4603,6 +4606,7 @@ dependencies = [
  "webkit2gtk",
  "which",
  "windows-registry",
+ "zip",
 ]
 
 [[package]]
@@ -6810,6 +6814,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cec733c9820347a592f6375c3c0089b479ba0a0b1cbf3dd1958b02959b7c033"
 dependencies = [
  "crc32fast",
+ "flate2",
  "getrandom 0.4.3",
  "indexmap 2.14.2",
  "libc",

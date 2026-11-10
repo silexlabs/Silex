@@ -10,6 +10,7 @@
 //! What the integrations share, none of it an integration
 
 pub mod git;
+pub mod install;
 pub mod pipeline;
 pub mod programs;
 pub mod remote;
