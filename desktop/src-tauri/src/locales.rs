@@ -16,6 +16,8 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
+use silex_server::said::Said;
+
 const FRENCH: &str = include_str!("../../dashboard/src/locales/fr.json");
 
 pub const UPDATE_AVAILABLE: &str = "Update available";
@@ -67,6 +69,16 @@ pub fn tr(key: &str) -> String {
         }
     });
     words.get(key).cloned().unwrap_or_else(|| key.to_string())
+}
+
+/// The sentence of a `Said`, for the editor, which has no catalog
+pub fn in_words(said: &Said) -> Option<String> {
+    let params = said
+        .params
+        .iter()
+        .filter_map(|(name, value)| Some((*name, value.as_str()?)));
+    said.sentence
+        .map(|sentence| silex_server::said::fill(&tr(sentence), params))
 }
 
 /// The label of a dialog button

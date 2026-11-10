@@ -27,7 +27,7 @@ use crate::integrations::integration::{
     Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
 };
 use crate::integrations::Loading;
-use crate::locales::{key, tr, CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
+use crate::locales::{in_words, key, tr, CHANGED_ELSEWHERE, REFUSED_BY_HOST, SEND_FAILED};
 use silex_server::message::{self, Button, FILES_ON_THIS_COMPUTER};
 use silex_server::said::Said;
 
@@ -209,7 +209,7 @@ impl SilexActions {
     pub fn add_account(
         &self,
         integration: &str,
-        values: &PublicationOptions,
+        values: &std::collections::BTreeMap<String, String>,
     ) -> Result<crate::integrations::Connected, Said> {
         crate::integrations::add_account(&self.integrations, integration, values)
     }
@@ -732,6 +732,10 @@ impl silex_server::Actions for SilexActions {
                     files,
                     options,
                     &|step| job.step(step),
+                    &|said| {
+                        let sentence = in_words(&said).unwrap_or_default();
+                        job.progress(message::told(&sentence, &[on_this_computer()]));
+                    },
                 );
                 // Only a push takes the saves along
                 let pushed = hosting.integration.capacities().contains(&Capacity::Sync);
@@ -765,12 +769,17 @@ impl silex_server::Actions for SilexActions {
                 // What the program answered, and nothing read into it: those
                 // words change with the version of git, the host and the
                 // language of the machine
-                job.detail(failure.clone());
-                job.failed(message::explained(
-                    &format!("Silex could not send your website to {}.", repo),
-                    &failure,
-                    &[on_this_computer()],
-                ));
+                if let Some(detail) = &failure.detail {
+                    job.detail(detail.clone());
+                }
+                job.failed(match in_words(&failure) {
+                    Some(sentence) => message::told(&sentence, &[on_this_computer()]),
+                    None => message::explained(
+                        &format!("Silex could not send your website to {}.", repo),
+                        &failure.to_string(),
+                        &[on_this_computer()],
+                    ),
+                });
             }
             Ok(Sent {
                 signed_in: Err(why),
@@ -1010,7 +1019,7 @@ fn online(job: &Job, sent: &Sent, website: Option<String>) {
     );
     let Some(website) = website else {
         return job.succeeded(message::explained(
-            "Your website is built.",
+            "Your website is published.",
             &format!(
                 "Silex does not know the address {} serves it at.",
                 sent.host

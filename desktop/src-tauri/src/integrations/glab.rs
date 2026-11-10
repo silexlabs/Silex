@@ -391,7 +391,8 @@ impl Integration for Glab {
         _account: &str,
         _files: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
+        _told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
         // Without a unique domain the site is served from the folder CI_PAGES_URL ends with
         write_build_files(
             site,

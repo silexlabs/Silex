@@ -39,9 +39,7 @@ const signingIn = ref<string | null>(null)
 const page = ref<string | null>(null)
 let stopped = false
 const sending = ref(false)
-const answers = ref(
-  Object.fromEntries((props.integration.accountForm?.fields ?? []).map((field) => [field.name, field.type === 'checkbox' ? !!field.value : (field.value ?? '')])),
-)
+const answers = ref<Record<string, string>>(Object.fromEntries((props.integration.accountForm?.fields ?? []).map((field) => [field.name, field.value ?? ''])))
 const empty = ref<string[]>([])
 const refused = ref<ReturnType<typeof explain> | null>(null)
 const helpId = (field: OptionsField) => `${titleId}-${field.name}-help`
@@ -83,20 +81,23 @@ async function signIn() {
 async function useAnother() {
   choosing.value = false
   await nextTick()
-  element.value?.querySelector<HTMLInputElement>('input[type=radio]:not(:disabled)')?.focus()
+  element.value?.querySelector<HTMLElement>('input:not(:disabled), select')?.focus()
 }
 
-async function add(event: Event) {
+async function add() {
   if (sending.value) return
-  const values = Object.fromEntries(new FormData(event.target as HTMLFormElement)) as Record<string, string>
   empty.value = (props.integration.accountForm?.fields ?? [])
-    .filter((field) => field.required && !values[field.name]?.trim())
+    .filter((field) => field.required && !answers.value[field.name]?.trim())
     .map((field) => field.name)
-  if (empty.value.length) return
+  if (empty.value.length) {
+    await nextTick()
+    element.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+    return
+  }
   sending.value = true
   refused.value = null
   try {
-    const added = await addAccount(props.integration.id, values)
+    const added = await addAccount(props.integration.id, { ...answers.value })
     emit('done', added.accounts, added.account)
   } catch (error) {
     refused.value = explain(error)
@@ -226,11 +227,10 @@ function cancel() {
             class="account__choice"
           >
             <input
-              type="checkbox"
               v-model="answers[field.name]"
-              :name="field.name"
-              :required="field.required"
-              :aria-invalid="empty.includes(field.name)"
+              type="checkbox"
+              true-value="on"
+              false-value=""
               :aria-describedby="described(field)"
             >
             {{ t(field.label) }}
@@ -244,9 +244,6 @@ function cancel() {
               v-if="field.type === 'select'"
               v-model="answers[field.name]"
               class="select"
-              :name="field.name"
-              :required="field.required"
-              :aria-invalid="empty.includes(field.name)"
               :aria-describedby="described(field)"
             >
               <option
@@ -262,8 +259,6 @@ function cancel() {
               v-model="answers[field.name]"
               class="field__input"
               :type="field.type"
-              :name="field.name"
-              :placeholder="field.placeholder && t(field.placeholder)"
               :required="field.required"
               autocomplete="off"
               :aria-invalid="empty.includes(field.name)"
@@ -282,12 +277,17 @@ function cancel() {
             v-if="empty.includes(field.name)"
             :id="emptyId(field)"
             class="field__problem account__problem"
-            role="alert"
           >
             {{ t('This field is required.') }}
           </p>
         </template>
       </div>
+      <p
+        role="status"
+        class="visually-hidden"
+      >
+        {{ sending ? t('Connecting…') : '' }}
+      </p>
       <div
         v-if="refused"
         class="account__next"

@@ -49,9 +49,9 @@ const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; 
   }
   const said = signIn.value
   if (said === 'accepted') return { tone: 'ok', label: t('Signed in'), detail: t('Checked just now') }
-  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: entry.accountForm ? '' : t('Sign in again to use it.') }
-  // What the program said is the only thing that tells a network down from a server that moved
-  if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: said.unreachable.detail ?? '' }
+  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: entry.accountForm ? t('Sign out of this server, then add it again with the right password.') : t('Sign in again to use it.') }
+  // What the program said is the only thing that tells a network down from a server that moved, when Silex has no sentence for it
+  if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: (entry.accountForm ? said.unreachable.message : said.unreachable.detail) ?? '' }
   return { tone: 'unknown', label: t('Checking…'), detail: '' }
 })
 

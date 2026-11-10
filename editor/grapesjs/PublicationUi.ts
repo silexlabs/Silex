@@ -232,7 +232,7 @@ export class PublicationUi {
         ${job?.logs?.length > 0 && job.logs[0].length > 0 ? html`
           <details>
             <summary>Logs</summary>
-            <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
+            <div class="logs">${cleanupLogEntry(job.logs)}</div>
           </details>
         ` : nothing}
         ${job?.errors?.length > 0 && job.errors[0].length > 0 ? html`
@@ -242,7 +242,7 @@ export class PublicationUi {
               max-width: 100%;
               font-size: x-small;
               "
-            >${unsafeHTML(cleanupLogEntry(job.errors))}
+            >${cleanupLogEntry(job.errors)}
             </pre>
           </details>
         ` : nothing}

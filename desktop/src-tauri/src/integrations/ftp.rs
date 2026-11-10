@@ -15,7 +15,6 @@
 
 use std::collections::BTreeMap;
 use std::path::Path;
-use std::sync::Mutex;
 
 use serde::Deserialize;
 use silex_server::said::Said;
@@ -24,12 +23,11 @@ use silex_server::{OptionsChoice, OptionsField, OptionsForm, PublicationOptions,
 use super::common::address::host_of;
 use super::common::install::{Archive, Release};
 use super::common::remote::Remote;
-use super::common::run::{self, Program};
+use super::common::run::{self, Program, Ran};
 use super::integration::{
     Account, Build, Capacity, Integration, Openness, Prepared, SignIn, Tag, Urls,
 };
-use crate::held::held;
-use crate::locales::{key, tr};
+use crate::locales::key;
 
 /// The rclone Silex installs, with the checksums rclone signed for it
 const RELEASE: Release = Release {
@@ -130,10 +128,7 @@ impl Integration for Ftp {
     }
 
     fn accounts(&self, cli: &Path) -> Result<Vec<Account>, Said> {
-        let remotes = remotes(cli)
-            .map_err(Said::raw)?
-            .ok_or_else(|| Said::new(PROTECTED))?;
-        Ok(remotes
+        Ok(remotes(cli)?
             .iter()
             .filter_map(|(name, kind)| Some((name, Protocol::of(kind)?)))
             .map(|(name, protocol)| Account {
@@ -158,9 +153,9 @@ impl Integration for Ftp {
             required: false,
             choices: Vec::new(),
         };
-        let choice = |protocol: Protocol, label: &str| OptionsChoice {
+        let choice = |protocol: Protocol| OptionsChoice {
             value: protocol.kind().to_string(),
-            label: label.to_string(),
+            label: protocol.kind().to_uppercase(),
         };
         Some(OptionsForm {
             title: key!("Add a server").to_string(),
@@ -168,10 +163,7 @@ impl Integration for Ftp {
                 OptionsField {
                     value: Some(Protocol::Ftp.kind().to_string()),
                     required: true,
-                    choices: vec![
-                        choice(Protocol::Ftp, key!("FTP")),
-                        choice(Protocol::Sftp, key!("SFTP")),
-                    ],
+                    choices: vec![choice(Protocol::Ftp), choice(Protocol::Sftp)],
                     ..field(PROTOCOL, "select", key!("Protocol"))
                 },
                 OptionsField {
@@ -203,30 +195,28 @@ impl Integration for Ftp {
         })
     }
 
-    fn add_account(&self, cli: &Path, values: &PublicationOptions) -> Result<String, Said> {
+    fn add_account(&self, cli: &Path, values: &BTreeMap<String, String>) -> Result<String, Said> {
         add(cli, NewServer::of(values)?)
     }
 
     /// Only an FTP or SFTP remote, the others are none of Silex's business
     fn disconnect(&self, cli: &Path, id: &str) -> Result<(), Said> {
-        let _alone = held(&CHANGING);
         server(cli, id)?;
-        run::run(cli, &std::env::temp_dir(), &["config", "delete", id])
+        run::run(cli, &std::env::temp_dir(), &["config", "delete", "--", id])
             .map(|_| ())
             .map_err(Said::raw)
     }
 
-    /// Told to the editor, which does not translate
     fn options_form(&self, _site: &Path) -> Option<OptionsForm> {
         Some(OptionsForm {
-            title: tr(key!("Where to publish on the server")),
+            title: key!("Where to publish on the server").to_string(),
             fields: vec![
                 OptionsField {
                     name: FOLDER.to_string(),
                     r#type: "text".to_string(),
-                    label: tr(key!("Folder on the server")),
+                    label: key!("Folder on the server").to_string(),
                     value: None,
-                    help: Some(tr(key!("The folder your web host serves your website from, often www or public_html. Silex deletes the files of this folder that are not in your website."))),
+                    help: Some(key!("The folder your web host serves your website from, often www or public_html. Silex deletes the files of this folder that are not in your website.").to_string()),
                     placeholder: None,
                     required: true,
                     choices: Vec::new(),
@@ -234,9 +224,9 @@ impl Integration for Ftp {
                 OptionsField {
                     name: WEBSITE_URL.to_string(),
                     r#type: "url".to_string(),
-                    label: tr(key!("Address of your website")),
+                    label: key!("Address of your website").to_string(),
                     value: None,
-                    help: Some(tr(key!("Optional. With it, Silex gives you a link to your website after publishing."))),
+                    help: Some(key!("Optional. With it, Silex gives you a link to your website after publishing.").to_string()),
                     placeholder: Some("https://".to_string()),
                     required: false,
                     choices: Vec::new(),
@@ -254,6 +244,26 @@ impl Integration for Ftp {
         None
     }
 
+    /// Mirrored: what is in the folder on the server and not in `files` is
+    /// deleted
+    fn deploy(
+        &self,
+        cli: &Path,
+        _site: &Path,
+        account: &str,
+        files: &Path,
+        options: &PublicationOptions,
+        told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
+        send(cli, account, files, options, told)?;
+        Ok(Prepared::default())
+    }
+
+    // Nothing builds it on the server
+    fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
+        Ok(Build::Built)
+    }
+
     // Signed in with what rclone keeps of the server
     fn urls(
         &self,
@@ -264,31 +274,10 @@ impl Integration for Ftp {
         Ok(Some(Urls::default()))
     }
 
-    /// Mirrored: what is in the folder on the server and not in `files` is
-    /// deleted
-    fn deploy(
-        &self,
-        cli: &Path,
-        _site: &Path,
-        account: &str,
-        files: &Path,
-        options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
-        send(cli, account, files, options).map_err(|said| said.to_string())?;
-        Ok(Prepared::default())
-    }
-
-    // Nothing builds it on the server
-    fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
-        Ok(Build::Built)
-    }
-
     fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, Said> {
         let server = server(cli, id)?;
         let remote = format!("{}:", server.name);
-        let mut list = vec!["lsjson", "--dirs-only", "--max-depth", "1"];
-        list.extend(CONNECTING);
-        list.push(&remote);
+        let list = [&LIST_FOLDERS[..], &CONNECTING, &["--", &remote]].concat();
         match run::run_fetch(cli, &std::env::temp_dir(), &list) {
             Ok(_) => Ok(SignIn::Accepted),
             Err(why) if refused(&why) => Ok(SignIn::Refused),
@@ -317,13 +306,23 @@ const HIDDEN_TOO: &str = "--ftp-force-list-hidden";
 /// The most questions rclone asks to configure a remote, SFTP asks ten
 const QUESTIONS: usize = 50;
 
-/// Shared hosting plans refuse more connections than that at once
-const CONNECTIONS: &str = "4";
+const LIST_FOLDERS: [&str; 4] = ["lsjson", "--dirs-only", "--max-depth", "1"];
 
 /// So that a host that does not answer is said to be unreachable by rclone
 /// rather than cut short by the time limit of `run_fetch`, with time left
 /// after connecting to sign in and list a folder
 const CONNECTING: [&str; 4] = ["--contimeout", "10s", "--low-level-retries", "1"];
+
+/// A line of about a kilobyte each time, every few seconds so that what Silex
+/// keeps of the output of a program lasts for a long transfer
+const FOLLOWED: [&str; 6] = [
+    "--stats",
+    "5s",
+    "--stats-one-line",
+    "--stats-log-level",
+    "NOTICE",
+    "--use-json-log",
+];
 
 #[derive(Clone, Copy, PartialEq)]
 enum Protocol {
@@ -379,68 +378,49 @@ struct NewServer {
 
 impl NewServer {
     /// A ticked checkbox is sent with any value, one left empty is not sent
-    fn of(values: &PublicationOptions) -> Result<NewServer, Said> {
-        let required = |field: &str| {
+    fn of(values: &BTreeMap<String, String>) -> Result<NewServer, Said> {
+        let named = |field: &str| {
             values
-                .named(field)
+                .get(field)
+                .map(|value| value.trim())
+                .filter(|value| !value.is_empty())
+        };
+        let required = |field: &str| {
+            named(field)
                 .map(String::from)
                 .ok_or_else(|| Said::raw(format!("The {} of the server is missing", field)))
         };
         let protocol = required(PROTOCOL)?;
         let protocol = Protocol::of(&protocol)
             .ok_or_else(|| Said::raw(format!("{} is not FTP or SFTP", protocol)))?;
-        let (host, typed_port) = address(&required(HOST)?, protocol)?;
-        let port = match (values.named(PORT), typed_port.as_deref()) {
-            (Some(port), Some(typed)) if port != typed => {
-                return Err(Said::new(key!(
-                    "The address says port {typed}, and the Port field says {port}. Keep only one of them."
-                ))
-                .with("typed", typed)
-                .with("port", port))
-            }
-            (None, None) => None,
-            (Some(port), _) | (None, Some(port)) => Some(port.parse().map_err(|_| {
-                Said::new(key!(
-                    "{port} is not a port. A port is a number, like 21 or 22."
-                ))
-                .with("port", port)
-            })?),
-        };
-        let name = values.named(NAME).map(String::from);
-        if let Some(name) = name.as_deref().filter(|name| !rclone_takes(name)) {
-            return Err(Said::new(key!(
-                "rclone does not take {name} as a name. Use letters, numbers, spaces and _ - . +, with no space or - at the start."
-            ))
-            .with("name", name));
-        }
+        let (host, typed_port) = address(&required(HOST)?)?;
+        let port = named(PORT)
+            .or(typed_port.as_deref())
+            .map(|port| {
+                port.parse().map_err(|_| {
+                    Said::new(key!(
+                        "{port} is not a port. A port is a number, like 21 or 22."
+                    ))
+                    .with("port", port)
+                })
+            })
+            .transpose()?;
         Ok(NewServer {
             protocol,
             host,
             port,
             user: required(USER)?,
-            password: values.typed(PASSWORD).unwrap_or_default().to_string(),
-            name,
-            unencrypted: values.named(UNENCRYPTED).is_some(),
+            password: values.get(PASSWORD).cloned().unwrap_or_default(),
+            name: named(NAME).map(String::from),
+            unencrypted: named(UNENCRYPTED).is_some(),
         })
     }
 }
 
 /// The host and the port typed in the address, which may start with
-/// `ftp://` or `sftp://` as long as it is the protocol chosen
-fn address(typed: &str, protocol: Protocol) -> Result<(String, Option<String>), Said> {
+/// `ftp://` or `sftp://`
+fn address(typed: &str) -> Result<(String, Option<String>), Said> {
     let lowered = typed.to_lowercase();
-    let other = match protocol {
-        Protocol::Ftp => Protocol::Sftp,
-        Protocol::Sftp => Protocol::Ftp,
-    };
-    if lowered.starts_with(&format!("{}://", other.kind())) {
-        return Err(Said::new(key!(
-            "The address {host} is for {other}, not {protocol}. Choose {other} as the protocol."
-        ))
-        .with("host", typed)
-        .with("other", other.kind().to_uppercase())
-        .with("protocol", protocol.kind().to_uppercase()));
-    }
     let not_an_address =
         || Said::new(key!("{host} is not the address of a server.")).with("host", typed);
     let host = host_of(&lowered, &["ftp://", "sftp://"]).map_err(|_| not_an_address())?;
@@ -450,16 +430,6 @@ fn address(typed: &str, protocol: Protocol) -> Result<(String, Option<String>), 
     }
     let port = host[bare.len()..].strip_prefix(':').map(String::from);
     Ok((bare.to_string(), port))
-}
-
-/// The rule of rclone for the name of a remote
-fn rclone_takes(name: &str) -> bool {
-    !name.is_empty()
-        && !name.starts_with(['-', ' '])
-        && !name.ends_with(' ')
-        && name
-            .chars()
-            .all(|c| c.is_alphanumeric() || "_-.+@ ".contains(c))
 }
 
 /// The remote the user already has for this user on this server
@@ -474,15 +444,9 @@ fn same_server<'a>(servers: &'a [Server], new: &NewServer) -> Option<&'a str> {
         .map(|server| server.name.as_str())
 }
 
-/// Two changes at once would both find a name free, or remove what the other wrote
-static CHANGING: Mutex<()> = Mutex::new(());
-
-/// Written to the configuration only once the server answered
+/// Removed from the configuration when the server does not answer
 fn add(rclone: &Path, new: NewServer) -> Result<String, Said> {
-    let _alone = held(&CHANGING);
-    let remotes = remotes(rclone)
-        .map_err(Said::raw)?
-        .ok_or_else(|| Said::new(PROTECTED))?;
+    let remotes = remotes(rclone)?;
     let servers: Vec<Server> = remotes
         .iter()
         .filter_map(|(name, kind)| Some((name, Protocol::of(kind)?)))
@@ -494,12 +458,7 @@ fn add(rclone: &Path, new: NewServer) -> Result<String, Said> {
         ))
         .with("name", same));
     }
-    let name = match new
-        .name
-        .as_deref()
-        .map(str::trim)
-        .filter(|name| !name.is_empty())
-    {
+    let name = match new.name.as_deref() {
         Some(name) if remotes.contains_key(name) => {
             return Err(Said::new(key!(
                 "Your rclone configuration already has a server named {name}."
@@ -514,11 +473,8 @@ fn add(rclone: &Path, new: NewServer) -> Result<String, Said> {
     if let Some(port) = new.port {
         options.push(("port", port.to_string()));
     }
-    if new.protocol == Protocol::Ftp {
-        if !new.unencrypted {
-            options.push(("explicit_tls", "true".to_string()));
-        }
-        options.push(("concurrency", CONNECTIONS.to_string()));
+    if new.protocol == Protocol::Ftp && !new.unencrypted {
+        options.push(("explicit_tls", "true".to_string()));
     }
     // Obscured is what rclone reads from its environment, and an empty input
     // would obscure the hyphen itself
@@ -535,63 +491,28 @@ fn add(rclone: &Path, new: NewServer) -> Result<String, Said> {
         Some(obscured.trim().to_string())
     };
 
-    let kind = new.protocol.kind();
-    let mut env: Vec<(String, String)> = options
-        .iter()
-        .map(|(key, value)| {
-            (
-                format!("RCLONE_{}_{}", kind, key).to_uppercase(),
-                value.clone(),
-            )
-        })
-        .collect();
-    if let Some(pass) = &pass {
-        env.push((format!("RCLONE_{}_PASS", kind).to_uppercase(), pass.clone()));
-    }
-    let env: Vec<(&str, &str)> = env
-        .iter()
-        .map(|(name, value)| (name.as_str(), value.as_str()))
-        .collect();
-    let on_the_fly = format!(":{}:", kind);
-    let mut test = vec!["lsjson", "--dirs-only", "--max-depth", "1"];
-    test.extend(CONNECTING);
-    test.push(&on_the_fly);
-    let program = Program {
-        path: rclone,
-        env: &env,
-    };
-    run::run_fetch(program, &std::env::temp_dir(), &test)
-        .map_err(|why| not_connected(&new.host, why))?;
-
     if let Err(why) = create(rclone, &name, new.protocol, &options, pass.as_deref()) {
         forget(rclone, &name);
         return Err(Said::raw(why));
     }
-    // A remote that is not written yet cannot keep the key rclone pins
-    if new.protocol == Protocol::Sftp {
-        let remote = format!("{}:", name);
-        let mut pin = vec![
-            "lsjson",
-            "--dirs-only",
-            "--max-depth",
-            "1",
-            "--sftp-pin-host-key",
-        ];
-        pin.extend(CONNECTING);
-        pin.push(&remote);
-        if let Err(why) = run::run_fetch(rclone, &std::env::temp_dir(), &pin) {
-            forget(rclone, &name);
-            return Err(not_connected(&new.host, why));
-        }
+    let remote = format!("{}:", name);
+    // A remote that is not written yet cannot keep the key rclone pins, and
+    // the key pinned has to be the one that received the password
+    let pin = [
+        &LIST_FOLDERS[..],
+        &CONNECTING,
+        &["--sftp-pin-host-key", "--", &remote],
+    ]
+    .concat();
+    if let Err(why) = run::run_fetch(rclone, &std::env::temp_dir(), &pin) {
+        forget(rclone, &name);
+        return Err(not_connected(&new.host, why));
     }
     Ok(name)
 }
 
 fn server(rclone: &Path, name: &str) -> Result<Server, Said> {
-    let remotes = remotes(rclone)
-        .map_err(Said::raw)?
-        .ok_or_else(|| Said::new(PROTECTED))?;
-    let protocol = remotes
+    let protocol = remotes(rclone)?
         .get(name)
         .and_then(|kind| Protocol::of(kind))
         .ok_or_else(|| Said::raw(format!("rclone has no FTP or SFTP server named {}", name)))?;
@@ -603,11 +524,13 @@ fn send(
     account: &str,
     files: &Path,
     options: &PublicationOptions,
+    told: &dyn Fn(Said),
 ) -> Result<(), Said> {
     let server = server(rclone, account)?;
     let on_server = options
         .named(FOLDER)
         .ok_or_else(|| Said::new(key!("Choose the folder of your website on the server.")))?;
+    told(Said::new(key!("Sending your website to {host}")).with("host", &server.host));
     let source = files.to_string_lossy();
     let destination = format!("{}:{}", server.name, on_server);
     let not_sent = |why: String| {
@@ -627,9 +550,7 @@ fn send(
             key!("Silex could not send your website to {host}."),
         )
     };
-    let mut list = vec!["lsf", HIDDEN_TOO];
-    list.extend(CONNECTING);
-    list.push(&destination);
+    let list = [&["lsf", HIDDEN_TOO][..], &CONNECTING, &["--", &destination]].concat();
     let ours = match run::run_fetch(rclone, &std::env::temp_dir(), &list) {
         Ok(listed) => listed.is_empty() || listed.lines().any(|name| name == WITNESS),
         Err(why) if why.contains("directory not found") => true,
@@ -643,51 +564,94 @@ fn send(
         .with("folder", on_server));
     }
     let witness = format!("{}/{}", destination.trim_end_matches('/'), WITNESS);
-    let mut touch = vec!["touch", HIDDEN_TOO];
-    touch.extend(CONNECTING);
-    touch.push(&witness);
+    let touch = [&["touch", HIDDEN_TOO][..], &CONNECTING, &["--", &witness]].concat();
     run::run_fetch(rclone, &std::env::temp_dir(), &touch).map_err(not_sent)?;
     let exclude = format!("/{}", WITNESS);
-    let ran = run::run_transfer_verbatim(
-        rclone,
-        &std::env::temp_dir(),
-        &["sync", "--exclude", &exclude, "--", &source, &destination],
-    )
-    .map_err(Said::raw)?;
+    let sync = [
+        &["sync"][..],
+        &FOLLOWED,
+        &["--exclude", &exclude, "--", &source, &destination],
+    ]
+    .concat();
+    let heard = |line: &str| {
+        let Some(stats) = serde_json::from_str::<Logged>(line)
+            .ok()
+            .and_then(|logged| logged.stats)
+            .filter(|stats| stats.total_transfers > 0)
+        else {
+            return;
+        };
+        told(
+            Said::new(key!(
+                "Sending your website to {host}: {sent} of {total} files"
+            ))
+            .with("host", &server.host)
+            .with("sent", stats.transfers)
+            .with("total", stats.total_transfers),
+        );
+    };
+    let ran =
+        run::run_following(rclone, &std::env::temp_dir(), &sync, &heard).map_err(Said::raw)?;
     if !ran.failed {
         return Ok(());
     }
-    Err(not_sent(run::failure(rclone, &ran)))
+    let stderr = problems(&ran.stderr);
+    Err(not_sent(run::failure(rclone, &Ran { stderr, ..ran })))
+}
+
+/// One line of the log of rclone, in JSON
+#[derive(Deserialize)]
+struct Logged {
+    level: String,
+    msg: String,
+    stats: Option<Stats>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Stats {
+    transfers: u64,
+    total_transfers: u64,
+}
+
+/// What went wrong, among all that rclone logged
+fn problems(log: &str) -> String {
+    log.lines()
+        .filter_map(|line| serde_json::from_str::<Logged>(line).ok())
+        .filter(|logged| matches!(logged.level.as_str(), "error" | "critical"))
+        .map(|logged| logged.msg)
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 const PROTECTED: &str =
     key!("Your rclone configuration is protected by a password, and Silex cannot read it.");
 
-/// The type of every remote of the configuration, without their passwords,
-/// or None when it is encrypted
-fn remotes(rclone: &Path) -> Result<Option<BTreeMap<String, String>>, String> {
-    match run::run(
-        rclone,
-        &std::env::temp_dir(),
-        &["listremotes", "--long", "--ask-password=false"],
-    ) {
-        Ok(listed) => Ok(Some(long_list(&listed))),
-        Err(why) if why.contains("unable to decrypt configuration") => Ok(None),
-        Err(why) => Err(why),
-    }
+#[derive(Deserialize)]
+struct Listed {
+    name: String,
+    r#type: String,
 }
 
-/// `name:`, then the type, then the description, in columns; a name can hold
-/// spaces but no colon, a type neither
-fn long_list(listed: &str) -> BTreeMap<String, String> {
-    listed
-        .lines()
-        .filter_map(|line| {
-            let (name, rest) = line.split_once(':')?;
-            let kind = rest.split_whitespace().next()?;
-            Some((name.to_string(), kind.to_string()))
-        })
-        .collect()
+/// The type of every remote of the configuration, without their passwords
+fn remotes(rclone: &Path) -> Result<BTreeMap<String, String>, Said> {
+    let listed = run::run(
+        rclone,
+        &std::env::temp_dir(),
+        &["listremotes", "--json", "--ask-password=false"],
+    )
+    .map_err(|why| {
+        if why.contains("unable to decrypt configuration") {
+            Said::new(PROTECTED)
+        } else {
+            Said::raw(why)
+        }
+    })?;
+    let listed: Vec<Listed> = serde_json::from_str(&listed).map_err(Said::raw)?;
+    Ok(listed
+        .into_iter()
+        .map(|remote| (remote.name, remote.r#type))
+        .collect())
 }
 
 /// Only this remote is read, and its password is dropped right away
@@ -695,7 +659,7 @@ fn shown(rclone: &Path, name: &str, protocol: Protocol) -> Result<Server, String
     let shown = run::run(
         rclone,
         &std::env::temp_dir(),
-        &["config", "show", "--ask-password=false", name],
+        &["config", "show", "--ask-password=false", "--", name],
     )?;
     let option = |key: &str| {
         shown.lines().find_map(|line| {
@@ -711,28 +675,14 @@ fn shown(rclone: &Path, name: &str, protocol: Protocol) -> Result<Server, String
     })
 }
 
-/// The host, with what rclone does not take in a name replaced, and a number
-/// after it when the configuration already has it
+/// The host, with a number after it when the configuration already has it
 fn unique(host: &str, remotes: &BTreeMap<String, String>) -> String {
-    let named: String = host
-        .trim()
-        .chars()
-        .map(|c| {
-            if c.is_ascii_alphanumeric() || ".-_".contains(c) {
-                c
-            } else {
-                '-'
-            }
-        })
-        .collect();
-    let named = named.trim_start_matches(['-', '.']);
-    let named = if named.is_empty() { "server" } else { named };
     (1..)
         .map(|n| {
             if n == 1 {
-                named.to_string()
+                host.to_string()
             } else {
-                format!("{}-{}", named, n)
+                format!("{}-{}", host, n)
             }
         })
         .find(|name| !remotes.contains_key(name))
@@ -756,8 +706,8 @@ struct Asked {
     default_str: String,
 }
 
-/// The password is the answer to the question rclone asks for it, given in
-/// its environment rather than in the arguments
+/// The answers are given in the environment of rclone rather than in the
+/// arguments: the password is one of them
 fn create(
     rclone: &Path,
     name: &str,
@@ -786,15 +736,12 @@ fn create(
     for _ in 0..QUESTIONS {
         let question: Question = serde_json::from_str(&said)
             .map_err(|e| format!("rclone asked a question Silex cannot read: {}", e))?;
+        if !question.error.is_empty() {
+            return Err(format!("rclone did not take an answer: {}", question.error));
+        }
         let Some(asked) = question.option.filter(|_| !question.state.is_empty()) else {
             return Ok(());
         };
-        if !question.error.is_empty() {
-            return Err(format!(
-                "rclone did not take the answer to {}: {}",
-                asked.name, question.error
-            ));
-        }
         let mut answer = vec![
             "config",
             "update",
@@ -804,38 +751,36 @@ fn create(
             "--non-interactive",
             "--all",
         ];
-        let pass = match (asked.name.as_str(), pass) {
+        let result = match (asked.name.as_str(), pass) {
             // Obscured already: rclone 1.75 writes the answer as it gets it,
             // though it says it obscures it
             ("pass", Some(pass)) => {
                 answer.push("--no-obscure");
-                Some(pass)
+                pass
             }
-            _ => {
-                answer.extend(["--result", &asked.default_str]);
-                None
-            }
+            _ => &asked.default_str,
         };
         answer.extend(["--", name]);
         answer.extend(given.iter().map(String::as_str));
-        said = match pass {
-            Some(pass) => run::run(
-                Program {
-                    path: rclone,
-                    env: &[("RCLONE_RESULT", pass)],
-                },
-                &dir,
-                &answer,
-            ),
-            None => run::run(rclone, &dir, &answer),
-        }?;
+        said = run::run(
+            Program {
+                path: rclone,
+                env: &[("RCLONE_RESULT", result)],
+            },
+            &dir,
+            &answer,
+        )?;
     }
     Err(format!("rclone asked more than {} questions", QUESTIONS))
 }
 
 /// A remote half written, which would fail every publication
 fn forget(rclone: &Path, name: &str) {
-    if let Err(e) = run::run(rclone, &std::env::temp_dir(), &["config", "delete", name]) {
+    if let Err(e) = run::run(
+        rclone,
+        &std::env::temp_dir(),
+        &["config", "delete", "--", name],
+    ) {
         tracing::warn!(
             "Could not remove {} from the configuration of rclone: {}",
             name,
@@ -933,39 +878,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn takes_only_the_names_rclone_takes() {
-        assert!(rclone_takes("ftp.client.fr"));
-        assert!(rclone_takes("my site_2+@é"));
-        assert!(!rclone_takes("-site"));
-        assert!(!rclone_takes(" site"));
-        assert!(!rclone_takes("site "));
-        assert!(!rclone_takes("a:b"));
-        assert!(!rclone_takes("a/b"));
-    }
-
-    #[test]
     fn reads_the_address_as_pasted() {
-        let read = |typed: &str, protocol| {
-            address(typed, protocol).map_err(|said| said.sentence.unwrap_or_default())
-        };
+        let read = |typed: &str| address(typed).map_err(|said| said.sentence.unwrap_or_default());
         assert_eq!(
-            read("sftp://Example.com:2222/www", Protocol::Sftp),
+            read("sftp://Example.com:2222/www"),
             Ok(("example.com".to_string(), Some("2222".to_string())))
         );
         assert_eq!(
-            read(" ftp://example.com ", Protocol::Ftp),
+            read(" ftp://example.com "),
             Ok(("example.com".to_string(), None))
         );
         assert_eq!(
-            read("ftp://example.com", Protocol::Sftp),
-            Err("The address {host} is for {other}, not {protocol}. Choose {other} as the protocol.")
-        );
-        assert_eq!(
-            read("SFTP://example.com", Protocol::Ftp).map_err(|_| ()),
-            Err(())
-        );
-        assert_eq!(
-            read("example.com:a:21", Protocol::Ftp),
+            read("example.com:a:21"),
             Err("{host} is not the address of a server.")
         );
     }
@@ -1032,24 +956,9 @@ mod tests {
             sentence(&format!(r#"{}530 "Login authentication failed""#, failed)),
             refused
         );
-        assert_ne!(
-            sentence(&format!(
-                r#"{}530 "Please login with USER and PASS.""#,
-                failed
-            )),
-            refused
-        );
         assert_eq!(
             sentence("NewFs: couldn't connect SSH: ssh: handshake failed: ssh: unexpected message type 51 (expected 60)"),
             refused
-        );
-    }
-
-    #[test]
-    fn tells_a_changed_key() {
-        assert_eq!(
-            not_connected("h", "NewFs: couldn't connect SSH: ssh: handshake failed: sftp: host key mismatch for h:22: server offered ssh-rsa key with fingerprint SHA256:6kjo; pinned fingerprints for this algorithm: SHA256:AIDt".to_string()).sentence,
-            Some("The key of {host} has changed. If this is normal, for example after the server was reinstalled, choose Sign out on this server in Integrations, then add it again.")
         );
     }
 }

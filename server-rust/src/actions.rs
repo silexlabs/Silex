@@ -139,14 +139,6 @@ impl PublicationOptions {
             .map(str::trim)
             .filter(|answer| !answer.is_empty())
     }
-
-    /// The same, as typed: a password can start or end with a space
-    pub fn typed(&self, name: &str) -> Option<&str> {
-        self.more
-            .get(name)
-            .and_then(serde_json::Value::as_str)
-            .filter(|answer| !answer.is_empty())
-    }
 }
 
 /// Where a website is served, as far as its host application knows

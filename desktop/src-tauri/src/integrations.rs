@@ -22,7 +22,7 @@ use std::sync::{mpsc, Arc, LazyLock, Mutex, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::said::Said;
-use silex_server::{Hosting, OptionsForm, PublicationOptions};
+use silex_server::{Hosting, OptionsField, OptionsForm, PublicationOptions};
 
 use common::git;
 use common::install;
@@ -33,6 +33,7 @@ use integration::{
 };
 
 use crate::held::held;
+use crate::locales::tr;
 
 pub mod common;
 mod ftp;
@@ -83,6 +84,23 @@ pub struct IntegrationState {
 #[serde(transparent)]
 pub struct Integrations {
     known: BTreeMap<String, IntegrationState>,
+}
+
+/// The editor has no catalog for what the desktop says
+fn translated(form: OptionsForm) -> OptionsForm {
+    OptionsForm {
+        title: tr(&form.title),
+        fields: form
+            .fields
+            .into_iter()
+            .map(|field| OptionsField {
+                label: tr(&field.label),
+                help: field.help.as_deref().map(tr),
+                placeholder: field.placeholder.as_deref().map(tr),
+                ..field
+            })
+            .collect(),
+    }
 }
 
 fn catalog() -> [&'static dyn Integration; 2] {
@@ -158,7 +176,7 @@ impl Integrations {
         let available = self.hosts(site).map(|host| Hosting {
             connector_id: host.id,
             display_name: host.account,
-            options_form: host.integration.options_form(site),
+            options_form: host.integration.options_form(site).map(translated),
             unavailable: None,
         });
         let wanting_an_account =
@@ -167,7 +185,7 @@ impl Integrations {
                     Some(Hosting {
                         connector_id: integration.id().to_string(),
                         display_name: integration.account_of(site)?,
-                        options_form: integration.options_form(site),
+                        options_form: integration.options_form(site).map(translated),
                         unavailable: Some(why),
                     })
                 });
@@ -260,7 +278,8 @@ impl Integrations {
 
     /// Prepare a website for its host and send it
     ///
-    /// `say` is told each step as it starts, for whoever is waiting on it.
+    /// `say` is told each step as it starts, and `told` what the user reads
+    /// meanwhile, for whoever is waiting on it.
     pub fn publish(
         &self,
         host: &Host,
@@ -268,7 +287,8 @@ impl Integrations {
         files: &Path,
         options: &PublicationOptions,
         say: &dyn Fn(String),
-    ) -> Result<Publishing, String> {
+        told: &dyn Fn(Said),
+    ) -> Result<Publishing, Said> {
         let Host {
             integration,
             cli,
@@ -284,12 +304,12 @@ impl Integrations {
             |scope| scope.set_tag("forge", integration.id()),
             || {
                 say(format!("Getting your website ready for {}", account));
-                let prepared = integration.deploy(cli, site, account, files, options)?;
+                let prepared = integration.deploy(cli, site, account, files, options, told)?;
                 if integration.capacities().contains(&Capacity::Sync) {
                     say(format!("Sending your website to {}", account));
                     integration
                         .push(cli, site, prepared.tag.as_deref())
-                        .map_err(|e| e.to_string())?;
+                        .map_err(Said::raw)?;
                 }
                 Ok(Publishing {
                     integration: *integration,
@@ -619,7 +639,7 @@ pub fn connect(
 pub fn add_account(
     loading: &Loading,
     integration: &str,
-    values: &PublicationOptions,
+    values: &BTreeMap<String, String>,
 ) -> Result<Connected, Said> {
     let (integration, cli) = usable(loading, integration).map_err(Said::raw)?;
     let account = integration.add_account(&cli, values)?;

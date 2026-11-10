@@ -134,7 +134,7 @@ const ICONS: Record<AntiFeature, string> = {
         :aria-disabled="busy"
         @click="emit('add', $event.currentTarget as Element)"
       >
-        {{ !chosen(entry).length ? $t('Use') : entry.accountForm ? `${$t(entry.accountForm.title)}…` : $t('Add an account…') }}
+        {{ !chosen(entry).length ? $t('Use') : entry.accountForm ? $t('Add a server…') : $t('Add an account…') }}
       </button>
       <button
         v-else-if="entry.installable"

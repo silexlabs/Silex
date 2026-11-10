@@ -7,6 +7,7 @@
  * the Free Software Foundation, either version 3 of the License, or any later version.
  */
 
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::atomic::AtomicBool;
 
@@ -280,7 +281,7 @@ pub trait Integration: Send + Sync {
 
     /// Kept by its program only once the server took what the user answered
     /// to `account_form`, and answers the id of the account
-    fn add_account(&self, cli: &Path, values: &PublicationOptions) -> Result<String, Said> {
+    fn add_account(&self, cli: &Path, values: &BTreeMap<String, String>) -> Result<String, Said> {
         let _ = (cli, values);
         Err(Said::raw(format!(
             "Silex cannot add an account to {}",
@@ -442,8 +443,13 @@ pub trait Integration: Send + Sync {
         None
     }
 
-    /// Send `files` to `account`, or prepare what `push` sends, with the tag
-    /// answered here
+    /// Write what the build needs and version it, answering what the
+    /// publication has to send along
+    ///
+    /// Sends nothing when the integration can sync: `push` does, with the tag
+    /// answered here. One that cannot sync sends the website here: `files` to
+    /// `account`, saying how it goes to `told`. An integration may ask the
+    /// host what its builds looked like before the push.
     fn deploy(
         &self,
         cli: &Path,
@@ -451,9 +457,10 @@ pub trait Integration: Send + Sync {
         account: &str,
         files: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
-        let _ = (cli, site, account, files, options);
-        Err(not_provided(self.program(), Capacity::Deploy))
+        told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
+        let _ = (cli, site, account, files, options, told);
+        Err(Said::raw(not_provided(self.program(), Capacity::Deploy)))
     }
 
     /// Ask what became of the build this publication started

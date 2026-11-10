@@ -250,7 +250,7 @@ async fn connect_account(
 async fn add_account(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
     integration: String,
-    values: silex_server::PublicationOptions,
+    values: std::collections::BTreeMap<String, String>,
 ) -> Result<integrations::Connected, Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || actions.add_account(&integration, &values))
@@ -574,14 +574,7 @@ fn tells_the_editor(
             host.as_deref()
                 .map(|host| said::fill(&tr(key), [("host", host)]))
         };
-        let what_happened = failure.what_happened();
-        let params = what_happened
-            .params
-            .iter()
-            .filter_map(|(name, value)| Some((*name, value.as_str()?)));
-        let what_happened = what_happened
-            .sentence
-            .map(|sentence| said::fill(&tr(sentence), params));
+        let what_happened = locales::in_words(&failure.what_happened());
         let _ = app_handle.emit(
             "sync-failed",
             serde_json::json!({
