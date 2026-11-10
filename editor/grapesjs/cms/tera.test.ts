@@ -3,11 +3,19 @@
  */
 
 import { beforeEach, expect, jest, test } from '@jest/globals'
-import { Expression } from '@silexlabs/grapesjs-data-source'
+import type { Expression } from '@silexlabs/grapesjs-data-source'
 import type { Component } from 'grapesjs'
-import { getTeraExpression, resetTeraVariables, teraString } from './tera'
+import type { TeraOptions } from './tera'
 
 jest.mock('lit-html', () => ({}))
+const dataSource = await import('@silexlabs/grapesjs-data-source')
+// A filter which shows the path its key option names
+jest.unstable_mockModule('@silexlabs/grapesjs-data-source', () => ({
+  ...dataSource,
+  getExpressionResultType: () => null,
+  getFilters: () => [{ id: 'sort', toTera: (input: string, options: TeraOptions) => `${input} by ${options.path('key').join('.')}` }],
+}))
+const { getTeraExpression, resetTeraVariables, teraString } = await import('./tera')
 
 const COMPONENT = { getId: () => 'body', get: () => ({}) } as unknown as Component
 
@@ -37,4 +45,10 @@ test('Names of variables start again at each publication', () => {
   getTeraExpression(COMPONENT, [field('post', 'wp')] as Expression, '""')
   resetTeraVariables()
   expect(getTeraExpression(COMPONENT, [field('post', 'wp')] as Expression, '""').value).toBe('silex_0')
+})
+
+test('The key of an item an option names is the path of its fields', () => {
+  const key = JSON.stringify([field('author', 'wp'), field('name', 'wp')])
+  const sorted = { type: 'filter', id: 'sort', label: 'sort', options: { key } }
+  expect(getTeraExpression(COMPONENT, [field('posts', 'wp'), sorted] as Expression, '""').value).toBe('(silex_0 by author.name)')
 })

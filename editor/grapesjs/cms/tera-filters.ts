@@ -51,6 +51,28 @@ const TO_TERA: Record<string, TeraFilter['toTera']> = {
   },
   append: (input, options) => `${input} ~ ${options.text('value')}`,
   prepend: (input, options) => `${options.text('value')} ~ ${input}`,
+  split: (input, options) => `${input} | split(pat=${options.text('separator')})`,
+  sort: (input, options) => {
+    const key = options.path('key').join('.')
+    return key ? `${input} | sort(attribute=${JSON.stringify(key)})` : `${input} | sort`
+  },
+  size: input => `${input} | length`,
+  reverse: input => `${input} | reverse`,
+  // Zola's own, not Eleventy's
+  slugify: input => `${input} | slugify`,
+  downcase: input => `${input} | lower`,
+  replace: (input, options) => `${input} | replace(from=${options.text('search')}, to=${options.text('replace')})`,
+  escape: input => `${input} | escape`,
+  // Tera's default only replaces a missing value, Liquid's also nil, false and empty ones, not 0
+  default: (input, options) => {
+    const value = options.variable(input)
+    return `(${value} if ${value} or ${value} == 0 else ${options.text('value')})`
+  },
+  // A date without a time zone is taken as already in the chosen one, Liquid would take it as UTC
+  date: (input, options) => {
+    const timeZone = options.text('timeZone')
+    return `${input} | date(format=${options.text('format')}, timezone=${timeZone === '""' ? '"UTC"' : timeZone})`
+  },
 }
 
 // Called once the Liquid filters are in the editor
