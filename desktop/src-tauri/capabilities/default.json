@@ -36,6 +36,7 @@
     "allow-integration-catalog",
     "allow-integration-asked",
     "allow-integration-accounts",
+    "allow-integration-install",
     "allow-connect-account",
     "allow-stop-connecting-account",
     "allow-disconnect-account",

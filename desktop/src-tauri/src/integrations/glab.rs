@@ -15,6 +15,7 @@ use std::sync::atomic::AtomicBool;
 use silex_server::PublicationOptions;
 
 use super::common::git;
+use super::common::install::{Archive, Release};
 use super::common::pipeline::{ensure_pipeline_file, rebase_lines, write_build_files};
 use super::common::remote::{redact, Remote};
 use super::common::run::{run, run_fetch, run_waiting, Waiting};
@@ -42,6 +43,51 @@ const OAUTH_APPLICATIONS: &[(&str, &str)] = &[(
     "3405aaa4e2090b499ee15fc763e093cc6304a82ca34a2cee032f19811fed7bbe",
 )];
 
+/// The glab Silex installs, with the checksums GitLab published for it
+const RELEASE: Release = Release {
+    version: "1.128.0",
+    inside: "bin/glab",
+    archives: &[
+        Archive {
+            os: "linux",
+            arch: "x86_64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_linux_amd64.tar.gz",
+            sha256: "bc024819e7598b19429a199cd87f640d98b2b67416d8ad796f19e4260b57a7c7",
+        },
+        Archive {
+            os: "linux",
+            arch: "aarch64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_linux_arm64.tar.gz",
+            sha256: "60d0512085a8c1be7c5ef51aa7e4ee28213444cea0376b3260707d90489199ea",
+        },
+        Archive {
+            os: "macos",
+            arch: "x86_64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_darwin_amd64.tar.gz",
+            sha256: "741f8ce806751cf3e6381acb39284dbe0eb8d5c44a3f4ab6bf78fd91eb362e0b",
+        },
+        Archive {
+            os: "macos",
+            arch: "aarch64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_darwin_arm64.tar.gz",
+            sha256: "541cdde6a0f706b4b69fed9fb558b421a361f63408d072d78ffdf304aee04248",
+        },
+        Archive {
+            os: "windows",
+            arch: "x86_64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_windows_amd64.zip",
+            sha256: "641d86af5d72c17a7d79154a6436e9c68a54c69db2172020cc4036e0776a4832",
+        },
+        Archive {
+            os: "windows",
+            arch: "aarch64",
+            url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_windows_arm64.zip",
+            sha256: "a2e8a2ac9dc918a6ce1334c2a784accd581d9845329abf6aea72fe1ca1f1a13c",
+        },
+    ],
+    max_bytes: 100 * 1024 * 1024,
+};
+
 /// What glab writes when it could not open the browser itself
 const COULD_NOT_OPEN: &str = "Failed opening a browser at ";
 
@@ -64,6 +110,10 @@ impl Integration for Glab {
         key!("Back up your websites in a project on GitLab, with the history of every change. Publish them online with GitLab Pages: free hosting in the US, fast builds, and your own domain name if you have one.")
     }
 
+    fn tagline(&self) -> &'static str {
+        key!("Free hosting in the US, fast builds.")
+    }
+
     fn tags(&self) -> &'static [Tag] {
         &[Tag::Hosting, Tag::Storage, Tag::Team]
     }
@@ -82,6 +132,16 @@ impl Integration for Glab {
 
     fn install_url(&self) -> &'static str {
         "https://gitlab.com/gitlab-org/cli#installation"
+    }
+
+    fn release(&self) -> Option<&'static Release> {
+        Some(&RELEASE)
+    }
+
+    // glab sends with git: better the dialog of Apple now than a failed first send
+    fn installed(&self) {
+        #[cfg(target_os = "macos")]
+        git::offer_apple_developer_tools();
     }
 
     fn capacities(&self) -> &'static [Capacity] {
@@ -762,6 +822,21 @@ fn projects(cli: &Path, account: &str) -> Result<Vec<(RemoteWebsite, String)>, S
 #[cfg(test)]
 mod tests {
     use super::refused;
+    use super::{run, Path, RELEASE};
+
+    // Downloads 19 MB from gitlab.com: cargo test -- --ignored installs_the_glab_of_this_system
+    #[test]
+    #[ignore]
+    fn installs_the_glab_of_this_system() {
+        let data_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("glab-install-test");
+        let program =
+            crate::integrations::common::install::install(&data_dir, "glab", &RELEASE).unwrap();
+        let said = run(&program, &data_dir, &["--version"]).unwrap();
+        assert!(said.contains(RELEASE.version), "{said}");
+        std::fs::remove_dir_all(&data_dir).unwrap();
+    }
 
     // What glab 1.114 said, run in a VM with a token and a sign-in made wrong
     // on purpose, and with a server that does not exist

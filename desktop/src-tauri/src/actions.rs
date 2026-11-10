@@ -182,6 +182,17 @@ impl SilexActions {
             .ok_or_else(|| Said::raw(format!("{} is not an integration of Silex", program)))
     }
 
+    pub fn update_integrations(&self) {
+        crate::integrations::update_silex_copies(&self.integrations, &self.app_data_dir)
+    }
+
+    pub fn integration_install(
+        &self,
+        program: &str,
+    ) -> Result<Vec<crate::integrations::CatalogEntry>, Said> {
+        crate::integrations::install_silex_copy(&self.integrations, &self.app_data_dir, program)
+    }
+
     pub fn integration_accounts(&self, program: &str) -> Result<Vec<Account>, Said> {
         crate::integrations::accounts(&self.integrations, program).map_err(Said::raw)
     }
@@ -784,7 +795,7 @@ impl silex_server::Actions for SilexActions {
     fn more_hostings(&self) -> Option<String> {
         let link = format!("<a href=\"/#/integrations\">{}</a>", tr("Integrations"));
         Some(silex_server::said::fill(
-            &tr(key!("You can add more hostings in {link}.")),
+            &tr(key!("To publish your website online, you need a hosting service. To add one, connect an account in {link}, then click Sync… on this website in Your websites.")),
             [("link", link.as_str())],
         ))
     }

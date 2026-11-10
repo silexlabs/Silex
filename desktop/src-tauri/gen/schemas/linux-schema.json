@@ -231,6 +231,12 @@
           "markdownDescription": "Enables the integration_catalog command without any pre-configured scope."
         },
         {
+          "description": "Enables the integration_install command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-integration-install",
+          "markdownDescription": "Enables the integration_install command without any pre-configured scope."
+        },
+        {
           "description": "Enables the last_publication command without any pre-configured scope.",
           "type": "string",
           "const": "allow-last-publication",
@@ -367,6 +373,12 @@
           "type": "string",
           "const": "deny-integration-catalog",
           "markdownDescription": "Denies the integration_catalog command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the integration_install command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-integration-install",
+          "markdownDescription": "Denies the integration_install command without any pre-configured scope."
         },
         {
           "description": "Denies the last_publication command without any pre-configured scope.",

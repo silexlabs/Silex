@@ -28,6 +28,7 @@ use silex_server::{Config, WebsiteId, WEBSITE_DATA_FILE};
 use tauri_plugin_updater::UpdaterExt;
 
 mod actions;
+mod download;
 mod frontend;
 mod held;
 mod integrations;
@@ -188,6 +189,17 @@ async fn integration_catalog(
     tauri::async_runtime::spawn_blocking(move || actions.integration_catalog())
         .await
         .map_err(Said::raw)
+}
+
+#[tauri::command]
+async fn integration_install(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    program: String,
+) -> Result<Vec<integrations::CatalogEntry>, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.integration_install(&program))
+        .await
+        .map_err(Said::raw)?
 }
 
 #[tauri::command]
@@ -851,6 +863,8 @@ async fn start_server(
         current_website_id,
         tells_the_editor(app_handle),
     ));
+    let updating = actions.clone();
+    std::thread::spawn(move || updating.update_integrations());
 
     let config = Config::new(data_path).with_actions(actions.clone());
 
@@ -1138,6 +1152,7 @@ fn main() {
             sync_website,
             integration_catalog,
             integration_asked,
+            integration_install,
             integration_accounts,
             connect_account,
             stop_connecting_account,

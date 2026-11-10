@@ -96,7 +96,7 @@ pub fn remote_url(site: &Path) -> Option<String> {
 fn git_path() -> Option<PathBuf> {
     let mut kept = held(&GIT);
     if kept.is_none() {
-        let found = super::programs::found("git");
+        let found = super::programs::users_own("git");
         // One that is there but does not run is not asked again: on macOS it
         // is the stub offering the developer tools, in a dialog at every save
         *kept = found.map(|program| {
@@ -114,6 +114,14 @@ static GIT: Mutex<Option<Option<PathBuf>>> = Mutex::new(None);
 /// So that a git installed while Silex runs is found
 pub(crate) fn forget() {
     *held(&GIT) = None;
+}
+
+/// On a Mac without the developer tools, /usr/bin/git is a stub, and running it
+/// opens the dialog of Apple that installs them
+#[cfg(target_os = "macos")]
+pub(crate) fn offer_apple_developer_tools() {
+    forget();
+    git_path();
 }
 
 /// Push the branch, and the tag when there is one

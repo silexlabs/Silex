@@ -334,3 +334,15 @@ select {
   width: 40px;
   height: 40px;
 }
+
+/* What the system said, for a bug report */
+.technical-detail {
+  margin: var(--silex-space-2) 0 0;
+  padding: var(--silex-space-2) var(--silex-space-3);
+  border-radius: var(--silex-radius-sm);
+  background: var(--silex-bg-darker);
+  color: var(--silex-text-secondary);
+  font: 12px / 1.5 ui-monospace, 'Ubuntu Mono', Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -69,7 +69,8 @@ pub trait Actions: Send + Sync {
         Vec::new()
     }
 
-    /// HTML the publication dialog shows under the list of the hostings
+    /// HTML the publication dialog shows under the list of the hostings, and
+    /// after a website was published to the folder on this computer
     fn more_hostings(&self) -> Option<String> {
         None
     }

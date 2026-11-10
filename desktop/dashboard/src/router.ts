@@ -1,6 +1,7 @@
 import { nextTick, watchEffect } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { i18n } from './i18n'
+import { catalog } from './integrations'
 import WebsitesPage from './pages/WebsitesPage.vue'
 import TemplatesPage from './pages/TemplatesPage.vue'
 import IntegrationsPage from './pages/IntegrationsPage.vue'
@@ -18,7 +19,22 @@ export const router = createRouter({
   routes: [
     { path: '/', component: WebsitesPage, meta: { title: () => i18n.global.t('Your websites') } },
     { path: '/templates', component: TemplatesPage, meta: { title: () => i18n.global.t('Templates') } },
-    { path: '/integrations', component: IntegrationsPage, meta: { title: () => i18n.global.t('Integrations') } },
+    {
+      // Nested, so that the Integrations link of the sidebar stays active on the page of one
+      path: '/integrations',
+      children: [
+        { path: '', component: IntegrationsPage, meta: { title: () => i18n.global.t('Integrations') } },
+        {
+          path: ':program',
+          component: () => import('./pages/IntegrationPage.vue'),
+          meta: {
+            title: () =>
+              catalog.value?.find((entry) => entry.program === router.currentRoute.value.params.program)?.name ??
+              i18n.global.t('Integrations'),
+          },
+        },
+      ],
+    },
     {
       // Nested, so that the Settings link of the sidebar stays active on the licenses
       path: '/settings',

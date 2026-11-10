@@ -25,7 +25,8 @@ use silex_server::said::Said;
 use silex_server::PublicationOptions;
 
 use common::git;
-use common::programs::{self, found};
+use common::install;
+use common::programs;
 use common::run;
 use integration::{
     Account, AntiFeature, Capacity, Integration, Openness, RemoteWebsite, SignIn, Tag,
@@ -101,10 +102,13 @@ pub struct CatalogEntry {
     program: &'static str,
     name: &'static str,
     summary: &'static str,
+    tagline: &'static str,
     tags: &'static [Tag],
     openness: Openness,
     anti_features: &'static [AntiFeature],
     install_url: &'static str,
+    /// Whether Silex can install the program itself on this system
+    installable: bool,
     icon: Option<&'static str>,
     runs_here: bool,
     servers: Vec<&'static str>,
@@ -138,7 +142,7 @@ impl Integrations {
             .into_iter()
             .filter(move |integration| integration.capacities().contains(&capacity))
             .filter_map(move |integration| {
-                let cli = self.program_path(integration.program())?;
+                let cli = self.path_if_used(integration.program())?;
                 (integration.answers_for(site) && self.chose_account_of(integration, site))
                     .then_some((integration, cli))
             })
@@ -167,7 +171,7 @@ impl Integrations {
             .filter(move |integration| integration.capacities().contains(&capacity))
             // Used or not: a website on a server the user has an account on is
             // told to use it
-            .filter(|integration| self.found_path(integration.program()).is_some())
+            .filter(|integration| self.usable_path(integration.program()).is_some())
             .filter_map(move |integration| {
                 if !integration.answers_for(site) {
                     return Some((integration, integration.missing_account(site)?));
@@ -237,10 +241,12 @@ impl Integrations {
                     program: integration.program(),
                     name: integration.name(),
                     summary: integration.summary(),
+                    tagline: integration.tagline(),
                     tags: integration.tags(),
                     openness: integration.openness(),
                     anti_features: integration.anti_features(),
                     install_url: integration.install_url(),
+                    installable: integration.release().is_some_and(install::has_archive_here),
                     icon: integration.icon(),
                     runs_here: integration.runs_here(),
                     servers: integration.servers(),
@@ -263,15 +269,15 @@ impl Integrations {
             .map(|(id, state)| (id.as_str(), state.version.as_deref()))
     }
 
-    fn program_path(&self, id: &str) -> Option<PathBuf> {
+    fn path_if_used(&self, id: &str) -> Option<PathBuf> {
         self.known
             .get(id)
             .filter(|state| !state.accounts.is_empty())
-            .and(self.found_path(id))
+            .and(self.usable_path(id))
     }
 
     /// Where the program is, whether the user uses it or not
-    fn found_path(&self, id: &str) -> Option<PathBuf> {
+    fn usable_path(&self, id: &str) -> Option<PathBuf> {
         let state = self.known.get(id)?;
         if state.broken {
             return None;
@@ -309,13 +315,10 @@ pub fn load(data_dir: &Path) -> Integrations {
             continue;
         }
 
-        let path = match &known {
-            Some(state) => state.path.clone(),
-            None => found(id),
-        };
+        let path = located(data_dir, integration, known.as_ref());
         changed |= known.is_none();
         let mut state = known.unwrap_or_default();
-        changed |= looked_at(integration, &mut state, path);
+        changed |= checked(integration, &mut state, path);
         integrations.known.insert(id.to_string(), state);
     }
 
@@ -325,9 +328,72 @@ pub fn load(data_dir: &Path) -> Integrations {
     integrations
 }
 
+/// The path remembered, else the program of the user, else the copy of Silex
+fn located(
+    data_dir: &Path,
+    integration: &dyn Integration,
+    remembered: Option<&IntegrationState>,
+) -> Option<PathBuf> {
+    if let Some(state) = remembered {
+        return state.path.clone();
+    }
+    let id = integration.program();
+    let ours = integration
+        .release()
+        .and_then(|release| install::silex_copy(data_dir, id, release));
+    match (programs::users_own(id), ours) {
+        (Some(theirs), Some(ours)) if !starts(integration, &theirs) => Some(ours),
+        (theirs, ours) => theirs.or(ours),
+    }
+}
+
+fn starts(integration: &dyn Integration, path: &Path) -> bool {
+    run::run(path, &std::env::temp_dir(), integration.version_args()).is_ok()
+}
+
+/// The version of this Silex, or the program of the user when it starts, in
+/// place of the copy an older one installed, without a word: the older copy
+/// keeps working until then
+pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
+    for (id, state) in snapshot(loading).known {
+        let (Some(integration), Some(path)) = (by_program(&id), state.path) else {
+            continue;
+        };
+        let Some(release) = integration.release() else {
+            continue;
+        };
+        if state.accounts.is_empty() || !install::is_old_silex_copy(data_dir, &id, release, &path) {
+            continue;
+        }
+        // A program the user installed after the copy of Silex replaces it
+        let theirs = programs::users_own(&id).is_some_and(|theirs| starts(integration, &theirs));
+        if !theirs {
+            if let Err(e) = install::install(data_dir, &id, release) {
+                tracing::warn!("Could not update the {} of Silex: {:?}", id, e);
+                continue;
+            }
+        }
+        asked(loading, data_dir, &id, Asked::CheckAgain);
+    }
+}
+
+/// Downloads the program into the folder of Silex, then looks for it again
+pub fn install_silex_copy(
+    loading: &Loading,
+    data_dir: &Path,
+    program: &str,
+) -> Result<Vec<CatalogEntry>, Said> {
+    let not_installable = || Said::raw(format!("Silex cannot install {program}"));
+    let integration = by_program(program).ok_or_else(not_installable)?;
+    let release = integration.release().ok_or_else(not_installable)?;
+    install::install(data_dir, program, release)?;
+    integration.installed();
+    asked(loading, data_dir, program, Asked::CheckAgain).ok_or_else(not_installable)
+}
+
 /// What is known of a program, from where it is now and from what it answers
 /// when asked its version, and whether that changed
-fn looked_at(
+fn checked(
     integration: &dyn Integration,
     state: &mut IntegrationState,
     path: Option<PathBuf>,
@@ -375,18 +441,18 @@ fn looked_at(
     changed
 }
 
-fn in_use(loading: &Loading, program: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
+fn usable(loading: &Loading, program: &str) -> Result<(&'static dyn Integration, PathBuf), String> {
     let integration =
         by_program(program).ok_or_else(|| format!("{} is not an integration of Silex", program))?;
     // Found is enough: an account is signed in to before it is used
     let cli = snapshot(loading)
-        .found_path(program)
+        .usable_path(program)
         .ok_or_else(|| format!("{} is not on this computer", integration.program()))?;
     Ok((integration, cli))
 }
 
 pub fn accounts(loading: &Loading, program: &str) -> Result<Vec<Account>, String> {
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     integration.accounts(&cli)
 }
 
@@ -413,7 +479,7 @@ pub fn connect(
     client_id: Option<&str>,
     open: &dyn Fn(String),
 ) -> Result<Connected, String> {
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     let given_up = Arc::new(AtomicBool::new(false));
     if let Some(before) = held(&GIVE_UP).replace(given_up.clone()) {
         before.store(true, Ordering::Relaxed);
@@ -451,7 +517,7 @@ pub fn stop_connecting() {
 }
 
 pub fn disconnect(loading: &Loading, program: &str, id: &str) -> Result<Vec<Account>, String> {
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     integration.disconnect(&cli, id)?;
     integration.accounts(&cli)
 }
@@ -475,7 +541,7 @@ pub fn remote_websites(
     account: &str,
 ) -> Result<Vec<RemoteWebsite>, String> {
     chosen_account(loading, program, account)?;
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     integration.remote_websites(&cli, account)
 }
 
@@ -487,7 +553,7 @@ pub fn fetch_website(
     into: &Path,
 ) -> Result<String, String> {
     chosen_account(loading, program, account)?;
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     integration.fetch_website(&cli, account, id, into)
 }
 
@@ -505,12 +571,12 @@ pub fn link_website(
     site: &Path,
 ) -> Result<(), Said> {
     chosen_account(loading, program, account).map_err(Said::raw)?;
-    let (integration, cli) = in_use(loading, program).map_err(Said::raw)?;
+    let (integration, cli) = usable(loading, program).map_err(Said::raw)?;
     integration.link_website(&cli, account, name, site)
 }
 
 pub fn check_account(loading: &Loading, program: &str, id: &str) -> Result<SignIn, String> {
-    let (integration, cli) = in_use(loading, program)?;
+    let (integration, cli) = usable(loading, program)?;
     integration.check_account(&cli, id)
 }
 
@@ -537,7 +603,11 @@ pub fn asked(
         programs::forget();
         git::forget();
         let mut looked = snapshot(loading).known.remove(program).unwrap_or_default();
-        looked_at(integration, &mut looked, found(program));
+        checked(
+            integration,
+            &mut looked,
+            located(data_dir, integration, None),
+        );
         looked
     });
     let mut integrations = loading.write().unwrap_or_else(PoisonError::into_inner);

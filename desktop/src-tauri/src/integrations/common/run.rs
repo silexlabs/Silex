@@ -282,7 +282,7 @@ fn run_within(
         command
             .env("SILEX_RESOLVING_ENVIRONMENT", "1")
             .env("DISABLE_AUTO_UPDATE", "true");
-    } else if let Ok(path) = env::join_paths(programs::path()) {
+    } else if let Ok(path) = env::join_paths(programs::search_path()) {
         // glab starts git, which may have been installed since Silex started
         command.env("PATH", path);
     }

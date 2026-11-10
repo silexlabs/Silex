@@ -11,7 +11,7 @@ import {
 } from 'reka-ui'
 import ExternalLink from './ExternalLink.vue'
 import { useMenuAction } from '../menu'
-import type { Account, CatalogEntry } from '../api'
+import type { Account, CatalogEntry, explain } from '../api'
 import { accountKey, needsYou, signIns } from '../integrations'
 
 /** A chosen account, or the program of an integration in use that Silex cannot run when there is none */
@@ -19,10 +19,14 @@ const props = defineProps<{
   entry: CatalogEntry
   account?: Account
   busy: boolean
+  installing?: boolean
+  /** Why the last install failed, until one works */
+  failed?: ReturnType<typeof explain>
 }>()
 
 const emit = defineEmits<{
   checkAgain: []
+  install: [from: Element]
   signInAgain: [from: Element]
   check: []
   stopUsing: []
@@ -86,7 +90,18 @@ const { choose, afterClose } = useMenuAction(more)
     </p>
     <div class="account-line__actions">
       <template v-if="!account">
+        <button
+          v-if="entry.installable"
+          type="button"
+          class="button"
+          :aria-describedby="id"
+          :aria-disabled="busy"
+          @click="emit('install', $event.currentTarget as Element)"
+        >
+          {{ installing ? $t('Installing…') : failed !== undefined ? $t('Try again') : $t('Install') }}
+        </button>
         <ExternalLink
+          v-if="!entry.installable || failed !== undefined"
           class="button"
           :href="entry.installUrl"
           :name="$t('How to install {program}', { program: entry.program })"
@@ -150,10 +165,32 @@ const { choose, afterClose } = useMenuAction(more)
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenuRoot>
+    <p
+      v-if="!account && failed !== undefined"
+      class="account-line__failed"
+      role="alert"
+    >
+      {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed.message }}
+    </p>
+    <pre
+      v-if="!account && failed?.detail"
+      class="account-line__failed-detail technical-detail"
+    >{{ failed.detail }}</pre>
   </li>
 </template>
 
 <style scoped>
+.account-line__failed,
+.account-line__failed-detail {
+  grid-column: 2 / -1;
+}
+
+.account-line__failed {
+  margin: 0;
+  color: var(--silex-status-error);
+  font-size: 12px;
+}
+
 .account-line {
   display: grid;
   grid-template-columns: auto minmax(0, 300px) minmax(0, 1fr) auto auto;

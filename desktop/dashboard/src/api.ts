@@ -137,11 +137,15 @@ export interface CatalogEntry {
   name: string
   /** In English, a key of the locales */
   summary: string
+  /** What the user gets, in one line, a key of the locales too */
+  tagline: string
   tags: Tag[]
   openness: Openness
   antiFeatures: AntiFeature[]
   /** For when Silex cannot find the program */
   installUrl: string
+  /** Whether Silex can install the program itself on this system */
+  installable: boolean
   /** The logo of the service, an SVG from the integration */
   icon: string | null
   /** False when the program cannot be installed on this system */
@@ -164,6 +168,9 @@ export type Asked = { kind: 'checkAgain' } | { kind: 'useAccount' | 'stopUsing';
 
 export const askIntegration = (program: string, asked: Asked) =>
   call<CatalogEntry[]>('integration_asked', { program, asked })
+
+/** Silex downloads the program into its own folder */
+export const installIntegration = (program: string) => call<CatalogEntry[]>('integration_install', { program })
 
 /** An account or a server an integration was set up with, kept by its program */
 export interface Account {

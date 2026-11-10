@@ -181,7 +181,18 @@ async fn publish_website(
                 job.succeeded(published_message(&data_path, &website_id));
             });
         }
-        _ => job.succeeded(published_message(&state.data_path, &query.website_id)),
+        _ => {
+            let mut message = published_message(&state.data_path, &query.website_id);
+            // A website written on this computer only, until it has a hosting
+            if let Some(more) = state
+                .actions
+                .as_ref()
+                .and_then(|actions| actions.more_hostings())
+            {
+                message.push_str(&format!("<p>{more}</p>"));
+            }
+            job.succeeded(message)
+        }
     }
 
     Ok(Json(PublishResponse {
