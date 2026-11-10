@@ -334,3 +334,19 @@ export function buildArgs(options: PropertyOptions | undefined): string {
   const validArgs = args === '()' ? '' : args
   return validArgs
 }
+
+/**
+ * Name under which a field is queried and read back in the data
+ * A field with arguments gets a GraphQL alias built from them, so the same
+ * field with other arguments (e.g. two loops on one collection) gets its own result
+ * A field without arguments keeps its name
+ */
+export function getFieldAlias(token: { fieldId: string, options?: PropertyOptions }): string {
+  const sorted = token.options && Object.fromEntries(Object.entries(token.options).sort(([a], [b]) => a.localeCompare(b)))
+  const args = buildArgs(sorted)
+  if (!args) return token.fieldId
+  // djb2 hash: short, stable, and a valid GraphQL name in base 36
+  let hash = 5381
+  for (let i = 0; i < args.length; i++) hash = ((hash * 33) ^ args.charCodeAt(i)) >>> 0
+  return `${token.fieldId}_${hash.toString(36)}`
+}

@@ -1,6 +1,6 @@
 import {
   Expression,
-  Filter, Property, State, StateId, Token, getPersistantId, getStateVariableName, toExpression,
+  Filter, Property, State, StateId, Token, getFieldAlias, getPersistantId, getStateVariableName, toExpression,
   FIXED_TOKEN_ID,
   UnariOperator,
   BinaryOperator,
@@ -248,7 +248,7 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
       if (token.fieldId === FIXED_TOKEN_ID) {
         return `"${token.options?.value ?? ''}"`
       }
-      return token.fieldId
+      return getFieldAlias(token)
     }
     default: {
       throw new Error(`Only state or property can be used in an expression, got ${(token as Token).type}`)
@@ -324,7 +324,7 @@ function handleFilterOption(filter: Filter, key: string, value: string, componen
           if (token.fieldId === FIXED_TOKEN_ID) {
             return `"${token.options?.value ?? ''}"`
           }
-          return token.fieldId
+          return getFieldAlias(token)
         }
         case 'state': {
           const fieldId = ELEVENTY_PAGE_STATES[token.storedStateId]

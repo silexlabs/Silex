@@ -4,6 +4,7 @@ import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/g
 import { Field, Tree, Type } from '../types'
 import dedent from 'dedent-js'
 import { importDataSource } from '../test-data'
+import { getFieldAlias } from '../model/token'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -375,6 +376,31 @@ test('build query from tree', () => {
   }
 
 }`)
+})
+
+test('build query with an alias for a field with arguments', () => {
+  const gql = new GQLTest(options, [{
+    id: 'query',
+    label: 'query',
+    dataSourceId: 'testDataSourceId',
+    fields: [{ id: 'posts', label: 'posts', typeIds: ['Post'], kind: 'list' }],
+  }, {
+    id: 'Post',
+    label: 'Post',
+    dataSourceId: 'testDataSourceId',
+    fields: [{ id: 'title', label: 'title', typeIds: ['String'], kind: 'scalar', dataSourceId: 'testDataSourceId' }],
+  }])
+  const post = (options?: Record<string, string>): Tree => ({
+    token: { type: 'property', propType: 'field', fieldId: 'posts', label: 'posts', typeIds: ['Post'], kind: 'list', dataSourceId: 'testDataSourceId', options },
+    children: [{
+      token: { type: 'property', propType: 'field', fieldId: 'title', label: 'title', typeIds: ['String'], kind: 'scalar', dataSourceId: 'testDataSourceId' },
+      children: [],
+    }],
+  })
+  const first = post({ first: '2' })
+  const query = gql.getQuery([post(), first])
+  expect(query).toContain('\n  posts {')
+  expect(query).toContain(`\n  ${getFieldAlias(first.token)}: posts(first: 2) {`)
 })
 
 test('build query with fragments', () => {

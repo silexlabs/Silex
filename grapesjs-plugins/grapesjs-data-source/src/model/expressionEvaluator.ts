@@ -19,7 +19,7 @@ import { Component } from 'grapesjs'
 import { Expression, StoredToken, State, Property, Filter, DataSourceId, IDataSource, FIXED_TOKEN_ID } from '../types'
 import { DataSourceManagerState } from './dataSourceManager'
 import { getParentByPersistentId, getState } from './state'
-import { fromStored } from './token'
+import { fromStored, getFieldAlias } from './token'
 import { toExpression } from '../utils'
 
 /**
@@ -73,7 +73,8 @@ export function evaluatePropertyToken(
   }
 
   // Get the next value
-  let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
+  // Read the field under the name it was queried with (see getFieldAlias)
+  let value = prevObj ? (prevObj as Record<string, unknown>)[getFieldAlias(token)] : null
 
   // Handle preview index if resolvePreviewIndex is true
   // Don't resolve if next token is a filter - filters need to operate on full arrays
