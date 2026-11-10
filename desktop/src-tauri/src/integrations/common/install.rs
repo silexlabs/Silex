@@ -69,14 +69,22 @@ pub fn is_old_silex_copy(
         && release.is_none_or(|release| !path.starts_with(all.join(release.version)))
 }
 
+pub fn has_archive_here(release: &Release) -> bool {
+    archive_here(release).is_some()
+}
+
+fn archive_here(release: &Release) -> Option<&Archive> {
+    release
+        .archives
+        .iter()
+        .find(|archive| archive.os == OS && archive.arch == ARCH)
+}
+
 /// Downloads the program, checks it is the one its project published, and
 /// keeps it in the folder of Silex, removing the versions installed before
 pub fn install(data_dir: &Path, name: &str, release: &Release) -> Result<PathBuf, Said> {
     let _installing = crate::held::held(&INSTALLING);
-    let archive = release
-        .archives
-        .iter()
-        .find(|archive| archive.os == OS && archive.arch == ARCH)
+    let archive = archive_here(release)
         .ok_or_else(|| Said::raw(format!("{name} has no build for {OS} on {ARCH}")))?;
     let bytes = tauri::async_runtime::block_on(fetched(archive.url, release.max_bytes))?;
     let sum: String = Sha256::digest(&bytes)

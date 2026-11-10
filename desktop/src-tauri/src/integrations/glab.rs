@@ -110,6 +110,10 @@ impl Integration for Glab {
         key!("Back up your websites in a project on GitLab, with the history of every change. Publish them online with GitLab Pages: free hosting in the US, fast builds, and your own domain name if you have one.")
     }
 
+    fn tagline(&self) -> &'static str {
+        key!("Free hosting in the US, fast builds.")
+    }
+
     fn tags(&self) -> &'static [Tag] {
         &[Tag::Hosting, Tag::Storage, Tag::Team]
     }
@@ -132,6 +136,12 @@ impl Integration for Glab {
 
     fn release(&self) -> Option<&'static Release> {
         Some(&RELEASE)
+    }
+
+    // glab sends with git: better the dialog of Apple now than a failed first send
+    fn installed(&self) {
+        #[cfg(target_os = "macos")]
+        git::offer_apple_developer_tools();
     }
 
     fn capacities(&self) -> &'static [Capacity] {

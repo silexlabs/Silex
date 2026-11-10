@@ -41,6 +41,10 @@ impl Integration for Hut {
         key!("Back up your websites in a repository on SourceHut, with the history of every change. Publish them online with SourceHut Pages (paid accounts only): hosting in the Netherlands, and your own domain name if you have one.")
     }
 
+    fn tagline(&self) -> &'static str {
+        key!("Paid hosting in the Netherlands.")
+    }
+
     fn tags(&self) -> &'static [Tag] {
         &[Tag::Hosting, Tag::Storage, Tag::Team]
     }

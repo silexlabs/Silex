@@ -1,9 +1,13 @@
 import { computed, ref } from 'vue'
 import {
   type Account,
+  type AntiFeature,
   type CatalogEntry,
+  type Openness,
   type SignIn,
+  type Tag,
   askIntegration,
+  installIntegration,
   checkAccount,
   linkWebsite,
   explain,
@@ -13,6 +17,29 @@ import {
 import { i18n } from './i18n'
 import { promptChoice, showError } from './components/AppDialogs.vue'
 import { dismiss, toast } from './components/AppToasts.vue'
+
+/** Of the service, shown on its card and its page */
+export const OPENNESS: Record<Openness, () => string> = {
+  digitalCommons: () => i18n.global.t('Digital commons'),
+  freeSoftware: () => i18n.global.t('Free software'),
+  openSource: () => i18n.global.t('Open source'),
+  openCore: () => i18n.global.t('Open core'),
+  sourceAvailable: () => i18n.global.t('Source available'),
+  proprietary: () => i18n.global.t('Proprietary'),
+}
+
+export const TAGS: Record<Tag, () => string> = {
+  hosting: () => i18n.global.t('Hosting'),
+  storage: () => i18n.global.t('Storage'),
+  team: () => i18n.global.t('Team'),
+}
+
+export const ANTI_FEATURES: Record<AntiFeature, () => string> = {
+  tracking: () => i18n.global.t('Tracks you'),
+  proprietaryCloud: () => i18n.global.t('Runs on a proprietary cloud'),
+  identityVerification: () => i18n.global.t('May ask to verify your identity'),
+  freeLicenseRequired: () => i18n.global.t('Your content must have a free license'),
+}
 
 /** What the integrations screen and the sidebar share, for as long as the app runs */
 export const catalog = ref<CatalogEntry[] | null>(null)
@@ -156,6 +183,52 @@ export async function ask(entry: CatalogEntry, asked: Parameters<typeof askInteg
   const now = catalog.value.find((other) => other.program === entry.program)
   if (now) await loadAccounts(now)
   return now
+}
+
+/** What runs, one key per line or card, so that a second click waits for the first */
+export const busy = ref(new Set<string>())
+
+export async function once(key: string, action: () => Promise<void>) {
+  if (busy.value.has(key)) return
+  busy.value.add(key)
+  try {
+    await action()
+  } finally {
+    busy.value.delete(key)
+  }
+}
+
+/** The programs being installed */
+export const installing = ref(new Set<string>())
+
+/** Why the last install of each program failed, until one works */
+export const installFailed = ref<Record<string, string>>({})
+
+/** What the user is told once Silex looked for the program again */
+export async function told(entry: CatalogEntry, now?: CatalogEntry) {
+  const { t } = i18n.global
+  if (now && usable(now)) {
+    toast(t('{program} found.', { program: entry.program }), 'success')
+    await checkAccounts()
+  } else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
+}
+
+/** Silex downloads the program, then looks for it again */
+export function install(entry: CatalogEntry) {
+  return once(entry.program, async () => {
+    installing.value.add(entry.program)
+    try {
+      catalog.value = await installIntegration(entry.program)
+      delete installFailed.value[entry.program]
+      const now = catalog.value.find((other) => other.program === entry.program)
+      if (now) await loadAccounts(now)
+      await told(entry, now)
+    } catch (error) {
+      installFailed.value[entry.program] = explain(error).message ?? ''
+    } finally {
+      installing.value.delete(entry.program)
+    }
+  })
 }
 
 /** At the start of the app, so that the sidebar tells of an account turned down before anyone opens the screen */

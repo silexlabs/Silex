@@ -16,6 +16,12 @@ import {
   check,
   checkAccounts,
   chosen,
+  busy,
+  install,
+  installFailed,
+  installing,
+  once,
+  told,
   loadAccounts,
   loadIntegrations,
   needsYou,
@@ -29,19 +35,6 @@ const heading = useTemplateRef<HTMLHeadingElement>('heading')
 
 const failed = ref<ReturnType<typeof explain> | null>(null)
 const status = ref('')
-
-/** What runs, one key per line or card, so that a second click waits for the first */
-const busy = ref(new Set<string>())
-
-async function once(key: string, action: () => Promise<void>) {
-  if (busy.value.has(key)) return
-  busy.value.add(key)
-  try {
-    await action()
-  } finally {
-    busy.value.delete(key)
-  }
-}
 
 const adding = ref<{ entry: CatalogEntry; account?: Account; others?: Account[]; from: Element | null } | null>(null)
 
@@ -103,16 +96,21 @@ async function focusPage() {
 function checkAgain(entry: CatalogEntry) {
   return once(entry.program, async () => {
     try {
-      const now = await ask(entry, { kind: 'checkAgain' })
-      if (now && usable(now)) {
-        toast(t('{program} found.', { program: entry.program }), 'success')
-        await checkAccounts()
-      } else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
+      await told(entry, await ask(entry, { kind: 'checkAgain' }))
       await focusPage()
     } catch (error) {
       await showError({ title: t('Silex could not look for {program}', { program: entry.program }), ...explain(error) })
     }
   })
+}
+
+// The button becomes another one: the focus stays on the card it was on
+async function installProgram(entry: CatalogEntry) {
+  await install(entry)
+  await nextTick()
+  const action = document.querySelector<HTMLElement>(`[aria-describedby="card-${entry.program}"]`)
+  if (action) action.focus()
+  else await focusPage()
 }
 
 function add(entry: CatalogEntry, from: Element) {
@@ -274,7 +272,10 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
           :entry="line.entry"
           :account="line.account"
           :busy="busy.has(line.entry.program)"
+          :installing="installing.has(line.entry.program)"
+          :failed="installFailed[line.entry.program]"
           @check-again="checkAgain(line.entry)"
+          @install="installProgram(line.entry)"
           @sign-in-again="(from) => (adding = { entry: line.entry, account: line.account, from })"
           @check="check(line.entry, line.account!)"
           @stop-using="stopUsing(line.entry, line.account!)"
@@ -307,7 +308,11 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
             :key="entry.program"
             :entry="entry"
             :busy="busy.has(entry.program)"
+            :installing="installing.has(entry.program)"
+            :to="`/integrations/${entry.program}`"
+            :failed="installFailed[entry.program]"
             @check-again="checkAgain(entry)"
+            @install="installProgram(entry)"
             @add="(from) => add(entry, from)"
           />
         </ul>

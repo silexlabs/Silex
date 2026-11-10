@@ -19,10 +19,14 @@ const props = defineProps<{
   entry: CatalogEntry
   account?: Account
   busy: boolean
+  installing?: boolean
+  /** Why the last install failed, until one works */
+  failed?: string
 }>()
 
 const emit = defineEmits<{
   checkAgain: []
+  install: []
   signInAgain: [from: Element]
   check: []
   stopUsing: []
@@ -84,9 +88,27 @@ const { choose, afterClose } = useMenuAction(more)
       <span>{{ state.label }}</span>
       <span class="account-line__detail">{{ state.detail }}</span>
     </p>
+    <p
+      v-if="!account && failed !== undefined"
+      class="account-line__failed"
+      role="alert"
+    >
+      {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed }}
+    </p>
     <div class="account-line__actions">
       <template v-if="!account">
+        <button
+          v-if="entry.installable"
+          type="button"
+          class="button"
+          :aria-describedby="id"
+          :aria-disabled="busy"
+          @click="emit('install')"
+        >
+          {{ installing ? $t('Installing…') : failed !== undefined ? $t('Try again') : $t('Install') }}
+        </button>
         <ExternalLink
+          v-if="!entry.installable || failed !== undefined"
           class="button"
           :href="entry.installUrl"
           :name="$t('How to install {program}', { program: entry.program })"
@@ -154,6 +176,12 @@ const { choose, afterClose } = useMenuAction(more)
 </template>
 
 <style scoped>
+.account-line__failed {
+  margin: 0;
+  color: var(--silex-status-error);
+  font-size: 12px;
+}
+
 .account-line {
   display: grid;
   grid-template-columns: auto minmax(0, 300px) minmax(0, 1fr) auto auto;

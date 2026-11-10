@@ -202,6 +202,9 @@ pub trait Integration: Send + Sync {
 
     fn summary(&self) -> &'static str;
 
+    /// What the user gets, in one line on the card
+    fn tagline(&self) -> &'static str;
+
     fn tags(&self) -> &'static [Tag];
 
     fn openness(&self) -> Openness;
@@ -217,6 +220,9 @@ pub trait Integration: Send + Sync {
     fn release(&self) -> Option<&'static Release> {
         None
     }
+
+    /// Once Silex installed the program, before it is looked for again
+    fn installed(&self) {}
 
     /// Whether the program can be installed on this system: one that cannot
     /// is still shown, so that a user who read about it learns why it is not

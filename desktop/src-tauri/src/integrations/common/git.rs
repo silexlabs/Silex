@@ -116,6 +116,14 @@ pub(crate) fn forget() {
     *held(&GIT) = None;
 }
 
+/// On a Mac without the developer tools, /usr/bin/git is a stub, and running it
+/// opens the dialog of Apple that installs them
+#[cfg(target_os = "macos")]
+pub(crate) fn offer_apple_developer_tools() {
+    forget();
+    git_path();
+}
+
 /// Push the branch, and the tag when there is one
 ///
 /// A tag nothing was pushed with would be left behind at every failed

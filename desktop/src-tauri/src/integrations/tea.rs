@@ -59,6 +59,10 @@ impl Integration for Tea {
         key!("Back up your websites in a repository on Codeberg or another Forgejo server, with the history of every change. Publish them online with Codeberg Pages: free hosting in Germany by a non-profit, and your own domain name if you have one.")
     }
 
+    fn tagline(&self) -> &'static str {
+        key!("Free hosting in Germany by a non-profit.")
+    }
+
     fn tags(&self) -> &'static [Tag] {
         &[Tag::Hosting, Tag::Storage, Tag::Team]
     }

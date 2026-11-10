@@ -102,10 +102,13 @@ pub struct CatalogEntry {
     program: &'static str,
     name: &'static str,
     summary: &'static str,
+    tagline: &'static str,
     tags: &'static [Tag],
     openness: Openness,
     anti_features: &'static [AntiFeature],
     install_url: &'static str,
+    /// Whether Silex can install the program itself on this system
+    installable: bool,
     icon: Option<&'static str>,
     runs_here: bool,
     servers: Vec<&'static str>,
@@ -238,10 +241,12 @@ impl Integrations {
                     program: integration.program(),
                     name: integration.name(),
                     summary: integration.summary(),
+                    tagline: integration.tagline(),
                     tags: integration.tags(),
                     openness: integration.openness(),
                     anti_features: integration.anti_features(),
                     install_url: integration.install_url(),
+                    installable: integration.release().is_some_and(install::has_archive_here),
                     icon: integration.icon(),
                     runs_here: integration.runs_here(),
                     servers: integration.servers(),
@@ -349,10 +354,10 @@ pub fn install_silex_copy(
     program: &str,
 ) -> Result<Vec<CatalogEntry>, Said> {
     let not_installable = || Said::raw(format!("Silex cannot install {program}"));
-    let release = by_program(program)
-        .and_then(|integration| integration.release())
-        .ok_or_else(not_installable)?;
+    let integration = by_program(program).ok_or_else(not_installable)?;
+    let release = integration.release().ok_or_else(not_installable)?;
     install::install(data_dir, program, release)?;
+    integration.installed();
     asked(loading, data_dir, program, Asked::CheckAgain).ok_or_else(not_installable)
 }
 
