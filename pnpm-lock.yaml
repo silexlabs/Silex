@@ -207,7 +207,7 @@ importers:
         version: 6.0.3
       webpack:
         specifier: 5.112.2
-        version: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+        version: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
       webpack-cli:
         specifier: 7.3.1
         version: 7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)
@@ -215,8 +215,8 @@ importers:
   desktop:
     devDependencies:
       '@tauri-apps/cli':
-        specifier: 2.12.4
-        version: 2.12.4
+        specifier: 2.12.1
+        version: 2.12.1
 
   desktop/dashboard:
     dependencies:
@@ -243,7 +243,7 @@ importers:
         version: 11.4.18(vue@3.5.45(typescript@6.0.3))
       vue-router:
         specifier: ^5.5.0
-        version: 5.5.0(@vue/compiler-sfc@3.5.45)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+        version: 5.5.0(@vue/compiler-sfc@3.5.45)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1))
     devDependencies:
       '@intlify/eslint-plugin-vue-i18n':
         specifier: ^4.5.1
@@ -3086,79 +3086,79 @@ packages:
   '@tauri-apps/api@2.12.4':
     resolution: {integrity: sha512-pVmfis+4zT8H0Qhp3xPZx9Ju7kpzvA6rr/PSJPyuwfvucTQ8sVt61NYU9KMkK703UFlYadFmjKA4HhybOtN0gg==}
 
-  '@tauri-apps/cli-darwin-arm64@2.12.4':
-    resolution: {integrity: sha512-OxqKSckIkoJ6vX2AjifIJpTasFC0Hbdoo7gEiCmAjauABO3U8m2MRsLWe+QTiBwDx1mIrvgA+rvI7tvDnbnHVg==}
+  '@tauri-apps/cli-darwin-arm64@2.12.1':
+    resolution: {integrity: sha512-8bMnbpJ2jKO/ufrOPL65EMHC3ptw7fzeraoQkwibyfGLqIl+UCWsC0152kmNbW6r9NvVQduXqAZF5mH1QgTWhw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@tauri-apps/cli-darwin-x64@2.12.4':
-    resolution: {integrity: sha512-fz76/77wMMJOaaUN6n3CybRG0P/MTEjjqYk81mGPyhi9m6Ue5T+LWBnJP/AkPooNatBPI2vtulGqomyMJ44lCQ==}
+  '@tauri-apps/cli-darwin-x64@2.12.1':
+    resolution: {integrity: sha512-G+2qte8GNqNlEZ9ftd21rbu/APVkl3r/nzNDI7LVxEoqJWVNe9GbEgQUMH1r4PHT20Z2UxR3KjCkltIb0e/Wjg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.12.4':
-    resolution: {integrity: sha512-K0w8Bof6Lt8QKLAYhRy0yy36ZH5iA/35VuSOvnxyjvCUZ+A3JKsUTlALviH/sVgAlisaPzzmeJSH8XOn4Q2HBA==}
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.12.1':
+    resolution: {integrity: sha512-5b3n4DaTW+A1Zntnh4Yn44VyLrlPEpB8kMOBRfWkzNnzolBk+AYhKIfKjCLmoC8Mob3ETodxAEOMkE2YPKEWzQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.12.4':
-    resolution: {integrity: sha512-j5rOnjmRUwWrm1oosf0zBYl4D+fqydgUROFCk0hvKZxvbTT8SOERes0QB7rBV/XWNy+kM6pCKzb3oSm2sRglzg==}
+  '@tauri-apps/cli-linux-arm64-gnu@2.12.1':
+    resolution: {integrity: sha512-APArHhDu+8pXSCkCQmvaz1nD3d8WTmlCoSS/oG475TJ6AATBvyQOAmf5qELgsQ4s2+8MOsop0Zd699RKELF1Cw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@tauri-apps/cli-linux-arm64-musl@2.12.4':
-    resolution: {integrity: sha512-aOue3Fy6Jb7+oWcfAVUsVHfeTybSCt2CZoU06aO4jv4d2Ks/KnaTPwMAK3CLEduGOvBLY1lbBBrIyomqLLH5Sg==}
+  '@tauri-apps/cli-linux-arm64-musl@2.12.1':
+    resolution: {integrity: sha512-JaCxcLoV0oGtllVkLr4UAHWG/wTfkEunnUqnsEsGYOp0VRxnUwHg63wFBD0jU2ul5eFfSLIDS4RF2gfzsSo5Jg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@tauri-apps/cli-linux-riscv64-gnu@2.12.4':
-    resolution: {integrity: sha512-Fx6GShY/RvST+t6LMlTHAwd66+1tEaAAGrnU7cysVfaiRP1BKng5Vl6rVmO6rSLOA1Sp1dRzNYM4f0OWQGb7qA==}
+  '@tauri-apps/cli-linux-riscv64-gnu@2.12.1':
+    resolution: {integrity: sha512-K5+VXM7+SGVDwZleA2+lMgvbTVuA5e1tkiVEawu1Yxj26ZyEfO8h8xTC1rBdRX2xgJDSwCk6vPUBCS6i+Z5slQ==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@tauri-apps/cli-linux-x64-gnu@2.12.4':
-    resolution: {integrity: sha512-tNzZSa79Z1nRpHxEpQ38lsAFpKlFlYvoXzjTV+lRRn/zSf3wrdUC3wnLcq2XEadchPu4ttK0zivhYzr+XGD19Q==}
+  '@tauri-apps/cli-linux-x64-gnu@2.12.1':
+    resolution: {integrity: sha512-Z1QGPr49HJZMktu+Spu6Q1b/f9ANadXvqZZZt2645ua1x1ev6prOgp85eiGv2jRzohFEMLo6aJyaLjLUX5KIvA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@tauri-apps/cli-linux-x64-musl@2.12.4':
-    resolution: {integrity: sha512-jmZ1pr0xEqUhuEusWtt9Yt+GF6lCnGHUmIL+KIknpbjK/XQ2qkhDBhaxK/JMHM2A8dAacVXCxXJk2EXpwhQUfA==}
+  '@tauri-apps/cli-linux-x64-musl@2.12.1':
+    resolution: {integrity: sha512-nHuEhRPOMSJ/8RRhtMRxB9B9lVr7xxpe4DapBz8x1GIau3vdzjHHJ1hAfmw+PyayPLZ6XoaVIHPgI17rX6ii8w==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.12.4':
-    resolution: {integrity: sha512-fGo8pgEHZxdSYgZ/J98m1usJ7NHKmKbq7k6uT0x1rpOq6Bg2YVzzpaAblWk710f5LHYBJIL5QIFS5IrD+4gmTg==}
+  '@tauri-apps/cli-win32-arm64-msvc@2.12.1':
+    resolution: {integrity: sha512-I0oPk2uGh86R8dAs2X5OxSP+/GqSc8jh1Px3l8EqrocSNivsRHDTh2k3PVOqdv163dlV6PIVvmhZAbH/lPfZrA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.12.4':
-    resolution: {integrity: sha512-ezl8sQIcjYsye3TUnTH5VcWmWzccZASlQm7hlZt0dYyj1XD0qpVW47u2xYVrIKui0F8uQv/7QGZixdWiClBsbg==}
+  '@tauri-apps/cli-win32-ia32-msvc@2.12.1':
+    resolution: {integrity: sha512-baNZRBfepAJ5qNFRMwzgBk94xQmkcmTZrNDjZjnzrq2vAaTC3NAhallb/zo3hyoCGQlMS13sdovktrg46NZz6Q==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  '@tauri-apps/cli-win32-x64-msvc@2.12.4':
-    resolution: {integrity: sha512-DJhDeCqjLDNMWYFy7ZS8cfeAHX2RK0RbQMLiA3bMVVkXRDJ4NBYiHriGqsUhsr9iG41aTb+dJGkFPmPw1gWwVw==}
+  '@tauri-apps/cli-win32-x64-msvc@2.12.1':
+    resolution: {integrity: sha512-dIFaKslrzcbesb+bBh+E1R9km241pHyj32w6D9FPtvQeYpRUFbiCLEa/2S+S0UnIytfxepp4P+X8IerGqnXeYg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@tauri-apps/cli@2.12.4':
-    resolution: {integrity: sha512-JI9bHfudSRJikGOrjbXEm6RjzzvmKuLc+JixB1NE8hNzQkNlCCIC3pTES3uypkR9lxHrsbxzcnSwhI2IxBQphw==}
+  '@tauri-apps/cli@2.12.1':
+    resolution: {integrity: sha512-kEDEiGzG+yAc5FeLxtXpES/VN+F2C8H0r4gDVtfRLKxT9np9101d9REG/Kgo2lr0hKi0IpDsODiHnU3+naOmLg==}
     engines: {node: '>= 10'}
     hasBin: true
 
@@ -11906,52 +11906,52 @@ snapshots:
 
   '@tauri-apps/api@2.12.4': {}
 
-  '@tauri-apps/cli-darwin-arm64@2.12.4':
+  '@tauri-apps/cli-darwin-arm64@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-darwin-x64@2.12.4':
+  '@tauri-apps/cli-darwin-x64@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-arm-gnueabihf@2.12.4':
+  '@tauri-apps/cli-linux-arm-gnueabihf@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-gnu@2.12.4':
+  '@tauri-apps/cli-linux-arm64-gnu@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-arm64-musl@2.12.4':
+  '@tauri-apps/cli-linux-arm64-musl@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-riscv64-gnu@2.12.4':
+  '@tauri-apps/cli-linux-riscv64-gnu@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-gnu@2.12.4':
+  '@tauri-apps/cli-linux-x64-gnu@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-linux-x64-musl@2.12.4':
+  '@tauri-apps/cli-linux-x64-musl@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-win32-arm64-msvc@2.12.4':
+  '@tauri-apps/cli-win32-arm64-msvc@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-win32-ia32-msvc@2.12.4':
+  '@tauri-apps/cli-win32-ia32-msvc@2.12.1':
     optional: true
 
-  '@tauri-apps/cli-win32-x64-msvc@2.12.4':
+  '@tauri-apps/cli-win32-x64-msvc@2.12.1':
     optional: true
 
-  '@tauri-apps/cli@2.12.4':
+  '@tauri-apps/cli@2.12.1':
     optionalDependencies:
-      '@tauri-apps/cli-darwin-arm64': 2.12.4
-      '@tauri-apps/cli-darwin-x64': 2.12.4
-      '@tauri-apps/cli-linux-arm-gnueabihf': 2.12.4
-      '@tauri-apps/cli-linux-arm64-gnu': 2.12.4
-      '@tauri-apps/cli-linux-arm64-musl': 2.12.4
-      '@tauri-apps/cli-linux-riscv64-gnu': 2.12.4
-      '@tauri-apps/cli-linux-x64-gnu': 2.12.4
-      '@tauri-apps/cli-linux-x64-musl': 2.12.4
-      '@tauri-apps/cli-win32-arm64-msvc': 2.12.4
-      '@tauri-apps/cli-win32-ia32-msvc': 2.12.4
-      '@tauri-apps/cli-win32-x64-msvc': 2.12.4
+      '@tauri-apps/cli-darwin-arm64': 2.12.1
+      '@tauri-apps/cli-darwin-x64': 2.12.1
+      '@tauri-apps/cli-linux-arm-gnueabihf': 2.12.1
+      '@tauri-apps/cli-linux-arm64-gnu': 2.12.1
+      '@tauri-apps/cli-linux-arm64-musl': 2.12.1
+      '@tauri-apps/cli-linux-riscv64-gnu': 2.12.1
+      '@tauri-apps/cli-linux-x64-gnu': 2.12.1
+      '@tauri-apps/cli-linux-x64-musl': 2.12.1
+      '@tauri-apps/cli-win32-arm64-msvc': 2.12.1
+      '@tauri-apps/cli-win32-ia32-msvc': 2.12.1
+      '@tauri-apps/cli-win32-x64-msvc': 2.12.1
 
   '@tsconfig/node10@1.0.13': {}
 
@@ -13252,7 +13252,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.13
       find-cache-dir: 4.0.0
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       webpack: 5.112.2(postcss@8.5.32)(webpack-cli@5.1.4)
 
   babel-plugin-istanbul@8.0.0:
@@ -13899,7 +13899,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.8.6
     optionalDependencies:
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   css-select@4.3.0:
     dependencies:
@@ -15055,7 +15055,7 @@ snapshots:
       pretty-error: 4.0.0
       tapable: 2.3.3
     optionalDependencies:
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   html2canvas@1.4.1:
     dependencies:
@@ -16338,9 +16338,9 @@ snapshots:
 
   mini-css-extract-plugin@2.10.2(webpack@5.112.2):
     dependencies:
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       tapable: 2.3.3
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   minimalistic-assert@1.0.1: {}
 
@@ -16369,21 +16369,12 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.14.0(postcss@8.5.32)(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))):
-    dependencies:
-      jest-worker: 27.5.1
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
-      terser: 5.51.2
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
-    optionalDependencies:
-      postcss: 8.5.32
-
   minimizer-webpack-plugin@5.14.0(postcss@8.5.32)(webpack@5.112.2):
     dependencies:
       jest-worker: 27.5.1
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       terser: 5.51.2
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@5.1.4)
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
     optionalDependencies:
       postcss: 8.5.32
 
@@ -17296,7 +17287,7 @@ snapshots:
   sass-loader@17.1.0(sass@1.108.1)(webpack@5.112.2):
     optionalDependencies:
       sass: 1.108.1
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   sass@1.108.1:
     dependencies:
@@ -17310,14 +17301,14 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
-  schema-utils@4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))):
+  schema-utils@4.8.2(webpack@5.112.2):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   scule@1.3.0: {}
 
@@ -17785,9 +17776,9 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       terser: 5.51.2
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
     optionalDependencies:
       postcss: 8.5.32
 
@@ -17907,7 +17898,7 @@ snapshots:
       picomatch: 4.0.7
       source-map: 0.7.6
       typescript: 6.0.3
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   ts-node@10.9.2(@types/node@26.6.6)(typescript@6.0.3):
     dependencies:
@@ -18093,7 +18084,7 @@ snapshots:
       picomatch: 4.0.7
       webpack-virtual-modules: 0.6.2
 
-  unplugin@3.7.0(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))):
+  unplugin@3.7.0(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)):
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@rolldown/pluginutils': 1.1.0
@@ -18103,7 +18094,7 @@ snapshots:
       rolldown: 1.2.18
       rollup: 4.68.2
       vite: 8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1)
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
 
   unrs-resolver@1.13.0:
     dependencies:
@@ -18240,7 +18231,7 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.45(typescript@6.0.3)
 
-  vue-router@5.5.0(@vue/compiler-sfc@3.5.45)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))):
+  vue-router@5.5.0(@vue/compiler-sfc@3.5.45)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.45(typescript@6.0.3))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)):
     dependencies:
       '@vue-macros/common': 3.1.4(vue@3.5.45(typescript@6.0.3))
       '@vue/devtools-api': 8.2.1
@@ -18256,7 +18247,7 @@ snapshots:
       picomatch: 4.0.7
       scule: 1.3.0
       tinyglobby: 0.2.17
-      unplugin: 3.7.0(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      unplugin: 3.7.0(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7(@types/node@26.6.6)(sass@1.108.1)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1))
       unplugin-utils: 0.3.2
       vue: 3.5.45(typescript@6.0.3)
     optionalDependencies:
@@ -18352,7 +18343,7 @@ snapshots:
       envinfo: 7.21.0
       interpret: 3.1.1
       rechoir: 1.0.0
-      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2))
+      webpack: 5.112.2(postcss@8.5.32)(webpack-cli@7.3.1)
       webpack-merge: 6.0.1
     optionalDependencies:
       js-yaml: 5.5.0
@@ -18364,7 +18355,7 @@ snapshots:
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.3.0
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       webpack: 5.112.2(postcss@8.5.32)(webpack-cli@5.1.4)
 
   webpack-dev-server@4.15.2(webpack-cli@5.1.4)(webpack@5.112.2):
@@ -18392,7 +18383,7 @@ snapshots:
       open: 8.4.2
       p-retry: 4.6.2
       rimraf: 3.0.2
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       selfsigned: 2.4.1
       serve-index: 1.9.2
       sockjs: 0.3.24
@@ -18439,7 +18430,7 @@ snapshots:
       graceful-fs: 4.2.11
       mime-db: 1.54.0
       minimizer-webpack-plugin: 5.14.0(postcss@8.5.32)(webpack@5.112.2)
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      schema-utils: 4.8.2(webpack@5.112.2)
       tapable: 2.3.3
       watchpack: 2.6.3
       webpack-sources: 3.7.0
@@ -18463,7 +18454,7 @@ snapshots:
       - svgo
       - uglify-js
 
-  webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)):
+  webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1):
     dependencies:
       '@types/estree': 1.0.10
       '@types/json-schema': 7.0.15
@@ -18477,8 +18468,8 @@ snapshots:
       events: 3.3.0
       graceful-fs: 4.2.11
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.14.0(postcss@8.5.32)(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
-      schema-utils: 4.8.2(webpack@5.112.2(postcss@8.5.32)(webpack-cli@7.3.1(js-yaml@5.5.0)(json5@2.2.3)(webpack@5.112.2)))
+      minimizer-webpack-plugin: 5.14.0(postcss@8.5.32)(webpack@5.112.2)
+      schema-utils: 4.8.2(webpack@5.112.2)
       tapable: 2.3.3
       watchpack: 2.6.3
       webpack-sources: 3.7.0
