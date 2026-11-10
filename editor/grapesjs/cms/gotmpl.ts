@@ -16,7 +16,7 @@
  */
 
 import type { Component } from 'grapesjs'
-import { BinaryOperator, Expression, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFieldAlias, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { DECIMAL, EchoContext, getTemplateExpression, hasNumberType, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition, dataSourceName } from './render'
 import type { HugoFilter } from './hugo-filters'
 
@@ -71,7 +71,7 @@ function goOptions(component: Component, filter: StoredFilter, input: Expression
     if (fixed === null) return guard(getGoExpression(component, expression(key)))
     return literal(fixed) ?? fallback
   }
-  const path = (key: string) => expression(key).map(token => token.type === 'property' ? token.fieldId : '')
+  const path = (key: string) => expression(key).map(token => token.type === 'property' ? getFieldAlias(token) : '')
   const parents = (key: string) => path(key).slice(0, -1).map((_, index) => goString(path(key).slice(0, index + 1).join('.')))
   return {
     text: (key, fallback) => option(key, goString(fallback), fixed => fixed === '' ? null : goString(fixed), go => `(string ${go})`),

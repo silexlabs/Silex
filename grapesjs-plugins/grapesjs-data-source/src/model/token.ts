@@ -268,34 +268,6 @@ export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (
   }
 }
 
-/**
- * Utility function to shallow compare two objects
- * Used to compare options of tree items
- */
-export function getOptionObject(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): { error: boolean, result: PropertyOptions | undefined } {
-  // Handle the case where one or both are undefined or empty
-  if(!option1 && !option2) return { error: false, result: undefined }
-  if(isEmpty(option1) && isEmpty(option2)) return { error: false, result: undefined }
-  // Handle the case where one is undefined or empty and the other is not
-  if(!option1 || !option2) return { error: true, result: undefined }
-  if(isEmpty(option1) || isEmpty(option2)) return { error: true, result: undefined }
-
-  const keys1 = Object.keys(option1)
-  const keys2 = Object.keys(option2)
-
-  if (keys1.length !== keys2.length) {
-    return { error: true, result: undefined }
-  }
-
-  for (const key of keys1) {
-    if (option1[key] !== option2[key]) {
-      return { error: true, result: undefined }
-    }
-  }
-
-  return { error: false, result: option1 }
-}
-
 function isJson(str: string) {
   if(typeof str !== 'string') return false
   if(str.length === 0) return false
@@ -333,4 +305,20 @@ export function buildArgs(options: PropertyOptions | undefined): string {
   // Valid args for GraphQL canot be just ()
   const validArgs = args === '()' ? '' : args
   return validArgs
+}
+
+/**
+ * Name under which a field is queried and read back in the data
+ * A field with arguments gets a GraphQL alias built from them, so the same
+ * field with other arguments (e.g. two loops on one collection) gets its own result
+ * A field without arguments keeps its name
+ */
+export function getFieldAlias(token: { fieldId: string, options?: PropertyOptions }): string {
+  const sorted = token.options && Object.fromEntries(Object.entries(token.options).sort(([a], [b]) => a.localeCompare(b)))
+  const args = buildArgs(sorted)
+  if (!args) return token.fieldId
+  // djb2 hash: short, stable, and a valid GraphQL name in base 36
+  let hash = 5381
+  for (let i = 0; i < args.length; i++) hash = ((hash * 33) ^ args.charCodeAt(i)) >>> 0
+  return `${token.fieldId}_${hash.toString(36)}`
 }
