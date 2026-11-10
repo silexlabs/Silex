@@ -49,7 +49,7 @@ export function isCmsPage(page: Page): boolean {
   return getPageExpressions(page).length > 0 || getDataSettings(page).length > 0
 }
 
-export function findPage(editor: Editor, path: string): Page | undefined {
+function findPage(editor: Editor, path: string): Page | undefined {
   return editor.Pages.getAll().find(page => `/${getPageSlug(page.getName())}.html` === path)
 }
 
@@ -62,7 +62,7 @@ function usesHiddenBodyState(expression: Expression, page: Page): boolean {
   return !!findToken(expression, token => token.type === 'state' && token.componentId === getPersistantId(body) && !isPageState(token.storedStateId) && !!getState(body, token.storedStateId, true)?.hidden)
 }
 
-export function checkSupported(page: Page, ssgId: SsgId): Problem[] {
+function checkSupported(page: Page, ssgId: SsgId): Problem[] {
   const ssg = ssgName(ssgId)
   const settings = (page.get('settings') ?? {}) as Silex11tyPluginWebsiteSettings
   const name = page.getName()

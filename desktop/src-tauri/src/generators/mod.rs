@@ -18,14 +18,16 @@ mod zola;
 const GITIGNORE: &str = ".gitignore";
 /// Where the built website goes, which is not part of the website
 pub(crate) const BUILD_OUTPUT: &str = "_site/";
+/// Where it is built on this computer, with the data of the CMS
+const BUILD_STAGING: &str = ".silex-staging/";
 
-/// Eleventy and Hugo are built by the CI of the forge
+/// Only Zola builds on this computer, the CI of the forge builds the others
 pub fn build(site: &Path, ssg: Option<Ssg>, job: &Job) -> Result<Option<PathBuf>, String> {
     match ssg {
         Some(Ssg::Zola) => {
             ignore_build_output(site)?;
             let output = site.join(BUILD_OUTPUT);
-            zola::build(site, &output, job)?;
+            zola::build(site, &site.join(BUILD_STAGING), &output, job)?;
             Ok(Some(output))
         }
         Some(Ssg::Eleventy | Ssg::Hugo) | None => Ok(None),
@@ -45,19 +47,25 @@ pub fn build_commands(ssg: Option<Ssg>) -> Vec<String> {
 /// the site in its own history.
 pub fn ignore_build_output(site: &Path) -> Result<(), String> {
     let path = site.join(GITIGNORE);
-    let current = std::fs::read_to_string(&path).unwrap_or_default();
-    if current.lines().any(|line| {
-        line.trim() == BUILD_OUTPUT.trim_end_matches('/') || line.trim() == BUILD_OUTPUT
-    }) {
+    let mut content = std::fs::read_to_string(&path).unwrap_or_default();
+    let missing: Vec<&str> = [BUILD_OUTPUT, BUILD_STAGING]
+        .into_iter()
+        .filter(|folder| {
+            !content
+                .lines()
+                .any(|line| line.trim() == folder.trim_end_matches('/') || line.trim() == *folder)
+        })
+        .collect();
+    if missing.is_empty() {
         return Ok(());
     }
-
-    let mut content = current;
     if !content.is_empty() && !content.ends_with('\n') {
         content.push('\n');
     }
-    content.push_str(BUILD_OUTPUT);
-    content.push('\n');
+    for folder in missing {
+        content.push_str(folder);
+        content.push('\n');
+    }
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 

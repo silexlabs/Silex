@@ -50,6 +50,11 @@ export interface TemplateSyntax {
 const NUMBER_TYPES = ['Int', 'Float']
 export const DECIMAL = /^-?\d+(\.\d+)?$/
 
+// The name a template gives to the data of a source
+export function dataSourceName(dataSourceId: string): string {
+  return `ds_${dataSourceId}`
+}
+
 export function hasNumberType(typeIds: string[]): boolean {
   return typeIds.some(typeId => NUMBER_TYPES.includes(typeId))
 }
@@ -98,7 +103,7 @@ export function getTemplateExpression(expression: Expression, language: Expressi
       }
       if (index === 0) {
         if (!token.dataSourceId) throw new Error(`The field "${token.label ?? token.fieldId}" has no data source`)
-        base = language.variable(`ds_${token.dataSourceId}`)
+        base = language.variable(dataSourceName(token.dataSourceId))
       }
       if (filtered && language.fieldOfFiltered) base = language.fieldOfFiltered(base)
       filtered = false

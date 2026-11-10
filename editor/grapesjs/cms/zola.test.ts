@@ -39,7 +39,7 @@ function addCollectionPage(permalink: string) {
   return page
 }
 
-test('Pages without data are copied to static/, the error page too', () => {
+test('Pages without data are copied to static/', () => {
   const ssg = zola(editor)
   expect(ssg.transformPath!('/about.html', ClientSideFileType.HTML)).toBe('/static/about.html')
   expect(ssg.transformPath!('/css/about.css', ClientSideFileType.CSS)).toBe('/static/css/about.css')
@@ -53,6 +53,12 @@ test('A collection page whose items end with .html is refused', () => {
 test('A collection page whose permalink uses another filter is refused', () => {
   addCollectionPage(itemPermalink({ type: 'filter', id: 'math.Add', label: 'add', options: {} }))
   expect(zola(editor).check!().map(({ message }) => message).join('\n')).toMatch(/Permalink made of something else/)
+})
+
+test('A collection page whose list goes through a filter is refused', () => {
+  const page = addCollectionPage(itemPermalink())
+  page.set('settings', { ...page.get('settings'), eleventyPageData: JSON.stringify([...JSON.parse(pageData), { type: 'filter', id: 'reverse', label: 'reverse', options: {} }]) })
+  expect(zola(editor).check!().map(({ message }) => message).join('\n')).toMatch(/Page data made of something else/)
 })
 
 test('Like Eleventy, the address of an item gets a slash at each end', () => {

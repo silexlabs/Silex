@@ -39,7 +39,6 @@ pub fn download_lines(archives: &[Archive]) -> Vec<String> {
     ]
 }
 
-/// Download a program, then run it with these arguments, if the condition holds
 pub fn run_if(condition: &str, archives: &[Archive], args: &str) -> Vec<String> {
     let run = download_lines(archives)
         .into_iter()

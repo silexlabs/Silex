@@ -17,7 +17,7 @@
 
 import type { Component } from 'grapesjs'
 import { BinaryOperator, Expression, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
-import { DECIMAL, EchoContext, getTemplateExpression, hasNumberType, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
+import { DECIMAL, EchoContext, getTemplateExpression, hasNumberType, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition, dataSourceName } from './render'
 import type { HugoFilter } from './hugo-filters'
 
 const POSITIVE_INTEGER = /^\d+$/
@@ -31,7 +31,7 @@ export function stateVariable(component: Component, stateId: StateId): string {
 }
 
 export function dataSourceVariable(dataSourceId: string): string {
-  return goVariable(`ds_${dataSourceId}`)
+  return goVariable(dataSourceName(dataSourceId))
 }
 
 function goString(value: string): string {

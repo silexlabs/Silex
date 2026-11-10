@@ -17,10 +17,10 @@
 
 import type { Component } from 'grapesjs'
 import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
-import { DECIMAL, EchoContext, getTemplateExpression, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
+import { DECIMAL, EchoContext, dataSourceName, getTemplateExpression, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
 import type { TeraFilter } from './tera-filters'
+import { INTEGER } from './slice'
 
-const INTEGER = /^-?\d+$/
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/
 const KEYWORDS = ['true', 'false', 'True', 'False', 'and', 'or', 'not', 'in', 'is', 'none', 'None']
 
@@ -58,7 +58,7 @@ export function stateVariable(component: Component, stateId: StateId): string {
 }
 
 export function dataSourceVariable(dataSourceId: string): string {
-  return teraVariable(`ds_${dataSourceId}`)
+  return teraVariable(dataSourceName(dataSourceId))
 }
 
 // Tera has no \u escape, which JSON.stringify writes for control characters
@@ -146,9 +146,9 @@ export function getTeraExpression(component: Component, expression: Expression, 
 
 function escape(context: EchoContext): string {
   switch (context) {
-  case EchoContext.TEXT:
-  case EchoContext.STYLE: return ' | safe'
+  case EchoContext.TEXT: return ' | safe'
   // Like Liquid, keep the HTML entities of the CMS and only close the attribute
+  case EchoContext.STYLE:
   case EchoContext.ATTRIBUTE:
   case EchoContext.URL: return ' | str | replace(from=\'"\', to="&quot;") | safe'
   }

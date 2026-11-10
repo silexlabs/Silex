@@ -17,9 +17,8 @@
 
 import { Filter, getFilters } from '@silexlabs/grapesjs-data-source'
 import type { TeraOptions } from './tera'
-import { SLICE_ALL_LENGTH, getSliceOptions } from './slice'
+import { INTEGER, SLICE_ALL_LENGTH, getSliceOptions } from './slice'
 
-const INTEGER = /^-?\d+$/
 
 /**
  * A Liquid filter of the editor which Zola can publish, same id, options and preview

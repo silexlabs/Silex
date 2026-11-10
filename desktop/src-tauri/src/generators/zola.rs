@@ -58,24 +58,59 @@ const ZOLA: &[Archive] = &[
     },
 ];
 
-// Two publications of the same website at once would each empty the built folder of the other
+// Zola keeps the site it builds in globals of the process: one build at a time, whatever the website
 static BUILDING: Mutex<()> = Mutex::new(());
 
-pub fn build(site: &Path, output: &Path, job: &Job) -> Result<(), String> {
-    let public = site.join(PUBLIC_FOLDER);
+/// The data and the pages of the CMS are written in `staging`, so that none of them is versioned with the website
+pub fn build(site: &Path, staging: &Path, output: &Path, job: &Job) -> Result<(), String> {
+    let _building = held(&BUILDING);
+    mirror(&site.join(PUBLIC_FOLDER), staging).map_err(|e| {
+        message::explained(
+            "Silex could not prepare the build of your website.",
+            &e.to_string(),
+            &[],
+        )
+    })?;
     job.step("Fetching the data of your website");
-    freeze(&public).map_err(|e| {
+    freeze(staging).map_err(|e| {
         message::explained("Silex could not fetch the data of your website.", &e, &[])
     })?;
     job.step("Building your website with Zola");
-    zola(site, &public, output)
+    zola(site, staging, output)
         .map_err(|e| message::explained("Silex could not build your website with Zola.", &e, &[]))
 }
 
-fn freeze(public: &Path) -> Result<(), String> {
+/// The published files, linked rather than copied: a website heavy with images is not copied at each build
+///
+/// gqlfreez and Zola never write into a file they did not create, so
+/// the published files stay as the editor wrote them.
+fn mirror(from: &Path, to: &Path) -> std::io::Result<()> {
+    if to.exists() {
+        std::fs::remove_dir_all(to)?;
+    }
+    std::fs::create_dir_all(to)?;
+    link_all(from, to)
+}
+
+fn link_all(from: &Path, to: &Path) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(from)? {
+        let entry = entry?;
+        let target = to.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            std::fs::create_dir(&target)?;
+            link_all(&entry.path(), &target)?;
+        } else if std::fs::hard_link(entry.path(), &target).is_err() {
+            // FAT and exFAT have no links
+            std::fs::copy(entry.path(), &target)?;
+        }
+    }
+    Ok(())
+}
+
+fn freeze(root: &Path) -> Result<(), String> {
     use gqlfreez::options::defaults;
     let options = gqlfreez::Options {
-        root: public.to_path_buf(),
+        root: root.to_path_buf(),
         glob: defaults::GLOB.to_string(),
         endpoint: None,
         headers: Vec::new(),
@@ -106,7 +141,7 @@ fn freeze(public: &Path) -> Result<(), String> {
     }) {
         Some((source, e)) => Err(format!(
             "{}: {e}",
-            source.strip_prefix(public).unwrap_or(&source).display()
+            source.strip_prefix(root).unwrap_or(&source).display()
         )),
         None => Ok(()),
     }
@@ -148,11 +183,10 @@ pub fn build_commands() -> Vec<String> {
     .concat()
 }
 
-fn zola(site: &Path, public: &Path, output: &Path) -> Result<(), String> {
+fn zola(site: &Path, root: &Path, output: &Path) -> Result<(), String> {
     let config = config(site)?;
-    let _building = held(&BUILDING);
     catch_unwind(AssertUnwindSafe(|| -> errors::Result<()> {
-        let mut site = site::Site::new(public, &config)?;
+        let mut site = site::Site::new(root, &config)?;
         site.set_output_path(output);
         site.load()?;
         site.build()

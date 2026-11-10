@@ -24,6 +24,7 @@ import type { Problem, Ssg } from './ssg'
 import { dataSourceVariable, resetTeraVariables, stateVariable, teraString, teraSyntax } from './tera'
 import { getTeraFilters } from './tera-filters'
 import { cmsSsg, getEndpoint, getPageData, getPermalinkExpression, isCmsPage } from './cms-page'
+import { ensureLeadingAndTrailingSlash } from './permalink'
 
 // Frozen by gqlfreez before the build, next to the queries
 const DATA_FOLDER = 'data/silex'
@@ -64,21 +65,11 @@ function getPathParts(body: Component, expression: Expression): PathPart[] | nul
   return parts
 }
 
-function textOf(part: PathPart | undefined): string | null {
-  return part && 'text' in part ? part.text : null
-}
-
-// Like Eleventy, Silex adds a slash at each end of the address of an item
-function getItemPath(page: Page): PathPart[] | null {
+// The address of each item, in Mustache for gqlfreez, with Eleventy's slashes
+function getItemPath(page: Page): string | null {
   const parts = getPathParts(page.getMainComponent(), getPermalinkExpression(page))
   if (!parts) return null
-  const first = textOf(parts[0])
-  const last = textOf(parts.at(-1))
-  return [
-    ...first?.startsWith('/') ? [] : [{ text: '/' }],
-    ...parts,
-    ...last?.endsWith('/') || last?.endsWith('.html') ? [] : [{ text: '/' }],
-  ]
+  return ensureLeadingAndTrailingSlash(parts.map(part => 'text' in part ? part.text : `{{item.${part.field.join('.')}}}`).join(''))
 }
 
 function getList(page: Page): { dataSourceId: string, fields: string[] } {
@@ -102,7 +93,9 @@ function check(editor: Editor, page: Page): Problem[] {
   if (getPageData(page).length) {
     const path = getItemPath(page)
     if (getPermalinkExpression(page).length && !path) problems.push(`Page "${name}" has a Permalink made of something else than fixed texts and fields of the Page item, which publishing with Zola does not support yet`)
-    if (textOf(path?.at(-1))?.endsWith('.html')) problems.push(`Page "${name}" has a Permalink which ends with .html, publishing with Zola would put each item in a folder of this name. ${toChange}`)
+    const [first, ...fields] = getPageData(page)
+    if (first.type !== 'property' || !first.dataSourceId || fields.some(token => token.type !== 'property')) problems.push(`Page "${name}" has Page data made of something else than fields of a data source, which publishing with Zola does not support yet`)
+    if (path?.endsWith('.html')) problems.push(`Page "${name}" has a Permalink which ends with .html, publishing with Zola would put each item in a folder of this name. ${toChange}`)
   } else if (getTemplate(slug) !== NOT_FOUND_TEMPLATE && getUrl(editor, slug).endsWith('.html')) {
     problems.push(`Page "${name}" has an address which ends with .html, publishing with Zola would put it in a folder of this name. ${toChange}`)
   }
@@ -116,8 +109,6 @@ function getSection(slug: string): string {
 // gqlfreez writes a page in content/ for each item of the list
 function getCollection(slug: string, page: Page, list: string[]): string {
   const path = getItemPath(page)!
-    .map(part => 'text' in part ? part.text : `{{item.${part.field.join('.')}}}`)
-    .join('')
   return [
     `    ${slug}.graphql:`,
     `      list: ${JSON.stringify(list.join('.'))}`,

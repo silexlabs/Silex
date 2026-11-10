@@ -21,8 +21,10 @@ export function getSliceOptions(options: unknown[]): string[] {
   ]
 }
 
+export const INTEGER = /^-?\d+$/
+
 function isNumber(value: string): boolean {
-  return /^-?\d+$/.test(value)
+  return INTEGER.test(value)
 }
 
 function unquoteNumber(option: string): string {
