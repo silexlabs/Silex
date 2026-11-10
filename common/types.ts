@@ -143,7 +143,7 @@ export interface WebsiteSettings {
   'og:title'?: string,
   'og:description'?: string,
   'og:image'?: string,
-  ssg?: SsgId, // Written at the first publication, from the default in the client config
+  ssg?: SsgId, // Absent means automatic, the default in the client config
 }
 
 export type SsgId = 'eleventy' | 'hugo' | 'zola'

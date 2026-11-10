@@ -513,7 +513,7 @@ function saveSettings(
 ): void {
   const data = formSettings()
   const { name, ...settings } = data
-  // The SSG has no field in the form, it is set at the first publication
+  // The SSG has no field in the form, a website which has one keeps it
   const { ssg } = (model.get('settings') ?? {}) as WebsiteSettings
   storeSettings(editor, model, () => model.set({
     settings: {

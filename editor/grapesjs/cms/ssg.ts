@@ -20,7 +20,6 @@ import { DataSourceId, Expression, Filter, IDataSource, StoredToken, addDataSour
 import type { ClientConfig } from '../../config'
 import { ClientEvent } from '../../events'
 import { ClientSideFileType, type PublicationData, type SsgId, type WebsiteSettings } from '~/common/types'
-import { setSettingsOf } from '../settings'
 import { linkToPermalink } from './permalink'
 import { PAGE_ITEM_LABEL, isPageState, type PageStateId } from './states'
 import { getSettingLabel } from './settings-keys'
@@ -114,7 +113,6 @@ export function getSsgId(editor: Editor, config: ClientConfig): SsgId {
 export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgId, Ssg>) {
   // Kept after the publication: a second click on publish ends with an error while the first one still renders
   let ssg: Ssg | undefined
-  let unsaved: SsgId | null = null
   let editorFilters: Filter[] | null = null
   // Kept to put them back when the SSG changes again
   const ssgBlocks = new Map<string, Block>()
@@ -149,10 +147,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
     const ssgId = getSsgId(editor, config)
     ssg = ssgs[ssgId]
     report(editor, ssgId, [...checkAvailable(editor, ssgId, ssg.pageStates), ...checkBlocks(editor, ssgId, ssgs, id => (editor.Blocks.get(id) ?? ssgBlocks.get(id))?.getLabel() ?? id), ...(ssg.check?.() ?? [])])
-    if (!siteSettings.ssg) {
-      siteSettings.ssg = ssgId
-      unsaved = ssgId
-    }
+    siteSettings.ssg = ssgId
   })
   config.addPublicationTransformers({
     renderComponent: (component: Component, toHtml: () => string) => ssg?.renderComponent?.(component, toHtml),
@@ -161,10 +156,5 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   })
   editor.on(ClientEvent.PUBLISH_PAGE, data => ssg?.onPage?.(data))
   editor.on(ClientEvent.PUBLISH_DATA, ({ data }: { data: PublicationData }) => ssg?.onData?.(data))
-  editor.on(ClientEvent.PUBLISH_END, ({ success }: { success: boolean }) => {
-    ssg?.onEnd?.()
-    // The website keeps the SSG its repository and CI were made for, whatever the default becomes
-    if (success && unsaved) setSettingsOf(editor, editor.getModel(), { ssg: unsaved })
-    unsaved = null
-  })
+  editor.on(ClientEvent.PUBLISH_END, () => ssg?.onEnd?.())
 }
