@@ -154,7 +154,7 @@ export default function (config: ServerConfig): Router {
 
       res.json({
         url: await hostingConnector.getUrl(session, websiteId),
-        job: await hostingConnector.publish(session, websiteId, filesList, jobManager),
+        job: await hostingConnector.publish(session, websiteId, filesList, jobManager, { ssg: data.settings?.ssg }),
       } as ApiPublicationPublishResponse)
     } catch (err) {
       console.error('Error publishing the website', err)

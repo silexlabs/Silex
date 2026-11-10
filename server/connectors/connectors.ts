@@ -17,7 +17,7 @@
 
 import { Readable } from 'stream'
 import { ServerConfig } from '../config.js'
-import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions } from '~/common/types.js'
+import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions, SsgId } from '~/common/types.js'
 import { JobManager } from '../jobs.js'
 
 /**
@@ -97,11 +97,15 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
   setWebsiteMeta(session: Session, websiteId: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
 }
 
+export interface PublicationOptions {
+  ssg?: SsgId
+}
+
 /**
  * Hosting connectors are used to publish the website
  */
 export interface HostingConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
-  publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[], jobManager: JobManager): Promise<JobData> // Pass the jobManager as plugins do not neccessarily share the same module instance
+  publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[], jobManager: JobManager, options?: PublicationOptions): Promise<JobData> // Pass the jobManager as plugins do not neccessarily share the same module instance
   getUrl(session: Session, websiteId: WebsiteId): Promise<string>
 }
 

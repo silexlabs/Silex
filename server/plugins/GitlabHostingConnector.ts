@@ -24,12 +24,12 @@
 
 import dedent from 'dedent'
 import GitlabConnector, { GitlabOptions, GitlabSession, computeGitBlobSha } from './GitlabConnector.js'
-import { HostingConnector, ConnectorFile } from '~/server/connectors/connectors.js'
-import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '~/common/types.js'
+import { HostingConnector, ConnectorFile, PublicationOptions } from '~/server/connectors/connectors.js'
+import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData, SsgId } from '~/common/types.js'
 import { JobManager } from '~/server/jobs.js'
 import { ServerConfig } from '~/server/config.js'
 import { setTimeout } from 'timers/promises'
-import { BUILD_JSON_PATH, BUILD_SH_PATH, DEFAULT_BUILD_STEPS, generateBuildSh, parseBuildSteps } from '~/server/utils/buildPipeline.js'
+import { BUILD_JSON_PATH, BUILD_SH_PATH, DEFAULT_BUILD_STEPS, generateBuildSh, generatorFiles, parseBuildSteps } from '~/server/utils/buildPipeline.js'
 
 const waitTimeOut = 5000 /* for wait loop waiting for job to appear */
 const jobPollInterval = 10000 /* poll job status every 10 seconds */
@@ -188,7 +188,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
    * Decisions are made from the SHAs of the repository listing, so an
    * up-to-date site costs no extra request
    */
-  async setupPipeline(session: GitlabSession, websiteId: WebsiteId, existingFiles: Map<string, string>, job: PublicationJobData): Promise<void> {
+  async setupPipeline(session: GitlabSession, websiteId: WebsiteId, existingFiles: Map<string, string>, job: PublicationJobData, ssg?: SsgId): Promise<void> {
     const log = (message: string) => {
       job.message = message
       job.logs[0].push(message)
@@ -204,7 +204,13 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       steps = parseBuildSteps((await this.readFile(session, websiteId, BUILD_JSON_PATH)).toString())
     }
 
-    const buildSh = generateBuildSh(steps)
+    for (const { path, content } of generatorFiles(ssg)) {
+      if (existingFiles.has(path)) continue
+      log(`Creating ${path}...`)
+      await this.createFile(session, websiteId, path, content)
+    }
+
+    const buildSh = generateBuildSh(steps, ssg)
     const shSha = existingFiles.get(BUILD_SH_PATH)
     if (!shSha) {
       log(`Creating ${BUILD_SH_PATH}...`)
@@ -229,7 +235,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     }
   }
 
-  async publish(session: GitlabSession, websiteId: WebsiteId, files: ConnectorFile[], {startJob, jobSuccess, jobError}: JobManager): Promise<JobData> {
+  async publish(session: GitlabSession, websiteId: WebsiteId, files: ConnectorFile[], {startJob, jobSuccess, jobError}: JobManager, options?: PublicationOptions): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
@@ -237,7 +243,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     let existingFiles: Map<string, string>
     try {
       existingFiles = await this.ls({ session, websiteId, recursive: true })
-      await this.setupPipeline(session, websiteId, existingFiles, job)
+      await this.setupPipeline(session, websiteId, existingFiles, job, options?.ssg)
     } catch (e) {
       jobError(job.jobId, e.message)
       return job
