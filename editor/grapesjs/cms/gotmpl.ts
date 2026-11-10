@@ -16,7 +16,7 @@
  */
 
 import type { Component } from 'grapesjs'
-import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getPersistantId, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFieldAlias, getFilters, getPersistantId, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { EchoContext, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
 import type { HugoFilter } from './hugo-filters'
 
@@ -82,7 +82,7 @@ function goOptions(component: Component, filter: StoredFilter, input: Expression
     if (fixed === null) return guard(getGoExpression(component, expression(key)))
     return literal(fixed) ?? fallback
   }
-  const path = (key: string) => expression(key).map(token => token.type === 'property' ? token.fieldId : '')
+  const path = (key: string) => expression(key).map(token => token.type === 'property' ? getFieldAlias(token) : '')
   const parents = (key: string) => path(key).slice(0, -1).map((_, index) => goString(path(key).slice(0, index + 1).join('.')))
   return {
     text: (key, fallback) => option(key, goString(fallback), fixed => fixed === '' ? null : goString(fixed), go => `(string ${go})`),
@@ -131,7 +131,7 @@ export function getGoExpression(component: Component, expression: Expression): s
         if (!token.dataSourceId) throw new Error(`The field "${token.label ?? token.fieldId}" has no data source`)
         base = dataSourceVariable(token.dataSourceId as string)
       }
-      fields.push(token.fieldId)
+      fields.push(getFieldAlias(token))
       break
     case 'filter':
       if (index === 0) throw new Error('Expression cannot start with a filter')

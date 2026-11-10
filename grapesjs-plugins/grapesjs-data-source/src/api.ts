@@ -362,6 +362,7 @@ export function toExpression(json: unknown | string): Expression | null {
 
 export { fixedText, filterText, findToken } from './utils'
 export { isString } from './filters/liquid'
+export { getFieldAlias } from './model/token'
 
 // ===============================
 // UTILITY FUNCTIONS

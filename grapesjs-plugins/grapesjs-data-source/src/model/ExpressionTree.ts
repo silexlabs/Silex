@@ -18,7 +18,7 @@
 import { Page } from 'grapesjs'
 import { ComponentExpression, DataSourceId, Expression, IDataSource, Property, Tree } from '../types'
 import { getStates } from './state'
-import { getOptionObject } from './token'
+import { getFieldAlias } from './token'
 import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
 import { resolveStateExpression } from './expressionEvaluator'
 import { DataSourceManagerState } from './dataSourceManager'
@@ -167,9 +167,9 @@ export function toTrees(
   return expressions
     // From Expression to Tree
     .flatMap(expression => getTrees(manager, expression, dataSourceId))
-    // Group by root token
+    // Group by root token, a field with other arguments is another root
     .reduce((acc: Tree[][], tree: Tree) => {
-      const existing = acc.find(t => t[0].token.fieldId === tree.token.fieldId && (!tree.token.dataSourceId || t[0].token.dataSourceId === tree.token.dataSourceId))
+      const existing = acc.find(t => getFieldAlias(t[0].token) === getFieldAlias(tree.token) &&(!tree.token.dataSourceId || t[0].token.dataSourceId === tree.token.dataSourceId))
       if(existing) {
         existing.push(tree)
       } else {
@@ -210,50 +210,28 @@ export function mergeTrees(tree1: Tree, tree2: Tree): Tree {
     throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
   }
 
-  // Check if there are children with the same fieldId but different options
-  // FIXME: we should use graphql aliases: https://graphql.org/learn/queries/#aliases but then it changes the variable name in the result
-  const errors = tree1.children
-    .filter(child1 => tree2.children.find(child2 =>
-      child1.token.fieldId === child2.token.fieldId
-      && getOptionObject(child1.token.options, child2.token.options).error
-    ))
-    .map(child1 => {
-      const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
-      return `${child1.token.fieldId} appears twice with different options: ${JSON.stringify(child1.token.options)} vs ${JSON.stringify(child2?.token.options)}`
-    })
-
-  if(errors.length > 0) {
-    console.error('Unable to merge trees', errors)
-    throw new Error(`Unable to build GraphQL query: unable to merge trees: \n* ${errors.join('\n* ')}`)
-  }
-
+  // Children with the same field but other arguments have another alias, so
+  // they stay apart and each one reads its own result
   const different = tree1.children
-    .filter(child1 => !tree2.children.find(child2 =>
-      child1.token.fieldId === child2.token.fieldId
-      && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-      && !getOptionObject(child1.token.options, child2.token.options).error
-    ))
+    .filter(child1 => !tree2.children.find(child2 => isSameField(child1, child2)))
     .concat(tree2.children
-      .filter(child2 => !tree1.children.find(child1 =>
-        child1.token.fieldId === child2.token.fieldId
-        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-        && !getOptionObject(child1.token.options, child2.token.options).error
-      ))
+      .filter(child2 => !tree1.children.find(child1 => isSameField(child1, child2)))
     )
   const same = tree1.children
-    .filter(child1 => tree2.children.find(child2 =>
-      child1.token.fieldId === child2.token.fieldId
-      && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-      && !getOptionObject(child1.token.options, child2.token.options).error
-    ))
+    .filter(child1 => tree2.children.find(child2 => isSameField(child1, child2)))
 
   return {
     token: tree1.token,
     children: different
       .concat(same
         .map(child1 => {
-          const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
+          const child2 = tree2.children.find(child2 => isSameField(child1, child2))
           return mergeTrees(child1, child2!)
         })),
   }
+}
+
+function isSameField(tree1: Tree, tree2: Tree): boolean {
+  return getFieldAlias(tree1.token) === getFieldAlias(tree2.token)
+    && tree1.token.typeIds.join(',') === tree2.token.typeIds.join(',')
 }

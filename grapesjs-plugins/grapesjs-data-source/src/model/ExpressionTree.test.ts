@@ -3,7 +3,9 @@
  */
 
 import grapesjs, { Editor } from 'grapesjs'
-import { getTrees } from './ExpressionTree'
+import { getTrees, toTrees } from './ExpressionTree'
+import { getFieldAlias } from './token'
+import { EvaluationContext, evaluateExpressionTokens } from './expressionEvaluator'
 import { setState } from './state'
 import { FIXED_TOKEN_ID, Property, Filter, State, Tree, Type } from '../types'
 import { DataSourceManagerState } from './dataSourceManager'
@@ -105,4 +107,59 @@ test('a token of another data source is skipped, not fatal', () => {
   const trees = getTrees(mockManager(), { expression: [otherDsField, countries], component }, DS)
   // otherDsField is skipped; countries (this source) is still collected
   expect(flatten(trees)).toEqual([{ id: 'countries', children: [] }])
+})
+
+test('getFieldAlias: the field name without arguments, a stable alias with them', () => {
+  expect(getFieldAlias(countries)).toBe('countries')
+  expect(getFieldAlias({ fieldId: 'countries', options: { filter: '' } })).toBe('countries')
+  const alias = getFieldAlias({ fieldId: 'countries', options: { filter: 'a', first: '10' } })
+  expect(alias).toMatch(/^countries_[0-9a-z]+$/)
+  // Same arguments in another order: same alias
+  expect(getFieldAlias({ fieldId: 'countries', options: { first: '10', filter: 'a' } })).toBe(alias)
+  expect(getFieldAlias({ fieldId: 'countries', options: { filter: 'b', first: '10' } })).not.toBe(alias)
+})
+
+test('two loops on one field with other arguments stay apart (#1941)', () => {
+  const { component } = comp()
+  const europe: Property = { ...countries, options: { filter: '{continent: {eq: "EU"}}' } }
+  const trees = toTrees(mockManager(), [
+    { expression: [countries, name], component },
+    { expression: [europe, name], component },
+    { expression: [{ ...europe }, code], component },
+  ], DS)
+  // The two loops on europe are merged, the loop on all countries is apart
+  expect(trees.map(tree => getFieldAlias(tree.token))).toEqual(['countries', getFieldAlias(europe)])
+  expect(trees[1].token.options).toEqual(europe.options)
+  expect(flatten(trees)).toEqual([
+    { id: 'countries', children: [{ id: 'name', children: [] }] },
+    { id: 'countries', children: [{ id: 'name', children: [] }, { id: 'code', children: [] }] },
+  ])
+})
+
+test('one child field with other arguments is queried twice, not an error', () => {
+  const { component } = comp()
+  const frenchName: Property = { ...name, options: { lang: '"fr"' } }
+  const trees = toTrees(mockManager(), [
+    { expression: [countries, name], component },
+    { expression: [countries, frenchName], component },
+  ], DS)
+  expect(trees).toHaveLength(1)
+  expect(trees[0].children.map(child => getFieldAlias(child.token))).toEqual(['name', getFieldAlias(frenchName)])
+})
+
+test('the preview reads a field with arguments under its alias', () => {
+  const { component } = comp()
+  const europe: Property = { ...countries, options: { filter: '{continent: {eq: "EU"}}' } }
+  const context: EvaluationContext = {
+    dataSources: [],
+    filters: [],
+    component,
+    resolvePreviewIndex: false,
+    previewData: { [DS]: {
+      countries: [{ name: 'Afghanistan' }, { name: 'France' }],
+      [getFieldAlias(europe)]: [{ name: 'France' }],
+    } },
+  }
+  expect(evaluateExpressionTokens([countries], context)).toEqual([{ name: 'Afghanistan' }, { name: 'France' }])
+  expect(evaluateExpressionTokens([europe], context)).toEqual([{ name: 'France' }])
 })
