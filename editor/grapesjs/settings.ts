@@ -513,8 +513,8 @@ function saveSettings(
 ): void {
   const data = formSettings()
   const { name, ...settings } = data
-  // The SSG has no field in the form, a website which has one keeps it
-  const { ssg } = (model.get('settings') ?? {}) as WebsiteSettings
+  // The SSG field belongs to the CMS, without it a website keeps its SSG
+  const { ssg } = el.querySelector('[name="ssg"]') ? {} : (model.get('settings') ?? {}) as WebsiteSettings
   storeSettings(editor, model, () => model.set({
     settings: {
       ...data,

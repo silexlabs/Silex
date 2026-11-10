@@ -1,9 +1,11 @@
 import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html, nothing } from 'lit-html'
+import { live } from 'lit-html/directives/live.js'
 import { COMMAND_ADD_DATA_SOURCE } from '@silexlabs/grapesjs-data-source'
 import { Editor } from 'grapesjs'
 import { cmdAddSection } from '../settings'
+import { ssgName } from './ssg'
 
 export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy: () => boolean): void {
   editor.runCommand(cmdAddSection, {
@@ -17,6 +19,9 @@ export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy:
           #settings-${CMS_SETTINGS_SECTION_ID} label {
             display: block;
             margin-bottom: 10px;
+          }
+          .ssg-field input[type="radio"] {
+            appearance: auto;
           }
           .add-ds-btn {
             margin-left: auto;
@@ -61,6 +66,16 @@ export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy:
             </div>
             </details>
             ` : nothing}
+            <details class="silex-more ssg-field" .open=${live(false)}>
+            <summary>Static site generator: ${settings.ssg ? ssgName(settings.ssg) : 'Automatic'}</summary>
+            <div class="silex-help">
+              <p>The program that builds your published website. If you are not sure, keep Automatic. Eleventy needs Node.js on your computer to publish from Silex Desktop to a local folder or by FTP.</p>
+            </div>
+            <div role="radiogroup" aria-label="Static site generator">
+              <label><input type="radio" name="ssg" value="" .checked=${live(!settings.ssg)}> Automatic (recommended): Zola in Silex Desktop, Eleventy in the online editor</label>
+              ${(['eleventy', 'zola'] as const).map(id => html`<label><input type="radio" name="ssg" value=${id} .checked=${live(settings.ssg === id)}> ${ssgName(id)}</label>`)}
+            </div>
+            </details>
           </div>
           </div>
           `
