@@ -198,6 +198,8 @@ impl Integration for Tea {
         &self,
         _cli: &Path,
         site: &Path,
+        _account: &str,
+        _files: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
         // Only in the CI, so that a local build stays at the root

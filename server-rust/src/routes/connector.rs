@@ -55,7 +55,7 @@ pub struct ConnectorTypeQuery {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectorData {
-    pub connector_id: &'static str,
+    pub connector_id: String,
     #[serde(rename = "type")]
     pub connector_type: ConnectorType,
     pub display_name: String,
@@ -92,8 +92,8 @@ pub const LOCAL_FOLDER: &str = "local-folder";
 const LOCAL_FOLDER_NAME: &str = "File system hosting";
 
 async fn connectors(state: &AppState, connector_type: ConnectorType) -> Vec<ConnectorData> {
-    let local = |connector_id, display_name: &str| ConnectorData {
-        connector_id,
+    let local = |connector_id: &str, display_name: &str| ConnectorData {
+        connector_id: connector_id.to_string(),
         connector_type,
         display_name: display_name.to_string(),
         disable_logout: true,

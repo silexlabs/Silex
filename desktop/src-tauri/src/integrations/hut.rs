@@ -181,6 +181,8 @@ impl Integration for Hut {
         &self,
         _cli: &Path,
         site: &Path,
+        _account: &str,
+        _files: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
         let remote = Remote::of(site).ok_or(super::common::git::NOWHERE_TO_SEND_IT)?;

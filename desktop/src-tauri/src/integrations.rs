@@ -22,7 +22,7 @@ use std::sync::{mpsc, Arc, LazyLock, Mutex, PoisonError, RwLock};
 
 use serde::{Deserialize, Serialize};
 use silex_server::said::Said;
-use silex_server::{OptionsForm, PublicationOptions};
+use silex_server::{Hosting, OptionsForm, PublicationOptions};
 
 use common::git;
 use common::install;
@@ -134,7 +134,68 @@ pub struct Publishing {
     pub urls: Result<Option<integration::Urls>, String>,
 }
 
+/// A place a website is published on, and what publishes it there
+pub struct Host {
+    /// What the editor names it by
+    pub id: String,
+    pub integration: &'static dyn Integration,
+    pub cli: PathBuf,
+    /// The account it is published on, as the user knows it
+    pub account: String,
+}
+
 impl Integrations {
+    /// The hosting the editor names, among those of this website
+    pub fn host(&self, id: &str, site: &Path) -> Option<Host> {
+        self.hosts(site).find(|host| host.id == id)
+    }
+
+    /// Where this website can be published, then where it could be with an
+    /// account, and why it cannot yet
+    pub fn hostings(&self, site: &Path) -> Vec<Hosting> {
+        let available = self.hosts(site).map(|host| Hosting {
+            connector_id: host.id,
+            display_name: host.account,
+            options_form: host.integration.options_form(site),
+            unavailable: None,
+        });
+        let wanting_an_account =
+            self.wanting_an_account(Capacity::Deploy, site)
+                .filter_map(|(integration, why)| {
+                    Some(Hosting {
+                        connector_id: integration.id().to_string(),
+                        display_name: integration.account_of(site)?,
+                        options_form: integration.options_form(site),
+                        unavailable: Some(why),
+                    })
+                });
+        available.chain(wanting_an_account).collect()
+    }
+
+    /// A website tied to an account is published there, one tied to none on
+    /// each account the user chose
+    fn hosts<'a>(&'a self, site: &'a Path) -> impl Iterator<Item = Host> + 'a {
+        self.get(Capacity::Deploy, site)
+            .flat_map(move |(integration, cli)| {
+                let host = |id: String, account: String| Host {
+                    id,
+                    integration,
+                    cli: cli.clone(),
+                    account,
+                };
+                match integration.account_of(site) {
+                    Some(account) => vec![host(integration.id().to_string(), account)],
+                    None => self.known[integration.id()]
+                        .accounts
+                        .iter()
+                        .map(|account| {
+                            host(format!("{}:{}", integration.id(), account), account.clone())
+                        })
+                        .collect(),
+                }
+            })
+    }
+
     /// The integrations the user uses that can do this for this website,
     /// with the path of their program
     pub fn get<'a>(
@@ -200,31 +261,37 @@ impl Integrations {
     /// `say` is told each step as it starts, for whoever is waiting on it.
     pub fn publish(
         &self,
-        (integration, cli): (&'static dyn Integration, PathBuf),
+        host: &Host,
         site: &Path,
-        host: &str,
+        files: &Path,
         options: &PublicationOptions,
         say: &dyn Fn(String),
     ) -> Result<Publishing, String> {
+        let Host {
+            integration,
+            cli,
+            account,
+            ..
+        } = host;
         // git pushes with what the user set it up with, which does not need
         // the host to answer
-        let urls = integration.urls(&cli, site, options);
+        let urls = integration.urls(cli, site, options);
         // Scoped rather than set: this runs on a pool thread that the next
         // website to sync inherits
         sentry::with_scope(
             |scope| scope.set_tag("forge", integration.id()),
             || {
-                say(format!("Getting your website ready for {}", host));
-                let prepared = integration.deploy(&cli, site, options)?;
-                say(format!("Sending your website to {}", host));
+                say(format!("Getting your website ready for {}", account));
+                let prepared = integration.deploy(cli, site, account, files, options)?;
                 if integration.capacities().contains(&Capacity::Sync) {
+                    say(format!("Sending your website to {}", account));
                     integration
-                        .push(&cli, site, prepared.tag.as_deref())
+                        .push(cli, site, prepared.tag.as_deref())
                         .map_err(|e| e.to_string())?;
                 }
                 Ok(Publishing {
-                    integration,
-                    cli,
+                    integration: *integration,
+                    cli: cli.clone(),
                     prepared,
                     urls,
                 })

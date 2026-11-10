@@ -21,13 +21,24 @@ pub trait Actions: Send + Sync {
     /// the request rather than from the disk: reading it back from a file
     /// would answer what the last save happened to hold.
     ///
+    /// `hosting_id` is the `connector_id` of the hosting the user chose, and
+    /// `files` the files to put online: those `build` made, or else those the
+    /// editor published.
+    ///
     /// `job` is what the editor follows, and where this says how the
     /// publication ended. A job left open when this returns is ended by the
     /// server, which can only promise that the files were written.
     ///
     /// Nothing is deployed by default, which is how a local-only website runs.
-    fn deploy(&self, website_id: &str, options: &PublicationOptions, job: &crate::jobs::Job) {
-        let _ = (website_id, options, job);
+    fn deploy(
+        &self,
+        website_id: &str,
+        hosting_id: &str,
+        options: &PublicationOptions,
+        files: &std::path::Path,
+        job: &crate::jobs::Job,
+    ) {
+        let _ = (website_id, hosting_id, options, files, job);
     }
 
     /// Build a website out of its published files, before it is deployed.
@@ -142,7 +153,7 @@ impl PublicationOptions {
 #[derive(Debug, Clone)]
 pub struct Hosting {
     /// Which connector publishes it
-    pub connector_id: &'static str,
+    pub connector_id: String,
 
     /// The name of the host, as the user knows it
     pub display_name: String,

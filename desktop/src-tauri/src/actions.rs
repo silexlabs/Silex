@@ -23,7 +23,6 @@ use tokio::sync::watch;
 
 use silex_server::{Hosting, Job, PublicationOptions};
 
-use crate::integrations::common::remote::Remote;
 use crate::integrations::integration::{
     Account, Build, Capacity, Integration, Prepared, SyncError, Synced,
 };
@@ -664,7 +663,14 @@ impl silex_server::Actions for SilexActions {
     /// Sending is not publishing: a repository with its builds turned off
     /// takes every push and serves nothing. The job stays open until the host
     /// has answered.
-    fn deploy(&self, website_id: &str, options: &PublicationOptions, job: &Job) {
+    fn deploy(
+        &self,
+        website_id: &str,
+        hosting_id: &str,
+        options: &PublicationOptions,
+        files: &Path,
+        job: &Job,
+    ) {
         let Some(site) = self.site_path(website_id) else {
             tracing::error!(
                 "Asked to publish a website that is not there: {}",
@@ -683,39 +689,31 @@ impl silex_server::Actions for SilexActions {
         // happens
         // An id the storage refuses leaves the button without an address, and
         // a button without an address is not shown
-        let files = website_id
+        let files_url = website_id
             .parse()
             .map(|website_id| silex_server::published_files_url(&self.data_path, &website_id))
             .unwrap_or_default();
-        let on_this_computer = || Button::secondary(FILES_ON_THIS_COMPUTER, &files);
+        let on_this_computer = || Button::secondary(FILES_ON_THIS_COMPUTER, &files_url);
 
-        let Some(remote) = Remote::of(&site) else {
-            return;
-        };
         job.step("Looking for where your website is kept");
-        let Some((answering, repo)) = crate::integrations::snapshot(&self.integrations)
-            .get(Capacity::Deploy, &site)
-            .next()
-            .and_then(|answering| {
-                let repo = answering.0.repo(&site)?;
-                Some((answering, repo))
-            })
+        let Some(hosting) =
+            crate::integrations::snapshot(&self.integrations).host(hosting_id, &site)
         else {
             job.succeeded(message::explained(
                 "Your website is written on this computer.",
-                &format!(
-                    "No integration on this computer handles {}: your website stays on this computer.",
-                    remote.host
-                ),
+                "No integration on this computer publishes it there: your website stays on this computer.",
                 &[on_this_computer()],
             ));
             return;
         };
-        // The user is told the host they push to, never the software it runs
-        let host = Remote::host_of(&repo).unwrap_or_else(|| repo.clone());
-        if let Some(refusal) = answering
-            .0
-            .refuses(&answering.1, &site, &|step| job.step(step))
+        let host = hosting.account.clone();
+        let repo = hosting
+            .integration
+            .repo(&site)
+            .unwrap_or_else(|| host.clone());
+        if let Some(refusal) = hosting
+            .integration
+            .refuses(&hosting.cli, &site, &|step| job.step(step))
         {
             let (label, url) = refusal.button;
             job.failed(message::explained(
@@ -729,13 +727,15 @@ impl silex_server::Actions for SilexActions {
             .syncer
             .alone(website_id, || {
                 let published = crate::integrations::snapshot(&self.integrations).publish(
-                    answering,
+                    &hosting,
                     &site,
-                    &host,
+                    files,
                     options,
                     &|step| job.step(step),
                 );
-                if published.is_ok() {
+                // Only a push takes the saves along
+                let pushed = hosting.integration.capacities().contains(&Capacity::Sync);
+                if published.is_ok() && pushed {
                     self.syncer.published(website_id);
                 }
                 published
@@ -793,7 +793,7 @@ impl silex_server::Actions for SilexActions {
                     &[on_this_computer()],
                 ))
             }
-            Ok(sent) => watch(job, &site, options, &sent, &files),
+            Ok(sent) => watch(job, &site, options, &sent, &files_url),
         }
     }
 
@@ -830,25 +830,7 @@ impl SilexActions {
         let Some(site) = self.site_path(website_id) else {
             return Vec::new();
         };
-        let Some(host) = Remote::of(&site).map(|remote| remote.host) else {
-            return Vec::new();
-        };
-        let integrations = crate::integrations::snapshot(&self.integrations);
-        let hosting = |integration: &dyn Integration, unavailable| Hosting {
-            connector_id: integration.id(),
-            display_name: host.clone(),
-            options_form: integration.options_form(&site),
-            unavailable,
-        };
-        integrations
-            .get(Capacity::Deploy, &site)
-            .map(|(integration, _)| hosting(integration, None))
-            .chain(
-                integrations
-                    .wanting_an_account(Capacity::Deploy, &site)
-                    .map(|(integration, why)| hosting(integration, Some(why))),
-            )
-            .collect()
+        crate::integrations::snapshot(&self.integrations).hostings(&site)
     }
 }
 
@@ -879,6 +861,10 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
         )
     };
     let build_url = sent.build_url.clone().unwrap_or_default();
+    // Served as it was sent, like a website copied to a server
+    if let Ok(Build::Built) = ask() {
+        return online(job, sent, address());
+    }
     job.progress(waiting(&build_url));
     job.step(format!("Waiting for {} to build your website", host));
 
@@ -965,35 +951,7 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
         match build {
             Build::Built => {
                 job.step("The build finished");
-                let seen_by_everyone = |website: &str| {
-                    let buttons = [
-                        Button::primary("View your website", website),
-                        Button::secondary(
-                            "Address and domain",
-                            sent.settings_url.as_deref().unwrap_or_default(),
-                        ),
-                    ];
-                    match sent.warning.as_deref() {
-                        Some(warning) => {
-                            message::explained("Your website is now live!", warning, &buttons)
-                        }
-                        None => message::told("Your website is now live!", &buttons),
-                    }
-                };
-                return job.succeeded(match address().as_deref() {
-                    Some(website) => {
-                        job.live_at(website);
-                        seen_by_everyone(website)
-                    }
-                    None => message::explained(
-                        "Your website is built.",
-                        &format!("Silex does not know the address {} serves it at.", host),
-                        &[Button::secondary(
-                            "Address and domain",
-                            sent.settings_url.as_deref().unwrap_or_default(),
-                        )],
-                    ),
-                });
+                return online(job, sent, address());
             }
             Build::Failed {
                 ref url,
@@ -1041,6 +999,29 @@ fn watch(job: &Job, site: &Path, options: &PublicationOptions, sent: &Sent, file
             }
         };
     }
+}
+
+fn online(job: &Job, sent: &Sent, website: Option<String>) {
+    let settings = Button::secondary(
+        "Address and domain",
+        sent.settings_url.as_deref().unwrap_or_default(),
+    );
+    let Some(website) = website else {
+        return job.succeeded(message::explained(
+            "Your website is built.",
+            &format!(
+                "Silex does not know the address {} serves it at.",
+                sent.host
+            ),
+            &[settings],
+        ));
+    };
+    job.live_at(&website);
+    let buttons = [Button::primary("View your website", &website), settings];
+    job.succeeded(match sent.warning.as_deref() {
+        Some(warning) => message::explained("Your website is now live!", warning, &buttons),
+        None => message::told("Your website is now live!", &buttons),
+    })
 }
 
 fn nothing_built_it(

@@ -383,6 +383,8 @@ impl Integration for Glab {
         &self,
         _cli: &Path,
         site: &Path,
+        _account: &str,
+        _files: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
         // Without a unique domain the site is served from the folder CI_PAGES_URL ends with

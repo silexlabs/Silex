@@ -19,15 +19,17 @@ use std::sync::Mutex;
 
 use serde::Deserialize;
 use silex_server::said::Said;
-use silex_server::{OptionsChoice, OptionsField, OptionsForm, PublicationOptions};
+use silex_server::{OptionsChoice, OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
 use super::common::address::host_of;
 use super::common::install::{Archive, Release};
 use super::common::remote::Remote;
 use super::common::run::{self, Program};
-use super::integration::{Account, Capacity, Integration, Openness, SignIn, Tag};
+use super::integration::{
+    Account, Build, Capacity, Integration, Openness, Prepared, SignIn, Tag, Urls,
+};
 use crate::held::held;
-use crate::locales::key;
+use crate::locales::{key, tr};
 
 /// The rclone Silex installs, with the checksums rclone signed for it
 const RELEASE: Release = Release {
@@ -109,9 +111,9 @@ impl Integration for Ftp {
         &[Capacity::Deploy]
     }
 
-    // No website goes to a server yet
+    // Any website can be sent to a server
     fn answers_for(&self, _site: &Path) -> bool {
-        false
+        true
     }
 
     fn accounts(&self, cli: &Path) -> Result<Vec<Account>, Said> {
@@ -201,6 +203,73 @@ impl Integration for Ftp {
             .map_err(Said::raw)
     }
 
+    /// Told to the editor, which does not translate
+    fn options_form(&self, _site: &Path) -> Option<OptionsForm> {
+        Some(OptionsForm {
+            title: tr(key!("Where to publish on the server")),
+            fields: vec![
+                OptionsField {
+                    name: FOLDER.to_string(),
+                    r#type: "text".to_string(),
+                    label: tr(key!("Folder on the server")),
+                    value: None,
+                    help: Some(tr(key!("The folder your web host serves your website from, often www or public_html. Silex deletes the files of this folder that are not in your website."))),
+                    placeholder: None,
+                    required: true,
+                    choices: Vec::new(),
+                },
+                OptionsField {
+                    name: WEBSITE_URL.to_string(),
+                    r#type: "url".to_string(),
+                    label: tr(key!("Address of your website")),
+                    value: None,
+                    help: Some(tr(key!("Optional. With it, Silex gives you a link to your website after publishing."))),
+                    placeholder: Some("https://".to_string()),
+                    required: false,
+                    choices: Vec::new(),
+                },
+            ],
+        })
+    }
+
+    fn address(&self, _cli: &Path, _site: &Path, options: &PublicationOptions) -> Option<String> {
+        options.named(WEBSITE_URL).map(String::from)
+    }
+
+    // A server keeps no repository
+    fn repo(&self, _site: &Path) -> Option<String> {
+        None
+    }
+
+    // Signed in with what rclone keeps of the server
+    fn urls(
+        &self,
+        _cli: &Path,
+        _site: &Path,
+        _options: &PublicationOptions,
+    ) -> Result<Option<Urls>, String> {
+        Ok(Some(Urls::default()))
+    }
+
+    /// Mirrored: what is in the folder on the server and not in `files` is
+    /// deleted
+    fn deploy(
+        &self,
+        cli: &Path,
+        _site: &Path,
+        account: &str,
+        files: &Path,
+        options: &PublicationOptions,
+    ) -> Result<Prepared, String> {
+        send(cli, account, files, options).map_err(|said| said.to_string())?;
+        Ok(Prepared::default())
+    }
+
+    // Nothing builds it on the server
+    fn build(&self, _cli: &Path, _site: &Path, _prepared: &Prepared) -> Result<Build, String> {
+        Ok(Build::Built)
+    }
+
     fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, Said> {
         let server = server(cli, id)?;
         let remote = format!("{}:", server.name);
@@ -222,6 +291,7 @@ const USER: &str = "user";
 const PASSWORD: &str = "password";
 const NAME: &str = "name";
 const UNENCRYPTED: &str = "unencrypted";
+const FOLDER: &str = "folder";
 
 /// The most questions rclone asks to configure a remote, SFTP asks ten
 const QUESTIONS: usize = 50;
@@ -509,6 +579,45 @@ fn server(rclone: &Path, name: &str) -> Result<Server, Said> {
         .and_then(|kind| Protocol::of(kind))
         .ok_or_else(|| Said::raw(format!("rclone has no FTP or SFTP server named {}", name)))?;
     shown(rclone, name, protocol).map_err(Said::raw)
+}
+
+fn send(
+    rclone: &Path,
+    account: &str,
+    files: &Path,
+    options: &PublicationOptions,
+) -> Result<(), Said> {
+    let server = server(rclone, account)?;
+    let on_server = options
+        .named(FOLDER)
+        .ok_or_else(|| Said::new(key!("Choose the folder of your website on the server.")))?;
+    let source = files.to_string_lossy();
+    let destination = format!("{}:{}", server.name, on_server);
+    let ran = run::run_transfer_verbatim(
+        rclone,
+        &std::env::temp_dir(),
+        &["sync", "--", &source, &destination],
+    )
+    .map_err(Said::raw)?;
+    if !ran.failed {
+        return Ok(());
+    }
+    let why = run::failure(rclone, &ran);
+    let said = why.to_lowercase();
+    // 553 is how an FTP server refuses a file where it may not be written
+    if said.contains("permission denied") || said.contains(" 553 ") {
+        return Err(Said::new(key!(
+            "{host} did not let Silex write in the folder {folder}. Check the folder, and that this user can write there."
+        ))
+        .with("host", &server.host)
+        .with("folder", on_server)
+        .because(why));
+    }
+    Err(failed(
+        &server.host,
+        why,
+        key!("Silex could not send your website to {host}."),
+    ))
 }
 
 const PROTECTED: &str =

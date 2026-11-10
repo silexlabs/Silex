@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 use crate::jobs::{JobData, JobStatus};
-use crate::models::{File, Ssg, WebsiteId};
+use crate::models::{File, Ssg, WebsiteId, PUBLIC_FOLDER};
 use crate::publish;
 use crate::routes::connector::LOCAL_FOLDER;
 use crate::routes::AppState;
@@ -181,7 +181,8 @@ async fn publish_website(
     match state.actions.clone() {
         Some(actions) => {
             let website_id = query.website_id.clone();
-            let local = query.hosting_id == LOCAL_FOLDER;
+            let hosting_id = query.hosting_id.clone();
+            let local = hosting_id == LOCAL_FOLDER;
             let options = crate::actions::PublicationOptions {
                 ssg,
                 no_ci: local,
@@ -197,7 +198,15 @@ async fn publish_website(
                         Err(message) => return job.failed(message),
                     };
                     if !local {
-                        actions.deploy(website_id.as_str(), &options, &job);
+                        let published =
+                            storage::website_path(&data_path, &website_id).join(PUBLIC_FOLDER);
+                        actions.deploy(
+                            website_id.as_str(),
+                            &hosting_id,
+                            &options,
+                            built.as_deref().unwrap_or(&published),
+                            &job,
+                        );
                     }
                     // A host that returned without saying how it went leaves the
                     // publication where it really is rather than open forever

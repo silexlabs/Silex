@@ -437,20 +437,17 @@ pub trait Integration: Send + Sync {
         None
     }
 
-    /// Write what the build needs and version it, answering what the
-    /// publication has to send along
-    ///
-    /// Sends nothing when the integration can sync: `push` does, with the tag
-    /// answered here. One that cannot sync sends the website here. An
-    /// integration may ask the host what its builds looked like before the
-    /// push.
+    /// Send `files` to `account`, or prepare what `push` sends, with the tag
+    /// answered here
     fn deploy(
         &self,
         cli: &Path,
         site: &Path,
+        account: &str,
+        files: &Path,
         options: &PublicationOptions,
     ) -> Result<Prepared, String> {
-        let _ = (cli, site, options);
+        let _ = (cli, site, account, files, options);
         Err(not_provided(self.program(), Capacity::Deploy))
     }
 
