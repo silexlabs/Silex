@@ -18,7 +18,8 @@
 import type { Component, Editor } from 'grapesjs'
 import { Field, Filter, Options, isString, toExpression } from '@silexlabs/grapesjs-data-source'
 import { html } from 'lit-html'
-import { hasNumberType, type GoOptions } from './gotmpl'
+import type { GoOptions } from './gotmpl'
+import { hasNumberType } from './render'
 
 /**
  * A Hugo function offered as a filter in the editor

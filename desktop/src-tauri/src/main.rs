@@ -30,6 +30,7 @@ use tauri_plugin_updater::UpdaterExt;
 mod actions;
 mod download;
 mod frontend;
+mod generators;
 mod held;
 mod integrations;
 mod locales;

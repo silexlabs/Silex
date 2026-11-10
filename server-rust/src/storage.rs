@@ -827,8 +827,29 @@ fn page_slug(page_name: Option<&str>) -> String {
 ///
 /// A website is kept in a git repository, so saving it twice must give the
 /// same bytes and a diff must show only what the user changed.
+///
+/// Sorted by hand: a dependency that turns on `preserve_order` of serde_json
+/// would otherwise write the keys in the order they came.
 fn serialize_json(data: &serde_json::Value) -> Result<String> {
-    Ok(serde_json::to_string_pretty(data)?)
+    Ok(serde_json::to_string_pretty(&sorted(data))?)
+}
+
+fn sorted(value: &serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(map) => {
+            let mut keys: Vec<&String> = map.keys().collect();
+            keys.sort();
+            serde_json::Value::Object(
+                keys.into_iter()
+                    .map(|key| (key.clone(), sorted(&map[key])))
+                    .collect(),
+            )
+        }
+        serde_json::Value::Array(items) => {
+            serde_json::Value::Array(items.iter().map(sorted).collect())
+        }
+        other => other.clone(),
+    }
 }
 
 /// Recursively copy a directory

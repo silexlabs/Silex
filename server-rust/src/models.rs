@@ -90,6 +90,14 @@ pub const ASSETS_FOLDER: &str = "assets";
 /// Folder holding the published website inside a website directory
 pub const PUBLIC_FOLDER: &str = "public";
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Ssg {
+    Eleventy,
+    Hugo,
+    Zola,
+}
+
 /// Pages folder given to websites created from now on
 pub const WEBSITE_PAGES_FOLDER: &str = "pages";
 

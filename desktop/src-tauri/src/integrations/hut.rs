@@ -190,7 +190,7 @@ impl Integration for Hut {
             .and_then(Remote::host_of)
             .unwrap_or_else(|| default_site(&remote));
 
-        write_build_files(site, &[])?;
+        write_build_files(site, options.ssg, &[])?;
         ensure_pipeline_file(
             site,
             Path::new(".build.yml"),

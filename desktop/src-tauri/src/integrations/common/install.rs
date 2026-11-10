@@ -68,10 +68,13 @@ pub fn has_archive_here(release: &Release) -> bool {
 }
 
 fn archive_here(release: &Release) -> Option<&Archive> {
-    release
-        .archives
+    archive_for(release.archives, OS, ARCH)
+}
+
+pub fn archive_for<'a>(archives: &'a [Archive], os: &str, arch: &str) -> Option<&'a Archive> {
+    archives
         .iter()
-        .find(|archive| archive.os == OS && archive.arch == ARCH)
+        .find(|archive| archive.os == os && archive.arch == arch)
 }
 
 /// Downloads the program, checks it is the one its project published, and

@@ -16,17 +16,11 @@
  */
 
 import type { Component } from 'grapesjs'
-import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getPersistantId, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
-import { EchoContext, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
+import { BinaryOperator, Expression, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { DECIMAL, EchoContext, getTemplateExpression, hasNumberType, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition, dataSourceName } from './render'
 import type { HugoFilter } from './hugo-filters'
 
-const NUMBER_TYPES = ['Int', 'Float']
-const DECIMAL = /^-?\d+(\.\d+)?$/
 const POSITIVE_INTEGER = /^\d+$/
-
-export function hasNumberType(typeIds: string[]): boolean {
-  return typeIds.some(typeId => NUMBER_TYPES.includes(typeId))
-}
 
 function goVariable(name: string): string {
   return `$${name.replace(/[^A-Za-z0-9_]/g, '_')}`
@@ -37,16 +31,11 @@ export function stateVariable(component: Component, stateId: StateId): string {
 }
 
 export function dataSourceVariable(dataSourceId: string): string {
-  return goVariable(`ds_${dataSourceId}`)
+  return goVariable(dataSourceName(dataSourceId))
 }
 
 function goString(value: string): string {
   return JSON.stringify(value)
-}
-
-function isNumberExpression(component: Component, expression: Expression): boolean {
-  const field = getExpressionResultType(expression, component)
-  return !!field && field.kind === 'scalar' && hasNumberType(field.typeIds)
 }
 
 // Hugo stops the build on a field of a null object written `.a.b`, index returns nil like Liquid does
@@ -110,37 +99,12 @@ function goFilter(component: Component, filter: StoredFilter, input: string, inp
 }
 
 export function getGoExpression(component: Component, expression: Expression): string {
-  if (expression.length === 0) throw new Error('Expression is empty')
-  const fixed = fixedText(expression)
-  if (fixed !== null) return goString(fixed)
-  let base = ''
-  let fields: string[] = []
-  expression.forEach((token, index) => {
-    switch (token.type) {
-    case 'state':
-      if (index !== 0) throw new Error('State can only be the first token in an expression')
-      base = goVariable(getStateVariableName(token.componentId, token.storedStateId))
-      break
-    case 'property':
-      if (token.fieldId === FIXED_TOKEN_ID) {
-        base = goString(`${token.options?.value ?? ''}`)
-        fields = []
-        break
-      }
-      if (index === 0) {
-        if (!token.dataSourceId) throw new Error(`The field "${token.label ?? token.fieldId}" has no data source`)
-        base = dataSourceVariable(token.dataSourceId as string)
-      }
-      fields.push(token.fieldId)
-      break
-    case 'filter':
-      if (index === 0) throw new Error('Expression cannot start with a filter')
-      base = `(${goFilter(component, token, fieldPath(base, fields), expression.slice(0, index))})`
-      fields = []
-      break
-    }
+  return getTemplateExpression(expression, {
+    string: goString,
+    variable: goVariable,
+    field: fieldPath,
+    filter: (filter, input, typed) => goFilter(component, filter, input, typed),
   })
-  return fieldPath(base, fields)
 }
 
 function escape(value: string, context: EchoContext): string {
@@ -150,12 +114,6 @@ function escape(value: string, context: EchoContext): string {
   case EchoContext.STYLE: return `${value} | safeCSS`
   case EchoContext.ATTRIBUTE: return value
   }
-}
-
-function persistantId(component: Component): string {
-  const id = getPersistantId(component)
-  if (!id) throw new Error('This component has no persistant ID')
-  return id
 }
 
 function conditionOperand(component: Component, expression: Expression, other: Expression): string {

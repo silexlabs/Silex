@@ -146,7 +146,7 @@ export interface WebsiteSettings {
   ssg?: SsgId, // Written at the first publication, from the default in the client config
 }
 
-export type SsgId = 'eleventy' | 'hugo'
+export type SsgId = 'eleventy' | 'hugo' | 'zola'
 
 /**
  * A step of the site's build.json, `build` = the Silex build commands of the moment

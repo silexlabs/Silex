@@ -13,25 +13,31 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-pub const ELEVENTY_VERSION: &str = "3.1.6";
+use silex_server::Ssg;
 
-const HTMLREBASE_RELEASE: &str =
-    "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux";
-// Read from the SHA256SUMS of the v0.1.0 release: change them with the URL
-const HTMLREBASE_X64_SHA256: &str =
-    "7cfdac4b8841cb06bfa6a26d039ca00d03ab539da228a6046f5d68fdbcf2111d";
-const HTMLREBASE_ARM64_SHA256: &str =
-    "581840706b5773ddcac956d2fdf90374a2b72fb616f37053c589194738939cd8";
-// node, because the build image has neither curl nor wget
-const DOWNLOAD: &str = "node -e \"fetch(process.argv[1]).then(r => r.arrayBuffer()).then(b => require('fs').writeFileSync(process.argv[2], Buffer.from(b)))\"";
-const HTMLREBASE_FOLDER: &str = ".npm";
+use crate::generators::download::run_if;
+use crate::generators::{self, ignore_build_output, BUILD_OUTPUT};
+use crate::integrations::common::install::Archive;
+
+// Read from the SHA256SUMS of the v0.1.0 release: change them with the URLs
+const HTMLREBASE: &[Archive] = &[
+    Archive {
+        os: "linux",
+        arch: "x86_64",
+        url: "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux-x64",
+        sha256: "7cfdac4b8841cb06bfa6a26d039ca00d03ab539da228a6046f5d68fdbcf2111d",
+    },
+    Archive {
+        os: "linux",
+        arch: "aarch64",
+        url: "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux-arm64",
+        sha256: "581840706b5773ddcac956d2fdf90374a2b72fb616f37053c589194738939cd8",
+    },
+];
 
 const SILEX_OVERWRITE_NOTICE: &str = "# silexOverwrite: true";
 const BUILD_JSON: &str = "build.json";
 const BUILD_SH: &str = "build.sh";
-const GITIGNORE: &str = ".gitignore";
-/// Where build.sh writes the built site, which is not part of the website
-const BUILD_OUTPUT: &str = "_site/";
 const DEFAULT_BUILD_JSON: &str = "[\n  {\n    \"type\": \"build\"\n  }\n]\n";
 
 #[derive(Debug, Deserialize)]
@@ -41,43 +47,29 @@ pub enum BuildStep {
     Sh { value: String },
 }
 
-// The guard is for a public/ with no folder at all: the glob then stays
-// literal and cp would stop the build
-const COPY_PUBLIC_FOLDERS: &str =
-    "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
-
 /// `prefix` is empty outside of the forge's CI so that a local build stays at the root.
 /// SILEX_BASE_PATH is for a site also served at the root of a custom domain.
 pub fn rebase_lines(prefix: &str) -> Vec<String> {
-    vec![
-        format!("prefix=\"${{SILEX_BASE_PATH:-{prefix}}}\""),
-        "if [ -n \"$prefix\" ] && [ \"$prefix\" != / ]; then".to_string(),
-        format!(
-            "  case \"$(uname -m)\" in aarch64|arm64) arch=arm64 sum={HTMLREBASE_ARM64_SHA256} ;; *) arch=x64 sum={HTMLREBASE_X64_SHA256} ;; esac"
+    [
+        vec![format!("prefix=\"${{SILEX_BASE_PATH:-{prefix}}}\"")],
+        run_if(
+            "[ -n \"$prefix\" ] && [ \"$prefix\" != / ]",
+            HTMLREBASE,
+            &format!(
+                "{} --prefix \"$prefix\"",
+                BUILD_OUTPUT.trim_end_matches('/')
+            ),
         ),
-        format!("  mkdir -p {HTMLREBASE_FOLDER}"),
-        format!("  bin={HTMLREBASE_FOLDER}/htmlrebase-v0.1.0-$arch"),
-        "  if ! echo \"$sum  $bin\" | sha256sum -c - >/dev/null 2>&1; then".to_string(),
-        format!("    {DOWNLOAD} {HTMLREBASE_RELEASE}-$arch \"$bin\""),
-        "    echo \"$sum  $bin\" | sha256sum -c -".to_string(),
-        "  fi".to_string(),
-        "  chmod +x \"$bin\"".to_string(),
-        "  \"$bin\" _site --prefix \"$prefix\"".to_string(),
-        "fi".to_string(),
     ]
+    .concat()
 }
 
-// TEMPORARY: remove after the 3.10 stable, only sites published with 3.10.0-canary.3 have this file
-const FAIL_ON_CANARY_DATA_FILE: &str =
-    "test -f public/public.11tydata.js && echo 'Please delete public/public.11tydata.js' && exit 1";
-
-pub fn generate_build_sh(steps: &[BuildStep], after_build: &[String]) -> String {
-    let build_commands = [
-        FAIL_ON_CANARY_DATA_FILE.to_string(),
-        format!("npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site"),
-        COPY_PUBLIC_FOLDERS.to_string(),
-    ]
-    .join("\n");
+fn generate_build_sh(
+    steps: &[BuildStep],
+    build_commands: &[String],
+    after_build: &[String],
+) -> String {
+    let build_commands = build_commands.join("\n");
     let lines: Vec<String> = steps
         .iter()
         .map(|step| match step {
@@ -94,7 +86,11 @@ pub fn generate_build_sh(steps: &[BuildStep], after_build: &[String]) -> String 
 
 /// build.json is created once and never rewritten, build.sh always follows
 /// what it says, then runs what the forge needs after the build
-pub fn write_build_files(site: &Path, after_build: &[String]) -> Result<(), String> {
+pub fn write_build_files(
+    site: &Path,
+    ssg: Option<Ssg>,
+    after_build: &[String],
+) -> Result<(), String> {
     let build_json = site.join(BUILD_JSON);
     let steps: Vec<BuildStep> = if build_json.exists() {
         let content = std::fs::read_to_string(&build_json).map_err(|e| e.to_string())?;
@@ -104,31 +100,13 @@ pub fn write_build_files(site: &Path, after_build: &[String]) -> Result<(), Stri
         vec![BuildStep::Build]
     };
 
-    std::fs::write(site.join(BUILD_SH), generate_build_sh(&steps, after_build))
-        .map_err(|e| e.to_string())?;
+    let build_commands = generators::build_commands(ssg);
+    std::fs::write(
+        site.join(BUILD_SH),
+        generate_build_sh(&steps, &build_commands, after_build),
+    )
+    .map_err(|e| e.to_string())?;
     ignore_build_output(site)
-}
-
-/// Keep the built site out of the versioned website
-///
-/// The folder is versioned whole, so build.sh would otherwise put a copy of
-/// the site in its own history.
-fn ignore_build_output(site: &Path) -> Result<(), String> {
-    let path = site.join(GITIGNORE);
-    let current = std::fs::read_to_string(&path).unwrap_or_default();
-    if current.lines().any(|line| {
-        line.trim() == BUILD_OUTPUT.trim_end_matches('/') || line.trim() == BUILD_OUTPUT
-    }) {
-        return Ok(());
-    }
-
-    let mut content = current;
-    if !content.is_empty() && !content.ends_with('\n') {
-        content.push('\n');
-    }
-    content.push_str(BUILD_OUTPUT);
-    content.push('\n');
-    std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 /// Write the pipeline file, unless the user took it over
