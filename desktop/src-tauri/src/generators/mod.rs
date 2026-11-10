@@ -21,11 +21,11 @@ pub(crate) const BUILD_OUTPUT: &str = "_site/";
 /// Where it is built on this computer, with the data of the CMS
 const BUILD_STAGING: &str = ".silex-staging/";
 
-/// `local` when the website stays on this computer, without a CI to build it
+/// With a CI, it is the one which builds a website made for Eleventy
 pub fn build(
     site: &Path,
     ssg: Option<Ssg>,
-    local: bool,
+    no_ci: bool,
     job: &Job,
 ) -> Result<Option<PathBuf>, String> {
     match ssg {
@@ -35,11 +35,11 @@ pub fn build(
             zola::build(site, &site.join(BUILD_STAGING), &output, job)?;
             Ok(Some(output))
         }
-        Some(Ssg::Eleventy) => {
+        Some(Ssg::Eleventy) if no_ci => {
             ignore_build_output(site)?;
-            eleventy::build(site, &site.join(BUILD_OUTPUT), local, job)
+            eleventy::build(site, &site.join(BUILD_OUTPUT), job).map(Some)
         }
-        Some(Ssg::Hugo) | None => Ok(None),
+        Some(Ssg::Eleventy | Ssg::Hugo) | None => Ok(None),
     }
 }
 

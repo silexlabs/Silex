@@ -184,7 +184,7 @@ async fn publish_website(
             let local = query.hosting_id == LOCAL_FOLDER;
             let options = crate::actions::PublicationOptions {
                 ssg,
-                local,
+                no_ci: local,
                 ..query.options()
             };
             let data_path = state.data_path.clone();

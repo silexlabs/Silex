@@ -1,6 +1,6 @@
 import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
-import { html, nothing } from 'lit-html'
+import { html } from 'lit-html'
 import { live } from 'lit-html/directives/live.js'
 import { COMMAND_ADD_DATA_SOURCE } from '@silexlabs/grapesjs-data-source'
 import { Editor } from 'grapesjs'
@@ -44,8 +44,7 @@ export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy:
             </div>
             ${opts.view?.settingsEl ? (opts.view.settingsEl as () => HTMLElement)() : ''}
 
-            ${isEleventy() ? html`
-            <details class="silex-more">
+            <details class="silex-more" ?hidden=${!isEleventy()}>
             <summary>11ty Config</summary>
             <div class="silex-help">
               <p>These settings are used to configure the <a target="_blank" href="https://www.11ty.dev/docs/">11ty static site generator</a> integration.</p>
@@ -65,7 +64,6 @@ export default function(editor: Editor, opts: EleventyPluginOptions, isEleventy:
             <div class="silex-form__group col2">
             </div>
             </details>
-            ` : nothing}
             <details class="silex-more ssg-field" .open=${live(false)}>
             <summary>Static site generator: ${settings.ssg ? ssgName(settings.ssg) : 'Automatic'}</summary>
             <div class="silex-help">

@@ -35,35 +35,18 @@ pub fn build_commands() -> Vec<String> {
     ]
 }
 
-/// `required` when nothing else will build the website: a forge has its CI
-pub fn build(
-    site: &Path,
-    output: &Path,
-    required: bool,
-    job: &Job,
-) -> Result<Option<PathBuf>, String> {
+pub fn build(site: &Path, output: &Path, job: &Job) -> Result<PathBuf, String> {
     let Some(npx) = programs::users_own("npx") else {
-        if required {
-            return Err(message::told(
-                "Node.js must be installed on this computer to build this website with Eleventy.",
-                &[],
-            ));
-        }
-        return Ok(None);
+        return Err(message::told(
+            "Node.js must be installed on this computer to build this website with Eleventy.",
+            &[],
+        ));
     };
     job.step("Building your website with Eleventy");
-    match eleventy(&npx, site, output) {
-        Ok(()) => Ok(Some(output.to_path_buf())),
-        Err(e) if required => Err(message::explained(
-            "Silex could not build your website with Eleventy.",
-            &e,
-            &[],
-        )),
-        Err(e) => {
-            tracing::warn!("Eleventy failed on this computer, leaving the build to the CI: {e}");
-            Ok(None)
-        }
-    }
+    eleventy(&npx, site, output).map_err(|e| {
+        message::explained("Silex could not build your website with Eleventy.", &e, &[])
+    })?;
+    Ok(output.to_path_buf())
 }
 
 fn eleventy(npx: &Path, site: &Path, output: &Path) -> Result<(), String> {

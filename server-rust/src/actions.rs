@@ -110,9 +110,9 @@ pub struct PublicationOptions {
     #[serde(skip)]
     pub ssg: Option<crate::models::Ssg>,
 
-    /// Published to the local folder, where no CI will build it
+    /// Published where no CI will build it
     #[serde(skip)]
-    pub local: bool,
+    pub no_ci: bool,
 }
 
 impl PublicationOptions {
