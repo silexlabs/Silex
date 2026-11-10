@@ -11,6 +11,7 @@
 
 use std::path::Path;
 
+use silex_server::said::Said;
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
 use super::common::git;
@@ -102,6 +103,7 @@ impl Integration for Hut {
                 ),
                 placeholder: None,
                 required: true,
+                choices: Vec::new(),
             }],
         })
     }
@@ -180,8 +182,11 @@ impl Integration for Hut {
         &self,
         _cli: &Path,
         site: &Path,
+        _account: &str,
+        _files: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
+        _told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
         let remote = Remote::of(site).ok_or(super::common::git::NOWHERE_TO_SEND_IT)?;
         // `hut pages publish` is given a domain, where the user named an
         // address: what stands before the first slash is the site

@@ -126,7 +126,7 @@ export class ClientConfig extends Config {
   fontsApiUrl = 'https://www.googleapis.com'
 
   /**
-   * Static site generator of the websites which do not say theirs yet
+   * Static site generator of the websites which do not choose one
    */
   ssg: SsgId = 'eleventy'
 

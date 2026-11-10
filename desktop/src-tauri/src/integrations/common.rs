@@ -9,6 +9,7 @@
 
 //! What the integrations share, none of it an integration
 
+pub mod address;
 pub mod git;
 pub mod install;
 pub mod pipeline;

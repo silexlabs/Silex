@@ -13,6 +13,7 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use silex_server::said::Said;
 use silex_server::{OptionsField, OptionsForm, PublicationOptions, WEBSITE_URL};
 
 use super::common::git;
@@ -119,6 +120,7 @@ impl Integration for Tea {
                     ),
                     placeholder: None,
                     required: true,
+                    choices: Vec::new(),
                 },
                 OptionsField {
                     name: RUNNER_LABEL.to_string(),
@@ -131,6 +133,7 @@ impl Integration for Tea {
                     ),
                     placeholder: None,
                     required: true,
+                    choices: Vec::new(),
                 },
                 OptionsField {
                     name: WEBSITE_URL.to_string(),
@@ -143,6 +146,7 @@ impl Integration for Tea {
                     ),
                     placeholder: Some("https://www.example.com/".to_string()),
                     required: false,
+                    choices: Vec::new(),
                 },
             ],
         })
@@ -195,8 +199,11 @@ impl Integration for Tea {
         &self,
         _cli: &Path,
         site: &Path,
+        _account: &str,
+        _files: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
+        _told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
         // Only in the CI, so that a local build stays at the root
         let after_build = match base_path(Remote::of(site).as_ref(), options) {
             Some(path) if path == "/" => vec![],

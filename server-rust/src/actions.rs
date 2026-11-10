@@ -21,13 +21,24 @@ pub trait Actions: Send + Sync {
     /// the request rather than from the disk: reading it back from a file
     /// would answer what the last save happened to hold.
     ///
+    /// `hosting_id` is the `connector_id` of the hosting the user chose, and
+    /// `files` the files to put online: those `build` made, or else those the
+    /// editor published.
+    ///
     /// `job` is what the editor follows, and where this says how the
     /// publication ended. A job left open when this returns is ended by the
     /// server, which can only promise that the files were written.
     ///
     /// Nothing is deployed by default, which is how a local-only website runs.
-    fn deploy(&self, website_id: &str, options: &PublicationOptions, job: &crate::jobs::Job) {
-        let _ = (website_id, options, job);
+    fn deploy(
+        &self,
+        website_id: &str,
+        hosting_id: &str,
+        options: &PublicationOptions,
+        files: &std::path::Path,
+        job: &crate::jobs::Job,
+    ) {
+        let _ = (website_id, hosting_id, options, files, job);
     }
 
     /// Build a website out of its published files, before it is deployed.
@@ -38,10 +49,11 @@ pub trait Actions: Send + Sync {
     fn build(
         &self,
         website_id: &str,
+        hosting_id: &str,
         options: &PublicationOptions,
         job: &crate::jobs::Job,
     ) -> Result<Option<std::path::PathBuf>, String> {
-        let _ = (website_id, options, job);
+        let _ = (website_id, hosting_id, options, job);
         Ok(None)
     }
 
@@ -109,6 +121,10 @@ pub struct PublicationOptions {
     /// Taken from the settings of the website, not from the form
     #[serde(skip)]
     pub ssg: Option<crate::models::Ssg>,
+
+    /// Published where no CI will build it
+    #[serde(skip)]
+    pub no_ci: bool,
 }
 
 impl PublicationOptions {
@@ -130,7 +146,7 @@ impl PublicationOptions {
 #[derive(Debug, Clone)]
 pub struct Hosting {
     /// Which connector publishes it
-    pub connector_id: &'static str,
+    pub connector_id: String,
 
     /// The name of the host, as the user knows it
     pub display_name: String,
@@ -160,7 +176,7 @@ pub struct OptionsField {
     /// The key it is kept under in the options of the publication
     pub name: String,
 
-    /// What the browser makes of it: `text`, `url`, `checkbox` or `select`
+    /// What the browser makes of it: `text`, `password`, `url`, `checkbox` or `select`
     pub r#type: String,
 
     pub label: String,
@@ -177,4 +193,16 @@ pub struct OptionsField {
     pub placeholder: Option<String>,
 
     pub required: bool,
+
+    /// What a `select` offers
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub choices: Vec<OptionsChoice>,
+}
+
+/// One of the answers of a `select`
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct OptionsChoice {
+    /// What the field holds once it is chosen
+    pub value: String,
+    pub label: String,
 }

@@ -38,7 +38,7 @@ async function load() {
   websites.value = null
   const from = account.value
   try {
-    const found = await remoteWebsites(props.integration.program, from)
+    const found = await remoteWebsites(props.integration.id, from)
     // Another account chosen while this one answered
     if (account.value === from) websites.value = found
   } catch (error) {
@@ -62,7 +62,7 @@ async function open(website: RemoteWebsite) {
   await nextTick()
   element.value?.querySelector<HTMLElement>('.dialog__actions button')?.focus()
   try {
-    emit('opened', await openRemoteWebsite(props.integration.program, account.value, website))
+    emit('opened', await openRemoteWebsite(props.integration.id, account.value, website))
   } catch (error) {
     opening.value = null
     emit('failed', t('Silex could not open {name}', { name: website.name }), explain(error))

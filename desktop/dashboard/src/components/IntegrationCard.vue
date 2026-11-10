@@ -3,7 +3,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
 import type { AntiFeature, CatalogEntry, explain } from '../api'
-import { ANTI_FEATURES, OPENNESS, chosen, usable } from '../integrations'
+import { ANTI_FEATURES, OPENNESS, chosen, tooOld, usable } from '../integrations'
 
 defineProps<{
   entry: CatalogEntry
@@ -38,7 +38,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-html="entry.icon"
       />
       <h4
-        :id="`card-${entry.program}`"
+        :id="`card-${entry.id}`"
         class="integration-card__name"
       >
         <AppTooltip :text="$t('Details about {name}', { name: entry.name })">
@@ -78,6 +78,12 @@ const ICONS: Record<AntiFeature, string> = {
         class="technical-detail"
       >{{ failed.detail }}</pre>
     </template>
+    <p
+      v-else-if="entry.needs"
+      class="integration-card__line integration-card__line--failed"
+    >
+      {{ tooOld(entry) }}
+    </p>
     <p
       v-else
       class="integration-card__line"
@@ -124,17 +130,17 @@ const ICONS: Record<AntiFeature, string> = {
         v-else-if="usable(entry)"
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('add', $event.currentTarget as Element)"
       >
-        {{ chosen(entry).length ? $t('Add an account…') : $t('Use') }}
+        {{ !chosen(entry).length ? $t('Use') : entry.accountForm ? $t('Add a server…') : $t('Add an account…') }}
       </button>
       <button
         v-else-if="entry.installable"
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('install', $event.currentTarget as Element)"
       >
@@ -144,7 +150,7 @@ const ICONS: Record<AntiFeature, string> = {
         v-else
         type="button"
         class="button integration-card__action"
-        :aria-describedby="`card-${entry.program}`"
+        :aria-describedby="`card-${entry.id}`"
         :aria-disabled="busy"
         @click="emit('checkAgain')"
       >

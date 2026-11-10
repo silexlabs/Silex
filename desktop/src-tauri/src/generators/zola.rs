@@ -19,7 +19,7 @@ use std::sync::Mutex;
 use silex_server::{message, Job, PUBLIC_FOLDER};
 
 use super::download::{download_lines, run_if, CACHE_FOLDER};
-use super::BUILD_OUTPUT;
+use super::{link_all, BUILD_OUTPUT};
 use crate::held::held;
 use crate::integrations::common::install::Archive;
 
@@ -34,12 +34,14 @@ const GQLFREEZ: &[Archive] = &[
         arch: "x86_64",
         url: "https://github.com/lexoyo/gqlfreez/releases/download/v0.2.1/gqlfreez-linux-x64",
         sha256: "ece79db164b01802cb98aca6aefb4f411d4c0d33680b845201d851ded658eff0",
+        inside: None,
     },
     Archive {
         os: "linux",
         arch: "aarch64",
         url: "https://github.com/lexoyo/gqlfreez/releases/download/v0.2.1/gqlfreez-linux-arm64",
         sha256: "837d0df24f97ae1949b88ff61f933b85ae90ea0f6efb28c3b15f3343005c93fe",
+        inside: None,
     },
 ];
 // Musl on x64, as SourceHut builds on Alpine
@@ -49,12 +51,14 @@ const ZOLA: &[Archive] = &[
         arch: "x86_64",
         url: "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-x86_64-unknown-linux-musl.tar.gz",
         sha256: "7d77a4220a4f699cba2fc0e0c7859f780e887e269159ad4fab90e11ea16c906f",
+        inside: Some("zola"),
     },
     Archive {
         os: "linux",
         arch: "aarch64",
         url: "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-aarch64-unknown-linux-gnu.tar.gz",
         sha256: "266448fffbf7c7004ca399d0e76dd699541771096d8a42aede98cebe2a029d02",
+        inside: Some("zola"),
     },
 ];
 
@@ -90,21 +94,6 @@ fn mirror(from: &Path, to: &Path) -> std::io::Result<()> {
     }
     std::fs::create_dir_all(to)?;
     link_all(from, to)
-}
-
-fn link_all(from: &Path, to: &Path) -> std::io::Result<()> {
-    for entry in std::fs::read_dir(from)? {
-        let entry = entry?;
-        let target = to.join(entry.file_name());
-        if entry.file_type()?.is_dir() {
-            std::fs::create_dir(&target)?;
-            link_all(&entry.path(), &target)?;
-        } else if std::fs::hard_link(entry.path(), &target).is_err() {
-            // FAT and exFAT have no links
-            std::fs::copy(entry.path(), &target)?;
-        }
-    }
-    Ok(())
 }
 
 fn freeze(root: &Path) -> Result<(), String> {

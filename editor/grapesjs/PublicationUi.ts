@@ -228,11 +228,11 @@ export class PublicationUi {
         ${this.isPending(status) ? html`
           <progress></progress>
         ` : nothing}
-        ${this.isReady(status) ? this.renderOptionsForm() : nothing}
+        ${this.isReady(status) || this.isError(status) ? this.renderOptionsForm() : nothing}
         ${job?.logs?.length > 0 && job.logs[0].length > 0 ? html`
           <details>
             <summary>Logs</summary>
-            <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
+            <div class="logs">${cleanupLogEntry(job.logs)}</div>
           </details>
         ` : nothing}
         ${job?.errors?.length > 0 && job.errors[0].length > 0 ? html`
@@ -242,7 +242,7 @@ export class PublicationUi {
               max-width: 100%;
               font-size: x-small;
               "
-            >${unsafeHTML(cleanupLogEntry(job.errors))}
+            >${cleanupLogEntry(job.errors)}
             </pre>
           </details>
         ` : nothing}
@@ -383,8 +383,9 @@ export class PublicationUi {
   /**
    * Publish, going through the options form when it is on screen
    *
-   * The form is only rendered before a publication, so after one the button has
-   * nothing to submit and asks for the publication itself.
+   * The form is only rendered before a publication or after a failed one, so
+   * after a success the button has nothing to submit and asks for the
+   * publication itself.
    */
   private requestPublish() {
     const form = this.el.querySelector(`#${optionsFormId}`) as HTMLFormElement | null

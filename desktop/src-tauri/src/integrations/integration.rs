@@ -7,6 +7,7 @@
  * the Free Software Foundation, either version 3 of the License, or any later version.
  */
 
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::atomic::AtomicBool;
 
@@ -197,6 +198,12 @@ pub enum SignIn {
 pub trait Integration: Send + Sync {
     fn program(&self) -> &'static str;
 
+    /// What it is known by in integrations.json and to the dashboard, as
+    /// several integrations can run one program
+    fn id(&self) -> &'static str {
+        self.program()
+    }
+
     /// The service the user knows, not the program
     fn name(&self) -> &'static str;
 
@@ -241,7 +248,7 @@ pub trait Integration: Send + Sync {
         Vec::new()
     }
 
-    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, String> {
+    fn accounts(&self, cli: &Path) -> Result<Vec<Account>, Said> {
         let _ = cli;
         Ok(Vec::new())
     }
@@ -266,13 +273,29 @@ pub trait Integration: Send + Sync {
         ))
     }
 
+    /// What the user fills in to add an account, for an integration whose
+    /// accounts are not signed in to in the browser
+    fn account_form(&self) -> Option<OptionsForm> {
+        None
+    }
+
+    /// Kept by its program only once the server took what the user answered
+    /// to `account_form`, and answers the id of the account
+    fn add_account(&self, cli: &Path, values: &BTreeMap<String, String>) -> Result<String, Said> {
+        let _ = (cli, values);
+        Err(Said::raw(format!(
+            "Silex cannot add an account to {}",
+            self.name()
+        )))
+    }
+
     /// Signs the account out of its program too, not just out of Silex
-    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), String> {
+    fn disconnect(&self, cli: &Path, id: &str) -> Result<(), Said> {
         let _ = (cli, id);
-        Err(format!(
+        Err(Said::raw(format!(
             "Silex cannot disconnect an account from {}",
             self.name()
-        ))
+        )))
     }
 
     /// The websites on an account, those changed last first
@@ -312,9 +335,12 @@ pub trait Integration: Send + Sync {
     /// when the user wants to know
     ///
     /// An error means the server could not be asked.
-    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, String> {
+    fn check_account(&self, cli: &Path, id: &str) -> Result<SignIn, Said> {
         let _ = (cli, id);
-        Err(format!("Silex cannot check an account of {}", self.name()))
+        Err(Said::raw(format!(
+            "Silex cannot check an account of {}",
+            self.name()
+        )))
     }
 
     /// What to ask the user before publishing, when this program cannot say
@@ -330,6 +356,11 @@ pub trait Integration: Send + Sync {
     /// found actually runs.
     fn version_args(&self) -> &'static [&'static str] {
         &["--version"]
+    }
+
+    /// The oldest version of the program Silex works with, none when any will do
+    fn minimum_version(&self) -> Option<&'static str> {
+        None
     }
 
     /// Answered from the disk, never from the network: a user waits behind
@@ -416,17 +447,20 @@ pub trait Integration: Send + Sync {
     /// publication has to send along
     ///
     /// Sends nothing when the integration can sync: `push` does, with the tag
-    /// answered here. One that cannot sync sends the website here. An
-    /// integration may ask the host what its builds looked like before the
-    /// push.
+    /// answered here. One that cannot sync sends the website here: `files` to
+    /// `account`, saying how it goes to `told`. An integration may ask the
+    /// host what its builds looked like before the push.
     fn deploy(
         &self,
         cli: &Path,
         site: &Path,
+        account: &str,
+        files: &Path,
         options: &PublicationOptions,
-    ) -> Result<Prepared, String> {
-        let _ = (cli, site, options);
-        Err(not_provided(self.program(), Capacity::Deploy))
+        told: &dyn Fn(Said),
+    ) -> Result<Prepared, Said> {
+        let _ = (cli, site, account, files, options, told);
+        Err(Said::raw(not_provided(self.program(), Capacity::Deploy)))
     }
 
     /// Ask what became of the build this publication started

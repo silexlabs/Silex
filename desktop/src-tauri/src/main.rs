@@ -195,10 +195,10 @@ async fn integration_catalog(
 #[tauri::command]
 async fn integration_install(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
 ) -> Result<Vec<integrations::CatalogEntry>, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.integration_install(&program))
+    tauri::async_runtime::spawn_blocking(move || actions.integration_install(&integration))
         .await
         .map_err(Said::raw)?
 }
@@ -206,11 +206,11 @@ async fn integration_install(
 #[tauri::command]
 async fn integration_asked(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     asked: integrations::Asked,
 ) -> Result<Vec<integrations::CatalogEntry>, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&program, asked))
+    tauri::async_runtime::spawn_blocking(move || actions.integration_asked(&integration, asked))
         .await
         .map_err(Said::raw)?
 }
@@ -218,10 +218,10 @@ async fn integration_asked(
 #[tauri::command]
 async fn integration_accounts(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
 ) -> Result<Vec<Account>, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.integration_accounts(&program))
+    tauri::async_runtime::spawn_blocking(move || actions.integration_accounts(&integration))
         .await
         .map_err(Said::raw)?
 }
@@ -230,19 +230,32 @@ async fn integration_accounts(
 #[tauri::command]
 async fn connect_account(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     server: String,
     client_id: Option<String>,
     on_page: tauri::ipc::Channel<String>,
 ) -> Result<integrations::Connected, Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
-        actions.connect_account(&program, &server, client_id.as_deref(), &|page| {
+        actions.connect_account(&integration, &server, client_id.as_deref(), &|page| {
             let _ = on_page.send(page);
         })
     })
     .await
     .map_err(Said::raw)?
+}
+
+/// Over the network: the account is tested before it is kept
+#[tauri::command]
+async fn add_account(
+    actions: tauri::State<'_, Arc<actions::SilexActions>>,
+    integration: String,
+    values: std::collections::BTreeMap<String, String>,
+) -> Result<integrations::Connected, Said> {
+    let actions = actions.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || actions.add_account(&integration, &values))
+        .await
+        .map_err(Said::raw)?
 }
 
 #[tauri::command]
@@ -253,11 +266,11 @@ fn stop_connecting_account() {
 #[tauri::command]
 async fn disconnect_account(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     id: String,
 ) -> Result<Vec<Account>, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.disconnect_account(&program, &id))
+    tauri::async_runtime::spawn_blocking(move || actions.disconnect_account(&integration, &id))
         .await
         .map_err(Said::raw)?
 }
@@ -265,11 +278,11 @@ async fn disconnect_account(
 #[tauri::command]
 async fn remote_websites(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     account: String,
 ) -> Result<Vec<integrations::integration::RemoteWebsite>, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.remote_websites(&program, &account))
+    tauri::async_runtime::spawn_blocking(move || actions.remote_websites(&integration, &account))
         .await
         .map_err(Said::raw)?
 }
@@ -279,13 +292,13 @@ async fn remote_websites(
 async fn open_remote_website(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
     folder: tauri::State<'_, WebsitesFolder>,
-    program: String,
+    integration: String,
     account: String,
     id: String,
 ) -> Result<WebsiteId, Said> {
     let actions = actions.inner().clone();
     silex_server::create_website_from_copy(&folder.0, move |into| {
-        actions.fetch_website(&program, &account, &id, into)
+        actions.fetch_website(&integration, &account, &id, into)
     })
     .await
     .map_err(Said::from)
@@ -307,14 +320,14 @@ async fn website_has_remote(
 #[tauri::command]
 async fn link_website(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     account: String,
     name: String,
     website_id: WebsiteId,
 ) -> Result<(), Said> {
     let actions = actions.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
-        actions.link_website(&program, &account, &name, website_id.as_str())
+        actions.link_website(&integration, &account, &name, website_id.as_str())
     })
     .await
     .map_err(Said::raw)?
@@ -324,11 +337,11 @@ async fn link_website(
 #[tauri::command]
 async fn check_account(
     actions: tauri::State<'_, Arc<actions::SilexActions>>,
-    program: String,
+    integration: String,
     id: String,
 ) -> Result<integrations::integration::SignIn, Said> {
     let actions = actions.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || actions.check_account(&program, &id))
+    tauri::async_runtime::spawn_blocking(move || actions.check_account(&integration, &id))
         .await
         .map_err(Said::raw)?
 }
@@ -561,14 +574,7 @@ fn tells_the_editor(
             host.as_deref()
                 .map(|host| said::fill(&tr(key), [("host", host)]))
         };
-        let what_happened = failure.what_happened();
-        let params = what_happened
-            .params
-            .iter()
-            .filter_map(|(name, value)| Some((*name, value.as_str()?)));
-        let what_happened = what_happened
-            .sentence
-            .map(|sentence| said::fill(&tr(sentence), params));
+        let what_happened = locales::in_words(&failure.what_happened());
         let _ = app_handle.emit(
             "sync-failed",
             serde_json::json!({
@@ -1156,6 +1162,7 @@ fn main() {
             integration_install,
             integration_accounts,
             connect_account,
+            add_account,
             stop_connecting_account,
             disconnect_account,
             check_account,

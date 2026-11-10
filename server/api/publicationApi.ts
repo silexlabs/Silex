@@ -142,7 +142,7 @@ export default function (config: ServerConfig): Router {
       const filesList: ConnectorFile[] = await mapWithConcurrency(files, PUBLISH_STORAGE_CONCURRENCY, async (file: ClientSideFile) => {
         const fileWithContent = file as ClientSideFileWithContent
         const fileWithSrc = file as ClientSideFileWithSrc
-        if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
+        if(fileWithContent.content === undefined && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
         const content = fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src)
         return {
           // Destination
@@ -154,7 +154,7 @@ export default function (config: ServerConfig): Router {
 
       res.json({
         url: await hostingConnector.getUrl(session, websiteId),
-        job: await hostingConnector.publish(session, websiteId, filesList, jobManager),
+        job: await hostingConnector.publish(session, websiteId, filesList, jobManager, { ssg: data.settings?.ssg }),
       } as ApiPublicationPublishResponse)
     } catch (err) {
       console.error('Error publishing the website', err)

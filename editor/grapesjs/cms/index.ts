@@ -61,6 +61,26 @@ export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {
   eleventyImage?: boolean,
 }
 
+export function openCmsSettingsDialog(editor: Editor, title: string, content: HTMLElement) {
+  const footer = document.createElement('div')
+  footer.innerHTML = `
+    <hr>
+    <footer>
+      <button class="silex-button silex-button--primary" data-action="settings">Go to Settings</button>
+      <button class="silex-button silex-button--secondary" data-action="close">Close</button>
+    </footer>
+  `
+  footer.querySelector('[data-action="settings"]')?.addEventListener('click', () => {
+    editor.Modal.close()
+    editor.runCommand('open-settings', { sectionId: CMS_SETTINGS_SECTION_ID })
+  })
+  footer.querySelector('[data-action="close"]')?.addEventListener('click', () => {
+    editor.Modal.close()
+  })
+  content.append(footer)
+  editor.Modal.open({ title, content })
+}
+
 export default function (editor: Editor, { clientConfig, ...options }: Partial<EleventyPluginOptions> & { clientConfig: ClientConfig }) {
   const filters = [
     ...eleventyFilters,
@@ -110,25 +130,8 @@ export default function (editor: Editor, { clientConfig, ...options }: Partial<E
     content.innerHTML = `
       <p><strong>${dataSource?.label || 'Data source'}</strong></p>
       <p>${message}</p>
-      <hr>
-      <footer>
-        <button class="silex-button silex-button--primary" data-action="settings">Go to Settings</button>
-        <button class="silex-button silex-button--secondary" data-action="close">Close</button>
-      </footer>
     `
-
-    content.querySelector('[data-action="settings"]')?.addEventListener('click', () => {
-      editor.Modal.close()
-      editor.runCommand('open-settings', { sectionId: CMS_SETTINGS_SECTION_ID })
-    })
-    content.querySelector('[data-action="close"]')?.addEventListener('click', () => {
-      editor.Modal.close()
-    })
-
-    editor.Modal.open({
-      title: 'Data Source Error',
-      content,
-    })
+    openCmsSettingsDialog(editor, 'Data Source Error', content)
   }
 
   // Only display this error at load time

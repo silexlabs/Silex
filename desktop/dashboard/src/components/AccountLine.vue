@@ -12,7 +12,7 @@ import {
 import ExternalLink from './ExternalLink.vue'
 import { useMenuAction } from '../menu'
 import type { Account, CatalogEntry, explain } from '../api'
-import { accountKey, needsYou, signIns } from '../integrations'
+import { accountKey, needsYou, signIns, tooOld } from '../integrations'
 
 /** A chosen account, or the program of an integration in use that Silex cannot run when there is none */
 const props = defineProps<{
@@ -35,22 +35,23 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const id = computed(() => `line-${props.entry.program}-${props.account?.id ?? 'program'}`.replace(/[^\w-]/g, '-'))
+const id = computed(() => `line-${props.entry.id}-${props.account?.id ?? 'program'}`.replace(/[^\w-]/g, '-'))
 
-const signIn = computed(() => (props.account ? signIns.value[accountKey(props.entry.program, props.account.id)] : undefined))
+const signIn = computed(() => (props.account ? signIns.value[accountKey(props.entry.id, props.account.id)] : undefined))
 
 const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; detail: string } => {
   const { entry } = props
   if (!props.account) {
+    if (entry.needs) return { tone: 'problem', label: t('Too old'), detail: tooOld(entry) }
     return entry.broken
       ? { tone: 'problem', label: t('Does not start'), detail: t('{program} is on this computer but does not start.', { program: entry.program }) }
       : { tone: 'problem', label: t('Not found'), detail: t('{program} is not on this computer.', { program: entry.program }) }
   }
   const said = signIn.value
   if (said === 'accepted') return { tone: 'ok', label: t('Signed in'), detail: t('Checked just now') }
-  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: t('Sign in again to use it.') }
-  // What the program said is the only thing that tells a network down from a server that moved
-  if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: said.unreachable.detail ?? '' }
+  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: entry.accountForm ? t('Sign out of this server, then add it again with the right password.') : t('Sign in again to use it.') }
+  // What the program said is the only thing that tells a network down from a server that moved, when Silex has no sentence for it
+  if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: (entry.accountForm ? said.unreachable.message : said.unreachable.detail) ?? '' }
   return { tone: 'unknown', label: t('Checking…'), detail: '' }
 })
 
@@ -118,7 +119,7 @@ const { choose, afterClose } = useMenuAction(more)
         </button>
       </template>
       <button
-        v-else-if="signIn === 'refused'"
+        v-else-if="signIn === 'refused' && !entry.accountForm"
         type="button"
         class="button"
         :aria-describedby="id"

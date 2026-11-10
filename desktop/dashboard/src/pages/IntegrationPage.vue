@@ -13,7 +13,7 @@ import {
 } from '../integrations'
 
 const route = useRoute()
-const entry = computed(() => catalog.value?.find((other) => other.program === route.params.program))
+const entry = computed(() => catalog.value?.find((other) => other.id === route.params.integration))
 const failed = ref<ReturnType<typeof explain> | null>(null)
 
 async function load() {
@@ -74,7 +74,7 @@ onMounted(() => {
     v-else-if="!entry"
     class="page__lead"
   >
-    {{ $t('Silex has no integration named {program}.', { program: route.params.program }) }}
+    {{ $t('Silex has no integration named {program}.', { program: route.params.integration }) }}
   </p>
   <template v-else>
     <p class="page__lead">

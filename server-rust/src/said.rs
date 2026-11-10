@@ -86,6 +86,18 @@ impl Said {
     }
 }
 
+impl From<String> for Said {
+    fn from(detail: String) -> Self {
+        Self::raw(detail)
+    }
+}
+
+impl From<&str> for Said {
+    fn from(detail: &str) -> Self {
+        Self::raw(detail)
+    }
+}
+
 /// `sentence` with its `{name}` parameters put in, as the dashboard does
 pub fn fill<'a>(sentence: &str, params: impl IntoIterator<Item = (&'a str, &'a str)>) -> String {
     params

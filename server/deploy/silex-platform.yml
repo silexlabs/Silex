@@ -29,13 +29,13 @@ caproverOneClickApp:
         - id: '$$cap_storage_connector'
           label: STORAGE_CONNECTOR
           defaultValue: 'gitlab'
-          description: Storage connector you want to use should be one or more of following gitlab,ftp,gitlab2 (separated with comma but no space)
-          validRegex: '/^((gitlab|ftp|gitlab2)\,?)*$/'
+          description: Storage connector you want to use should be one or more of following gitlab,gitlab2 (separated with comma but no space)
+          validRegex: '/^((gitlab|gitlab2)\,?)*$/'
         - id: '$$cap_hosting_connector'
           label: HOSTING_CONNECTOR
-          defaultValue: 'gitlab,download'
-          description: Hosting connector you want to use should be one or more of following gitlab,ftp,gitlab2,download (separated with comma but no space)
-          validRegex: '/^((gitlab|ftp|gitlab2|download)\,?)*$/'
+          defaultValue: 'gitlab'
+          description: Hosting connector you want to use should be one or more of following gitlab,gitlab2 (separated with comma but no space)
+          validRegex: '/^((gitlab|gitlab2)\,?)*$/'
         - id: '$$cap_gitlab_client_id'
           label: GITLAB_CLIENT_ID
           description: Your client-id for your gitlab app (see https://docs.gitlab.com/ee/integration/oauth_provider.html#create-a-user-owned-application)

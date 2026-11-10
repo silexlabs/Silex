@@ -63,7 +63,10 @@ async fn took_a_page_away(target_dir: &Path, written: &std::collections::HashSet
                 folders.push(path);
                 continue;
             }
-            let a_page = path.extension().is_some_and(|kind| kind == "html");
+            // The pages of Zola are the Markdown files of content/, which Eleventy would publish as pages
+            let a_page = path.extension().is_some_and(|kind| {
+                kind == "html" || (kind == "md" && path.starts_with(target_dir.join("content")))
+            });
             if a_page && !written.contains(&path) {
                 if let Err(e) = fs::remove_file(&path).await {
                     tracing::warn!("Could not delete {}: {}", path.display(), e);

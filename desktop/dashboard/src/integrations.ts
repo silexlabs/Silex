@@ -57,16 +57,19 @@ const checkedAt = new Map<string, number>()
 /** A check older than this is made again when the screen opens */
 const STALE = 5 * 60 * 1000
 
-export const accountKey = (program: string, id: string) => `${program} ${id}`
+export const accountKey = (integration: string, id: string) => `${integration} ${id}`
 
-export const usable = (entry: CatalogEntry) => entry.found && !entry.broken
+export const usable = (entry: CatalogEntry) => entry.found && !entry.broken && !entry.needs
+
+export const tooOld = (entry: CatalogEntry) =>
+  i18n.global.t('Silex requires {program} {needed} or later. Installed version: {version}.', { version: entry.version, program: entry.program, needed: entry.needs })
 
 export const chosen = (entry: CatalogEntry) =>
-  (accounts.value[entry.program] ?? []).filter((account) => entry.accounts.includes(account.id))
+  (accounts.value[entry.id] ?? []).filter((account) => entry.accounts.includes(account.id))
 
 /** The program of an integration in use that Silex cannot run, or a chosen account its server turned down */
 export const needsYou = (entry: CatalogEntry, account?: Account) =>
-  account ? signIns.value[accountKey(entry.program, account.id)] === 'refused' : !usable(entry)
+  account ? signIns.value[accountKey(entry.id, account.id)] === 'refused' : !usable(entry)
 
 export const problems = computed(() =>
   (catalog.value ?? []).reduce((count, entry) => {
@@ -93,7 +96,7 @@ export const placeLabel = (place: Place) => place.account.summary ?? place.accou
 /** A label asks the name of a new website, which may stay on this computer; without one the website exists and has a name */
 export async function askPlace(options: { title: string; label?: string; value: string; confirmLabel: string }) {
   const { t } = i18n.global
-  const key = (place: Place) => accountKey(place.entry.program, place.account.id)
+  const key = (place: Place) => accountKey(place.entry.id, place.account.id)
   const accountsToChoose = places.value.map((place) => ({
     value: key(place),
     label: placeLabel(place),
@@ -123,7 +126,7 @@ export async function askPlace(options: { title: string; label?: string; value: 
 export async function sendToPlace(place: Place, name: string, websiteId: string) {
   const sending = toast(i18n.global.t('Creating the project on {server}…', { server: placeLabel(place) }))
   try {
-    await linkWebsite(place.entry.program, place.account.id, name, websiteId)
+    await linkWebsite(place.entry.id, place.account.id, name, websiteId)
     return null
   } catch (error) {
     return explain(error)
@@ -146,15 +149,15 @@ export async function sendNewWebsite({ name, place }: { name: string; place: Pla
 }
 
 export async function loadAccounts(entry: CatalogEntry) {
-  if (usable(entry)) accounts.value[entry.program] = await integrationAccounts(entry.program)
+  if (usable(entry)) accounts.value[entry.id] = await integrationAccounts(entry.id)
 }
 
 export async function check(entry: CatalogEntry, account: Account) {
-  const key = accountKey(entry.program, account.id)
+  const key = accountKey(entry.id, account.id)
   if (signIns.value[key] === 'checking') return
   signIns.value[key] = 'checking'
   try {
-    signIns.value[key] = await checkAccount(entry.program, account.id)
+    signIns.value[key] = await checkAccount(entry.id, account.id)
   } catch (error) {
     signIns.value[key] = { unreachable: explain(error) }
   }
@@ -166,7 +169,7 @@ export async function checkAccounts(all = false) {
   const asked: Promise<void>[] = []
   for (const entry of catalog.value ?? []) {
     for (const account of chosen(entry)) {
-      const at = checkedAt.get(accountKey(entry.program, account.id))
+      const at = checkedAt.get(accountKey(entry.id, account.id))
       if (all || at === undefined || Date.now() - at > STALE) asked.push(check(entry, account))
     }
   }
@@ -179,8 +182,8 @@ export async function loadIntegrations() {
 }
 
 export async function ask(entry: CatalogEntry, asked: Parameters<typeof askIntegration>[1]) {
-  catalog.value = await askIntegration(entry.program, asked)
-  const now = catalog.value.find((other) => other.program === entry.program)
+  catalog.value = await askIntegration(entry.id, asked)
+  const now = catalog.value.find((other) => other.id === entry.id)
   if (now) await loadAccounts(now)
   return now
 }
@@ -210,23 +213,24 @@ export async function told(entry: CatalogEntry, now?: CatalogEntry) {
   if (now && usable(now)) {
     toast(t('{program} found.', { program: entry.program }), 'success')
     await checkAccounts()
-  } else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
+  } else if (now?.needs) toast(tooOld(now))
+  else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
 }
 
 /** Silex downloads the program, then looks for it again */
 export function install(entry: CatalogEntry) {
-  return once(entry.program, async () => {
-    installing.value.add(entry.program)
-    delete installFailed.value[entry.program]
+  return once(entry.id, async () => {
+    installing.value.add(entry.id)
+    delete installFailed.value[entry.id]
     try {
-      catalog.value = await installIntegration(entry.program)
+      catalog.value = await installIntegration(entry.id)
     } catch (error) {
-      installFailed.value[entry.program] = explain(error)
+      installFailed.value[entry.id] = explain(error)
       return
     } finally {
-      installing.value.delete(entry.program)
+      installing.value.delete(entry.id)
     }
-    const now = catalog.value.find((other) => other.program === entry.program)
+    const now = catalog.value.find((other) => other.id === entry.id)
     if (now) await loadAccounts(now)
     await told(entry, now)
   })

@@ -2,7 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ExternalLink from './ExternalLink.vue'
-import { type Account, type CatalogEntry, connectAccount, explain, stopConnectingAccount } from '../api'
+import type { OptionsField } from '~/common/types'
+import { type Account, type CatalogEntry, addAccount, connectAccount, explain, stopConnectingAccount } from '../api'
 
 const props = defineProps<{
   integration: CatalogEntry
@@ -37,6 +38,14 @@ const choosing = ref(!props.account && !!props.others?.length)
 const signingIn = ref<string | null>(null)
 const page = ref<string | null>(null)
 let stopped = false
+const sending = ref(false)
+const answers = ref<Record<string, string>>(Object.fromEntries((props.integration.accountForm?.fields ?? []).map((field) => [field.name, field.value ?? ''])))
+const empty = ref<string[]>([])
+const refused = ref<ReturnType<typeof explain> | null>(null)
+const helpId = (field: OptionsField) => `${titleId}-${field.name}-help`
+const emptyId = (field: OptionsField) => `${titleId}-${field.name}-empty`
+const described = (field: OptionsField) =>
+  [field.help && helpId(field), empty.value.includes(field.name) && emptyId(field)].filter(Boolean).join(' ') || undefined
 
 const typed = computed(() => (chosen.value === OTHER ? address.value.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '') : chosen.value))
 
@@ -59,7 +68,7 @@ async function signIn() {
   await nextTick()
   stop.value?.focus()
   try {
-    const connected = await connectAccount(props.integration.program, server, chosen.value === OTHER ? clientId.value.trim() : null, (shown) => {
+    const connected = await connectAccount(props.integration.id, server, chosen.value === OTHER ? clientId.value.trim() : null, (shown) => {
       page.value = shown
     })
     emit('done', connected.accounts, stopped ? null : connected.account)
@@ -72,7 +81,29 @@ async function signIn() {
 async function useAnother() {
   choosing.value = false
   await nextTick()
-  element.value?.querySelector<HTMLInputElement>('input[type=radio]:not(:disabled)')?.focus()
+  element.value?.querySelector<HTMLElement>('input:not(:disabled), select')?.focus()
+}
+
+async function add() {
+  if (sending.value) return
+  empty.value = (props.integration.accountForm?.fields ?? [])
+    .filter((field) => field.required && !answers.value[field.name]?.trim())
+    .map((field) => field.name)
+  if (empty.value.length) {
+    await nextTick()
+    element.value?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+    return
+  }
+  sending.value = true
+  refused.value = null
+  try {
+    const added = await addAccount(props.integration.id, { ...answers.value })
+    emit('done', added.accounts, added.account)
+  } catch (error) {
+    refused.value = explain(error)
+  } finally {
+    sending.value = false
+  }
 }
 
 function stopSigningIn() {
@@ -81,6 +112,7 @@ function stopSigningIn() {
 }
 
 function cancel() {
+  if (sending.value) return
   if (signingIn.value) stopSigningIn()
   else emit('done', [], null)
 }
@@ -173,6 +205,120 @@ function cancel() {
         </button>
       </div>
     </template>
+
+    <form
+      v-else-if="integration.accountForm"
+      novalidate
+      @submit.prevent="add"
+    >
+      <h2
+        :id="titleId"
+        class="dialog__title"
+      >
+        {{ t(integration.accountForm.title) }}
+      </h2>
+      <div class="account__form">
+        <template
+          v-for="field in integration.accountForm.fields"
+          :key="field.name"
+        >
+          <label
+            v-if="field.type === 'checkbox'"
+            class="account__choice"
+          >
+            <input
+              v-model="answers[field.name]"
+              type="checkbox"
+              true-value="on"
+              false-value=""
+              :aria-describedby="described(field)"
+            >
+            {{ t(field.label) }}
+          </label>
+          <label
+            v-else
+            class="field"
+          >
+            {{ t(field.label) }}
+            <select
+              v-if="field.type === 'select'"
+              v-model="answers[field.name]"
+              class="select"
+              :aria-describedby="described(field)"
+            >
+              <option
+                v-for="choice in field.choices"
+                :key="choice.value"
+                :value="choice.value"
+              >
+                {{ t(choice.label) }}
+              </option>
+            </select>
+            <input
+              v-else
+              v-model="answers[field.name]"
+              class="field__input"
+              :type="field.type"
+              :required="field.required"
+              autocomplete="off"
+              :aria-invalid="empty.includes(field.name)"
+              :aria-describedby="described(field)"
+            >
+          </label>
+          <p
+            v-if="field.help"
+            :id="helpId(field)"
+            class="account__hint"
+            :class="{ 'account__hint--choice': field.type === 'checkbox' }"
+          >
+            {{ t(field.help) }}
+          </p>
+          <p
+            v-if="empty.includes(field.name)"
+            :id="emptyId(field)"
+            class="field__problem account__problem"
+          >
+            {{ t('This field is required.') }}
+          </p>
+        </template>
+      </div>
+      <p
+        role="status"
+        class="visually-hidden"
+      >
+        {{ sending ? t('Connecting…') : '' }}
+      </p>
+      <div
+        v-if="refused"
+        class="account__next"
+        role="alert"
+      >
+        <p class="field__problem">
+          {{ refused.message }}
+        </p>
+        <pre
+          v-if="refused.detail"
+          class="technical-detail"
+        >{{ refused.detail }}</pre>
+      </div>
+      <div class="dialog__actions">
+        <button
+          type="button"
+          class="button"
+          :aria-disabled="sending"
+          @click="cancel"
+        >
+          {{ t('Cancel') }}
+        </button>
+        <button
+          type="submit"
+          class="button button--primary"
+          :aria-disabled="sending"
+        >
+          {{ sending ? t('Connecting…') : t('Add') }}
+        </button>
+      </div>
+    </form>
 
     <form
       v-else
@@ -331,6 +477,20 @@ function cancel() {
   display: grid;
   gap: var(--silex-space-3);
   margin-left: var(--silex-space-6);
+}
+
+.account__form {
+  display: grid;
+  gap: var(--silex-space-3);
+}
+
+.account__problem {
+  margin-top: calc(-1 * var(--silex-space-2));
+}
+
+[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .account__others {

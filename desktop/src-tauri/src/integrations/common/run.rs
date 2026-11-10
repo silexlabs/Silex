@@ -67,11 +67,35 @@ const LOOKED_AT_AT_LEAST_EVERY: Duration = Duration::from_millis(20);
 /// One page of the projects of a GitLab account is half a megabyte
 const MAX_OUTPUT: usize = 1024 * 1024;
 
+/// A program, and what is added to its environment
+///
+/// A secret goes in the environment, where `ps` does not show it as it shows
+/// the arguments.
+#[derive(Clone, Copy)]
+pub struct Program<'a> {
+    pub path: &'a Path,
+    pub env: &'a [(&'a str, &'a str)],
+}
+
+impl<'a, P: AsRef<Path> + ?Sized> From<&'a P> for Program<'a> {
+    fn from(path: &'a P) -> Self {
+        Program {
+            path: path.as_ref(),
+            env: &[],
+        }
+    }
+}
+
 /// `dir` is always explicit, so that a program never runs in the working
 /// directory of the app, which could be inside somebody else's repository
-pub fn run(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+pub fn run<'a>(
+    program: impl Into<Program<'a>>,
+    dir: &Path,
+    args: &[&str],
+) -> Result<String, String> {
+    let program = program.into();
     said(
-        program,
+        program.path,
         run_within(program, dir, args, None, LOCAL, false, None)?,
     )
 }
@@ -119,9 +143,14 @@ pub fn run_with_input(
     )
 }
 
-pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, String> {
+pub fn run_fetch<'a>(
+    program: impl Into<Program<'a>>,
+    dir: &Path,
+    args: &[&str],
+) -> Result<String, String> {
+    let program = program.into();
     said(
-        program,
+        program.path,
         run_within(program, dir, args, None, FETCH, false, None)?,
     )
 }
@@ -132,6 +161,30 @@ pub fn run_fetch(program: &Path, dir: &Path, args: &[&str]) -> Result<String, St
 /// answers `--porcelain` on its standard output and fails all the same.
 pub fn run_transfer_verbatim(program: &Path, dir: &Path, args: &[&str]) -> Result<Ran, String> {
     run_within(program, dir, args, None, TRANSFER, false, None)
+}
+
+/// Runs a transfer with no time limit, reporting its output line by line
+///
+/// The program enforces its own network timeouts.
+pub fn run_following(
+    program: &Path,
+    dir: &Path,
+    args: &[&str],
+    heard: &dyn Fn(&str),
+) -> Result<Ran, String> {
+    let waiting = Waiting {
+        given_up: &AtomicBool::new(false),
+        heard,
+    };
+    run_within(
+        program,
+        dir,
+        args,
+        None,
+        Duration::MAX,
+        false,
+        Some(&waiting),
+    )
 }
 
 pub struct Ran {
@@ -238,8 +291,8 @@ pub fn open_detached(target: impl AsRef<OsStr>) -> io::Result<()> {
     Err(last_error.unwrap_or_else(|| io::Error::other("Nothing on this computer opens it")))
 }
 
-fn run_within(
-    program: &Path,
+fn run_within<'a>(
+    program: impl Into<Program<'a>>,
     dir: &Path,
     args: &[&str],
     input: Option<&str>,
@@ -247,9 +300,11 @@ fn run_within(
     login_shell: bool,
     waiting: Option<&Waiting>,
 ) -> Result<Ran, String> {
+    let Program { path: program, env } = program.into();
     let mut command = Command::new(program);
     command
         .args(args)
+        .envs(env.iter().copied())
         .current_dir(dir)
         // git asking for a password would otherwise freeze a save forever
         .stdin(if input.is_some() {
@@ -303,10 +358,16 @@ fn run_within(
         command.creation_flags(CREATE_NO_WINDOW);
     }
 
-    // What was run is not in the error a user reads, so it has to be here
+    // What was run is not in the error a user reads, so it has to be here.
+    // Not what comes after `--`, named by the user: this goes to telemetry
+    let options: Vec<&str> = args
+        .iter()
+        .copied()
+        .take_while(|arg| *arg != "--")
+        .collect();
     tracing::info!(
         program = %program.display(),
-        args = %redact(&args.join(" ")),
+        args = %redact(&options.join(" ")),
         "running"
     );
 

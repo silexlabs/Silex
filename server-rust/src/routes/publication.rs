@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 use crate::jobs::{JobData, JobStatus};
-use crate::models::{File, Ssg, WebsiteId};
+use crate::models::{File, Ssg, WebsiteId, PUBLIC_FOLDER};
 use crate::publish;
 use crate::routes::connector::LOCAL_FOLDER;
 use crate::routes::AppState;
@@ -181,22 +181,33 @@ async fn publish_website(
     match state.actions.clone() {
         Some(actions) => {
             let website_id = query.website_id.clone();
+            let hosting_id = query.hosting_id.clone();
+            let local = hosting_id == LOCAL_FOLDER;
             let options = crate::actions::PublicationOptions {
                 ssg,
+                no_ci: local,
                 ..query.options()
             };
-            let local = query.hosting_id == LOCAL_FOLDER;
             let data_path = state.data_path.clone();
             // Building and sending a website both take their time, on a thread
             // of their own so that the server answers meanwhile
             tokio::task::spawn_blocking(move || {
                 let publishing = std::panic::AssertUnwindSafe(|| {
-                    let built = match actions.build(website_id.as_str(), &options, &job) {
-                        Ok(built) => built,
-                        Err(message) => return job.failed(message),
-                    };
+                    let built =
+                        match actions.build(website_id.as_str(), &hosting_id, &options, &job) {
+                            Ok(built) => built,
+                            Err(message) => return job.failed(message),
+                        };
                     if !local {
-                        actions.deploy(website_id.as_str(), &options, &job);
+                        let published =
+                            storage::website_path(&data_path, &website_id).join(PUBLIC_FOLDER);
+                        actions.deploy(
+                            website_id.as_str(),
+                            &hosting_id,
+                            &options,
+                            built.as_deref().unwrap_or(&published),
+                            &job,
+                        );
                     }
                     // A host that returned without saying how it went leaves the
                     // publication where it really is rather than open forever
@@ -324,6 +335,7 @@ mod tests {
     impl crate::Actions for Panicking {
         fn build(
             &self,
+            _: &str,
             _: &str,
             _: &crate::actions::PublicationOptions,
             _: &crate::jobs::Job,

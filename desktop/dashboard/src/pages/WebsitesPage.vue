@@ -302,7 +302,7 @@ async function showFolder(website: Website) {
             </DropdownMenuItem>
             <DropdownMenuItem
               v-for="remoteSource in remoteSources"
-              :key="remoteSource.program"
+              :key="remoteSource.id"
               class="menu__item"
               @select="newWebsiteMenu.choose(() => (openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }))"
             >
@@ -382,7 +382,7 @@ async function showFolder(website: Website) {
       </RouterLink>
       <button
         v-for="remoteSource in remoteSources"
-        :key="remoteSource.program"
+        :key="remoteSource.id"
         type="button"
         class="button"
         @click="openingFrom = { integration: remoteSource, accounts: chosen(remoteSource) }"
