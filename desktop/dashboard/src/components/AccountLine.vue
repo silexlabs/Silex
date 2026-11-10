@@ -48,7 +48,7 @@ const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; 
   }
   const said = signIn.value
   if (said === 'accepted') return { tone: 'ok', label: t('Signed in'), detail: t('Checked just now') }
-  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: t('Sign in again to use it.') }
+  if (said === 'refused') return { tone: 'problem', label: t('Sign-in not accepted'), detail: entry.accountForm ? '' : t('Sign in again to use it.') }
   // What the program said is the only thing that tells a network down from a server that moved
   if (typeof said === 'object') return { tone: 'unknown', label: t('Could not check'), detail: said.unreachable.detail ?? '' }
   return { tone: 'unknown', label: t('Checking…'), detail: '' }
@@ -118,7 +118,7 @@ const { choose, afterClose } = useMenuAction(more)
         </button>
       </template>
       <button
-        v-else-if="signIn === 'refused'"
+        v-else-if="signIn === 'refused' && !entry.accountForm"
         type="button"
         class="button"
         :aria-describedby="id"
