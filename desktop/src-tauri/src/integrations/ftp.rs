@@ -115,6 +115,11 @@ impl Integration for Ftp {
         Some(&RELEASE)
     }
 
+    // The first that pins the key of an SFTP server
+    fn minimum_version(&self) -> Option<&'static str> {
+        Some("1.75")
+    }
+
     fn capacities(&self) -> &'static [Capacity] {
         &[Capacity::Deploy]
     }
@@ -568,11 +573,7 @@ fn add(rclone: &Path, new: NewServer) -> Result<String, Said> {
         pin.push(&remote);
         if let Err(why) = run::run_fetch(rclone, &std::env::temp_dir(), &pin) {
             forget(rclone, &name);
-            return Err(if why.contains("unknown flag") {
-                too_old(rclone, why)
-            } else {
-                not_connected(&new.host, why)
-            });
+            return Err(not_connected(&new.host, why));
         }
     }
     Ok(name)
@@ -812,22 +813,6 @@ fn forget(rclone: &Path, name: &str) {
     }
 }
 
-/// The first rclone that pins the key of an SFTP server
-const PINS_KEYS_FROM: &str = "1.75";
-
-fn too_old(rclone: &Path, why: String) -> Said {
-    let version = run::run(rclone, &std::env::temp_dir(), &["version"])
-        .ok()
-        .and_then(|said| said.lines().next().map(|line| run::readable(line.trim())))
-        .unwrap_or_else(|| "rclone".to_string());
-    Said::new(key!(
-        "{version} is too old for Silex, which needs rclone {needed} or later."
-    ))
-    .with("version", version)
-    .with("needed", PINS_KEYS_FROM)
-    .because(why)
-}
-
 fn not_connected(host: &str, why: String) -> Said {
     failed(host, why, key!("Silex could not connect to {host}."))
 }
@@ -851,7 +836,7 @@ fn failed(host: &str, why: String, otherwise: &'static str) -> Said {
         .because(why);
     }
     let sentence = if said.contains("host key mismatch") {
-        key!("The key of {host} has changed. If this is normal, for example after the server was reinstalled, remove this server in Integrations, then add it again.")
+        key!("The key of {host} has changed. If this is normal, for example after the server was reinstalled, choose Sign out on this server in Integrations, then add it again.")
     } else if said.contains("x509") {
         key!("Silex does not trust the security certificate of {host}.")
     } else if refused(&why) {
@@ -1033,7 +1018,7 @@ mod tests {
     fn tells_a_changed_key() {
         assert_eq!(
             not_connected("h", "NewFs: couldn't connect SSH: ssh: handshake failed: sftp: host key mismatch for h:22: server offered ssh-rsa key with fingerprint SHA256:6kjo; pinned fingerprints for this algorithm: SHA256:AIDt".to_string()).sentence,
-            Some("The key of {host} has changed. If this is normal, for example after the server was reinstalled, remove this server in Integrations, then add it again.")
+            Some("The key of {host} has changed. If this is normal, for example after the server was reinstalled, choose Sign out on this server in Integrations, then add it again.")
         );
     }
 }

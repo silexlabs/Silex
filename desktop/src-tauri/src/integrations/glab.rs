@@ -130,6 +130,11 @@ impl Integration for Glab {
         Some(&RELEASE)
     }
 
+    // The first that signs in with --web
+    fn minimum_version(&self) -> Option<&'static str> {
+        Some("1.90")
+    }
+
     // glab sends with git: better the dialog of Apple now than a failed first send
     fn installed(&self) {
         #[cfg(target_os = "macos")]

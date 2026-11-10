@@ -3,7 +3,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
 import type { AntiFeature, CatalogEntry, explain } from '../api'
-import { ANTI_FEATURES, OPENNESS, chosen, usable } from '../integrations'
+import { ANTI_FEATURES, OPENNESS, chosen, tooOld, usable } from '../integrations'
 
 defineProps<{
   entry: CatalogEntry
@@ -78,6 +78,12 @@ const ICONS: Record<AntiFeature, string> = {
         class="technical-detail"
       >{{ failed.detail }}</pre>
     </template>
+    <p
+      v-else-if="entry.needs"
+      class="integration-card__line integration-card__line--failed"
+    >
+      {{ tooOld(entry) }}
+    </p>
     <p
       v-else
       class="integration-card__line"

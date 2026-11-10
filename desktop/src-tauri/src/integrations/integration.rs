@@ -357,6 +357,11 @@ pub trait Integration: Send + Sync {
         &["--version"]
     }
 
+    /// The oldest version of the program Silex works with, none when any will do
+    fn minimum_version(&self) -> Option<&'static str> {
+        None
+    }
+
     /// Answered from the disk, never from the network: a user waits behind
     /// this. Every integration answering yes that can sync sends the website,
     /// even when two send it to the same remote.

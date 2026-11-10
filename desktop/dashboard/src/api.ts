@@ -163,6 +163,8 @@ export interface CatalogEntry {
   accounts: string[]
   found: boolean
   broken: boolean
+  /** The version Silex needs, when the one found is older */
+  needs: string | null
   version: string | null
 }
 

@@ -59,7 +59,10 @@ const STALE = 5 * 60 * 1000
 
 export const accountKey = (integration: string, id: string) => `${integration} ${id}`
 
-export const usable = (entry: CatalogEntry) => entry.found && !entry.broken
+export const usable = (entry: CatalogEntry) => entry.found && !entry.broken && !entry.needs
+
+export const tooOld = (entry: CatalogEntry) =>
+  i18n.global.t('Silex requires {program} {needed} or later. Installed version: {version}.', { version: entry.version, program: entry.program, needed: entry.needs })
 
 export const chosen = (entry: CatalogEntry) =>
   (accounts.value[entry.id] ?? []).filter((account) => entry.accounts.includes(account.id))
@@ -210,7 +213,8 @@ export async function told(entry: CatalogEntry, now?: CatalogEntry) {
   if (now && usable(now)) {
     toast(t('{program} found.', { program: entry.program }), 'success')
     await checkAccounts()
-  } else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
+  } else if (now?.needs) toast(tooOld(now))
+  else toast(now?.broken ? t('{program} is on this computer but does not start.', { program: entry.program }) : t('{program} is still not found.', { program: entry.program }))
 }
 
 /** Silex downloads the program, then looks for it again */

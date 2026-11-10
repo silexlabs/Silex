@@ -123,6 +123,8 @@ pub struct CatalogEntry {
     accounts: Vec<String>,
     found: bool,
     broken: bool,
+    /// The version Silex needs, when the one found is older
+    needs: Option<&'static str>,
     version: Option<String>,
 }
 
@@ -328,6 +330,12 @@ impl Integrations {
                     accounts: state.accounts,
                     found: state.path.is_some_and(|path| path.is_file()),
                     broken: state.broken,
+                    needs: integration.minimum_version().filter(|_| {
+                        state
+                            .version
+                            .as_deref()
+                            .is_some_and(|version| too_old(integration, version))
+                    }),
                     version: state.version,
                 }
             })
@@ -415,13 +423,35 @@ fn located(
         .release()
         .and_then(|release| install::silex_copy(data_dir, id, release));
     match (programs::users_own(id), ours) {
-        (Some(theirs), Some(ours)) if !starts(integration, &theirs) => Some(ours),
+        (Some(theirs), Some(ours)) if !fits(integration, &theirs) => Some(ours),
         (theirs, ours) => theirs.or(ours),
     }
 }
 
-fn starts(integration: &dyn Integration, path: &Path) -> bool {
-    run::run(path, &std::env::temp_dir(), integration.version_args()).is_ok()
+/// Whether the program runs, in a version Silex works with
+fn fits(integration: &dyn Integration, path: &Path) -> bool {
+    run::run(path, &std::env::temp_dir(), integration.version_args())
+        .is_ok_and(|said| !too_old(integration, &said))
+}
+
+/// Whether what the program answered when asked its version is older than
+/// the version the integration needs
+fn too_old(integration: &dyn Integration, version: &str) -> bool {
+    integration.minimum_version().is_some_and(|needed| {
+        let found = numbers(version);
+        !found.is_empty() && found < numbers(needed)
+    })
+}
+
+/// The numbers of the first word that starts with one, like 1, 89 and 0 in
+/// `glab 1.89.0 (c6fca530)` or `rclone v1.76.0`
+fn numbers(version: &str) -> Vec<u32> {
+    version
+        .split_whitespace()
+        .map(|word| word.trim_start_matches('v'))
+        .find(|word| word.starts_with(|c: char| c.is_ascii_digit()))
+        .map(|word| word.split('.').map_while(|n| n.parse().ok()).collect())
+        .unwrap_or_default()
 }
 
 /// The version of this Silex, or the program of the user when it starts, in
@@ -442,8 +472,7 @@ pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
             continue;
         }
         // A program the user installed after the copy of Silex replaces it
-        let theirs =
-            programs::users_own(program).is_some_and(|theirs| starts(integration, &theirs));
+        let theirs = programs::users_own(program).is_some_and(|theirs| fits(integration, &theirs));
         if !theirs {
             if let Err(e) = install::install(data_dir, program, release) {
                 tracing::warn!("Could not update the {} of Silex: {:?}", program, e);
@@ -787,5 +816,18 @@ fn write(data_dir: &Path, integrations: &Integrations) {
     if let Err(e) = written {
         tracing::warn!("Could not store the integrations: {}", e);
         let _ = std::fs::remove_file(&being_written);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tells_a_version_too_old() {
+        assert!(too_old(&glab::Glab, "glab 1.89.0 (c6fca530)"));
+        assert!(!too_old(&glab::Glab, "glab 1.130.0 (c6fca530)"));
+        assert!(too_old(&ftp::Ftp, "rclone v1.74.3"));
+        assert!(!too_old(&ftp::Ftp, "rclone v1.75.0"));
     }
 }

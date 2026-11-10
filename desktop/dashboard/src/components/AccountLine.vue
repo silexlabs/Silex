@@ -12,7 +12,7 @@ import {
 import ExternalLink from './ExternalLink.vue'
 import { useMenuAction } from '../menu'
 import type { Account, CatalogEntry, explain } from '../api'
-import { accountKey, needsYou, signIns } from '../integrations'
+import { accountKey, needsYou, signIns, tooOld } from '../integrations'
 
 /** A chosen account, or the program of an integration in use that Silex cannot run when there is none */
 const props = defineProps<{
@@ -42,6 +42,7 @@ const signIn = computed(() => (props.account ? signIns.value[accountKey(props.en
 const state = computed((): { tone: 'ok' | 'problem' | 'unknown'; label: string; detail: string } => {
   const { entry } = props
   if (!props.account) {
+    if (entry.needs) return { tone: 'problem', label: t('Too old'), detail: tooOld(entry) }
     return entry.broken
       ? { tone: 'problem', label: t('Does not start'), detail: t('{program} is on this computer but does not start.', { program: entry.program }) }
       : { tone: 'problem', label: t('Not found'), detail: t('{program} is not on this computer.', { program: entry.program }) }
