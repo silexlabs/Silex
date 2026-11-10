@@ -3,6 +3,7 @@ import { ClientConfig } from '../../config'
 import { getZeroConfig } from './config'
 import { eleventy } from './eleventy'
 import { hugo } from './hugo'
+import { zola } from './zola'
 import ssgs, { getSsgId } from './ssg'
 import pageSettings from './page-settings'
 import siteSettings from './site-settings'
@@ -80,7 +81,7 @@ export default function (editor: Editor, { clientConfig, ...options }: Partial<E
   } as DataSourceEditorOptions)
 
   DataSource(editor, opts)
-  const ssgList = { eleventy: eleventy(editor, opts), hugo: hugo(editor) }
+  const ssgList = { eleventy: eleventy(editor, opts), hugo: hugo(editor), zola: zola(editor) }
   pageSettings(editor, opts)
   siteSettings(editor, opts, () => getSsgId(editor, clientConfig) === 'eleventy')
   collectionPages(editor, opts)

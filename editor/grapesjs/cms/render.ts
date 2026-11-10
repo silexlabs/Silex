@@ -16,7 +16,7 @@
  */
 
 import type { Component, Editor } from 'grapesjs'
-import { BinaryOperator, Expression, NOTIFICATION_GROUP, Properties, State, StateId, StoredState, Token, UnariOperator, fromStored, getExpressionResultType, getState, getStateIds } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, FIXED_TOKEN_ID, NOTIFICATION_GROUP, Properties, State, StateId, StoredFilter, StoredState, Token, UnariOperator, fixedText, fromStored, getExpressionResultType, getPersistantId, getState, getStateIds, getStateVariableName } from '@silexlabs/grapesjs-data-source'
 import { UNWRAP_ID } from './traits'
 
 export interface BinaryCondition {
@@ -45,6 +45,76 @@ export interface TemplateSyntax {
   assign(stateId: StateId, component: Component, expression: Expression): string
   loop(component: Component, expression: Expression): [start: string, end: string]
   if(component: Component, condition: Condition): [start: string, end: string]
+}
+
+const NUMBER_TYPES = ['Int', 'Float']
+export const DECIMAL = /^-?\d+(\.\d+)?$/
+
+export function hasNumberType(typeIds: string[]): boolean {
+  return typeIds.some(typeId => NUMBER_TYPES.includes(typeId))
+}
+
+export function isNumberExpression(component: Component, expression: Expression): boolean {
+  const field = getExpressionResultType(expression, component)
+  return !!field && field.kind === 'scalar' && hasNumberType(field.typeIds)
+}
+
+export function persistantId(component: Component): string {
+  const id = getPersistantId(component)
+  if (!id) throw new Error('This component has no persistant ID')
+  return id
+}
+
+// How a template language writes the parts of an expression
+export interface ExpressionLanguage {
+  string(value: string): string
+  variable(name: string): string
+  // `typed` is the expression whose result is read, to choose a fallback
+  field(base: string, fields: string[], typed: Expression): string
+  filter(filter: StoredFilter, input: string, typed: Expression): string
+  // A language which reads no field of a filtered value
+  fieldOfFiltered?(filtered: string): string
+}
+
+export function getTemplateExpression(expression: Expression, language: ExpressionLanguage): string {
+  if (expression.length === 0) throw new Error('Expression is empty')
+  const fixed = fixedText(expression)
+  if (fixed !== null) return language.string(fixed)
+  let base = ''
+  let fields: string[] = []
+  let filtered = false
+  expression.forEach((token, index) => {
+    switch (token.type) {
+    case 'state':
+      if (index !== 0) throw new Error('State can only be the first token in an expression')
+      base = language.variable(getStateVariableName(token.componentId, token.storedStateId))
+      break
+    case 'property':
+      if (token.fieldId === FIXED_TOKEN_ID) {
+        base = language.string(`${token.options?.value ?? ''}`)
+        fields = []
+        filtered = false
+        break
+      }
+      if (index === 0) {
+        if (!token.dataSourceId) throw new Error(`The field "${token.label ?? token.fieldId}" has no data source`)
+        base = language.variable(`ds_${token.dataSourceId}`)
+      }
+      if (filtered && language.fieldOfFiltered) base = language.fieldOfFiltered(base)
+      filtered = false
+      fields.push(token.fieldId)
+      break
+    case 'filter': {
+      if (index === 0) throw new Error('Expression cannot start with a filter')
+      const typed = expression.slice(0, index)
+      base = `(${language.filter(token, language.field(base, fields, typed), typed)})`
+      fields = []
+      filtered = true
+      break
+    }
+    }
+  })
+  return language.field(base, fields, expression)
 }
 
 const URL_ATTRIBUTES = ['href', 'src', 'action', 'poster']

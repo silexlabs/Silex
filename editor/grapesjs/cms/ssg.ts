@@ -85,6 +85,20 @@ function checkAvailable(editor: Editor, ssgId: SsgId, pageStates: readonly PageS
   })
 }
 
+// A block that only other SSGs declare can not be published with this one
+function checkBlocks(editor: Editor, ssgId: SsgId, ssgs: Record<SsgId, Ssg>, blockLabel: (id: string) => string): Problem[] {
+  const own = ssgs[ssgId].blocks ?? []
+  const others = Object.values(ssgs).flatMap(({ blocks }) => blocks ?? []).filter(id => !own.includes(id))
+  return editor.Pages.getAll().flatMap(page => others.flatMap(id => page.getMainComponent().findType(id).map(component => ({
+    message: `Page "${page.getName()}" uses the block "${blockLabel(id)}" in the element "${component.getName()}", which publishing with ${ssgName(ssgId)} does not support`,
+    componentId: component.getId(),
+  }))))
+}
+
+export function ssgName(ssgId: SsgId): string {
+  return ssgId.charAt(0).toUpperCase() + ssgId.slice(1)
+}
+
 function report(editor: Editor, ssgId: SsgId, found: Problem[]) {
   const problems = found.filter((problem, index) => found.findIndex(({ message }) => message === problem.message) === index)
   // The id replaces the notification of the previous publication
@@ -134,7 +148,7 @@ export default function (editor: Editor, config: ClientConfig, ssgs: Record<SsgI
   editor.on(ClientEvent.PUBLISH_START, ({ siteSettings }: { siteSettings: WebsiteSettings }) => {
     const ssgId = getSsgId(editor, config)
     ssg = ssgs[ssgId]
-    report(editor, ssgId, [...checkAvailable(editor, ssgId, ssg.pageStates), ...(ssg.check?.() ?? [])])
+    report(editor, ssgId, [...checkAvailable(editor, ssgId, ssg.pageStates), ...checkBlocks(editor, ssgId, ssgs, id => (editor.Blocks.get(id) ?? ssgBlocks.get(id))?.getLabel() ?? id), ...(ssg.check?.() ?? [])])
     if (!siteSettings.ssg) {
       siteSettings.ssg = ssgId
       unsaved = ssgId
