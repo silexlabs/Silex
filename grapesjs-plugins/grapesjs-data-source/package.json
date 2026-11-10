@@ -44,8 +44,8 @@
     "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.5.2",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.72.1",
-    "@typescript-eslint/parser": "^8.72.1",
+    "@typescript-eslint/eslint-plugin": "^8.72.2",
+    "@typescript-eslint/parser": "^8.72.2",
     "dom-compare": "^0.6.0",
     "eslint": "^10.14.0",
     "globals": "^17.14.0",
@@ -58,7 +58,7 @@
     "node_modules-path": "^2.4.0",
     "ts-jest": "^29.4.15",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1"
+    "typescript-eslint": "^8.72.2"
   },
   "peerDependencies": {
     "grapesjs": ">=0.19.0 <0.23.0",
@@ -70,7 +70,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@apollo/client": "^4.3.6",
+    "@apollo/client": "^4.3.8",
     "@silexlabs/expression-input": "workspace:*",
     "dedent-js": "^1.0.1"
   }
