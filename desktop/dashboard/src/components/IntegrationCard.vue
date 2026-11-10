@@ -2,7 +2,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
-import type { CatalogEntry, Failure } from '../api'
+import type { AntiFeature, CatalogEntry, explain } from '../api'
 import { ANTI_FEATURES, OPENNESS, chosen, usable } from '../integrations'
 
 defineProps<{
@@ -10,18 +10,18 @@ defineProps<{
   busy: boolean
   installing: boolean
   /** Why the last install failed, until one works */
-  failed?: Failure
+  failed?: ReturnType<typeof explain>
   /** The page of the integration */
   to: RouteLocationRaw
 }>()
 
 const emit = defineEmits<{
   checkAgain: []
-  install: []
+  install: [from: Element]
   add: [from: Element]
 }>()
 
-const ICONS: Record<CatalogEntry['antiFeatures'][number], string> = {
+const ICONS: Record<AntiFeature, string> = {
   tracking: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   proprietaryCloud: '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>',
   identityVerification: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2"/><path d="M14 10h4M14 14h4"/>',
@@ -42,10 +42,7 @@ const ICONS: Record<CatalogEntry['antiFeatures'][number], string> = {
         class="integration-card__name"
       >
         <AppTooltip :text="$t('Details about {name}', { name: entry.name })">
-          <RouterLink
-            :to="to"
-            :aria-label="$t('Details about {name}', { name: entry.name })"
-          >
+          <RouterLink :to="to">
             {{ entry.name }}
             <svg
               class="integration-card__info"
@@ -139,7 +136,7 @@ const ICONS: Record<CatalogEntry['antiFeatures'][number], string> = {
         class="button integration-card__action"
         :aria-describedby="`card-${entry.program}`"
         :aria-disabled="busy"
-        @click="emit('install')"
+        @click="emit('install', $event.currentTarget as Element)"
       >
         {{ installing ? $t('Installing…') : failed !== undefined ? $t('Try again') : $t('Install') }}
       </button>

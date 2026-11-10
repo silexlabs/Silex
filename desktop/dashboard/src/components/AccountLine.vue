@@ -11,7 +11,7 @@ import {
 } from 'reka-ui'
 import ExternalLink from './ExternalLink.vue'
 import { useMenuAction } from '../menu'
-import type { Account, CatalogEntry, Failure } from '../api'
+import type { Account, CatalogEntry, explain } from '../api'
 import { accountKey, needsYou, signIns } from '../integrations'
 
 /** A chosen account, or the program of an integration in use that Silex cannot run when there is none */
@@ -21,12 +21,12 @@ const props = defineProps<{
   busy: boolean
   installing?: boolean
   /** Why the last install failed, until one works */
-  failed?: Failure
+  failed?: ReturnType<typeof explain>
 }>()
 
 const emit = defineEmits<{
   checkAgain: []
-  install: []
+  install: [from: Element]
   signInAgain: [from: Element]
   check: []
   stopUsing: []
@@ -88,17 +88,6 @@ const { choose, afterClose } = useMenuAction(more)
       <span>{{ state.label }}</span>
       <span class="account-line__detail">{{ state.detail }}</span>
     </p>
-    <p
-      v-if="!account && failed !== undefined"
-      class="account-line__failed"
-      role="alert"
-    >
-      {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed.message }}
-    </p>
-    <pre
-      v-if="!account && failed?.detail"
-      class="technical-detail"
-    >{{ failed.detail }}</pre>
     <div class="account-line__actions">
       <template v-if="!account">
         <button
@@ -107,7 +96,7 @@ const { choose, afterClose } = useMenuAction(more)
           class="button"
           :aria-describedby="id"
           :aria-disabled="busy"
-          @click="emit('install')"
+          @click="emit('install', $event.currentTarget as Element)"
         >
           {{ installing ? $t('Installing…') : failed !== undefined ? $t('Try again') : $t('Install') }}
         </button>
@@ -176,10 +165,26 @@ const { choose, afterClose } = useMenuAction(more)
         </DropdownMenuContent>
       </DropdownMenuPortal>
     </DropdownMenuRoot>
+    <p
+      v-if="!account && failed !== undefined"
+      class="account-line__failed"
+      role="alert"
+    >
+      {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed.message }}
+    </p>
+    <pre
+      v-if="!account && failed?.detail"
+      class="account-line__failed-detail technical-detail"
+    >{{ failed.detail }}</pre>
   </li>
 </template>
 
 <style scoped>
+.account-line__failed,
+.account-line__failed-detail {
+  grid-column: 2 / -1;
+}
+
 .account-line__failed {
   margin: 0;
   color: var(--silex-status-error);

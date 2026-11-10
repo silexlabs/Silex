@@ -58,15 +58,9 @@ pub fn silex_copy(data_dir: &Path, name: &str, release: &Release) -> Option<Path
 }
 
 /// A copy Silex installed of another version than this release
-pub fn is_old_silex_copy(
-    data_dir: &Path,
-    name: &str,
-    release: Option<&Release>,
-    path: &Path,
-) -> bool {
+pub fn is_old_silex_copy(data_dir: &Path, name: &str, release: &Release, path: &Path) -> bool {
     let all = folder(data_dir, name);
-    path.starts_with(&all)
-        && release.is_none_or(|release| !path.starts_with(all.join(release.version)))
+    path.starts_with(&all) && !path.starts_with(all.join(release.version))
 }
 
 pub fn has_archive_here(release: &Release) -> bool {
@@ -204,7 +198,7 @@ mod tests {
             archives: &[],
             max_bytes: 0,
         };
-        assert!(is_old_silex_copy(&data_dir, "glab", Some(&release), &old));
+        assert!(is_old_silex_copy(&data_dir, "glab", &release, &old));
         assert_eq!(silex_copy(&data_dir, "glab", &release), None);
 
         let new = place(&data_dir, "glab", "2.0.0", b"new").unwrap();

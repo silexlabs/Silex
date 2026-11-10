@@ -351,8 +351,9 @@ fn starts(integration: &dyn Integration, path: &Path) -> bool {
     run::run(path, &std::env::temp_dir(), integration.version_args()).is_ok()
 }
 
-/// The version of this Silex in place of the copy an older one installed,
-/// without a word: the older copy keeps working until then
+/// The version of this Silex, or the program of the user when it starts, in
+/// place of the copy an older one installed, without a word: the older copy
+/// keeps working until then
 pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
     for (id, state) in snapshot(loading).known {
         let (Some(integration), Some(path)) = (by_program(&id), state.path) else {
@@ -361,18 +362,18 @@ pub fn update_silex_copies(loading: &Loading, data_dir: &Path) {
         let Some(release) = integration.release() else {
             continue;
         };
-        if state.accounts.is_empty()
-            || !install::is_old_silex_copy(data_dir, &id, Some(release), &path)
-            || programs::users_own(&id).is_some_and(|theirs| starts(integration, &theirs))
-        {
+        if state.accounts.is_empty() || !install::is_old_silex_copy(data_dir, &id, release, &path) {
             continue;
         }
-        match install::install(data_dir, &id, release) {
-            Ok(_) => {
-                asked(loading, data_dir, &id, Asked::CheckAgain);
+        // A program the user installed after the copy of Silex replaces it
+        let theirs = programs::users_own(&id).is_some_and(|theirs| starts(integration, &theirs));
+        if !theirs {
+            if let Err(e) = install::install(data_dir, &id, release) {
+                tracing::warn!("Could not update the {} of Silex: {:?}", id, e);
+                continue;
             }
-            Err(e) => tracing::warn!("Could not update the {} of Silex: {:?}", id, e),
         }
+        asked(loading, data_dir, &id, Asked::CheckAgain);
     }
 }
 

@@ -104,12 +104,15 @@ function checkAgain(entry: CatalogEntry) {
   })
 }
 
-// The button becomes another one: the focus stays on the card it was on
-async function installProgram(entry: CatalogEntry) {
-  await install(entry)
+async function installProgram(entry: CatalogEntry, from: Element) {
+  try {
+    await install(entry)
+  } catch (error) {
+    await showError({ title: t('Silex could not read the accounts of {name}', { name: entry.name }), ...explain(error) })
+  }
   await nextTick()
-  const action = document.querySelector<HTMLElement>(`[aria-describedby="card-${entry.program}"]`)
-  if (action) action.focus()
+  const action = from.isConnected ? from : document.querySelector(`[aria-describedby="card-${entry.program}"]`)
+  if (action instanceof HTMLElement) action.focus()
   else await focusPage()
 }
 
@@ -230,7 +233,7 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
       </p>
       <pre
         v-if="failed.detail"
-        class="integrations__detail"
+        class="technical-detail"
       >{{ failed.detail }}</pre>
     </div>
     <button
@@ -275,7 +278,7 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
           :installing="installing.has(line.entry.program)"
           :failed="installFailed[line.entry.program]"
           @check-again="checkAgain(line.entry)"
-          @install="installProgram(line.entry)"
+          @install="(from) => installProgram(line.entry, from)"
           @sign-in-again="(from) => (adding = { entry: line.entry, account: line.account, from })"
           @check="check(line.entry, line.account!)"
           @stop-using="stopUsing(line.entry, line.account!)"
@@ -312,7 +315,7 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
             :to="`/integrations/${entry.program}`"
             :failed="installFailed[entry.program]"
             @check-again="checkAgain(entry)"
-            @install="installProgram(entry)"
+            @install="(from) => installProgram(entry, from)"
             @add="(from) => add(entry, from)"
           />
         </ul>
@@ -376,17 +379,6 @@ const lineKey = (line: Line) => `${line.entry.program} ${line.account?.id ?? ''}
 
 .integrations__sentence {
   margin: 0;
-}
-
-.integrations__detail {
-  margin: var(--silex-space-2) 0 0;
-  padding: var(--silex-space-2) var(--silex-space-3);
-  border-radius: var(--silex-radius-sm);
-  background: var(--silex-bg-darker);
-  color: var(--silex-text-secondary);
-  font: 12px / 1.5 ui-monospace, 'Ubuntu Mono', Menlo, Consolas, monospace;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 
 .integrations__group + .integrations__group {

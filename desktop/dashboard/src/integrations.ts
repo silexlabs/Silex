@@ -3,7 +3,6 @@ import {
   type Account,
   type AntiFeature,
   type CatalogEntry,
-  type Failure,
   type Openness,
   type SignIn,
   type Tag,
@@ -203,7 +202,7 @@ export async function once(key: string, action: () => Promise<void>) {
 export const installing = ref(new Set<string>())
 
 /** Why the last install of each program failed, until one works */
-export const installFailed = ref<Record<string, Failure>>({})
+export const installFailed = ref<Record<string, ReturnType<typeof explain>>>({})
 
 /** What the user is told once Silex looked for the program again */
 export async function told(entry: CatalogEntry, now?: CatalogEntry) {
@@ -221,14 +220,15 @@ export function install(entry: CatalogEntry) {
     delete installFailed.value[entry.program]
     try {
       catalog.value = await installIntegration(entry.program)
-      const now = catalog.value.find((other) => other.program === entry.program)
-      if (now) await loadAccounts(now)
-      await told(entry, now)
     } catch (error) {
       installFailed.value[entry.program] = explain(error)
+      return
     } finally {
       installing.value.delete(entry.program)
     }
+    const now = catalog.value.find((other) => other.program === entry.program)
+    if (now) await loadAccounts(now)
+    await told(entry, now)
   })
 }
 
