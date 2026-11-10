@@ -85,6 +85,9 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          # Build scripts compiled on a newer Ubuntu do not run on an older one
+          key: ${{ matrix.os }}
 
       - name: Install system dependencies (Linux)
         if: matrix.platform == 'linux'
