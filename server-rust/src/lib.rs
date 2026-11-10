@@ -34,7 +34,7 @@ pub use actions::{Actions, Hosting, OptionsField, OptionsForm, PublicationOption
 pub use config::{Config, PORT};
 pub use history::{repository, tag, untag, version, Versioned, TEMPLATE_REMOTE};
 pub use jobs::{Job, JobData, JobStatus, Jobs};
-pub use models::{WebsiteId, WEBSITE_DATA_FILE};
+pub use models::{Ssg, WebsiteId, PUBLIC_FOLDER, WEBSITE_DATA_FILE};
 pub use storage::{
     create_website_from_copy, create_website_from_template, forget_hosting, published_files_url,
 };

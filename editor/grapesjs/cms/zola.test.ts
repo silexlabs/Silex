@@ -68,3 +68,10 @@ test('The error page with data is the 404 template of Zola, without content', ()
   ssg.onData!({ files } as never)
   expect(files.map(({ path }) => path)).toEqual(['/templates/404.html'])
 })
+
+test('A website without data still has the templates folder Zola needs', () => {
+  editor.Pages.add({ name: 'about' })
+  const files = [{ type: ClientSideFileType.HTML, path: '/static/about/index.html', content: '' }]
+  zola(editor).onData!({ files } as never)
+  expect(files.map(({ path }) => path)).toEqual(['/static/about/index.html', '/templates/.gitkeep'])
+})

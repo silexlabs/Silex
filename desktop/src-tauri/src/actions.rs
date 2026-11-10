@@ -639,6 +639,21 @@ impl silex_server::Actions for SilexActions {
         self.syncer.push(website_id);
     }
 
+    fn build(
+        &self,
+        website_id: &str,
+        ssg: Option<silex_server::Ssg>,
+        job: &Job,
+    ) -> Result<Option<std::path::PathBuf>, String> {
+        let Some(site) = self.site_path(website_id) else {
+            return Err(message::told(
+                "Silex could not find the folder of this website.",
+                &[],
+            ));
+        };
+        crate::generators::build(&site, ssg, job)
+    }
+
     /// Sending is not publishing: a repository with its builds turned off
     /// takes every push and serves nothing. The job stays open until the host
     /// has answered.

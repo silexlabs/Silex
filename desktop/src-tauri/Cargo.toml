@@ -69,6 +69,11 @@ silex-server = { path = "../../server-rust", features = ["embed-frontend"] }
 # Reading the remotes of a website at every save without starting a git
 git2.workspace = true
 
+# Zola, whose crates are named site and errors
+site = { git = "https://github.com/getzola/zola", tag = "v0.23.6" }
+errors = { git = "https://github.com/getzola/zola", tag = "v0.23.6" }
+gqlfreez = { git = "https://github.com/lexoyo/gqlfreez", tag = "v0.2.0" }
+
 # The dashboard, compiled into the binary. The one the hosted Silex serves is
 # not this one, so the server crate has no reason to carry it
 rust-embed = "8"

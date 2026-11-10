@@ -30,6 +30,21 @@ pub trait Actions: Send + Sync {
         let _ = (website_id, options, job);
     }
 
+    /// Build a website out of its published files, before it is deployed.
+    ///
+    /// `ssg` is the generator the editor published for. Every hosting asks
+    /// for it, the folder on this computer included: a website that does not
+    /// build is not sent. An error is the message the publication ends with.
+    fn build(
+        &self,
+        website_id: &str,
+        ssg: Option<crate::models::Ssg>,
+        job: &crate::jobs::Job,
+    ) -> Result<Option<std::path::PathBuf>, String> {
+        let _ = (website_id, ssg, job);
+        Ok(None)
+    }
+
     /// A website is about to be read, which is the moment to take in the
     /// versions of it made somewhere else.
     ///

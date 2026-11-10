@@ -153,6 +153,8 @@ function transformFiles(editor: Editor, data: PublicationData) {
   })
   // Read by gqlfreez, and by the editors of the .graphql files
   dataSourceIds.forEach(dataSourceId => data.files!.push(file(`/${DATA_FOLDER}/${dataSourceId}/.graphqlrc.yml`, `schema: ${JSON.stringify(getEndpoint(dataSourceId, 'zola'))}\n`)))
+  // Zola builds nothing without a templates folder, which a website without data has no file for
+  if (!data.files.some(({ path }) => path.startsWith('/templates/'))) data.files.push(file('/templates/.gitkeep', ''))
 }
 
 export function zola(editor: Editor): Ssg {

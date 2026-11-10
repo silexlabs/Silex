@@ -13,7 +13,7 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-pub const ELEVENTY_VERSION: &str = "3.1.6";
+use crate::generators::{eleventy, ignore_build_output};
 
 const HTMLREBASE_RELEASE: &str =
     "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux";
@@ -29,9 +29,6 @@ const HTMLREBASE_FOLDER: &str = ".npm";
 const SILEX_OVERWRITE_NOTICE: &str = "# silexOverwrite: true";
 const BUILD_JSON: &str = "build.json";
 const BUILD_SH: &str = "build.sh";
-const GITIGNORE: &str = ".gitignore";
-/// Where build.sh writes the built site, which is not part of the website
-const BUILD_OUTPUT: &str = "_site/";
 const DEFAULT_BUILD_JSON: &str = "[\n  {\n    \"type\": \"build\"\n  }\n]\n";
 
 #[derive(Debug, Deserialize)]
@@ -40,11 +37,6 @@ pub enum BuildStep {
     Build,
     Sh { value: String },
 }
-
-// The guard is for a public/ with no folder at all: the glob then stays
-// literal and cp would stop the build
-const COPY_PUBLIC_FOLDERS: &str =
-    "for dir in public/*/; do [ -d \"$dir\" ] || continue; cp -R \"$dir\" _site/; done";
 
 /// `prefix` is empty outside of the forge's CI so that a local build stays at the root.
 /// SILEX_BASE_PATH is for a site also served at the root of a custom domain.
@@ -67,17 +59,8 @@ pub fn rebase_lines(prefix: &str) -> Vec<String> {
     ]
 }
 
-// TEMPORARY: remove after the 3.10 stable, only sites published with 3.10.0-canary.3 have this file
-const FAIL_ON_CANARY_DATA_FILE: &str =
-    "test -f public/public.11tydata.js && echo 'Please delete public/public.11tydata.js' && exit 1";
-
 pub fn generate_build_sh(steps: &[BuildStep], after_build: &[String]) -> String {
-    let build_commands = [
-        FAIL_ON_CANARY_DATA_FILE.to_string(),
-        format!("npx @11ty/eleventy@{ELEVENTY_VERSION} --input=public --output=_site"),
-        COPY_PUBLIC_FOLDERS.to_string(),
-    ]
-    .join("\n");
+    let build_commands = eleventy::build_commands().join("\n");
     let lines: Vec<String> = steps
         .iter()
         .map(|step| match step {
@@ -107,28 +90,6 @@ pub fn write_build_files(site: &Path, after_build: &[String]) -> Result<(), Stri
     std::fs::write(site.join(BUILD_SH), generate_build_sh(&steps, after_build))
         .map_err(|e| e.to_string())?;
     ignore_build_output(site)
-}
-
-/// Keep the built site out of the versioned website
-///
-/// The folder is versioned whole, so build.sh would otherwise put a copy of
-/// the site in its own history.
-fn ignore_build_output(site: &Path) -> Result<(), String> {
-    let path = site.join(GITIGNORE);
-    let current = std::fs::read_to_string(&path).unwrap_or_default();
-    if current.lines().any(|line| {
-        line.trim() == BUILD_OUTPUT.trim_end_matches('/') || line.trim() == BUILD_OUTPUT
-    }) {
-        return Ok(());
-    }
-
-    let mut content = current;
-    if !content.is_empty() && !content.ends_with('\n') {
-        content.push('\n');
-    }
-    content.push_str(BUILD_OUTPUT);
-    content.push('\n');
-    std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 /// Write the pipeline file, unless the user took it over
