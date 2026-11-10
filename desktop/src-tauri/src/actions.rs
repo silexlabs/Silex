@@ -651,7 +651,7 @@ impl silex_server::Actions for SilexActions {
                 &[],
             ));
         };
-        crate::generators::build(&site, options.ssg, job)
+        crate::generators::build(&site, options.ssg, options.local, job)
     }
 
     /// Sending is not publishing: a repository with its builds turned off

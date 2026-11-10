@@ -19,7 +19,7 @@ use std::sync::Mutex;
 use silex_server::{message, Job, PUBLIC_FOLDER};
 
 use super::download::{download_lines, run_if, CACHE_FOLDER};
-use super::BUILD_OUTPUT;
+use super::{link_all, BUILD_OUTPUT};
 use crate::held::held;
 use crate::integrations::common::install::Archive;
 
@@ -90,21 +90,6 @@ fn mirror(from: &Path, to: &Path) -> std::io::Result<()> {
     }
     std::fs::create_dir_all(to)?;
     link_all(from, to)
-}
-
-fn link_all(from: &Path, to: &Path) -> std::io::Result<()> {
-    for entry in std::fs::read_dir(from)? {
-        let entry = entry?;
-        let target = to.join(entry.file_name());
-        if entry.file_type()?.is_dir() {
-            std::fs::create_dir(&target)?;
-            link_all(&entry.path(), &target)?;
-        } else if std::fs::hard_link(entry.path(), &target).is_err() {
-            // FAT and exFAT have no links
-            std::fs::copy(entry.path(), &target)?;
-        }
-    }
-    Ok(())
 }
 
 fn freeze(root: &Path) -> Result<(), String> {

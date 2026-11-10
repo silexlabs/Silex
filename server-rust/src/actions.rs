@@ -109,6 +109,10 @@ pub struct PublicationOptions {
     /// Taken from the settings of the website, not from the form
     #[serde(skip)]
     pub ssg: Option<crate::models::Ssg>,
+
+    /// Published to the local folder, where no CI will build it
+    #[serde(skip)]
+    pub local: bool,
 }
 
 impl PublicationOptions {

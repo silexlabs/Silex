@@ -21,8 +21,13 @@ pub(crate) const BUILD_OUTPUT: &str = "_site/";
 /// Where it is built on this computer, with the data of the CMS
 const BUILD_STAGING: &str = ".silex-staging/";
 
-/// Only Zola builds on this computer, the CI of the forge builds the others
-pub fn build(site: &Path, ssg: Option<Ssg>, job: &Job) -> Result<Option<PathBuf>, String> {
+/// `local` when the website stays on this computer, without a CI to build it
+pub fn build(
+    site: &Path,
+    ssg: Option<Ssg>,
+    local: bool,
+    job: &Job,
+) -> Result<Option<PathBuf>, String> {
     match ssg {
         Some(Ssg::Zola) => {
             ignore_build_output(site)?;
@@ -30,7 +35,11 @@ pub fn build(site: &Path, ssg: Option<Ssg>, job: &Job) -> Result<Option<PathBuf>
             zola::build(site, &site.join(BUILD_STAGING), &output, job)?;
             Ok(Some(output))
         }
-        Some(Ssg::Eleventy | Ssg::Hugo) | None => Ok(None),
+        Some(Ssg::Eleventy) => {
+            ignore_build_output(site)?;
+            eleventy::build(site, &site.join(BUILD_OUTPUT), local, job)
+        }
+        Some(Ssg::Hugo) | None => Ok(None),
     }
 }
 
@@ -39,6 +48,21 @@ pub fn build_commands(ssg: Option<Ssg>) -> Vec<String> {
         Some(Ssg::Zola) => zola::build_commands(),
         Some(Ssg::Eleventy | Ssg::Hugo) | None => eleventy::build_commands(),
     }
+}
+
+fn link_all(from: &Path, to: &Path) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(from)? {
+        let entry = entry?;
+        let target = to.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            std::fs::create_dir_all(&target)?;
+            link_all(&entry.path(), &target)?;
+        } else if std::fs::hard_link(entry.path(), &target).is_err() {
+            // FAT and exFAT have no links
+            std::fs::copy(entry.path(), &target)?;
+        }
+    }
+    Ok(())
 }
 
 /// Keep the built site out of the versioned website
@@ -106,7 +130,9 @@ mod tests {
     fn a_website_published_for_zola_is_built_twice_in_a_row() {
         let site = published("twice", &[]);
         for _ in 0..2 {
-            let built = build(&site, Some(Ssg::Zola), &job()).unwrap().unwrap();
+            let built = build(&site, Some(Ssg::Zola), false, &job())
+                .unwrap()
+                .unwrap();
             assert!(std::fs::read_to_string(built.join("index.html"))
                 .unwrap()
                 .contains("<h1>Hello</h1>"));
@@ -121,7 +147,7 @@ mod tests {
     #[test]
     fn the_zola_config_of_the_website_is_written_once_and_then_read() {
         let site = published("config", &[]);
-        build(&site, Some(Ssg::Zola), &job()).unwrap();
+        build(&site, Some(Ssg::Zola), false, &job()).unwrap();
         assert_eq!(
             std::fs::read_to_string(site.join("zola.toml")).unwrap(),
             "base_url = \"/\"\n"
@@ -131,7 +157,9 @@ mod tests {
             "base_url = \"https://example.org\"\n",
         )
         .unwrap();
-        let built = build(&site, Some(Ssg::Zola), &job()).unwrap().unwrap();
+        let built = build(&site, Some(Ssg::Zola), false, &job())
+            .unwrap()
+            .unwrap();
         assert!(std::fs::read_to_string(built.join("index.html"))
             .unwrap()
             .contains("https://example.org"));
@@ -144,7 +172,7 @@ mod tests {
             "broken",
             &[("templates/silex-index.html", "{{ nope | unknown_filter }}")],
         );
-        let error = build(&site, Some(Ssg::Zola), &job()).unwrap_err();
+        let error = build(&site, Some(Ssg::Zola), false, &job()).unwrap_err();
         assert!(error.contains("unknown_filter"), "{error}");
         assert!(std::fs::read_to_string(site.join(GITIGNORE))
             .unwrap()
@@ -164,7 +192,7 @@ mod tests {
                 ),
             ],
         );
-        let error = build(&site, Some(Ssg::Zola), &job()).unwrap_err();
+        let error = build(&site, Some(Ssg::Zola), false, &job()).unwrap_err();
         assert!(error.contains("index.graphql"), "{error}");
     }
 }

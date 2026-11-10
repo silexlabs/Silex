@@ -181,11 +181,12 @@ async fn publish_website(
     match state.actions.clone() {
         Some(actions) => {
             let website_id = query.website_id.clone();
+            let local = query.hosting_id == LOCAL_FOLDER;
             let options = crate::actions::PublicationOptions {
                 ssg,
+                local,
                 ..query.options()
             };
-            let local = query.hosting_id == LOCAL_FOLDER;
             let data_path = state.data_path.clone();
             // Building and sending a website both take their time, on a thread
             // of their own so that the server answers meanwhile
