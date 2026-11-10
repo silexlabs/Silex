@@ -39,10 +39,8 @@
  *
  */
 
-const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector').default
 const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
 const GitlabHostingConnector = require('../dist/plugins/server/plugins/server/GitlabHostingConnector').default
-const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
 const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
 const node_modules = require('node_modules-path')
 
@@ -55,25 +53,16 @@ class FramaGitConnector extends GitlabConnector {
 }
 
 module.exports = async function (config, options) {
-  if (!FtpConnector) throw new Error('FtpConnector not found')
   if (!GitlabConnector) throw new Error('GitlabConnector not found')
-  if (!DownloadPlugin) throw new Error('DownloadPlugin not found')
 
   config.setHostingConnectors([
-    new FtpConnector(config, {
-      type: 'HOSTING',
-    }),
     new GitlabHostingConnector(config, {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
       domain: process.env.GITLAB_DOMAIN,
     }),
-    new DownloadPlugin(config),
   ])
   config.setStorageConnectors([
-    new FtpConnector(config, {
-      type: 'STORAGE',
-    }),
     new GitlabConnector(config, {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,

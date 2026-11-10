@@ -194,14 +194,3 @@ export async function contentToBuffer(content: ConnectorFileContent): Promise<Bu
   // Unknown
   throw new Error('Unknown content type')
 }
-
-export function contentToReadable(content: ConnectorFileContent): Readable {
-  // String
-  if (typeof content === 'string') return Readable.from([content])
-  // Buffer
-  if (Buffer.isBuffer(content)) return Readable.from([content])
-  // Stream
-  if (content instanceof Readable) return content
-  // Unknown
-  throw new Error('Unknown content type')
-}
