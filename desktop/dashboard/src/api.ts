@@ -77,8 +77,11 @@ export function translate({ sentence = '', params = {} }: Words) {
   return typeof params.count === 'number' ? t(sentence, named, params.count) : t(sentence, named)
 }
 
+/** What the user is told when something did not work */
+export type Failure = { message?: string; detail?: string }
+
 /** What an error dialog says of a failure, under the title */
-export function explain(error: unknown): { message?: string; detail?: string } {
+export function explain(error: unknown): Failure {
   const said = error instanceof Said ? error : new Said(undefined, {}, String((error as Error)?.message ?? error))
   const detail = said.detail || undefined
   if (said.sentence) return { message: translate(said), detail }

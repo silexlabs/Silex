@@ -2,7 +2,7 @@
 import type { RouteLocationRaw } from 'vue-router'
 import AppTooltip from './AppTooltip.vue'
 import ExternalLink from './ExternalLink.vue'
-import type { CatalogEntry } from '../api'
+import type { CatalogEntry, Failure } from '../api'
 import { ANTI_FEATURES, OPENNESS, chosen, usable } from '../integrations'
 
 defineProps<{
@@ -10,7 +10,7 @@ defineProps<{
   busy: boolean
   installing: boolean
   /** Why the last install failed, until one works */
-  failed?: string
+  failed?: Failure
   /** The page of the integration */
   to: RouteLocationRaw
 }>()
@@ -64,18 +64,23 @@ const ICONS: Record<CatalogEntry['antiFeatures'][number], string> = {
         </AppTooltip>
       </h4>
     </div>
-    <p
-      v-if="failed !== undefined"
-      class="integration-card__line integration-card__line--failed"
-      role="alert"
-    >
-      {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed }}
-      <ExternalLink
-        :href="entry.installUrl"
-        :name="$t('How to install {program}', { program: entry.program })"
-        arrow
-      />
-    </p>
+    <template v-if="failed !== undefined">
+      <p
+        class="integration-card__line integration-card__line--failed"
+        role="alert"
+      >
+        {{ $t('Silex could not install {name}.', { name: entry.name }) }} {{ failed.message }}
+        <ExternalLink
+          :href="entry.installUrl"
+          :name="$t('How to install {program}', { program: entry.program })"
+          arrow
+        />
+      </p>
+      <pre
+        v-if="failed.detail"
+        class="technical-detail"
+      >{{ failed.detail }}</pre>
+    </template>
     <p
       v-else
       class="integration-card__line"

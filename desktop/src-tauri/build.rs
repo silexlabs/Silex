@@ -17,6 +17,7 @@ const COMMANDS: &[&str] = &[
     "integration_catalog",
     "integration_asked",
     "integration_accounts",
+    "integration_install",
     "connect_account",
     "stop_connecting_account",
     "disconnect_account",
