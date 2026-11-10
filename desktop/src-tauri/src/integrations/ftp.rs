@@ -306,6 +306,14 @@ const NAME: &str = "name";
 const UNENCRYPTED: &str = "unencrypted";
 const FOLDER: &str = "folder";
 
+/// Left by Silex in the folder it publishes to, so that it never mirrors over
+/// files it did not send there
+const WITNESS: &str = ".silex";
+
+/// FTP servers often hide the files whose name starts with a dot, and rclone
+/// would then not find the witness, even right after writing it
+const HIDDEN_TOO: &str = "--ftp-force-list-hidden";
+
 /// The most questions rclone asks to configure a remote, SFTP asks ten
 const QUESTIONS: usize = 50;
 
@@ -602,31 +610,54 @@ fn send(
         .ok_or_else(|| Said::new(key!("Choose the folder of your website on the server.")))?;
     let source = files.to_string_lossy();
     let destination = format!("{}:{}", server.name, on_server);
+    let not_sent = |why: String| {
+        let said = why.to_lowercase();
+        // 553 is how an FTP server refuses a file where it may not be written
+        if said.contains("permission denied") || said.contains(" 553 ") {
+            return Said::new(key!(
+                "{host} did not let Silex write in the folder {folder}. Check the folder, and that this user can write there."
+            ))
+            .with("host", &server.host)
+            .with("folder", on_server)
+            .because(why);
+        }
+        failed(
+            &server.host,
+            why,
+            key!("Silex could not send your website to {host}."),
+        )
+    };
+    let mut list = vec!["lsf", HIDDEN_TOO];
+    list.extend(CONNECTING);
+    list.push(&destination);
+    let ours = match run::run_fetch(rclone, &std::env::temp_dir(), &list) {
+        Ok(listed) => listed.is_empty() || listed.lines().any(|name| name == WITNESS),
+        Err(why) if why.contains("directory not found") => true,
+        Err(why) => return Err(not_sent(why)),
+    };
+    if !ours {
+        return Err(Said::new(key!(
+            "The folder {folder} on {host} already has files that Silex did not publish. Check the folder, or empty it yourself."
+        ))
+        .with("host", &server.host)
+        .with("folder", on_server));
+    }
+    let witness = format!("{}/{}", destination.trim_end_matches('/'), WITNESS);
+    let mut touch = vec!["touch", HIDDEN_TOO];
+    touch.extend(CONNECTING);
+    touch.push(&witness);
+    run::run_fetch(rclone, &std::env::temp_dir(), &touch).map_err(not_sent)?;
+    let exclude = format!("/{}", WITNESS);
     let ran = run::run_transfer_verbatim(
         rclone,
         &std::env::temp_dir(),
-        &["sync", "--", &source, &destination],
+        &["sync", "--exclude", &exclude, "--", &source, &destination],
     )
     .map_err(Said::raw)?;
     if !ran.failed {
         return Ok(());
     }
-    let why = run::failure(rclone, &ran);
-    let said = why.to_lowercase();
-    // 553 is how an FTP server refuses a file where it may not be written
-    if said.contains("permission denied") || said.contains(" 553 ") {
-        return Err(Said::new(key!(
-            "{host} did not let Silex write in the folder {folder}. Check the folder, and that this user can write there."
-        ))
-        .with("host", &server.host)
-        .with("folder", on_server)
-        .because(why));
-    }
-    Err(failed(
-        &server.host,
-        why,
-        key!("Silex could not send your website to {host}."),
-    ))
+    Err(not_sent(run::failure(rclone, &ran)))
 }
 
 const PROTECTED: &str =
