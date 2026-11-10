@@ -203,7 +203,7 @@ impl Integration for Tea {
             Some(path) => rebase_lines(&format!("${{FORGEJO_REPOSITORY:+{path}}}")),
             None => rebase_lines("${FORGEJO_REPOSITORY:+/${FORGEJO_REPOSITORY#*/}/}"),
         };
-        write_build_files(site, &after_build)?;
+        write_build_files(site, options.ssg, &after_build)?;
         ensure_pipeline_file(
             site,
             Path::new(PIPELINE),

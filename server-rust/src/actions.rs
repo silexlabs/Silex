@@ -32,16 +32,16 @@ pub trait Actions: Send + Sync {
 
     /// Build a website out of its published files, before it is deployed.
     ///
-    /// `ssg` is the generator the editor published for. Every hosting asks
+    /// `options.ssg` is the generator the editor published for. Every hosting asks
     /// for it, the folder on this computer included: a website that does not
     /// build is not sent. An error is the message the publication ends with.
     fn build(
         &self,
         website_id: &str,
-        ssg: Option<crate::models::Ssg>,
+        options: &PublicationOptions,
         job: &crate::jobs::Job,
     ) -> Result<Option<std::path::PathBuf>, String> {
-        let _ = (website_id, ssg, job);
+        let _ = (website_id, options, job);
         Ok(None)
     }
 
@@ -105,6 +105,10 @@ pub struct PublicationOptions {
     /// Every field of the form, under the name the editor sent it with
     #[serde(flatten)]
     pub more: serde_json::Map<String, serde_json::Value>,
+
+    /// Taken from the settings of the website, not from the form
+    #[serde(skip)]
+    pub ssg: Option<crate::models::Ssg>,
 }
 
 impl PublicationOptions {

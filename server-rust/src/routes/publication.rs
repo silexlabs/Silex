@@ -181,14 +181,17 @@ async fn publish_website(
     match state.actions.clone() {
         Some(actions) => {
             let website_id = query.website_id.clone();
-            let options = query.options();
+            let options = crate::actions::PublicationOptions {
+                ssg,
+                ..query.options()
+            };
             let local = query.hosting_id == LOCAL_FOLDER;
             let data_path = state.data_path.clone();
             // Building and sending a website both take their time, on a thread
             // of their own so that the server answers meanwhile
             tokio::task::spawn_blocking(move || {
                 let publishing = std::panic::AssertUnwindSafe(|| {
-                    let built = match actions.build(website_id.as_str(), ssg, &job) {
+                    let built = match actions.build(website_id.as_str(), &options, &job) {
                         Ok(built) => built,
                         Err(message) => return job.failed(message),
                     };
@@ -322,7 +325,7 @@ mod tests {
         fn build(
             &self,
             _: &str,
-            _: Option<Ssg>,
+            _: &crate::actions::PublicationOptions,
             _: &crate::jobs::Job,
         ) -> std::result::Result<Option<std::path::PathBuf>, String> {
             panic!("a bug of the host application")

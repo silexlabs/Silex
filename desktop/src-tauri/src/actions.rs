@@ -642,7 +642,7 @@ impl silex_server::Actions for SilexActions {
     fn build(
         &self,
         website_id: &str,
-        ssg: Option<silex_server::Ssg>,
+        options: &PublicationOptions,
         job: &Job,
     ) -> Result<Option<std::path::PathBuf>, String> {
         let Some(site) = self.site_path(website_id) else {
@@ -651,7 +651,7 @@ impl silex_server::Actions for SilexActions {
                 &[],
             ));
         };
-        crate::generators::build(&site, ssg, job)
+        crate::generators::build(&site, options.ssg, job)
     }
 
     /// Sending is not publishing: a repository with its builds turned off

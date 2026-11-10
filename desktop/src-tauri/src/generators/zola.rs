@@ -18,11 +18,45 @@ use std::sync::Mutex;
 
 use silex_server::{message, Job, PUBLIC_FOLDER};
 
+use super::download::{download_lines, run_if, CACHE_FOLDER};
+use super::BUILD_OUTPUT;
 use crate::held::held;
+use crate::integrations::common::install::Archive;
 
 const CONFIG: &str = "zola.toml";
 // Zola refuses an empty base_url, and a website served at the root of its domain needs no other
 const DEFAULT_CONFIG: &str = "base_url = \"/\"\n";
+
+// The crates in Cargo.toml are at the same versions, the checksums are the ones of the release pages
+const GQLFREEZ: &[Archive] = &[
+    Archive {
+        os: "linux",
+        arch: "x86_64",
+        url: "https://github.com/lexoyo/gqlfreez/releases/download/v0.2.1/gqlfreez-linux-x64",
+        sha256: "ece79db164b01802cb98aca6aefb4f411d4c0d33680b845201d851ded658eff0",
+    },
+    Archive {
+        os: "linux",
+        arch: "aarch64",
+        url: "https://github.com/lexoyo/gqlfreez/releases/download/v0.2.1/gqlfreez-linux-arm64",
+        sha256: "837d0df24f97ae1949b88ff61f933b85ae90ea0f6efb28c3b15f3343005c93fe",
+    },
+];
+// Musl on x64, as SourceHut builds on Alpine
+const ZOLA: &[Archive] = &[
+    Archive {
+        os: "linux",
+        arch: "x86_64",
+        url: "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-x86_64-unknown-linux-musl.tar.gz",
+        sha256: "7d77a4220a4f699cba2fc0e0c7859f780e887e269159ad4fab90e11ea16c906f",
+    },
+    Archive {
+        os: "linux",
+        arch: "aarch64",
+        url: "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-aarch64-unknown-linux-gnu.tar.gz",
+        sha256: "266448fffbf7c7004ca399d0e76dd699541771096d8a42aede98cebe2a029d02",
+    },
+];
 
 // Two publications of the same website at once would each empty the built folder of the other
 static BUILDING: Mutex<()> = Mutex::new(());
@@ -78,12 +112,44 @@ fn freeze(public: &Path) -> Result<(), String> {
     }
 }
 
-fn zola(site: &Path, public: &Path, output: &Path) -> Result<(), String> {
-    // The user's own, once written
+// The user's own, once written
+fn config(site: &Path) -> Result<std::path::PathBuf, String> {
     let config = site.join(CONFIG);
     if !config.exists() {
         std::fs::write(&config, DEFAULT_CONFIG).map_err(|e| e.to_string())?;
     }
+    Ok(config)
+}
+
+pub fn build_commands() -> Vec<String> {
+    [
+        // gqlfreez stops on a website without queries, which has no data to fetch
+        run_if(
+            &format!("find {PUBLIC_FOLDER} -name '*.graphql' | grep -q ."),
+            GQLFREEZ,
+            PUBLIC_FOLDER,
+        ),
+        // Zola checks the system roots even for local data, and node:22-slim has none
+        vec![
+            "if [ ! -e /etc/ssl/certs/ca-certificates.crt ]; then".to_string(),
+            format!("  mkdir -p {CACHE_FOLDER}"),
+            format!("  node -e \"console.log(require('tls').rootCertificates.join('\\n'))\" > {CACHE_FOLDER}/roots.pem"),
+            format!("  export SSL_CERT_FILE=\"$PWD/{CACHE_FOLDER}/roots.pem\""),
+            "fi".to_string(),
+        ],
+        download_lines(ZOLA),
+        vec![
+            "tar xzf \"$file\" -C \"$(dirname \"$file\")\"".to_string(),
+            // The config is found from the root, the output from here; --force
+            // for a _site left by an earlier build
+            format!("\"$(dirname \"$file\")/zola\" --root {PUBLIC_FOLDER} --config ../{CONFIG} build --output-dir {} --force", BUILD_OUTPUT.trim_end_matches('/')),
+        ],
+    ]
+    .concat()
+}
+
+fn zola(site: &Path, public: &Path, output: &Path) -> Result<(), String> {
+    let config = config(site)?;
     let _building = held(&BUILDING);
     catch_unwind(AssertUnwindSafe(|| -> errors::Result<()> {
         let mut site = site::Site::new(public, &config)?;

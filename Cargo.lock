@@ -2776,8 +2776,8 @@ dependencies = [
 
 [[package]]
 name = "gqlfreez"
-version = "0.2.0"
-source = "git+https://github.com/lexoyo/gqlfreez?tag=v0.2.0#9b84f8dc0183fc52364f7a95d28ec41f00b40780"
+version = "0.2.1"
+source = "git+https://github.com/lexoyo/gqlfreez?tag=v0.2.1#ed58bcfb354f4e2f2b89955df86f1ed74948a6d9"
 dependencies = [
  "anyhow",
  "apollo-parser",
@@ -2793,6 +2793,7 @@ dependencies = [
  "serde_yaml_ng",
  "thiserror 2.0.21",
  "tokio",
+ "webpki-root-certs",
 ]
 
 [[package]]

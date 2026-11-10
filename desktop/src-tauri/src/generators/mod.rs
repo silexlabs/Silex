@@ -11,12 +11,13 @@ use std::path::{Path, PathBuf};
 
 use silex_server::{Job, Ssg};
 
+pub mod download;
 pub mod eleventy;
 mod zola;
 
 const GITIGNORE: &str = ".gitignore";
 /// Where the built website goes, which is not part of the website
-const BUILD_OUTPUT: &str = "_site/";
+pub(crate) const BUILD_OUTPUT: &str = "_site/";
 
 /// Eleventy and Hugo are built by the CI of the forge
 pub fn build(site: &Path, ssg: Option<Ssg>, job: &Job) -> Result<Option<PathBuf>, String> {
@@ -28,6 +29,13 @@ pub fn build(site: &Path, ssg: Option<Ssg>, job: &Job) -> Result<Option<PathBuf>
             Ok(Some(output))
         }
         Some(Ssg::Eleventy | Ssg::Hugo) | None => Ok(None),
+    }
+}
+
+pub fn build_commands(ssg: Option<Ssg>) -> Vec<String> {
+    match ssg {
+        Some(Ssg::Zola) => zola::build_commands(),
+        Some(Ssg::Eleventy | Ssg::Hugo) | None => eleventy::build_commands(),
     }
 }
 
