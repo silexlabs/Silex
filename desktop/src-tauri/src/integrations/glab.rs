@@ -47,43 +47,48 @@ const OAUTH_APPLICATIONS: &[(&str, &str)] = &[(
 /// The glab Silex installs, with the checksums GitLab published for it
 const RELEASE: Release = Release {
     version: "1.128.0",
-    inside: "bin/glab",
     archives: &[
         Archive {
             os: "linux",
             arch: "x86_64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_linux_amd64.tar.gz",
             sha256: "bc024819e7598b19429a199cd87f640d98b2b67416d8ad796f19e4260b57a7c7",
+            inside: Some("bin/glab"),
         },
         Archive {
             os: "linux",
             arch: "aarch64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_linux_arm64.tar.gz",
             sha256: "60d0512085a8c1be7c5ef51aa7e4ee28213444cea0376b3260707d90489199ea",
+            inside: Some("bin/glab"),
         },
         Archive {
             os: "macos",
             arch: "x86_64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_darwin_amd64.tar.gz",
             sha256: "741f8ce806751cf3e6381acb39284dbe0eb8d5c44a3f4ab6bf78fd91eb362e0b",
+            inside: Some("bin/glab"),
         },
         Archive {
             os: "macos",
             arch: "aarch64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_darwin_arm64.tar.gz",
             sha256: "541cdde6a0f706b4b69fed9fb558b421a361f63408d072d78ffdf304aee04248",
+            inside: Some("bin/glab"),
         },
         Archive {
             os: "windows",
             arch: "x86_64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_windows_amd64.zip",
             sha256: "641d86af5d72c17a7d79154a6436e9c68a54c69db2172020cc4036e0776a4832",
+            inside: Some("bin/glab"),
         },
         Archive {
             os: "windows",
             arch: "aarch64",
             url: "https://gitlab.com/gitlab-org/cli/-/releases/v1.128.0/downloads/glab_1.128.0_windows_arm64.zip",
             sha256: "a2e8a2ac9dc918a6ce1334c2a784accd581d9845329abf6aea72fe1ca1f1a13c",
+            inside: Some("bin/glab"),
         },
     ],
     max_bytes: 100 * 1024 * 1024,

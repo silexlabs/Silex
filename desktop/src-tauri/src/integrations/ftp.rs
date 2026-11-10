@@ -22,11 +22,48 @@ use silex_server::said::Said;
 use silex_server::{OptionsChoice, OptionsField, OptionsForm, PublicationOptions};
 
 use super::common::address::host_of;
+use super::common::install::{Archive, Release};
 use super::common::remote::Remote;
 use super::common::run::{self, Program};
 use super::integration::{Account, Capacity, Integration, Openness, SignIn, Tag};
 use crate::held::held;
 use crate::locales::key;
+
+/// The rclone Silex installs, with the checksums rclone signed for it
+const RELEASE: Release = Release {
+    version: "1.76.0",
+    archives: &[
+        Archive {
+            os: "linux",
+            arch: "x86_64",
+            url: "https://downloads.rclone.org/v1.76.0/rclone-v1.76.0-linux-amd64.zip",
+            sha256: "b00f00b3266c3764413afe599d3ec316f6f43b3e0ea8a0bc1d186d2133e46df7",
+            inside: Some("rclone-v1.76.0-linux-amd64/rclone"),
+        },
+        Archive {
+            os: "macos",
+            arch: "x86_64",
+            url: "https://downloads.rclone.org/v1.76.0/rclone-v1.76.0-osx-amd64.zip",
+            sha256: "4f5835733d52b818340f97b1fc0348a70461534d123363a183ca2b660219595a",
+            inside: Some("rclone-v1.76.0-osx-amd64/rclone"),
+        },
+        Archive {
+            os: "macos",
+            arch: "aarch64",
+            url: "https://downloads.rclone.org/v1.76.0/rclone-v1.76.0-osx-arm64.zip",
+            sha256: "e72dc90b70f4947a7b72b61bde4a4fbba5777b2874fb448951ffdde67ebd0ab7",
+            inside: Some("rclone-v1.76.0-osx-arm64/rclone"),
+        },
+        Archive {
+            os: "windows",
+            arch: "x86_64",
+            url: "https://downloads.rclone.org/v1.76.0/rclone-v1.76.0-windows-amd64.zip",
+            sha256: "8b4fd2737ade4e70c057ef4a49deb7cffe94b0fb9d7587c189d149823f21a1dc",
+            inside: Some("rclone-v1.76.0-windows-amd64/rclone"),
+        },
+    ],
+    max_bytes: 200 * 1024 * 1024,
+};
 
 pub struct Ftp;
 
@@ -62,6 +99,10 @@ impl Integration for Ftp {
 
     fn install_url(&self) -> &'static str {
         "https://rclone.org/install/"
+    }
+
+    fn release(&self) -> Option<&'static Release> {
+        Some(&RELEASE)
     }
 
     fn capacities(&self) -> &'static [Capacity] {

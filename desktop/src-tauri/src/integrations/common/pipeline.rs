@@ -26,12 +26,14 @@ const HTMLREBASE: &[Archive] = &[
         arch: "x86_64",
         url: "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux-x64",
         sha256: "7cfdac4b8841cb06bfa6a26d039ca00d03ab539da228a6046f5d68fdbcf2111d",
+        inside: None,
     },
     Archive {
         os: "linux",
         arch: "aarch64",
         url: "https://github.com/silexlabs/htmlrebase/releases/download/v0.1.0/htmlrebase-linux-arm64",
         sha256: "581840706b5773ddcac956d2fdf90374a2b72fb616f37053c589194738939cd8",
+        inside: None,
     },
 ];
 

@@ -26,13 +26,14 @@ pub struct Archive {
     pub arch: &'static str,
     pub url: &'static str,
     pub sha256: &'static str,
+    /// Where the program is in the archive, without the `.exe` of Windows,
+    /// or None when the file is the program itself
+    pub inside: Option<&'static str>,
 }
 
 /// The version Silex was tested with, replaced only by an update of Silex
 pub struct Release {
     pub version: &'static str,
-    /// Where the program is in the archive, without the `.exe` of Windows
-    pub inside: &'static str,
     pub archives: &'static [Archive],
     /// Past this the download stops, well above the size of the archives
     pub max_bytes: usize,
@@ -94,14 +95,19 @@ pub fn install(data_dir: &Path, name: &str, release: &Release) -> Result<PathBuf
             archive.url
         )));
     }
-    let inside = file_name(release.inside);
-    let program = if archive.url.ends_with(".zip") {
-        from_zip(&bytes, &inside)
-    } else {
-        from_tar_gz(&bytes, &inside)
-    }
-    .map_err(Said::raw)?
-    .ok_or_else(|| Said::raw(format!("{} has no {inside}", archive.url)))?;
+    let program = match archive.inside {
+        None => bytes,
+        Some(inside) => {
+            let inside = file_name(inside);
+            if archive.url.ends_with(".zip") {
+                from_zip(&bytes, &inside)
+            } else {
+                from_tar_gz(&bytes, &inside)
+            }
+            .map_err(Said::raw)?
+            .ok_or_else(|| Said::raw(format!("{} has no {inside}", archive.url)))?
+        }
+    };
     place(data_dir, name, release.version, &program).map_err(Said::raw)
 }
 
@@ -197,7 +203,6 @@ mod tests {
         let old = place(&data_dir, "glab", "1.0.0", b"old").unwrap();
         let release = Release {
             version: "2.0.0",
-            inside: "bin/glab",
             archives: &[],
             max_bytes: 0,
         };
