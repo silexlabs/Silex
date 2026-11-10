@@ -40,7 +40,7 @@ function getDataFile(slug: string, dataSourceId: string): string {
   return `${DATA_FOLDER}/${dataSourceId}/${slug}`
 }
 
-// The split script computes the address of each item, it knows fixed texts and fields of the item
+// gqlfreez only fills Mustache tags with fields of the item
 function getPathParts(body: Component, expression: Expression): PathPart[] | null {
   let parts: PathPart[] = []
   let field: string[] | null = null
@@ -109,6 +109,29 @@ function check(editor: Editor, page: Page): Problem[] {
   return problems.map(message => ({ message, componentId: null }))
 }
 
+function getSection(slug: string): string {
+  return `content/${slug}`
+}
+
+// gqlfreez writes a page in content/ for each item of the list
+function getCollection(slug: string, page: Page, list: string[]): string {
+  const path = getItemPath(page)!
+    .map(part => 'text' in part ? part.text : `{{item.${part.field.join('.')}}}`)
+    .join('')
+  return [
+    `    ${slug}.graphql:`,
+    `      list: ${JSON.stringify(list.join('.'))}`,
+    // Relative to the folder of the config, in the folder of the data source
+    `      dir: ${JSON.stringify(`${'../'.repeat(DATA_FOLDER.split('/').length + 1)}${getSection(slug)}`)}`,
+    '      file: "{{index}}.md"',
+    '      frontMatter:',
+    `        template: ${JSON.stringify(getTemplate(slug))}`,
+    `        path: ${JSON.stringify(path)}`,
+    '        extra:',
+    '          item: "{{item}}"',
+  ].map(line => `${line}\n`).join('')
+}
+
 function file(path: string, content: string): ClientSideFileWithContent {
   return { type: ClientSideFileType.OTHER, path, content }
 }
@@ -116,6 +139,7 @@ function file(path: string, content: string): ClientSideFileWithContent {
 function transformFiles(editor: Editor, data: PublicationData) {
   if (!data.files) throw new Error('No files in publication data')
   const dataSourceIds = new Set<string>()
+  const collections = new Map<string, string>()
   editor.Pages.getAll().filter(page => isCmsPage(page)).forEach(page => {
     const slug = getPageSlug(page.getName())
     const queries = getPageQuery(page, editor)
@@ -132,17 +156,9 @@ function transformFiles(editor: Editor, data: PublicationData) {
       data.files!.push(file(`/${getDataFile(slug, dataSourceId)}.graphql`, query))
     })
     if (isCollection) {
-      const list = getList(page)
-      data.files!.push(
-        file(`/content/${slug}/_index.md`, '+++\nrender = false\n+++\n'),
-        file(`/${DATA_FOLDER}/${slug}.split.json`, JSON.stringify({
-          data: `${getDataFile(slug, list.dataSourceId)}.json`,
-          list: list.fields,
-          path: getItemPath(page),
-          template: getTemplate(slug),
-          folder: `content/${slug}`,
-        }, null, 2)),
-      )
+      const { dataSourceId, fields } = getList(page)
+      collections.set(dataSourceId, (collections.get(dataSourceId) ?? '') + getCollection(slug, page, fields))
+      data.files!.push(file(`/${getSection(slug)}/_index.md`, '+++\nrender = false\n+++\n'))
     } else if (getTemplate(slug) !== NOT_FOUND_TEMPLATE) {
       const url = getUrl(editor, slug)
       // The home page of a Zola site is the section content/_index.md
@@ -152,7 +168,11 @@ function transformFiles(editor: Editor, data: PublicationData) {
     }
   })
   // Read by gqlfreez, and by the editors of the .graphql files
-  dataSourceIds.forEach(dataSourceId => data.files!.push(file(`/${DATA_FOLDER}/${dataSourceId}/.graphqlrc.yml`, `schema: ${JSON.stringify(getEndpoint(dataSourceId, 'zola'))}\n`)))
+  dataSourceIds.forEach(dataSourceId => {
+    const found = collections.get(dataSourceId)
+    const extensions = found ? `extensions:\n  collections:\n${found}` : ''
+    data.files!.push(file(`/${DATA_FOLDER}/${dataSourceId}/.graphqlrc.yml`, `schema: ${JSON.stringify(getEndpoint(dataSourceId, 'zola'))}\n${extensions}`))
+  })
   // Zola builds nothing without a templates folder, which a website without data has no file for
   if (!data.files.some(({ path }) => path.startsWith('/templates/'))) data.files.push(file('/templates/.gitkeep', ''))
 }

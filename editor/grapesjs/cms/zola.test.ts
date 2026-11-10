@@ -5,9 +5,12 @@
 import { beforeEach, expect, jest, test } from '@jest/globals'
 import grapesjs, { type Editor } from 'grapesjs'
 import { ClientSideFileType } from '~/common/types'
-import dataSourcePlugin from '@silexlabs/grapesjs-data-source'
 
 jest.unstable_mockModule('./tera-filters', () => ({ getTeraFilters: () => [] }))
+const dataSource = await import('@silexlabs/grapesjs-data-source')
+const queries: Record<string, string> = {}
+jest.unstable_mockModule('@silexlabs/grapesjs-data-source', () => ({ ...dataSource, getPageQuery: () => queries }))
+const { default: dataSourcePlugin } = dataSource
 const { zola } = await import('./zola')
 
 const fixed = (value: string) => ({ type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value', kind: 'scalar', typeIds: ['String'], options: { value } })
@@ -16,6 +19,7 @@ const pageData = JSON.stringify([{ type: 'property', propType: 'field', fieldId:
 let editor: Editor
 
 beforeEach(() => {
+  delete queries.wp
   editor = grapesjs.init({ headless: true, storageManager: false, plugins: [editor => dataSourcePlugin(editor, { dataSources: [], filters: [] })] })
   editor.getModel().set('config', { publicationTransformers: [] })
 })
@@ -52,11 +56,25 @@ test('A collection page whose permalink uses another filter is refused', () => {
 })
 
 test('Like Eleventy, the address of an item gets a slash at each end', () => {
+  dataSource.addDataSource({ id: 'wp', label: 'WordPress', url: 'https://wp.example/graphql', connect: () => new Promise(() => {}) } as never)
+  queries.wp = 'query { posts { slug } }'
   addCollectionPage(itemPermalink())
   const files = [{ type: ClientSideFileType.HTML, path: '/templates/silex-article.html', content: '' }]
   zola(editor).onData!({ files } as never)
-  const split = files.find(({ path }) => path === '/data/silex/article.split.json')
-  expect(JSON.parse(split!.content).path).toEqual([{ text: '/' }, { field: ['slug'] }, { text: '/' }])
+  const config = files.find(({ path }) => path === '/data/silex/wp/.graphqlrc.yml')
+  expect(config!.content).toBe(`schema: "https://wp.example/graphql"
+extensions:
+  collections:
+    article.graphql:
+      list: "posts"
+      dir: "../../../content/article"
+      file: "{{index}}.md"
+      frontMatter:
+        template: "silex-article.html"
+        path: "/{{item.slug}}/"
+        extra:
+          item: "{{item}}"
+`)
 })
 
 test('The error page with data is the 404 template of Zola, without content', () => {
