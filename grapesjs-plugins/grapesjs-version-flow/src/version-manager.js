@@ -54,12 +54,9 @@ export default class VersionManager {
     }
   }
 
+  // Without a pending step the new version is written by the next save
   needsUpgrade(savedVersion, currentVersion) {
-    if (!savedVersion) {
-      // First run: always run upgrades if there are any versions defined
-      return this.getPendingUpgrades(savedVersion, currentVersion).length > 0;
-    }
-    return this.compareVersions(savedVersion, currentVersion) < 0;
+    return this.getPendingUpgrades(savedVersion, currentVersion).length > 0;
   }
 
   hasWhatsNewSteps() {
