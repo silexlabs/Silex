@@ -329,7 +329,14 @@ fn run_within<'a>(
         // glab tells GitLab what the user does with it otherwise
         .env("GLAB_SEND_TELEMETRY", "false")
         // and writes its update notice in front of the errors Silex shows
-        .env("GLAB_CHECK_UPDATE", "false");
+        .env("GLAB_CHECK_UPDATE", "false")
+        // glab prefers them to what the user signed in to Silex with
+        .env_remove("GITLAB_TOKEN")
+        .env_remove("GITLAB_ACCESS_TOKEN")
+        .env_remove("OAUTH_TOKEN")
+        .env_remove("GITLAB_API_HOST")
+        .env_remove("GITLAB_CLIENT_ID")
+        .env_remove("GLAB_IS_OAUTH2");
 
     without_appimage_environment(&mut command);
     if login_shell {
