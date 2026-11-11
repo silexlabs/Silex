@@ -308,6 +308,8 @@ pub fn forget_hosting(site: &Path) -> std::result::Result<(), String> {
     std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
+const LEGACY_PAGES_FOLDER: &str = "src";
+
 /// Far above the templates of today, which are all under 2 MB once unpacked
 const MAX_TEMPLATE_BYTES: u64 = 200 * 1024 * 1024;
 const MAX_TEMPLATE_ENTRIES: usize = 10_000;
@@ -739,13 +741,14 @@ async fn merge_website_data(
         return Ok(parsed);
     }
 
-    let pages_folder = pages_folder_of(&parsed)?
-        .ok_or_else(|| {
-            Error::InvalidWebsite(
-                "Website has no pagesFolder, cannot tell where its pages are".to_string(),
-            )
-        })?
-        .to_string();
+    // Before pagesFolder, page files were in src/, which the Node server still assumes
+    let pages_folder = match pages_folder_of(&parsed)? {
+        Some(folder) => folder.to_string(),
+        None => {
+            parsed["pagesFolder"] = serde_json::Value::from(LEGACY_PAGES_FOLDER);
+            LEGACY_PAGES_FOLDER.to_string()
+        }
+    };
 
     let mut loaded_pages = Vec::new();
     for page_ref in pages {
@@ -1037,6 +1040,31 @@ mod tests {
         let refused = read_website(&data_path, &website_id).await.unwrap_err();
         let said = refused.to_string();
         assert!(said.contains("home-abc.json"), "{}", said);
+
+        let _ = std::fs::remove_dir_all(&data_path);
+    }
+
+    #[tokio::test]
+    async fn a_website_with_its_pages_in_src_opens_with_its_pages() {
+        let data_path = a_data_path("pages-in-src");
+        let website_id: WebsiteId = "a-website".parse().unwrap();
+        let site = data_path.join(website_id.as_str());
+        std::fs::create_dir_all(site.join("src")).unwrap();
+        std::fs::write(
+            site.join(WEBSITE_DATA_FILE),
+            r#"{"pages":[{"id":"abc","name":"Home","isFile":true}]}"#,
+        )
+        .unwrap();
+        std::fs::write(
+            site.join("src").join("home-abc.json"),
+            r#"{"id":"abc","name":"Home","frames":[]}"#,
+        )
+        .unwrap();
+
+        let read = read_website(&data_path, &website_id).await.unwrap();
+
+        assert_eq!(read["pages"][0]["frames"], serde_json::json!([]));
+        assert_eq!(read["pagesFolder"], "src");
 
         let _ = std::fs::remove_dir_all(&data_path);
     }
