@@ -32,6 +32,13 @@
     "resources": {
       "resources/glitchtip.dsn": "glitchtip.dsn"
     },
+    "linux": {
+      "appimage": {
+        "files": {
+          "usr/lib/libfreetype.so.6": "/usr/lib/x86_64-linux-gnu/libfreetype.so.6"
+        }
+      }
+    },
     "macOS": {
       "signingIdentity": "-"
     }
