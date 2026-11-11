@@ -58,21 +58,20 @@ export default (editor, opts = {}) => {
   // Initialize styles
   styleManager.init();
 
-  // Check for upgrades after storage is loaded
-  editor.on('storage:end:load', () => {
-    // Give a small delay to ensure version is extracted from storage
-    setTimeout(() => {
-      const savedVersion = versionManager.getSavedVersion();
-      const currentVersion = options.builderVersion;
-      // Check if we need to run upgrades even on first run
-      if (versionManager.needsUpgrade(savedVersion, currentVersion)) {
-        eventSystem.emit('version:outdated', {
-          savedVersion,
-          currentVersion
-        });
-        modalUI.show();
-      }
-    }, 100);
+  // storage:end:load is also emitted when the load failed, project:loaded only when a project was loaded
+  editor.on('project:loaded', () => {
+    // A step calling setProjectData loads the project again
+    if (upgradeEngine.isRunning()) return;
+    const savedVersion = versionManager.getSavedVersion();
+    const currentVersion = options.builderVersion;
+    // Check if we need to run upgrades even on first run
+    if (versionManager.needsUpgrade(savedVersion, currentVersion)) {
+      eventSystem.emit('version:outdated', {
+        savedVersion,
+        currentVersion
+      });
+      modalUI.show();
+    }
   });
 
   // Version persistence is now handled automatically by VersionManager storage hooks

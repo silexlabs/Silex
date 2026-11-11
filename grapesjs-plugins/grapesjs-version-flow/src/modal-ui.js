@@ -37,7 +37,7 @@ export default class ModalUI {
     });
 
     this.eventSystem.on('version:upgrade:end', (data) => {
-      this.showCompletedState(data.upgradedTo);
+      if (!data.hasFailures) this.showCompletedState(data.upgradedTo);
     });
 
     this.eventSystem.on('version:upgrade:error', (data) => {
@@ -306,8 +306,7 @@ export default class ModalUI {
         return;
       }
 
-      // Always show completed state since we continue on error
-      this.showCompletedState(result.upgradedTo);
+      if (result.error) this.showErrorState('unknown', { message: result.error });
     } catch (error) {
       // If there's a catastrophic error that stops the whole process
       console.error('[grapesjs-version-flow] Catastrophic upgrade error:', error);

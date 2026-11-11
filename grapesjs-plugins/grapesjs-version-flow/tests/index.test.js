@@ -145,7 +145,7 @@ describe('GrapesJS Version Flow Plugin', () => {
       
       plugin(mockEditor, options);
       
-      expect(mockEditor.on).toHaveBeenCalledWith('storage:end:load', expect.any(Function));
+      expect(mockEditor.on).toHaveBeenCalledWith('project:loaded', expect.any(Function));
     });
 
     it('should set up storage event listener', () => {
@@ -156,8 +156,8 @@ describe('GrapesJS Version Flow Plugin', () => {
       
       plugin(mockEditor, options);
       
-      // The plugin sets up storage:end:load for triggering upgrades
-      expect(mockEditor.on).toHaveBeenCalledWith('storage:end:load', expect.any(Function));
+      // The plugin sets up project:loaded for triggering upgrades
+      expect(mockEditor.on).toHaveBeenCalledWith('project:loaded', expect.any(Function));
     });
   });
 

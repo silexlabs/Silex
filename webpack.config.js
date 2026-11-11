@@ -33,6 +33,7 @@ const pluginSrc = {
   '@silexlabs/grapesjs-css-variables$': './grapesjs-plugins/grapesjs-css-variables/src/index.js',
   '@silexlabs/grapesjs-advanced-selector$': './grapesjs-plugins/grapesjs-advanced-selector/src/index.ts',
   '@silexlabs/grapesjs-storage-rate-limit$': './grapesjs-plugins/grapesjs-storage-rate-limit/src/index.js',
+  '@silexlabs/grapesjs-version-flow$': './grapesjs-plugins/grapesjs-version-flow/src/index.js',
   '@silexlabs/grapesjs-notifications$': './grapesjs-plugins/grapesjs-notifications/src/index.ts',
   '@silexlabs/grapesjs-keymaps-dialog$': './grapesjs-plugins/grapesjs-keymaps-dialog/src/index.ts',
   '@silexlabs/grapesjs-ai-capabilities$': './grapesjs-plugins/grapesjs-ai-capabilities/src/index.js',

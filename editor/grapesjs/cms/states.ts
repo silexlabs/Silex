@@ -1,4 +1,4 @@
-import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter, StoredState, Expression } from '@silexlabs/grapesjs-data-source'
+import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter, StoredState, Expression, State } from '@silexlabs/grapesjs-data-source'
 import { Silex11tyPluginWebsiteSettings } from './index'
 import { Component, Editor } from 'grapesjs'
 import { ClientEvent } from '../../events'
@@ -21,9 +21,13 @@ export default function(editor: Editor, getProvidedStates: () => readonly PageSt
   editor.on(ClientEvent.SETTINGS_SAVE_END, () => updatePaginationStates(editor))
 }
 
-function getItemLabel(pageData: Expression): string {
+export function getItemLabel(pageData: Expression): string {
   const type = [...pageData].reverse().find(token => token.type === 'property')?.typeIds[0]
   return type ? `${PAGE_ITEM_LABEL} (${type})` : PAGE_ITEM_LABEL
+}
+
+export function pageItemState(componentId: string, label: string): State {
+  return { type: 'state', storedStateId: 'item', componentId, exposed: true, forceKind: 'object', label }
 }
 
 function getPageStates(pageData: Expression, pageIndex: number, pageSize: number): Record<PageStateId, StoredState> {
