@@ -95,7 +95,15 @@ pub fn website_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
 /// out of them.
 pub fn published_files_url(data_path: &Path, website_id: &WebsiteId) -> String {
     let website = website_path(data_path, website_id);
-    format!("file://{}", website.join(PUBLIC_FOLDER).display())
+    folder_url(&website.join(PUBLIC_FOLDER)).unwrap_or_default()
+}
+
+/// The `file://` address of a folder
+///
+/// Built by hand, the `?` of a Windows `\\?\` path would start the query of
+/// the address, and a `#` its fragment.
+pub fn folder_url(folder: &Path) -> Option<String> {
+    url::Url::from_file_path(folder).ok().map(String::from)
 }
 
 fn website_data_path(data_path: &Path, website_id: &WebsiteId) -> PathBuf {
@@ -624,7 +632,7 @@ pub async fn get_website_meta(data_path: &Path, website_id: &WebsiteId) -> Resul
         image_url: file_content.image_url,
         created_at: metadata.created().ok().map(DateTime::<Utc>::from),
         updated_at: metadata.modified().ok().map(DateTime::<Utc>::from),
-        repo_url: Some(format!("file://{}", website_path.display())),
+        repo_url: folder_url(&website_path),
         pages_url: online_at(&website_path).await,
     })
 }
@@ -998,6 +1006,16 @@ mod tests {
     fn two_writes_of_the_same_file_do_not_share_a_name() {
         let path = Path::new("/somewhere/website.json");
         assert_ne!(written_beside(path).unwrap(), written_beside(path).unwrap());
+    }
+
+    #[test]
+    fn a_folder_address_leads_back_to_the_folder() {
+        let folder = Path::new("/home/Jean Été/C# ?/website/_site/");
+        let opened = url::Url::parse(&folder_url(folder).unwrap())
+            .unwrap()
+            .to_file_path()
+            .unwrap();
+        assert_eq!(opened, folder);
     }
 
     #[tokio::test(flavor = "multi_thread")]

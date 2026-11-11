@@ -120,6 +120,16 @@
     }, 300);
   };
 
+  const openLink = (url) => invoke('open_link', { url }).catch((err) => {
+    // Only the sentence: its parameters and the detail name the user's folders
+    const failure = new Error(`tauri open_link: ${err?.sentence ?? 'failed'}`);
+    window.Sentry?.captureException?.(failure, { tags: { tauri_command: 'open_link' } });
+    console.error(failure);
+    const message = Object.entries(err?.params ?? {})
+      .reduce((written, [name, value]) => written.replaceAll(`{${name}}`, value), err?.sentence ?? err?.detail ?? 'Silex could not open this link.');
+    window.silex?.getEditor?.()?.runCommand('notifications:add', { type: 'error', message: element('p', { textContent: message }).outerHTML });
+  });
+
   // Intercept file:// links and open in OS file manager.
   // macOS WKWebView may strip file:// from href attributes, so we match
   // any <a> click and check the resolved .href property.
@@ -131,14 +141,14 @@
     const url = link.getAttribute('href') || link.href || '';
     if (url.startsWith('file://')) {
       e.preventDefault();
-      invoke('open_link', { url });
+      openLink(url);
     } else if (url.startsWith('http://') || url.startsWith('https://')) {
       // External URLs open in OS default browser; same-origin URLs stay in webview
       try {
         const parsed = new URL(url);
         if (parsed.origin !== window.location.origin) {
           e.preventDefault();
-          invoke('open_link', { url });
+          openLink(url);
         }
       } catch { /* malformed URL, let browser handle */ }
     }
