@@ -13,13 +13,13 @@
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.3.0",
-    "@sentry/browser": "^11.11.0",
+    "@sentry/browser": "^11.12.0",
     "@tauri-apps/api": "~2.12.4",
     "html2canvas": "^1.4.1",
     "reka-ui": "^2.11.0",
     "vue": "^3.5.45",
     "vue-i18n": "^11.4.18",
-    "vue-router": "^5.4.0"
+    "vue-router": "^5.5.0"
   },
   "devDependencies": {
     "@intlify/eslint-plugin-vue-i18n": "^4.5.1",
@@ -27,13 +27,13 @@
     "@vitejs/plugin-vue": "^6.0.10",
     "@vue/eslint-config-typescript": "^14.9.0",
     "eslint": "^10.14.0",
-    "eslint-plugin-vue": "^10.12.0",
+    "eslint-plugin-vue": "^10.12.1",
     "eslint-plugin-vuejs-accessibility": "^2.6.3",
     "grapesjs": "^0.23.9",
     "stylelint": "^18.0.0",
     "stylelint-config-standard-vue": "^2.0.0",
     "typescript": "6.0.3",
-    "vite": "^8.3.6",
+    "vite": "^8.3.7",
     "vue-tsc": "^3.3.13"
   }
 }
