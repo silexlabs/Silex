@@ -72,5 +72,5 @@ export function upgradeToPageItem({ editor }: { editor: Editor }): string {
         }
       })))
   })
-  return count ? t(editor, '"Pagination items | first" replaced with "Page item" in {count} expressions', { count }) : t(editor, 'Nothing to change')
+  return count ? t(editor, '"Pagination items | first" replaced with "Page item" in {count} expressions', { count }) : ''
 }

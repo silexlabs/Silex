@@ -20,7 +20,7 @@ import { t } from '../../i18n'
 
 // The Rust server refuses to save a site without pagesFolder
 export function upgradeToPagesFolder({ editor }: { editor: Editor }): string {
-  if (editor.getModel().get('pagesFolder')) return t(editor, 'Nothing to change')
+  if (editor.getModel().get('pagesFolder')) return ''
   editor.getModel().set('pagesFolder', 'pages')
   return t(editor, 'Pages will be saved in the "pages" folder')
 }

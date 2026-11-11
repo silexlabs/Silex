@@ -1,385 +1,209 @@
+export const defaultTexts = {
+  title: 'Version {version}',
+  whatsNewTitle: 'What\'s new in version {version}',
+  updateMessage: 'This project was made with an older version. It needs to be updated:',
+  update: 'Update and save my website',
+  leave: 'Leave without updating',
+  ok: 'OK',
+  errorTitle: 'Update failed',
+  errorMessage: 'This project could not be updated. Nothing is saved yet. If you edit it, your changes are saved as usual and the update is tried again next time. Please report the problem.',
+  errorDetails: 'Technical details',
+  report: 'Report the problem',
+  continueAnyway: 'Continue anyway',
+  reportTitle: 'Update failed in version {version}',
+};
+
+const MAX_REPORT_LENGTH = 6000;
+
+const escapeHtml = (text) => String(text)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;');
+
 export default class ModalUI {
   constructor(editor, options, upgradeEngine, eventSystem) {
     this.editor = editor;
     this.options = options;
     this.upgradeEngine = upgradeEngine;
     this.eventSystem = eventSystem;
-    this.modal = null;
-    this.currentState = 'hidden';
-    this.saveNowChecked = false;
-
-    this.states = {
-      OUTDATED: 'outdated',
-      UPGRADING: 'upgrading',
-      COMPLETED: 'completed',
-      ERROR: 'error',
-      FIRST_RUN: 'first_run'
-    };
-
-    this.setupEventListeners();
+    this.isOpen = false;
+    this.texts = null;
   }
 
-  setupEventListeners() {
-    this.eventSystem.on('version:outdated', (data) => {
-      this.showOutdatedState(data.savedVersion, data.currentVersion);
-    });
-
-    this.eventSystem.on('version:upgrade:start', () => {
-      this.showUpgradingState();
-    });
-
-    this.eventSystem.on('version:versionUpgrade:start', (data) => {
-      this.updateCurrentUpgradeStep(data.toVersion);
-    });
-
-    this.eventSystem.on('version:versionUpgrade:end', (data) => {
-      this.addLogs(data.log);
-    });
-
-    this.eventSystem.on('version:upgrade:end', (data) => {
-      if (!data.hasFailures) this.showCompletedState(data.upgradedTo);
-    });
-
-    this.eventSystem.on('version:upgrade:error', (data) => {
-      this.showErrorState(data.toVersion, data.error);
-    });
+  text(key, params = {}) {
+    if (!this.texts) {
+      const texts = typeof this.options.texts === 'function' ? this.options.texts(this.editor) : this.options.texts;
+      this.texts = { ...defaultTexts, ...texts };
+    }
+    return this.texts[key].replace(/{(\w+)}/g, (match, name) => params[name] ?? '');
   }
 
-  show() {
-    if (this.modal) {
+  async start({ currentVersion, whatsNew }) {
+    if (this.isOpen) return;
+    const storage = this.editor.StorageManager;
+    const stepsBeforeSave = storage.getStepsBeforeSave();
+    // Nothing is written before the user chooses, the app may turn autosave on and off meanwhile
+    storage.setStepsBeforeSave(Infinity);
+    const restoreAutosave = () => storage.setStepsBeforeSave(stepsBeforeSave);
+
+    let result;
+    try {
+      result = await this.upgradeEngine.runUpgrades();
+    } catch (error) {
+      result = { success: false, logs: [{ level: 'error', message: error.message }] };
+    }
+
+    if (!result.success) {
+      this.open(this.renderError(currentVersion, result.logs), {
+        report: () => this.report(currentVersion, result.logs),
+        continue: () => this.close(restoreAutosave),
+      }, 'continue', this.text('errorTitle'));
       return;
     }
 
-    this.modal = this.editor.Modal.open({
-      title: this.editor.I18n.t('modal.title'),
-      content: this.renderContent(),
-      attributes: {
-        class: this.getClassName('modal')
-      }
+    const changes = result.logs.map(log => log.message);
+    if (changes.length) {
+      this.open(this.renderUpdate(currentVersion, whatsNew, changes), {
+        update: () => this.close(() => {
+          restoreAutosave();
+          this.editor.store();
+        }),
+        leave: () => this.close(() => this.leave(restoreAutosave)),
+      }, 'leave');
+    } else if (whatsNew) {
+      this.open(this.renderWhatsNew(currentVersion, whatsNew), {
+        ok: () => this.close(restoreAutosave),
+      }, 'ok');
+    } else {
+      restoreAutosave();
+    }
+  }
+
+  open(html, actions, onDismiss, title = this.text('title', { version: this.options.builderVersion })) {
+    const content = document.createElement('div');
+    content.innerHTML = html;
+    content.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', () => actions[button.getAttribute('data-action')]());
     });
 
+    const modalConfig = this.editor.Modal.getConfig();
+    const backdrop = modalConfig.backdrop;
+    modalConfig.backdrop = false;
+
+    this.isOpen = true;
+    this.editor.Modal.open({
+      title,
+      content,
+      attributes: { class: this.getClassName('modal') },
+    });
     this.injectDefaultStyles();
-    this.attachEventListeners();
-  }
 
-  hide() {
-    if (this.modal) {
-      this.editor.Modal.close();
-      this.modal = null;
-      this.currentState = 'hidden';
-
-      if (this.saveNowChecked) {
-        this.editor.store();
+    // The cross and Escape close the modal without a button
+    this.editor.Modal.onceClose(() => {
+      modalConfig.backdrop = backdrop;
+      if (!this.isOpen) return;
+      this.isOpen = false;
+      // Another modal replaced ours, the user has not chosen yet
+      if (this.editor.Modal.getContent() !== content) {
+        this.reopenWhenFree(html, actions, onDismiss, title);
+        return;
       }
-    }
-  }
-
-  showOutdatedState(savedVersion, currentVersion) {
-    this.currentState = this.states.OUTDATED;
-    // Skip the initial dialog and go straight to upgrading
-    this.startUpgrade();
-  }
-
-  showUpgradingState() {
-    this.currentState = this.states.UPGRADING;
-    this.updateModal({
-      title: this.editor.I18n.t('modal.upgrading.title'),
-      content: this.renderUpgradingContent()
+      actions[onDismiss]();
     });
   }
 
-  showCompletedState(finalVersion) {
-    this.currentState = this.states.COMPLETED;
-    this.updateModal({
-      title: this.editor.I18n.t('modal.completed.title'),
-      content: this.renderCompletedContent(finalVersion)
+  reopenWhenFree(html, actions, onDismiss, title) {
+    setTimeout(() => {
+      if (this.editor.Modal.isOpen()) this.editor.Modal.onceClose(() => this.reopenWhenFree(html, actions, onDismiss, title));
+      else this.open(html, actions, onDismiss, title);
     });
   }
 
-  showErrorState(failedVersion, error) {
-    this.currentState = this.states.ERROR;
-    this.updateModal({
-      title: this.editor.I18n.t('modal.error.title'),
-      content: this.renderErrorContent(failedVersion, error)
-    });
+  close(then) {
+    this.isOpen = false;
+    this.editor.Modal.close();
+    then();
   }
 
-  showFirstRunState() {
-    this.currentState = this.states.FIRST_RUN;
-    this.updateModal({
-      title: this.editor.I18n.t('modal.firstRun.title'),
-      content: this.renderFirstRunContent()
-    });
+  leave(restoreAutosave) {
+    // GrapesJS asks before unloading a page with unsaved changes
+    this.editor.clearDirtyCount();
+    if (this.options.onLeave) this.options.onLeave();
+    else restoreAutosave();
   }
 
-  updateModal({ title, content }) {
-    if (!this.modal) {
-      this.show();
-    }
-
-    this.modal.setTitle(title);
-    this.modal.setContent(content);
+  report(currentVersion, logs) {
+    const details = this.renderDetailsText(currentVersion, logs).slice(0, MAX_REPORT_LENGTH);
+    const url = new URL(this.options.reportUrl);
+    url.searchParams.set('title', this.text('reportTitle', { version: currentVersion }));
+    url.searchParams.set('body', '```\n' + details + '\n```\n');
+    window.open(url.toString(), '_blank', 'noopener');
   }
 
-  renderContent() {
-    return this.renderOutdatedContent('', '');
+  renderDetailsText(currentVersion, logs) {
+    return [this.text('title', { version: currentVersion }), ...logs.map(log => `${log.level}: ${log.message}`)].join('\n');
   }
 
-  renderOutdatedContent(savedVersion, currentVersion) {
+  renderWhatsNewSection(currentVersion, whatsNew) {
     return `
-      <div class="${this.getClassName('modal-content')}">
-        <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.outdated.message', { savedVersion, currentVersion })}</p>
-          <div class="${this.getClassName('version-info')}">
-            ${savedVersion || 'Unknown'} → ${currentVersion}
-          </div>
-          <p><em>Upgrading your website to the latest version of Silex...</em></p>
-        </div>
+      <section class="${this.getClassName('whats-new')}">
+        <h3>${this.text('whatsNewTitle', { version: currentVersion })}</h3>
+        ${whatsNew}
+      </section>
+    `;
+  }
+
+  renderUpdate(currentVersion, whatsNew, changes) {
+    return `
+      <div class="${this.getClassName('modal-body')}">
+        ${whatsNew ? this.renderWhatsNewSection(currentVersion, whatsNew) : ''}
+        <section>
+          <p>${this.text('updateMessage')}</p>
+          <ul>${changes.map(change => `<li>${escapeHtml(change)}</li>`).join('')}</ul>
+        </section>
+      </div>
+      <div class="${this.getClassName('modal-footer')}">
+        <button class="gjs-btn-secondary" data-action="leave">${this.text('leave')}</button>
+        <button class="gjs-btn-prim" data-action="update">${this.text('update')}</button>
       </div>
     `;
   }
 
-  renderUpgradingContent() {
-    const currentStep = this.upgradeEngine.getCurrentStep();
-    const currentVersion = currentStep ? currentStep.builderVersion : '';
-
+  renderWhatsNew(currentVersion, whatsNew) {
     return `
-      <div class="${this.getClassName('modal-content')}">
-        <div class="${this.getClassName('modal-body')}">
-          <div class="${this.getClassName('progress')}">
-            <div class="${this.getClassName('progress-text')}">
-              <span class="${this.getClassName('spinner')}"></span>
-              ${this.editor.I18n.t('modal.upgrading.current', { version: currentVersion })}
-            </div>
-          </div>
-          <div class="${this.getClassName('logs')}" id="${this.getClassName('logs-container')}">
-            ${this.renderLogs()}
-          </div>
-        </div>
+      <div class="${this.getClassName('modal-body')}">
+        ${this.renderWhatsNewSection(currentVersion, whatsNew)}
+      </div>
+      <div class="${this.getClassName('modal-footer')}">
+        <button class="gjs-btn-prim" data-action="ok">${this.text('ok')}</button>
       </div>
     `;
   }
 
-  renderCompletedContent(finalVersion) {
-    const hasWhatsNew = this.upgradeEngine.versionManager.hasWhatsNewSteps();
-
+  renderError(currentVersion, logs) {
     return `
-      <div class="${this.getClassName('modal-content')}">
-        <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.completed.message', { params: { version: finalVersion }})}</p>
-          <div class="${this.getClassName('logs')}" id="${this.getClassName('logs-container')}">
-            ${this.renderLogs()}
-          </div>
-        </div>
-        <div class="${this.getClassName('modal-footer')}">
-          <button class="gjs-btn-secondary" data-action="close">
-            ${this.editor.I18n.t('modal.completed.continueWithoutSaving')}
-          </button>
-          <button class="gjs-btn-secondary" data-action="save-and-close">
-            ${this.editor.I18n.t('modal.completed.saveAndClose')}
-          </button>
-          ${hasWhatsNew ? `
-            <button class="gjs-btn-prim" data-action="save-and-whats-new">
-              ${this.editor.I18n.t('modal.completed.saveAndShowWhatsNew')}
-            </button>
-          ` : ''}
-        </div>
+      <div class="${this.getClassName('modal-body')}">
+        <p>${this.text('errorMessage')}</p>
+        <details>
+          <summary>${this.text('errorDetails')}</summary>
+          <pre class="${this.getClassName('details')}">${escapeHtml(this.renderDetailsText(currentVersion, logs))}</pre>
+        </details>
+      </div>
+      <div class="${this.getClassName('modal-footer')}">
+        <button class="gjs-btn-secondary" data-action="continue">${this.text('continueAnyway')}</button>
+        ${this.options.reportUrl ? `<button class="gjs-btn-prim" data-action="report">${this.text('report')}</button>` : ''}
       </div>
     `;
-  }
-
-  renderErrorContent(failedVersion, error) {
-    const hasWhatsNew = this.upgradeEngine.versionManager.hasWhatsNewSteps();
-
-    return `
-      <div class="${this.getClassName('modal-content')}">
-        <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.error.message', { version: failedVersion })}</p>
-          <div class="${this.getClassName('version-info')}">
-            Error: ${error.message}
-          </div>
-          <div class="${this.getClassName('logs')}" id="${this.getClassName('logs-container')}">
-            ${this.renderLogs()}
-          </div>
-        </div>
-        <div class="${this.getClassName('modal-footer')}">
-          <button class="gjs-btn-secondary" data-action="close">
-            ${this.editor.I18n.t('modal.completed.continueWithoutSaving')}
-          </button>
-          <button class="gjs-btn-secondary" data-action="save-and-close">
-            ${this.editor.I18n.t('modal.completed.saveAndClose')}
-          </button>
-          ${hasWhatsNew ? `
-            <button class="gjs-btn-prim" data-action="save-and-whats-new">
-              ${this.editor.I18n.t('modal.completed.saveAndShowWhatsNew')}
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  renderFirstRunContent() {
-    const hasWhatsNew = this.upgradeEngine.versionManager.hasWhatsNewSteps();
-
-    return `
-      <div class="${this.getClassName('modal-content')}">
-        <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.firstRun.message')}</p>
-        </div>
-        <div class="${this.getClassName('modal-footer')}">
-          <button class="gjs-btn-secondary" data-action="close">
-            ${this.editor.I18n.t('modal.skip')}
-          </button>
-          ${hasWhatsNew ? `
-            <button class="gjs-btn-prim"
-                    data-action="whats-new">
-              ${this.editor.I18n.t('modal.firstRun.whatsNew')}
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  renderLogs() {
-    const logs = this.upgradeEngine.getAllLogs();
-    if (logs.length === 0) {
-      return '<p style="padding: 12px; margin: 0; color: #666;">No logs yet...</p>';
-    }
-
-    return logs.map(log => `
-      <div class="${this.getClassName('log-entry')}">
-        <span class="${this.getClassName('log-level')} ${this.getClassName('log-level-' + log.level)}">
-          ${this.editor.I18n.t('log.level.' + log.level)}
-        </span>
-        <span>${log.message}</span>
-      </div>
-    `).join('');
-  }
-
-  updateCurrentUpgradeStep(version) {
-    const progressText = document.querySelector(`.${this.getClassName('progress-text')}`);
-    if (progressText) {
-      progressText.innerHTML = `
-        <span class="${this.getClassName('spinner')}"></span>
-        ${this.editor.I18n.t('modal.upgrading.current', { version })}
-      `;
-    }
-  }
-
-  addLogs(logs) {
-    if (!logs || logs.length === 0) return;
-
-    const logsContainer = document.getElementById(this.getClassName('logs-container'));
-    if (logsContainer) {
-      logsContainer.innerHTML = this.renderLogs();
-      logsContainer.scrollTop = logsContainer.scrollHeight;
-    }
   }
 
   injectDefaultStyles() {
-    const existingStyle = document.querySelector('[data-gjs-version-flow]');
-
-    if (!existingStyle) {
-      const prefix = this.options.styles?.classPrefix || 'gjs-version-flow';
-      const defaultCSS = this.getDefaultCSS(prefix);
-
-      const styleElement = document.createElement('style');
-      styleElement.type = 'text/css';
-      styleElement.innerHTML = defaultCSS;
-      styleElement.setAttribute('data-gjs-version-flow', 'true');
-      document.head.appendChild(styleElement);
-    }
-
+    if (document.querySelector('[data-gjs-version-flow]')) return;
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = this.getDefaultCSS(this.options.styles?.classPrefix || 'gjs-version-flow');
+    styleElement.setAttribute('data-gjs-version-flow', 'true');
+    document.head.appendChild(styleElement);
   }
-
-  async startUpgrade() {
-    try {
-      this.showUpgradingState();
-      const result = await this.upgradeEngine.runUpgrades();
-
-      // Check if result is valid
-      if (!result) {
-        console.error('[grapesjs-version-flow] runUpgrades returned undefined result');
-        this.showErrorState('unknown', { message: 'Upgrade process failed to return result' });
-        return;
-      }
-
-      if (result.error) this.showErrorState('unknown', { message: result.error });
-    } catch (error) {
-      // If there's a catastrophic error that stops the whole process
-      console.error('[grapesjs-version-flow] Catastrophic upgrade error:', error);
-      this.showErrorState('unknown', { message: error.message });
-    }
-  }
-
-
-  async showWhatsNew() {
-    try {
-      // Save the site and close modal before running whatsNew
-      this.editor.store();
-      this.hide();
-
-      // Wait a moment for modal to close, then run whatsNew
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await this.upgradeEngine.runWhatsNew();
-    } catch (error) {
-      console.error('[grapesjs-version-flow] Error running whatsNew:', error);
-    }
-  }
-
-  toggleLogs() {
-    const collapsible = document.getElementById(this.getClassName('logs-collapsible'));
-    if (collapsible) {
-      collapsible.classList.toggle('open');
-    }
-  }
-
-  setSaveNow(checked) {
-    this.saveNowChecked = checked;
-  }
-
-  attachEventListeners() {
-    // Use document delegation since modal content is dynamic
-    document.addEventListener('click', async (e) => {
-      // Only handle clicks if our modal is open
-      if (!this.modal) return;
-
-      const action = e.target.getAttribute('data-action');
-      if (!action) return;
-
-      switch (action) {
-        case 'close':
-          this.hide();
-          break;
-        case 'upgrade':
-          this.startUpgrade();
-          break;
-        case 'whats-new':
-          this.showWhatsNew();
-          break;
-        case 'save-and-close':
-          this.editor.store();
-          this.hide();
-          break;
-        case 'save-and-whats-new':
-          this.editor.store();
-          await this.showWhatsNew();
-          break;
-      }
-    });
-
-    document.addEventListener('change', (e) => {
-      // Only handle changes if our modal is open
-      if (!this.modal) return;
-
-      if (e.target.matches(`#${this.getClassName('save-now')}`)) {
-        this.setSaveNow(e.target.checked);
-      }
-    });
-  }
-
 
   getClassName(className) {
     const prefix = this.options.styles?.classPrefix || 'gjs-version-flow';
@@ -395,6 +219,25 @@ export default class ModalUI {
         font-size: var(--gjs-font-size);
       }
 
+      .${classPrefix}-modal-body ul {
+        margin: 8px 0;
+        padding-left: 20px;
+      }
+
+      .${classPrefix}-whats-new {
+        margin-bottom: 16px;
+      }
+
+      .${classPrefix}-details {
+        margin: 8px 0 0;
+        padding: 12px;
+        max-height: 200px;
+        overflow: auto;
+        white-space: pre-wrap;
+        background-color: var(--gjs-main-dark-color);
+        border: 1px solid var(--gjs-light-border);
+      }
+
       .${classPrefix}-modal-footer {
         padding: 16px 24px 20px;
         border-top: 1px solid var(--gjs-light-border);
@@ -402,136 +245,6 @@ export default class ModalUI {
         gap: var(--gjs-flex-item-gap);
         justify-content: flex-end;
         background-color: var(--gjs-secondary-dark-color);
-      }
-
-      .${classPrefix}-version-info {
-        margin: 12px 0;
-        padding: 12px;
-        border-radius: 2px;
-        font-family: monospace;
-        font-size: var(--gjs-font-size);
-        background-color: var(--gjs-main-dark-color);
-        color: var(--gjs-font-color);
-        border: 1px solid var(--gjs-light-border);
-      }
-
-      .${classPrefix}-progress {
-        margin: 16px 0;
-      }
-
-      .${classPrefix}-progress-text {
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: var(--gjs-font-color);
-      }
-
-      .${classPrefix}-spinner {
-        display: inline-block;
-        width: 16px;
-        height: 16px;
-        border: 2px solid var(--gjs-main-dark-color);
-        border-top: 2px solid var(--gjs-color-blue);
-        border-radius: 50%;
-        animation: ${classPrefix}-spin 1s linear infinite;
-        margin-right: 8px;
-      }
-
-      @keyframes ${classPrefix}-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-
-      .${classPrefix}-logs {
-        margin: 16px 0;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid var(--gjs-light-border);
-        border-radius: 2px;
-        background: var(--gjs-main-dark-color);
-        color: var(--gjs-font-color);
-      }
-
-      .${classPrefix}-log-entry {
-        padding: 6px 12px;
-        border-bottom: 1px solid var(--gjs-light-border);
-        font-family: monospace;
-        font-size: var(--gjs-font-size);
-        display: flex;
-        align-items: center;
-      }
-
-      .${classPrefix}-log-entry:last-child {
-        border-bottom: none;
-      }
-
-      .${classPrefix}-log-level {
-        padding: 2px 6px;
-        border-radius: 2px;
-        font-size: 10px;
-        font-weight: bold;
-        margin-right: 8px;
-        text-transform: uppercase;
-      }
-
-      .${classPrefix}-log-level-info {
-        background: var(--gjs-color-blue);
-        color: white;
-      }
-
-      .${classPrefix}-log-level-warn {
-        background: var(--gjs-color-yellow);
-        color: var(--gjs-main-color);
-      }
-
-      .${classPrefix}-log-level-error {
-        background: var(--gjs-color-red);
-        color: white;
-      }
-
-      .${classPrefix}-checkbox {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 12px 0;
-      }
-
-      .${classPrefix}-checkbox input {
-        margin: 0;
-      }
-
-      .${classPrefix}-collapsible {
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin: 12px 0;
-      }
-
-      .${classPrefix}-collapsible-header {
-        padding: 12px;
-        background: #f8f9fa;
-        color: #000;
-        cursor: pointer;
-        user-select: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .${classPrefix}-collapsible-content {
-        padding: 12px;
-        border-top: 1px solid #ddd;
-        display: none;
-      }
-
-      .${classPrefix}-collapsible.open .${classPrefix}-collapsible-content {
-        display: block;
-      }
-
-      .${classPrefix}-collapsible-arrow {
-        transition: transform 0.2s;
-      }
-
-      .${classPrefix}-collapsible.open .${classPrefix}-collapsible-arrow {
-        transform: rotate(90deg);
       }
 
       .gjs-btn-secondary {

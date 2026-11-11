@@ -72,7 +72,7 @@ import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import aiCapabilitiesPlugin from '@silexlabs/grapesjs-ai-capabilities'
 import coreCommandsPlugin from './core-commands'
-import { migrations } from './migrations'
+import { migrations, versionFlowTexts } from './migrations'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH, SILEX_VERSION } from '~/common/constants'
@@ -417,6 +417,11 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       [versionFlowPlugin.toString()]: {
         builderVersion: SILEX_VERSION,
         versions: migrations,
+        texts: versionFlowTexts,
+        reportUrl: 'https://github.com/silexlabs/Silex/issues/new',
+        onLeave: () => {
+          window.location.href = '/'
+        },
       },
       [rateLimitPlugin.toString()]: {
         time: 5000,

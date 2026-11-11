@@ -222,15 +222,13 @@ describe('UpgradeEngine', () => {
       ]);
     });
 
-    it('should handle upgrade functions that return undefined', async () => {
+    it('should log nothing when the upgrade function returns nothing', async () => {
       const upgradeFunction = jest.fn().mockReturnValue(undefined);
       const step = { builderVersion: '1.1.0', upgrade: upgradeFunction };
       
       const result = await upgradeEngine.runSingleUpgrade(step);
       
-      expect(result).toEqual([
-        { level: 'info', message: 'Upgraded to 1.1.0' }
-      ]);
+      expect(result).toEqual([]);
     });
   });
 

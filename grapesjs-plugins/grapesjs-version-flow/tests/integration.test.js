@@ -14,12 +14,20 @@ const createMockEditor = () => {
       t: (key) => key
     },
     Modal: {
-      open: jest.fn().mockReturnValue({
-        setTitle: jest.fn(),
-        setContent: jest.fn()
-      }),
-      close: jest.fn()
+      config: { backdrop: true },
+      getConfig() { return this.config; },
+      getContent() { return this.content; },
+      isOpen() { return !!this.opened; },
+      open: jest.fn(function ({ content }) { this.content = content; this.opened = true; }),
+      close: jest.fn(function () { this.opened = false; return (eventListeners['modal:close'] || []).splice(0).forEach(callback => callback()); }),
+      onceClose: jest.fn(callback => { (eventListeners['modal:close'] = eventListeners['modal:close'] || []).push(callback); })
     },
+    StorageManager: {
+      steps: 1,
+      getStepsBeforeSave() { return this.steps; },
+      setStepsBeforeSave(value) { this.steps = value; }
+    },
+    clearDirtyCount: jest.fn(),
     getProjectData: () => ({ ...projectData }),
     setProjectData: (data) => Object.assign(projectData, data),
     loadProjectData: (data) => Object.assign(projectData, data),
@@ -238,6 +246,84 @@ describe('Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 150));
 
       expect(editor.trigger.mock.calls.filter(([event]) => event === 'version:outdated')).toHaveLength(1);
+    });
+  });
+
+  describe('Window', () => {
+    const open = async (versions, options = {}) => {
+      const editor = createMockEditor();
+      plugin(editor, { builderVersion: '2.0.0', versions, ...options });
+      editor._triggerEvent('storage:load', { builderVersion: '1.0.0' });
+      editor._triggerEvent('project:loaded', {});
+      await new Promise(resolve => setTimeout(resolve, 50));
+      const content = editor.Modal.open.mock.calls[0]?.[0].content;
+      return { editor, content, click: action => content.querySelector(`[data-action="${action}"]`).click() };
+    };
+
+    it('should not open when no step changes the site', async () => {
+      const { editor } = await open([{ builderVersion: '2.0.0', upgrade: () => '' }]);
+      expect(editor.Modal.open).not.toHaveBeenCalled();
+      expect(editor.StorageManager.getStepsBeforeSave()).toBe(1);
+    });
+
+    it('should list the changes and save on update', async () => {
+      const { editor, content, click } = await open([{ builderVersion: '2.0.0', upgrade: () => 'Changed <b>' }]);
+      expect(content.querySelector('li').textContent).toBe('Changed <b>');
+      expect(editor.StorageManager.getStepsBeforeSave()).toBe(Infinity);
+      click('update');
+      expect(editor.store).toHaveBeenCalled();
+      expect(editor.StorageManager.getStepsBeforeSave()).toBe(1);
+    });
+
+    it('should leave without saving, also with the cross', async () => {
+      const onLeave = jest.fn();
+      const { editor, click } = await open([{ builderVersion: '2.0.0', upgrade: () => 'Changed' }], { onLeave });
+      click('leave');
+      const dismissed = await open([{ builderVersion: '2.0.0', upgrade: () => 'Changed' }], { onLeave });
+      dismissed.editor.Modal.close();
+      expect(onLeave).toHaveBeenCalledTimes(2);
+      expect(editor.store).not.toHaveBeenCalled();
+      expect(dismissed.editor.store).not.toHaveBeenCalled();
+      expect(editor.clearDirtyCount).toHaveBeenCalled();
+      expect(editor.StorageManager.getStepsBeforeSave()).toBe(Infinity);
+    });
+
+    it('should open again when another modal replaced it', async () => {
+      const onLeave = jest.fn();
+      const { editor, content } = await open([{ builderVersion: '2.0.0', upgrade: () => 'Changed' }], { onLeave });
+      editor.Modal.open({ content: 'Other' });
+      editor.Modal.close();
+      await new Promise(resolve => setTimeout(resolve));
+      expect(onLeave).not.toHaveBeenCalled();
+      expect(editor.Modal.getContent().innerHTML).toBe(content.innerHTML);
+    });
+
+    it('should wait for a modal opened right after the other one closed', async () => {
+      const { editor, content } = await open([{ builderVersion: '2.0.0', upgrade: () => 'Changed' }]);
+      editor.Modal.open({ content: 'Other' });
+      editor.Modal.close();
+      editor.Modal.open({ content: 'Settings' });
+      await new Promise(resolve => setTimeout(resolve));
+      expect(editor.Modal.getContent()).toBe('Settings');
+      editor.Modal.close();
+      await new Promise(resolve => setTimeout(resolve));
+      expect(editor.Modal.getContent().innerHTML).toBe(content.innerHTML);
+    });
+
+    it('should show what is new alone with OK', async () => {
+      const { editor, content, click } = await open([], { getWhatsNew: () => '<p>New</p>' });
+      expect(content.querySelector('[data-action="leave"]')).toBeNull();
+      click('ok');
+      expect(editor.Modal.close).toHaveBeenCalled();
+      expect(editor.store).not.toHaveBeenCalled();
+    });
+
+    it('should tell when a step fails and continue without saving', async () => {
+      const { editor, content, click } = await open([{ builderVersion: '2.0.0', upgrade: () => { throw new Error('Broken') } }], { reportUrl: 'https://example.com/issues/new' });
+      expect(content.querySelector('pre').textContent).toContain('Broken');
+      click('continue');
+      expect(editor.store).not.toHaveBeenCalled();
+      expect(editor.StorageManager.getStepsBeforeSave()).toBe(1);
     });
   });
 

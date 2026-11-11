@@ -2,7 +2,7 @@
 
 A GrapesJS plugin for managing version upgrades and migrations with sequential upgrade flow and modal UI
 
-Detects when a project was saved with an older version of your app, upgrades it step-by-step, and shows progress and changelogs in a modal
+Detects when a project was saved with an older version of your app, upgrades it step-by-step, and shows the changes and what is new in a modal. When no step changes the project and there is nothing new, no modal opens and the new version is saved with the next save.
 
 > This code is part of a bigger project: [Silex v3](https://www.silex.me)
 > This has been vibe coded entirely by @lexoyo, check the `prompts/` folder
@@ -13,9 +13,9 @@ Detects when a project was saved with an older version of your app, upgrades it 
 
 - **Automatic Version Detection**: Detects when a project was saved with an older application version
 - **Sequential Upgrades**: Guides users through upgrades step-by-step in the correct order
-- **Modal UI**: Clean, accessible modal interface showing progress, logs, and "What's new"
-- **Error Handling**: Comprehensive error handling with retry functionality
-- **Internationalization**: Built-in support for multiple languages (EN/FR included)
+- **Modal UI**: One modal with what is new and the changes to the project, only when there is something to show
+- **Error Handling**: A failed step is replayed at the next opening, with a link to report the problem
+- **Texts**: English by default, given by the app to translate them
 - **Flexible Configuration**: Customizable styling, version comparison, and error handling
 - **Event System**: Rich event system for monitoring upgrade lifecycle
 - **Persistence**: Automatic version persistence in project data
@@ -48,19 +48,13 @@ const editor = grapesjs.init({
         {
           builderVersion: '2.0.0',
           upgrade: (ctx) => {
-            // Your upgrade logic here
-            ctx.addLog('info', 'Upgrading to v2.0.0');
-            // Return logs or nothing
-            return [
-              { level: 'info', message: 'Migration completed' }
-            ];
-          },
-          whatsNew: (ctx) => {
-            // Optional: show what's new
-            alert('New features in v2.0.0!');
+            // Return what changed, or nothing when the project did not need this step
+            return 'Buttons now use the new style';
           }
         }
-      ]
+      ],
+      onLeave: () => { window.location.href = '/' },
+      reportUrl: 'https://github.com/me/my-app/issues/new',
     }
   }
 });
@@ -73,18 +67,20 @@ const editor = grapesjs.init({
 | `builderVersion` | `string` | **Required** | Current application version |
 | `versions` | `VersionStep[]` | **Required** | Array of version upgrade steps |
 | `compareFn` | `function` | `null` | Custom version comparison function |
-| `continueOnError` | `boolean` | `false` | Whether to continue upgrades after errors |
+| `continueOnError` | `boolean` | `true` | Whether to continue upgrades after errors |
 | `styles.classPrefix` | `string` | `'gjs-version-flow'` | CSS class prefix for styling |
 | `styles.injectCSS` | `string` | `null` | Custom CSS to inject |
-| `i18n` | `object` | `{}` | Custom translations |
+| `texts` | `object \| (editor) => object` | English texts | Texts of the modal, see below |
+| `getWhatsNew` | `({ savedVersion, currentVersion }) => string` | `null` | HTML of what is new, empty when there is nothing to show |
+| `onLeave` | `function` | `null` | Called by "Leave without updating", the cross and Escape, nothing is saved |
+| `reportUrl` | `string` | `''` | New issue URL for "Report the problem", the button is hidden without it |
 
 ### VersionStep Contract
 
 ```typescript
 interface VersionStep {
   builderVersion: string;                           // Target version
-  upgrade: (ctx: UpgradeContext) => Promise<Log[]> | Log[] | void;  // Upgrade function
-  whatsNew?: (ctx: UpgradeContext) => Promise<void> | void;         // Optional what's new
+  upgrade: (ctx: UpgradeContext) => Promise<string | void> | string | void;  // What changed, nothing when the project did not need it
 }
 
 interface Log {
@@ -132,55 +128,27 @@ The plugin uses scoped CSS classes with the configurable prefix. Default classes
 }
 ```
 
-## 🌍 Internationalization
+## 🌍 Texts
 
-### Built-in Languages
-- English (`en`) - Default
-- French (`fr`)
-
-### Custom Translations
+The plugin has neutral English texts. Give your own, or a function of the editor to translate them with your i18n. Silex gives these:
 
 ```javascript
 {
-  i18n: {
-    'es': {
-      'grapesjs-version-flow': {
-        'modal.title': 'Actualización de Versión Detectada',
-        'modal.outdated.action': 'Actualizar Ahora',
-        // ... more translations
-      }
-    }
-  }
+  texts: editor => ({
+    title: 'Silex {version}',
+    whatsNewTitle: 'What\'s new in Silex {version}',
+    updateMessage: 'This website was made with an older version of Silex. Silex needs to update it:',
+    update: 'Update and save my website',
+    leave: 'Leave without updating',
+    ok: 'OK',
+    errorTitle: 'Update failed',
+    errorMessage: 'Silex could not update this website. Nothing is saved yet. If you edit the website, Silex saves your changes as usual and tries the update again next time you open it. Please report the problem.',
+    errorDetails: 'Technical details',
+    report: 'Report the problem',
+    continueAnyway: 'Continue anyway',
+    reportTitle: 'Website update failed in Silex {version}',
+  }),
 }
-```
-
-### Available Translation Keys
-
-```
-modal.title
-modal.outdated.title
-modal.outdated.message
-modal.outdated.action
-modal.upgrading.title
-modal.upgrading.current
-modal.upgrading.logs
-modal.completed.title
-modal.completed.message
-modal.completed.logs
-modal.completed.whatsNew
-modal.completed.saveNow
-modal.error.title
-modal.error.message
-modal.error.retry
-modal.error.viewLogs
-modal.firstRun.title
-modal.firstRun.message
-modal.firstRun.whatsNew
-modal.close
-modal.skip
-log.level.info
-log.level.warn
-log.level.error
 ```
 
 ## 📡 Events
@@ -297,7 +265,7 @@ editor.on('version:upgrade:error', ({ toVersion, error }) => {
             });
           }
 
-          return logs;
+          return logs.map(log => log.message).join(', ');
 
         } catch (error) {
           logs.push({
@@ -306,28 +274,6 @@ editor.on('version:upgrade:error', ({ toVersion, error }) => {
           });
           throw error;
         }
-      },
-
-      whatsNew: async (ctx) => {
-        // Show rich what's new content
-        const modal = ctx.editor.Modal.open({
-          title: 'Welcome to Version 3.0!',
-          content: `
-            <div style="padding: 20px;">
-              <h3>🎉 Major Updates</h3>
-              <ul>
-                <li>New modern component architecture</li>
-                <li>Improved performance and stability</li>
-                <li>Enhanced accessibility features</li>
-              </ul>
-              <h3>🔧 Breaking Changes</h3>
-              <ul>
-                <li>Legacy class names have been updated</li>
-                <li>Old API methods are deprecated</li>
-              </ul>
-            </div>
-          `
-        });
       }
     }
   ]
@@ -346,11 +292,11 @@ editor.on('version:upgrade:error', ({ toVersion, error }) => {
         try {
           // Risky operation
           performComplexMigration();
-          return [{ level: 'info', message: 'Migration successful' }];
+          return 'Migration successful';
         } catch (error) {
           // Log error but don't throw to allow continuation
           ctx.addLog('error', `Non-critical migration failed: ${error.message}`);
-          return [{ level: 'warn', message: 'Partial migration completed' }];
+          return 'Partial migration completed';
         }
       }
     }

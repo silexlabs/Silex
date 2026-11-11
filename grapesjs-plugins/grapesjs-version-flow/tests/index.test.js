@@ -104,26 +104,6 @@ describe('GrapesJS Version Flow Plugin', () => {
       expect(result).toBeDefined();
     });
 
-    it('should load i18n messages if I18n is available', () => {
-      const options = {
-        builderVersion: '1.0.0',
-        versions: [{ builderVersion: '1.0.0', upgrade: () => {} }],
-        i18n: {
-          'es': { 'grapesjs-version-flow': { 'test': 'prueba' } }
-        }
-      };
-      
-      plugin(mockEditor, options);
-      
-      expect(mockEditor.I18n.addMessages).toHaveBeenCalledWith(
-        expect.objectContaining({
-          en: expect.any(Object),
-          fr: expect.any(Object),
-          es: options.i18n.es
-        })
-      );
-    });
-
     it('should handle missing I18n gracefully', () => {
       mockEditor.I18n = null;
       

@@ -1,5 +1,3 @@
-import en from './locale/en';
-import fr from './locale/fr';
 import VersionManager from './version-manager';
 import UpgradeEngine from './upgrade-engine';
 import ModalUI from './modal-ui';
@@ -17,7 +15,10 @@ export default (editor, opts = {}) => {
       classPrefix: 'gjs-version-flow',
       injectCSS: null
     },
-    i18n: {},
+    texts: {},
+    getWhatsNew: null,
+    onLeave: null,
+    reportUrl: '',
     ...opts
   };
 
@@ -41,13 +42,6 @@ export default (editor, opts = {}) => {
     }
   }
 
-  // Load i18n files
-  editor.I18n && editor.I18n.addMessages({
-    en,
-    fr,
-    ...options.i18n,
-  });
-
   // Initialize components
   const versionManager = new VersionManager(editor, options);
   const eventSystem = new EventSystem(editor);
@@ -64,13 +58,14 @@ export default (editor, opts = {}) => {
     if (upgradeEngine.isRunning()) return;
     const savedVersion = versionManager.getSavedVersion();
     const currentVersion = options.builderVersion;
-    // Check if we need to run upgrades even on first run
-    if (versionManager.needsUpgrade(savedVersion, currentVersion)) {
+    const isOlder = !savedVersion || versionManager.compareVersions(savedVersion, currentVersion) < 0;
+    const whatsNew = isOlder && options.getWhatsNew ? options.getWhatsNew({ savedVersion, currentVersion }) : '';
+    if (versionManager.needsUpgrade(savedVersion, currentVersion) || whatsNew) {
       eventSystem.emit('version:outdated', {
         savedVersion,
         currentVersion
       });
-      modalUI.show();
+      modalUI.start({ currentVersion, whatsNew });
     }
   });
 

@@ -152,10 +152,11 @@ export default class UpgradeEngine {
       return Promise.resolve();
     });
     
-    // Upgrade function should return a string log message
+    // A step returns what it changed, nothing when the site did not need it
+    if (!logMessage) return [];
     const log = {
       level: 'info',
-      message: logMessage || `Upgraded to ${step.builderVersion}`
+      message: logMessage
     };
     
     this.allLogs.push(log);
