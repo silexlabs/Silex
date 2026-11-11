@@ -1,4 +1,5 @@
 {
+  "\"Pagination items | first\" replaced with \"Page item\" in {count} expressions": "\"Pagination items | first\" replaced with \"Page item\" in {count} expressions",
   "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>": "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>",
   "Are you sure?": "Are you sure?",
   "Cancel": "Cancel",
@@ -7,6 +8,8 @@
   "Import from website": "Import from website",
   "Login": "Login",
   "New Page": "New Page",
+  "Nothing to change": "Nothing to change",
   "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.": "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.",
+  "Pages will be saved in the \"pages\" folder": "Pages will be saved in the \"pages\" folder",
   "Undo (Ctrl+Z)": "Undo (Ctrl+Z)"
 }

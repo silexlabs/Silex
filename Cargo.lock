@@ -4015,7 +4015,7 @@ dependencies = [
 
 [[package]]
 name = "minify-html"
-version = "0.18.0"
+version = "0.18.1"
 
 [[package]]
 name = "minimal-lexical"

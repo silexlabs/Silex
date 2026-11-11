@@ -19,6 +19,7 @@ import { Editor } from 'grapesjs'
 import { Expression, State, StoredState, StoredToken, findToken, getPersistantId, toExpression } from '@silexlabs/grapesjs-data-source'
 import { getItemLabel, pageItemState, PageStateId } from '../cms/states'
 import { PAGE_DATA_KEY } from '../cms/settings-keys'
+import { t } from '../../i18n'
 
 const PAGINATION_ITEMS: PageStateId = 'items'
 
@@ -71,5 +72,5 @@ export function upgradeToPageItem({ editor }: { editor: Editor }): string {
         }
       })))
   })
-  return count ? `"Pagination items | first" replaced with "Page item" in ${count} expressions` : 'Nothing to change'
+  return count ? t(editor, '"Pagination items | first" replaced with "Page item" in {count} expressions', { count }) : t(editor, 'Nothing to change')
 }

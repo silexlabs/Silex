@@ -336,7 +336,11 @@ fn run_within<'a>(
         .env_remove("OAUTH_TOKEN")
         .env_remove("GITLAB_API_HOST")
         .env_remove("GITLAB_CLIENT_ID")
-        .env_remove("GLAB_IS_OAUTH2");
+        .env_remove("GLAB_IS_OAUTH2")
+        .env_remove("GITLAB_SUBFOLDER")
+        .env_remove("GLAB_API_PROTOCOL")
+        .env_remove("API_PROTOCOL")
+        .env_remove("GITLAB_SSH_HOST");
 
     without_appimage_environment(&mut command);
     if login_shell {

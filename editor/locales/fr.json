@@ -1,4 +1,5 @@
 {
+  "\"Pagination items | first\" replaced with \"Page item\" in {count} expressions": "« Pagination items | first » remplacé par « Page item » dans {count} expressions",
   "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>": "<p>Une fois votre site en ligne, vous pouvez utiliser ces outils pour tester le partage&nbsp;: <a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>",
   "Are you sure?": "Êtes-vous sûr ?",
   "Cancel": "Annuler",
@@ -7,6 +8,8 @@
   "Import from website": "Importer depuis un site web",
   "Login": "Connexion",
   "New Page": "Nouvelle page",
+  "Nothing to change": "Rien à changer",
   "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.": "Page « {pageName} » : attribut lang manquant sur la balise &lt;html&gt;. Ceci est important pour l'accessibilité et le référencement.",
+  "Pages will be saved in the \"pages\" folder": "Les pages seront enregistrées dans le dossier « pages »",
   "Undo (Ctrl+Z)": "Annuler (Ctrl+Z)"
 }

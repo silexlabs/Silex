@@ -2,6 +2,7 @@
 members = [
     "server-rust",
     "desktop/src-tauri",
+    "desktop/minify-html",
 ]
 resolver = "2"
 
@@ -13,6 +14,6 @@ git2 = { version = "0.21.0", default-features = false }
 [profile.release.package.imageproc]
 opt-level = "s"
 
-# Silex never sets Zola's minify_html: HTML passes through unchanged until upstream builds reproducibly: https://github.com/wilsonzlin/minify-html/pull/276
+# Zola's HTML minification is disabled in Desktop until upstream builds reproducibly: https://github.com/wilsonzlin/minify-html/pull/276
 [patch.crates-io]
 minify-html = { path = "desktop/minify-html" }
