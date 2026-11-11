@@ -4,6 +4,9 @@
 (() => {
   // Only activate in Tauri context
   if (!window.__TAURI__) return;
+  // WebView2 runs this script in every iframe too: in the canvas of the editor,
+  // which has no ?id=, it would tell Rust that no website is open
+  if (window.top !== window) return;
 
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
