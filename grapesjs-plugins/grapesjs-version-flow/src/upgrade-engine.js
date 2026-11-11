@@ -28,6 +28,7 @@ export default class UpgradeEngine {
     this.allLogs = [];
     this.failedSteps = [];
     let lastSuccessfulVersion = savedVersion;
+    let versionBeforeStep = savedVersion;
 
     try {
       this.eventSystem.emit('version:upgrade:start', {
@@ -36,6 +37,8 @@ export default class UpgradeEngine {
 
       for (const step of pendingSteps) {
         this.currentStep = step;
+        // Steps sharing a version are replayed together, the saved version cannot tell them apart
+        if (lastSuccessfulVersion !== step.builderVersion) versionBeforeStep = lastSuccessfulVersion;
         
         try {
           this.eventSystem.emit('version:versionUpgrade:start', {
@@ -51,8 +54,6 @@ export default class UpgradeEngine {
             throw upgradeError;
           }
           
-          // Update version but don't save to storage yet
-          this.versionManager.updateVersion(step.builderVersion);
           lastSuccessfulVersion = step.builderVersion;
 
           this.eventSystem.emit('version:versionUpgrade:end', {
@@ -70,6 +71,7 @@ export default class UpgradeEngine {
           };
           
           this.allLogs.push(errorLog);
+          if (this.failedSteps.length === 0) this.versionManager.keepVersionBeforeFailure(versionBeforeStep);
           this.failedSteps.push(step.builderVersion);
 
           this.eventSystem.emit('version:upgrade:error', {
@@ -150,10 +152,11 @@ export default class UpgradeEngine {
       return Promise.resolve();
     });
     
-    // Upgrade function should return a string log message
+    // A step returns what it changed, nothing when the site did not need it
+    if (!logMessage) return [];
     const log = {
       level: 'info',
-      message: logMessage || `Upgraded to ${step.builderVersion}`
+      message: logMessage
     };
     
     this.allLogs.push(log);
@@ -185,7 +188,7 @@ export default class UpgradeEngine {
       getStyles: () => this.editor.getStyleManager().getAll(),
       getPages: () => this.editor.getPages ? this.editor.getPages().getAll() : [],
       getProjectData: () => this.editor.getProjectData(),
-      setProjectData: (data) => this.editor.setProjectData(data),
+      setProjectData: (data) => this.editor.loadProjectData(data),
       addLog: (level, message) => {
         const log = { level, message };
         this.allLogs.push(log);

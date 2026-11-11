@@ -19,7 +19,7 @@ const createMockEditor = () => ({
 const createMockVersionManager = () => ({
   getSavedVersion: jest.fn().mockReturnValue('1.0.0'),
   saveVersion: jest.fn(),
-  updateVersion: jest.fn(),
+  keepVersionBeforeFailure: jest.fn(),
   getPendingUpgrades: jest.fn().mockReturnValue([]),
   getPendingWhatsNew: jest.fn().mockReturnValue([])
 });
@@ -87,8 +87,6 @@ describe('UpgradeEngine', () => {
       await upgradeEngine.runUpgrades();
       
       expect(upgradeOrder).toEqual(['1.1.0', '1.2.0']);
-      expect(mockVersionManager.updateVersion).toHaveBeenCalledWith('1.1.0');
-      expect(mockVersionManager.updateVersion).toHaveBeenCalledWith('1.2.0');
     });
 
     it('should emit events during upgrade process', async () => {
@@ -171,7 +169,6 @@ describe('UpgradeEngine', () => {
       expect(result.success).toBe(false);
       expect(result.failedSteps).toEqual(['1.1.0']);
       expect(mockSteps[1].upgrade).toHaveBeenCalled();
-      expect(mockVersionManager.updateVersion).toHaveBeenCalledWith('1.2.0');
     });
 
     it('should prevent concurrent upgrades', async () => {
@@ -225,15 +222,13 @@ describe('UpgradeEngine', () => {
       ]);
     });
 
-    it('should handle upgrade functions that return undefined', async () => {
+    it('should log nothing when the upgrade function returns nothing', async () => {
       const upgradeFunction = jest.fn().mockReturnValue(undefined);
       const step = { builderVersion: '1.1.0', upgrade: upgradeFunction };
       
       const result = await upgradeEngine.runSingleUpgrade(step);
       
-      expect(result).toEqual([
-        { level: 'info', message: 'Upgraded to 1.1.0' }
-      ]);
+      expect(result).toEqual([]);
     });
   });
 

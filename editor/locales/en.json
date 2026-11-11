@@ -1,12 +1,25 @@
 {
+  "\"Pagination items | first\" replaced with \"Page item\" in {count} expressions": "\"Pagination items | first\" replaced with \"Page item\" in {count} expressions",
   "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>": "<p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target=\"_blank\" href=\"https://developers.facebook.com/tools/debug/\">Facebook</a>, <a target=\"_blank\" href=\"https://cards-dev.twitter.com/validator\">Twitter</a>, <a target=\"_blank\" href=\"https://www.linkedin.com/post-inspector/inspect/\">Linkedin</a></p>",
   "Are you sure?": "Are you sure?",
   "Cancel": "Cancel",
   "Container": "Container",
+  "Continue anyway": "Continue anyway",
   "Do you really want to remove this page?": "Do you really want to remove this page?",
   "Import from website": "Import from website",
+  "Leave without updating": "Leave without updating",
   "Login": "Login",
   "New Page": "New Page",
+  "OK": "OK",
   "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.": "Page \"{pageName}\": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.",
-  "Undo (Ctrl+Z)": "Undo (Ctrl+Z)"
+  "Pages will be saved in the \"pages\" folder": "Pages will be saved in the \"pages\" folder",
+  "Report the problem": "Report the problem",
+  "Silex could not update this website. Nothing is saved yet. If you edit the website, Silex saves your changes as usual and tries the update again next time you open it. Please report the problem.": "Silex could not update this website. Nothing is saved yet. If you edit the website, Silex saves your changes as usual and tries the update again next time you open it. Please report the problem.",
+  "Silex {version}": "Silex {version}",
+  "Technical details": "Technical details",
+  "This website was made with an older version of Silex. Silex needs to update it:": "This website was made with an older version of Silex. Silex needs to update it:",
+  "Undo (Ctrl+Z)": "Undo (Ctrl+Z)",
+  "Update and save my website": "Update and save my website",
+  "Update failed": "Update failed",
+  "What's new in Silex {version}": "What's new in Silex {version}"
 }

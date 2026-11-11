@@ -1,0 +1,5 @@
+[package]
+name = "minify-html"
+version = "0.18.1"
+edition = "2021"
+license = "AGPL-3.0-or-later"

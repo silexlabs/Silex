@@ -10,11 +10,6 @@ export default class EventSystem {
       : `${this.eventPrefix}${eventName}`;
     
     this.editor.trigger(fullEventName, payload);
-    
-    // Also emit on the editor's event bus for external listeners
-    if (this.editor.getModel) {
-      this.editor.getModel().trigger(fullEventName, payload);
-    }
   }
 
   on(eventName, callback) {

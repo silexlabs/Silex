@@ -2,9 +2,18 @@
 members = [
     "server-rust",
     "desktop/src-tauri",
+    "desktop/minify-html",
 ]
 resolver = "2"
 
 # The desktop app opens the repositories of the server's websites: one version for both
 [workspace.dependencies]
 git2 = { version = "0.21.0", default-features = false }
+
+# LLVM optimizes the SIMD resizers that Zola's imageproc compiles differently from one build to the next at opt-level 2 and 3
+[profile.release.package.imageproc]
+opt-level = "s"
+
+# Zola's HTML minification is disabled in Desktop until upstream builds reproducibly: https://github.com/wilsonzlin/minify-html/pull/276
+[patch.crates-io]
+minify-html = { path = "desktop/minify-html" }

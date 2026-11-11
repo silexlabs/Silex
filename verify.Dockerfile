@@ -2,7 +2,7 @@
 # it to the hash published with the release. Exit code 0 = reproducible.
 # Usage, with this file as it was in the tag checked, since the build changes between tags:
 #   git show v3.9.0:verify.Dockerfile | docker build --build-arg TAG=v3.9.0 -
-FROM ubuntu:24.04@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3 AS build
+FROM ubuntu:22.04@sha256:076e7bf82319619f28dd0aa9c02ab34b055ad37100395b4f49a2ffba04fb5e11 AS build
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl ca-certificates xz-utils build-essential pkg-config jq \

@@ -75,6 +75,11 @@ describe('VersionManager', () => {
       expect(result).toBe(true);
     });
 
+    it('should return false when saved version is older but no step is pending', () => {
+      const result = versionManager.needsUpgrade('2.0.0-canary.1', '2.0.0-canary.99');
+      expect(result).toBe(false);
+    });
+
     it('should return false when saved version is newer', () => {
       const result = versionManager.needsUpgrade('2.1.0', '2.0.0');
       expect(result).toBe(false);

@@ -4,6 +4,7 @@ export default class VersionManager {
     this.options = options;
     this.versionKey = 'builderVersion';
     this.savedVersion = null;
+    this.versionBeforeFailure = undefined;
     this.setupStorageHooks();
   }
 
@@ -13,7 +14,8 @@ export default class VersionManager {
 
     // Use the correct GrapesJS storage events to modify data being stored
     this.editor.on('storage:start:store', (data) => {
-      data[this.versionKey] = this.options.builderVersion;
+      const version = this.versionBeforeFailure === undefined ? this.options.builderVersion : this.versionBeforeFailure;
+      if (version) data[this.versionKey] = version;
     });
 
     // Use the correct GrapesJS storage events to extract version from loaded data
@@ -29,9 +31,8 @@ export default class VersionManager {
     return this.savedVersion;
   }
 
-  updateVersion(version) {
-    // Update the current version in options but don't save to storage
-    this.options.builderVersion = version;
+  keepVersionBeforeFailure(version) {
+    this.versionBeforeFailure = version;
   }
 
   saveVersion(version) {
@@ -53,12 +54,9 @@ export default class VersionManager {
     }
   }
 
+  // Without a pending step the new version is written by the next save
   needsUpgrade(savedVersion, currentVersion) {
-    if (!savedVersion) {
-      // First run: always run upgrades if there are any versions defined
-      return this.getPendingUpgrades(savedVersion, currentVersion).length > 0;
-    }
-    return this.compareVersions(savedVersion, currentVersion) < 0;
+    return this.getPendingUpgrades(savedVersion, currentVersion).length > 0;
   }
 
   hasWhatsNewSteps() {

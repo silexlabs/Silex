@@ -261,7 +261,7 @@ fn published_message(data_path: &std::path::Path, website_id: &WebsiteId) -> Str
 fn built_message(folder: &std::path::Path) -> String {
     told(
         "Your website is built on this computer.",
-        &format!("file://{}", folder.display()),
+        &crate::storage::folder_url(folder).unwrap_or_default(),
     )
 }
 

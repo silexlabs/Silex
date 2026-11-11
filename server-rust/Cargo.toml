@@ -36,6 +36,7 @@ tar = "0.4"
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 mime_guess = "2"
+url = "2"
 
 # Embedded frontend assets (optional, for single-binary distribution)
 rust-embed = { version = "8", optional = true, features = ["include-exclude"] }
