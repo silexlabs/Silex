@@ -30,7 +30,7 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "AGPL-3.0-or-later",
+  "license": "AGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/silexlabs/Silex/issues"
   },

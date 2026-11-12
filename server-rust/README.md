@@ -107,4 +107,4 @@ The crate has no tests.
 
 ## License
 
-AGPL-3.0-or-later
+AGPL-3.0-only

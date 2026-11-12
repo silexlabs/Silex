@@ -3,7 +3,7 @@
   "version": "0.0.0-dev",
   "private": true,
   "description": "Silex website builder - the dashboard of the desktop app",
-  "license": "AGPL-3.0-or-later",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "scripts": {
     "dev": "vite",

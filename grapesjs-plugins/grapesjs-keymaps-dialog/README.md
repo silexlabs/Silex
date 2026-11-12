@@ -113,4 +113,4 @@ $ yarn start
 
 ## License
 
-AGPL-3.0-or-later
+AGPL-3.0-only
