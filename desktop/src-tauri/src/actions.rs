@@ -771,7 +771,7 @@ impl silex_server::Actions for SilexActions {
 
         match sent {
             Err(failure) => {
-                tracing::error!("Could not publish website {}: {}", website_id, failure);
+                tracing::error!("Could not publish website {}", website_id);
                 // What the program answered, and nothing read into it: those
                 // words change with the version of git, the host and the
                 // language of the machine

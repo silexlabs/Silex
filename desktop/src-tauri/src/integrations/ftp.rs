@@ -135,7 +135,7 @@ impl Integration for Ftp {
                 id: name.clone(),
                 name: name.clone(),
                 summary: shown(cli, name, protocol)
-                    .inspect_err(|e| tracing::warn!("Could not read {} in rclone: {}", name, e))
+                    .inspect_err(|_| tracing::warn!("Could not read a server in rclone"))
                     .ok()
                     .map(|server| server.summary()),
             })
@@ -776,16 +776,14 @@ fn create(
 
 /// A remote half written, which would fail every publication
 fn forget(rclone: &Path, name: &str) {
-    if let Err(e) = run::run(
+    if run::run(
         rclone,
         &std::env::temp_dir(),
         &["config", "delete", "--", name],
-    ) {
-        tracing::warn!(
-            "Could not remove {} from the configuration of rclone: {}",
-            name,
-            e
-        );
+    )
+    .is_err()
+    {
+        tracing::warn!("Could not remove a server from the configuration of rclone");
     }
 }
 
