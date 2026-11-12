@@ -86,8 +86,7 @@ function writeSilently(body: Component, id: PageStateId, state: StoredState | nu
  * @param editor - The GrapesJS editor instance
  * @param pageIndex - The current page index (0-based) for pagination preview. Use 0 for publication.
  */
-export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTrigger = false) {
-  const page = editor.Pages.getSelected()
+export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTrigger = false, page = editor.Pages.getSelected()) {
   const body: Component = page?.getMainComponent() as Component
   if (!body) return // This happens when the current page is deleted
 

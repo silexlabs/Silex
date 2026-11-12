@@ -17,7 +17,7 @@
 
 import { Editor } from 'grapesjs'
 import { Expression, State, StoredState, StoredToken, findToken, getPersistantId, toExpression } from '@silexlabs/grapesjs-data-source'
-import { getItemLabel, pageItemState, PageStateId } from '../cms/states'
+import { getItemLabel, pageItemState, PageStateId, updatePaginationStates } from '../cms/states'
 import { PAGE_DATA_KEY } from '../cms/settings-keys'
 import { t } from '../../i18n'
 
@@ -72,5 +72,7 @@ export function upgradeToPageItem({ editor }: { editor: Editor }): string {
         }
       })))
   })
+  // Silex creates the Page item state of the selected page only, the expressions of the other pages would refer to a missing state
+  pages.forEach(page => updatePaginationStates(editor, 0, false, page))
   return count ? t(editor, '"Pagination items | first" replaced with "Page item" in {count} expressions', { count }) : ''
 }
