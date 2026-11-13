@@ -20,6 +20,7 @@ import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '
 import { onAll } from './utils'
 import { isExternalUrl } from './assetUrl'
 import { getPageUrl } from '~/common/page'
+import { linkToPermalink, pathToPermalink } from './grapesjs/permalink'
 
 /**
  * @fileoverview Silex publication transformers are used to control how the site is rendered and published
@@ -253,16 +254,18 @@ export function transformFiles(editor: Editor, data: PublicationData) {
  */
 export function transformPermalink(editor: Editor, path: string, type: ClientSideFileType, initiator: Initiator): string {
   const config = editor.getModel().get('config')
-  return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
+  const link = config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
     return transformer.transformPermalink ? transformer.transformPermalink(result, type, initiator) ?? result : result
   }, path)
+  return config.cmsConfig?.enabled === false && type === ClientSideFileType.HTML ? linkToPermalink(editor, link) : link
 }
 
 export function transformPath(editor: Editor, path: string, type: ClientSideFileType): string {
   const config = editor.getModel().get('config')
+  const initialPath = config.cmsConfig?.enabled === false && type === ClientSideFileType.HTML ? pathToPermalink(editor, path) : path
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
     return transformer.transformPath ? transformer.transformPath(result, type) ?? result : result
-  }, path)
+  }, initialPath)
 }
 
 export function resetRenderComponents(editor: Editor) {

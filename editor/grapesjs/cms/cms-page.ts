@@ -70,7 +70,7 @@ function checkSupported(page: Page, ssgId: SsgId): Problem[] {
   if (settings.silexLanguagesList?.split(',').some(lang => lang.trim())) problems.push(`Page "${name}" has several languages, which publishing with ${ssg} does not support`)
   if (getPageData(page).length) {
     if (parseInt(settings[PAGE_SIZE_KEY] || '1') > 1) problems.push(`Page "${name}" shows several items per page, which publishing with ${ssg} does not support yet`)
-    if (!getPermalinkExpression(page).length) problems.push(`Page "${name}" has Page data but no Permalink. Publishing with ${ssg} needs a Permalink to give each page its address. Set it in the page settings, CMS tab.`)
+    if (!getPermalinkExpression(page).length) problems.push(`Page "${name}" has Page data but no Permalink. Publishing with ${ssg} needs a Permalink to give each page its address. Set it in the page settings, General tab.`)
   }
   problems.push(...getDataSettings(page).map(setting => `Page "${name}" uses data in its setting "${getSettingLabel(setting)}", which publishing with ${ssg} does not support yet`))
   const bodyId = getPersistantId(page.getMainComponent())

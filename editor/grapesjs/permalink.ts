@@ -16,10 +16,23 @@
  */
 
 import type { Editor } from 'grapesjs'
-import { type Property, toExpression } from '@silexlabs/grapesjs-data-source'
+import { fixedText, toExpression, type StoredToken } from '@silexlabs/grapesjs-data-source'
 import { getPageSlug, getPageUrl } from '~/common/page'
-import type { Silex11tyPluginWebsiteSettings } from './index'
-import { PERMALINK_KEY } from './settings-keys'
+import type { WebsiteSettings } from '~/common/types'
+
+export function getFixedPermalink(settings: WebsiteSettings): string | null {
+  if (!settings.eleventyPermalink) return ''
+  return fixedText(toExpression(settings.eleventyPermalink) ?? [])
+}
+
+// Keep the same stored expression format as the expression editor.
+export function serializeFixedPermalink(value: string): string {
+  const token: StoredToken = {
+    type: 'property', propType: 'field', fieldId: 'fixed', label: 'Fixed value',
+    kind: 'scalar', typeIds: ['String'], options: { value },
+  }
+  return JSON.stringify(value ? [token] : [])
+}
 
 export function ensureLeadingAndTrailingSlash(str: string): string {
   if (str.length === 0) return '/'
@@ -36,8 +49,18 @@ export function ensureLeadingAndTrailingSlash(str: string): string {
 export function linkToPermalink(editor: Editor, link: string): string {
   const [, path, suffix] = link.match(/^([^?#]*)(.*)$/) ?? []
   const page = editor.Pages.getAll().find(page => getPageUrl(getPageSlug(page.getName())) === path)
-  const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
-  const tokens = toExpression(settings?.[PERMALINK_KEY]) as Property[] | null
-  if (!tokens?.length || !tokens.every(token => token.type === 'property' && token.fieldId === 'fixed')) return link
-  return ensureLeadingAndTrailingSlash(tokens.map(token => token.options?.value ?? '').join('')) + suffix
+  const permalink = getFixedPermalink((page?.get('settings') ?? {}) as WebsiteSettings)
+  if (!permalink) return link
+  return ensureLeadingAndTrailingSlash(permalink) + suffix
+}
+
+// Without a template engine, publish fixed permalinks directly as HTML files.
+export function pathToPermalink(editor: Editor, path: string): string {
+  const page = editor.Pages.getAll().find(page => `/${getPageSlug(page.getName())}.html` === path)
+  if (!page) return path
+  const permalink = getFixedPermalink((page.get('settings') ?? {}) as WebsiteSettings)
+  if (permalink === null) throw new Error(`Page "${page.getName()}" uses a permalink expression, but expressions are disabled.`)
+  if (!permalink) return path
+  const url = ensureLeadingAndTrailingSlash(permalink)
+  return url.endsWith('/') ? `${url}index.html` : url
 }

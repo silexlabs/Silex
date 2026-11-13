@@ -10,7 +10,7 @@ import { PAGE_STATE_IDS } from './states'
 import { applySeoOverrides } from './settings-keys'
 import { SHORTCODE_ID } from './blocks'
 import { clearRenderCache, renderComponent, withNotification, type TemplateSyntax } from './render'
-import { ensureLeadingAndTrailingSlash } from './permalink'
+import { ensureLeadingAndTrailingSlash } from '~/editor/grapesjs/permalink'
 import { WebsiteSettings, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '~/common/types'
 
 function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11tyPluginWebsiteSettings): object | false {

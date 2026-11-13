@@ -24,7 +24,7 @@ import type { Problem, Ssg } from './ssg'
 import { dataSourceVariable, resetTeraVariables, stateVariable, teraString, teraSyntax } from './tera'
 import { getTeraFilters } from './tera-filters'
 import { cmsSsg, getEndpoint, getPageData, getPermalinkExpression, isCmsPage } from './cms-page'
-import { ensureLeadingAndTrailingSlash } from './permalink'
+import { ensureLeadingAndTrailingSlash } from '~/editor/grapesjs/permalink'
 
 // Frozen by gqlfreez before the build, next to the queries
 const DATA_FOLDER = 'data/silex'
@@ -88,7 +88,7 @@ function getUrl(editor: Editor, slug: string): string {
 function check(editor: Editor, page: Page): Problem[] {
   const name = page.getName()
   const slug = getPageSlug(name)
-  const toChange = 'Change its address in the page settings, CMS tab, so that it does not end with .html.'
+  const toChange = 'Change its address in the page settings, General tab, so that it does not end with .html.'
   const problems: string[] = []
   if (getPageData(page).length) {
     const path = getItemPath(page)
