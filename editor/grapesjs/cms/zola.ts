@@ -24,7 +24,7 @@ import type { Problem, Ssg } from './ssg'
 import { dataSourceVariable, resetTeraVariables, stateVariable, teraString, teraSyntax } from './tera'
 import { getTeraFilters } from './tera-filters'
 import { cmsSsg, getEndpoint, getPageData, getPermalinkExpression, isCmsPage } from './cms-page'
-import { ensureLeadingAndTrailingSlash } from './permalink'
+import { ensureLeadingAndTrailingSlash } from '~/editor/grapesjs/permalink'
 
 // Frozen by gqlfreez before the build, next to the queries
 const DATA_FOLDER = 'data/silex'
