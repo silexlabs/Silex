@@ -116,6 +116,44 @@ pluginsOpts: {
 
 ---
 
+## Variable-enabled properties
+
+The plugin ships with defaults covering the properties GrapesJS creates itself, so
+it works standalone. The host app registers the properties it creates:
+
+```js
+// Top-level property
+editor.CssVariables.addVariableProperty({
+  sector: 'typography',
+  property: 'text-underline-offset',
+  type: 'size', // 'color' | 'size' | 'font-family'
+})
+
+// Sub-property of a composite: the parent is part of the key, so identical
+// names in different parents (e.g. `border-color` under `border` vs `border-top`)
+// stay distinct
+editor.CssVariables.addVariableProperty({
+  sector: 'extra',
+  property: 'transform-origin',
+  subProperty: 'transform-origin-x',
+  type: 'size',
+})
+
+// Remove again (type optional: omit to remove all types on that target)
+editor.CssVariables.removeVariableProperty({
+  sector: 'extra',
+  property: 'transform-origin',
+  subProperty: 'transform-origin-x',
+  type: 'size',
+})
+
+editor.CssVariables.getVariableProperties() // copy of the registry
+```
+
+The target must exist in the Style Manager when you register it, so call this
+right after `StyleManager.addProperty`, e.g. in Silex `editor/grapesjs/css-props.ts`.
+---
+
 ## Advanced Usage
 
 Use the plugin with modern JavaScript imports:

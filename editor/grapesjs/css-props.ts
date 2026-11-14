@@ -25,6 +25,30 @@ import { registerSector } from './sectors'
 // A css wide keyword is the value of a whole declaration, it is never one part of one
 const CSS_WIDE_KEYWORDS = ['inherit', 'initial', 'revert', 'unset']
 
+type CssVariableTarget = {
+  sector: string
+  property: string
+  subProperty?: string
+  type: 'color' | 'size' | 'font-family'
+}
+
+// The css-variables plugin owns the registry and the control, Silex owns these
+// property definitions: each one that accepts var() registers itself here.
+// No-op when the plugin is absent (e.g. headless tests loading only this plugin).
+function enableCssVariable(editor: Editor, target: CssVariableTarget) {
+  try {
+    (editor as unknown as { CssVariables?: {
+      addVariableProperty?: (target: CssVariableTarget) => unknown
+    } }).CssVariables?.addVariableProperty?.(target)
+  } catch (e) {
+    console.warn('[css-props] could not enable CSS variable on', target, e)
+  }
+}
+
+function enableCssVariables(editor: Editor, targets: CssVariableTarget[]) {
+  targets.forEach((target) => enableCssVariable(editor, target))
+}
+
 export default (editor: Editor, opts) => {
   // custom StyleManager type for background-image with Asset Manager integration
   editor.StyleManager.addType('background-image-asset', {
@@ -1086,6 +1110,55 @@ export default (editor: Editor, opts) => {
       ],
       info: 'Aligns elements to scroll snaps.',
     }, { at: 14 })
+
+    // Properties created in this file that accept var(), registered where they are
+    // defined so the css-variables plugin can add its control
+    enableCssVariables(editor, [
+      // General - re-created above with container-query units
+      { sector: 'general', property: 'top', type: 'size' },
+      { sector: 'general', property: 'bottom', type: 'size' },
+      { sector: 'general', property: 'right', type: 'size' },
+      { sector: 'general', property: 'left', type: 'size' },
+      // Dimension - re-created above
+      { sector: 'dimension', property: 'width', type: 'size' },
+      { sector: 'dimension', property: 'height', type: 'size' },
+      { sector: 'dimension', property: 'min-width', type: 'size' },
+      { sector: 'dimension', property: 'max-width', type: 'size' },
+      { sector: 'dimension', property: 'min-height', type: 'size' },
+      { sector: 'dimension', property: 'max-height', type: 'size' },
+      { sector: 'dimension', property: 'margin', subProperty: 'margin-top', type: 'size' },
+      { sector: 'dimension', property: 'margin', subProperty: 'margin-right', type: 'size' },
+      { sector: 'dimension', property: 'margin', subProperty: 'margin-bottom', type: 'size' },
+      { sector: 'dimension', property: 'margin', subProperty: 'margin-left', type: 'size' },
+      { sector: 'dimension', property: 'padding', subProperty: 'padding-top', type: 'size' },
+      { sector: 'dimension', property: 'padding', subProperty: 'padding-right', type: 'size' },
+      { sector: 'dimension', property: 'padding', subProperty: 'padding-bottom', type: 'size' },
+      { sector: 'dimension', property: 'padding', subProperty: 'padding-left', type: 'size' },
+      // Typography - re-created above
+      { sector: 'typography', property: 'font-size', type: 'size' },
+      { sector: 'typography', property: 'letter-spacing', type: 'size' },
+      { sector: 'typography', property: 'color', type: 'color' },
+      { sector: 'typography', property: 'line-height', type: 'size' },
+      { sector: 'typography', property: 'text-decoration', subProperty: 'text-decoration-color', type: 'color' },
+      { sector: 'typography', property: 'text-decoration', subProperty: 'text-decoration-thickness', type: 'size' },
+      { sector: 'typography', property: 'text-underline-offset', type: 'size' },
+      // Decorations - re-created above
+      { sector: 'decorations', property: 'background-color', type: 'color' },
+      { sector: 'decorations', property: 'border-radius', subProperty: 'border-top-left-radius', type: 'size' },
+      { sector: 'decorations', property: 'border-radius', subProperty: 'border-top-right-radius', type: 'size' },
+      { sector: 'decorations', property: 'border-radius', subProperty: 'border-bottom-right-radius', type: 'size' },
+      { sector: 'decorations', property: 'border-radius', subProperty: 'border-bottom-left-radius', type: 'size' },
+      { sector: 'decorations', property: 'outline', subProperty: 'outline-color', type: 'color' },
+      { sector: 'decorations', property: 'outline', subProperty: 'outline-width', type: 'size' },
+      // Extra - re-created above
+      { sector: 'extra', property: 'column-gap', type: 'size' },
+      { sector: 'extra', property: 'row-gap', type: 'size' },
+      { sector: 'extra', property: 'column-rule', subProperty: 'column-rule-color', type: 'color' },
+      // Effects
+      { sector: 'extra', property: 'transform-origin', subProperty: 'transform-origin-x', type: 'size' },
+      { sector: 'extra', property: 'transform-origin', subProperty: 'transform-origin-y', type: 'size' },
+      { sector: 'extra', property: 'transform-origin', subProperty: 'transform-origin-z', type: 'size' },
+    ])
 
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
