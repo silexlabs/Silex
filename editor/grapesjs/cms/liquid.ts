@@ -246,7 +246,7 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
     }
     case 'property': {
       if (token.fieldId === FIXED_TOKEN_ID) {
-        return `"${token.options?.value ?? ''}"`
+        return quoteFixedValue(token.options?.value ?? '')
       }
       return token.fieldId
     }
@@ -299,6 +299,17 @@ function quote(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`
 }
 
+/**
+ * Quote a fixed value for liquid
+ * Backslashes and double quotes are escaped, so a value like `Say "hi"`
+ * is written as `"Say \"hi\""` and liquidjs reads it back as `Say "hi"`
+ */
+function quoteFixedValue(value: unknown): string {
+  return `"${String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')}"`
+}
+
 function handleFilterOption(filter: Filter, key: string, value: string, component?: Component): { optionStr: string, prefixStatements: { variableName: string, liquid: string }[] } {
   try {
     const expression = toExpression(value)
@@ -322,7 +333,7 @@ function handleFilterOption(filter: Filter, key: string, value: string, componen
         switch (token.type) {
         case 'property': {
           if (token.fieldId === FIXED_TOKEN_ID) {
-            return `"${token.options?.value ?? ''}"`
+            return quoteFixedValue(token.options?.value ?? '')
           }
           return token.fieldId
         }
