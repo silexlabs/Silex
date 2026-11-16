@@ -16,7 +16,7 @@
  */
 
 import type { Component, Editor, Page } from 'grapesjs'
-import { Expression, FIXED_TOKEN_ID, getPageQuery, getPersistantId, toExpression } from '@silexlabs/grapesjs-data-source'
+import { Expression, FIXED_TOKEN_ID, getFieldAlias, getPageQuery, getPersistantId, toExpression } from '@silexlabs/grapesjs-data-source'
 import { ClientSideFileType, ClientSideFileWithContent, Initiator, PublicationData } from '~/common/types'
 import { getPageSlug, getPageUrl } from '~/common/page'
 import { transformPermalink } from '../../publication-transformers'
@@ -52,7 +52,7 @@ function getPathParts(body: Component, expression: Expression): PathPart[] | nul
       field = []
       parts = [{ field }]
     } else if (token.type === 'property' && field) {
-      field.push(token.fieldId)
+      field.push(getFieldAlias(token))
     } else if (token.type === 'filter' && (token.id === 'append' || token.id === 'prepend')) {
       const option = getPathParts(body, toExpression(token.options?.value) ?? [])
       if (!option) return null
@@ -77,7 +77,7 @@ function getList(page: Page): { dataSourceId: string, fields: string[] } {
   const [first] = pageData
   return {
     dataSourceId: first?.type === 'property' ? first.dataSourceId as string : '',
-    fields: pageData.map(token => token.type === 'property' ? token.fieldId : ''),
+    fields: pageData.map(token => token.type === 'property' ? getFieldAlias(token) : ''),
   }
 }
 

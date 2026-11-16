@@ -8,7 +8,7 @@ import { getFrontMatter, queryToDataFile } from './eleventy'
 import { buildAttributes, isAttribute } from './render'
 import { linkToPermalink } from './permalink'
 import { echoBlock } from './liquid'
-import { IDataSource, toExpression } from '@silexlabs/grapesjs-data-source'
+import { IDataSource, getFieldAlias, toExpression } from '@silexlabs/grapesjs-data-source'
 import grapesjs, { Page } from 'grapesjs'
 import { Silex11tyPluginWebsiteSettings } from './index'
 
@@ -55,6 +55,15 @@ test('Front matter of a collection page', () => {
     size: 1
   collection: "collectionTest"
   \n---\n`)
+})
+
+test('A collection page on a field with arguments reads the field under its alias', () => {
+  const [continents] = JSON.parse(PAGE_DATA_TEST)
+  const europe = { ...continents, options: { filter: '{code: {eq: "EU"}}' } }
+  const settings = { eleventyPageData: JSON.stringify([europe]) } as Silex11tyPluginWebsiteSettings
+  const alias = getFieldAlias(europe)
+  expect(alias).not.toBe('continents')
+  expect(getFrontMatter(PAGE_TEST, settings, 'page-1', 'collectionTest')).toContain(`data: datasourceIdTest.${alias}\n`)
 })
 
 test('Permalink', () => {
