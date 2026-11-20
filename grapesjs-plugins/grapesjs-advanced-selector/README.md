@@ -100,7 +100,7 @@ Customize the plugin’s behavior by passing options:
 
 | Option      | Description                            | Default          |
 |-------------|----------------------------------------|------------------|
-| `i18n`      | Internationalization object see the files in `src/i18n` | The content of `src/i18n/en.ts` |
+| `i18n`      | Internationalization object see the files in `src/locale` | The content of `src/locale/en.json` |
 | `helpLinks` | Links to help resources                | `{}`             |
 | `helpLinks.actionBar` | Link to help resources for the action bar | `https://docs.silex.me/designer/styling/selectors/` |
 

@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build --patch=false",
+    "build": "grapesjs-cli build --patch=false --localePath=.no-locale",
     "lint": "eslint src",
     "test": "node --conditions=browser --test test/*.test.js"
   },

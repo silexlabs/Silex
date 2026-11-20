@@ -17,7 +17,7 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "test-build-no-grapes": "rm -rf dist && tsc",
-    "build": "grapesjs-cli build --patch=false --dts skip"
+    "build": "grapesjs-cli build --patch=false --dts skip --localePath=.no-locale"
   },
   "devDependencies": {
     "grapesjs-cli": "^4.1.3"

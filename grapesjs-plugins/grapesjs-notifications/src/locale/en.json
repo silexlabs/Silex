@@ -1,0 +1,8 @@
+{
+  "@silexlabs/grapesjs-notifications": {
+    "Close": "✖ Dismiss",
+    "CloseAll": "✖ Dismiss all",
+    "Select": "✓ Select element",
+    "Show": "↓ Show"
+  }
+}
