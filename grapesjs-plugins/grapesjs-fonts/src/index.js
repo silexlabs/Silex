@@ -1,8 +1,9 @@
 import { fontsDialogPlugin } from './fonts.js'
 import commands from './commands.js'
 import { registerCapabilities } from './capabilities.js'
-import en from './locale/en.js'
-import fr from './locale/fr.js'
+import en from './locale/en.json'
+import fr from './locale/fr.json'
+import ptBR from './locale/pt-BR.json'
 
 export default (editor, opts = {}) => {
 
@@ -17,6 +18,7 @@ export default (editor, opts = {}) => {
   editor.I18n && editor.I18n.addMessages({
     en,
     fr,
+    'pt-BR': ptBR,
     ...options.i18n,
   })
 
