@@ -106,7 +106,7 @@ export function parsePath(path: string): Segment[] {
   return segments
 }
 
-export function typeLabel(field: Field): string {
+export function typeLabel(field: Pick<Field, 'kind' | 'typeIds'>): string {
   const types = field.typeIds.join('|')
   return field.kind === 'list' ? `[${types}]` : types
 }

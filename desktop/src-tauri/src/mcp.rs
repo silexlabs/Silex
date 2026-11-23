@@ -1195,7 +1195,7 @@ TO STYLE: one style(action:'set', element_id, selector, css) with all the CSS; t
 
 IDS: element(action:'insert') returns the new ids in "created": use them, no need to list. Creating one element or page selects it.
 
-CMS: cms(action:'add', source:'wp', url:'https://.../graphql') connects a GraphQL API and lists its collections. To repeat a card: keep one card, remove its copies, element(action:'bind', element_id:'<card>', bind_to:'loop', path:'wp.posts(first: 3).nodes'); the answer lists the item fields. Then for each child: element(action:'bind', element_id:'<child>', bind_to:'content', path:'item.title'), or bind_to:'attribute', attribute:'href', path:'item.link'.
+CMS: cms(action:'add', source:'wp', url:'https://.../graphql') connects a GraphQL API. An expression is built token by token, each answer lists the next tokens. To repeat a card: keep one card, remove its copies, element(action:'expression_add', element_id:'<card>', bind_to:'loop', token:'posts', options:{first: 3}), then token:'nodes'. Then for each child: element(action:'expression_add', element_id:'<child>', bind_to:'content', token:'item'), then token:'title'; or bind_to:'attribute', attribute:'href'.
 
 RULES:
 - Use BEM class names. No inline styles. No CSS Grid (use Flexbox).

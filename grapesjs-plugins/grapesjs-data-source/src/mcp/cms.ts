@@ -16,23 +16,23 @@
  */
 
 import { Component, Editor } from 'grapesjs'
-import { DATA_SOURCE_DATA_LOAD_END, DataSourceId, Expression, Field, IDataSource, Properties, State, StoredProperty, StoredToken, Type, UnariOperator } from '../types'
+import { DATA_SOURCE_DATA_LOAD_END, DataSourceId, Expression, Field, IDataSource, Properties, State, StoredProperty, StoredToken, Token, Type, UnariOperator } from '../types'
 import GraphQL, { BACKEND_TYPES, GraphQLBackendType, bodyStart } from '../datasources/GraphQL'
 import { addDataSource, getAllDataSources, removeDataSource, setDataSources } from '../model/dataSourceRegistry'
 import { getOrCreatePersistantId, getPersistantId, getState, getStateIds, newStateId, previewFirstItem, removeState, setState } from '../model/state'
 import { StoredState } from '../model/state'
 import { getExpressionResultType } from '../model/token'
 import { isComponentVisible } from '../view/canvas'
-import { getPageExpressions, getPageQuery, getValue } from '../api'
-import { cleanStateName, textFilter } from '../utils'
+import { getCompletion, getPageExpressions, getPageQuery, getValue } from '../api'
+import { cleanStateName, filterDisplayedCompletion, getTokenDisplayName, groupByType, isSecondaryToken, textFilter } from '../utils'
 import { getPreviewErrors } from '../model/previewDataLoader'
 import { SchemaLookup, expressionToPath, parsePath, resolvePath, typeLabel } from './path'
-import { itemFields, listBelow, searchSchema, summarizeRoot, summarizeType } from './schema'
+import { itemFields, listBelow } from './schema'
 import { checkAuthorization, checkSourceId, checkUrl, connectSource, within } from './sources'
 
 export const CMD_CMS = 'data-source:cms'
 
-const ACTIONS = ['list', 'add', 'update', 'remove', 'schema', 'search', 'bind', 'unbind', 'bindings'] as const
+const ACTIONS = ['list', 'add', 'update', 'remove', 'expression', 'expression_add', 'expression_set', 'unbind', 'bindings'] as const
 type Action = typeof ACTIONS[number]
 const BIND_TO = ['content', 'loop', 'attribute', 'condition'] as const
 type BindTo = typeof BIND_TO[number]
@@ -43,12 +43,13 @@ interface CmsOptions {
   url?: string
   backend?: string
   authorization?: string
-  type?: string
-  text?: string
   bind_to?: string
-  path?: string
   attribute?: string
   operator?: string
+  token?: string
+  options?: Record<string, unknown>
+  index?: number
+  show_all?: boolean
 }
 
 const STATE_OF: Record<Exclude<BindTo, 'attribute'>, string> = {
@@ -62,15 +63,15 @@ const SOURCE = {
   url: { type: 'string', description: 'GraphQL endpoint, like https://name.wp.cms.blue/graphql' },
   backend: { type: 'string', enum: [...BACKEND_TYPES], description: 'default detected' },
   authorization: { type: 'string', description: 'Authorization header, like "Bearer <token>". Empty removes it. Never shown back' },
-  type: { type: 'string', description: 'a type name from a previous answer, like Post' },
-  text: { type: 'string', description: 'part of a type or field name' },
-  path: { type: 'string', description: 'lists the fields of what the path leads to, like wp.posts.nodes' },
 }
 
 const BINDING = {
   element_id: { type: 'string', description: 'Element id, like "ab12". Default: the selected element' },
   bind_to: { type: 'string', enum: [...BIND_TO], description: 'loop repeats the element for each item of a list' },
-  path: { type: 'string', description: 'wp.posts(first: 3).nodes for a loop, item.title inside a loop (item = the closest loop)' },
+  token: { type: 'string', description: 'one of the next tokens of the answer, like posts, then nodes; item is the closest loop. With expression_set, "-" removes the token and the ones after' },
+  options: { type: 'object', description: 'options of the token, like {"first": 3}' },
+  index: { type: 'number', description: 'position of the token in the expression, from 0' },
+  show_all: { type: 'boolean', description: 'also list the secondary fields, as "Show all fields" in the editor' },
   attribute: { type: 'string', description: 'bind_to attribute: src, href, alt…' },
   operator: { type: 'string', enum: [UnariOperator.TRUTHY, UnariOperator.FALSY], description: 'bind_to condition: show the element when the value is truthy (default) or falsy' },
 }
@@ -82,9 +83,9 @@ const ACTION_OF: Record<Action, ActionDef> = {
   add: { tool: 'cms', description: 'tests the connection to a GraphQL API, adds it and lists its collections.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source', 'url'] },
   update: { tool: 'cms', description: 'change a source, tested like add.', parameters: ['source', 'url', 'backend', 'authorization'], required: ['source'] },
   remove: { tool: 'cms', description: 'remove a source no element uses.', parameters: ['source'], required: ['source'] },
-  schema: { tool: 'cms', description: 'the collections of a source, the fields of a type or of a path. Source optional when there is one.', parameters: ['source', 'type', 'path'], readOnly: true },
-  search: { tool: 'cms', description: 'fields and types whose name contains text.', parameters: ['source', 'text'], required: ['text'], readOnly: true },
-  bind: { tool: 'element', description: 'show data from a CMS source (cms tool) in the element: its content, an attribute, a loop or a condition.', parameters: ['element_id', 'bind_to', 'path', 'attribute', 'operator'], required: ['bind_to', 'path'] },
+  expression: { tool: 'element', description: 'the CMS expression of the element for bind_to (its content, an attribute, a loop or a condition): its tokens, its preview value and the next tokens.', parameters: ['element_id', 'bind_to', 'attribute', 'show_all'], required: ['bind_to'], readOnly: true },
+  expression_add: { tool: 'element', description: 'add a token at the end of the expression: data from a CMS source (cms tool), the item of a loop or a filter. Answers like expression.', parameters: ['element_id', 'bind_to', 'attribute', 'token', 'options', 'operator', 'show_all'], required: ['bind_to', 'token'] },
+  expression_set: { tool: 'element', description: 'change the token at index or its options; a new token removes the ones after. Answers like expression.', parameters: ['element_id', 'bind_to', 'attribute', 'index', 'token', 'options', 'show_all'], required: ['bind_to', 'index'] },
   unbind: { tool: 'element', description: 'remove a binding of the element.', parameters: ['element_id', 'bind_to', 'attribute'], required: ['bind_to'] },
   bindings: { tool: 'element', description: 'the bindings of the element.', parameters: ['element_id'], readOnly: true },
 }
@@ -99,7 +100,7 @@ export const cmsCapabilities = ACTIONS.map(action => {
     action,
     command: `${CMD_CMS}:${action}`,
     description,
-    openWorld: action === 'add' || action === 'update' || action === 'bind',
+    openWorld: action === 'add' || action === 'update' || action === 'expression_add' || action === 'expression_set',
     destructive: action === 'remove' || action === 'unbind',
     readOnly,
     inputSchema: {
@@ -194,7 +195,7 @@ async function add(editor: Editor, opts: CmsOptions): Promise<string> {
     .catch(e => { throw new Error(`${(e as Error).message} The source was not added.`, { cause: e }) })
   addDataSource(ds, { connected: true })
   markChanged(editor)
-  return `Source "${id}" added (${ds.backendType}).\n${summarizeRoot(id, lookupFor(ds))}`
+  return `Source "${id}" added (${ds.backendType}). Its data are tokens of element(action:'expression').`
 }
 
 async function update(editor: Editor, opts: CmsOptions): Promise<string> {
@@ -234,30 +235,6 @@ function remove(editor: Editor, opts: CmsOptions): string {
 function list(): string {
   const sources = userSources()
   return sources.length ? sources.map(describeSource).join('\n') : 'No source yet. Add one with action "add", source and url.'
-}
-
-
-function schema(editor: Editor, opts: CmsOptions): string {
-  if (opts.path) {
-    const { field, lookup } = pathExpression(editor, editor.getSelected(), opts.path, true)
-    if (field.kind === 'scalar') return `${opts.path} is a value (${typeLabel(field)}).`
-    const type = lookup.type(field.typeIds[0])
-    if (!type) throw new Error(`No type ${field.typeIds[0]}.`)
-    return summarizeType(type, lookup)
-  }
-  const ds = connectedSource(opts.source)
-  const lookup = lookupFor(ds)
-  if (!opts.type) return summarizeRoot(String(ds.id), lookup)
-  const type = lookup.type(opts.type)
-  if (!type) throw new Error(`No type "${opts.type}" in source "${ds.id}". Use a type shown by action "schema", like Post in [Post], or a path.`)
-  return summarizeType(type, lookup)
-}
-
-function search(opts: CmsOptions): string {
-  if (!opts.text) throw new Error('Set text to part of a type or field name.')
-  const ds = connectedSource(opts.source)
-  const types = ds.getTypes().filter(type => type.dataSourceId !== undefined && !(type as Type & { queryable?: boolean }).queryable)
-  return searchSchema(String(ds.id), opts.text, types, lookupFor(ds))
 }
 
 
@@ -421,18 +398,120 @@ function writer(component: Component, target: BindTo, attribute: string | null):
   }
 }
 
-async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
-  const component = targetElement(editor, opts.element_id)
-  const target = bindTo(opts.bind_to)
-  if (!opts.path) throw new Error('Set path, like wp.posts.nodes for a loop or item.title inside a loop.')
-  const attribute = target === 'attribute' ? attributeName(opts.attribute) : null
-  const operator = opts.operator ?? UnariOperator.TRUTHY
-  if (target === 'condition' && operator !== UnariOperator.TRUTHY && operator !== UnariOperator.FALSY) throw new Error('operator must be truthy or falsy.')
-  if ((target === 'loop' || target === 'condition') && /[{}]/.test(opts.path)) throw new Error(`A ${target} takes a path, without text around it.`)
-  const { field, lookup, ds, ...resolved } = templateExpression(editor, component, opts.path, target !== 'loop', target === 'attribute')
-  checkKind(target, opts.path, field, lookup)
-  const expression = target === 'loop' ? previewFirstItem(resolved.expression) : resolved.expression
+// An expression is built token by token, as in the expression editor (view/state-editor.ts)
+interface Slot {
+  component: Component
+  target: BindTo
+  attribute: string | null
+}
 
+function slotOf(editor: Editor, opts: CmsOptions): Slot {
+  const target = bindTo(opts.bind_to)
+  return { component: targetElement(editor, opts.element_id), target, attribute: target === 'attribute' ? attributeName(opts.attribute) : null }
+}
+
+function stateIdOf({ component, target, attribute }: Slot): string | undefined {
+  return attribute ? attributeStateId(component, attribute) : STATE_OF[target as Exclude<BindTo, 'attribute'>]
+}
+
+function tokensOf(slot: Slot): StoredToken[] {
+  const id = stateIdOf(slot)
+  return (id ? getState(slot.component, id, false)?.expression ?? [] : []) as StoredToken[]
+}
+
+function keyOf(token: Token): string {
+  switch (token.type) {
+  case 'property': return token.fieldId
+  case 'filter': return token.id
+  case 'state': return token.storedStateId === Properties.__data && !token.exposed ? 'item' : token.storedStateId
+  }
+}
+
+interface Entry { key: string, token: Token, group: string }
+
+// The "+" drop down of the expression editor: same completion, same hidden fields, same groups
+function nextTokens(editor: Editor, slot: Slot, tokens: StoredToken[], showAll: boolean): { entries: Entry[], hidden: number } {
+  const completion = getCompletion({ component: slot.component, expression: tokens, currentStateId: stateIdOf(slot) ?? slot.attribute ?? undefined, hideLoopData: slot.target === 'loop' })
+  const dataSources = getAllDataSources()
+  const shown = filterDisplayedCompletion(completion, token => isSecondaryToken(token, dataSources), showAll)
+  const seen = new Map<string, number>()
+  const entries = Object.entries(groupByType(editor, slot.component, shown, tokens)).flatMap(([group, groupTokens]) => groupTokens.map(token => {
+    const key = keyOf(token)
+    const count = (seen.get(key) ?? 0) + 1
+    seen.set(key, count)
+    return { key: count > 1 ? `${key}#${count}` : key, token, group }
+  }))
+  return { entries, hidden: completion.length - shown.length }
+}
+
+function entryLine(component: Component, { key, token }: Entry): string {
+  if (token.type !== 'property') return `${key}: ${getTokenDisplayName(component, token)}`
+  const options = Object.keys(token.options ?? {})
+  return `${key}: ${typeLabel(token)}${options.length ? `, options ${options.join(', ')}` : ''}`
+}
+
+function describe(editor: Editor, slot: Slot, showAll = false): string {
+  const tokens = tokensOf(slot)
+  const { component, target, attribute } = slot
+  const what = `${attribute ? `Attribute ${attribute}` : target[0].toUpperCase() + target.slice(1)} of element ${elementId(editor, component)}`
+  const sourceOf = (token: StoredProperty) => token.dataSourceId === undefined ? null : String(token.dataSourceId)
+  const lines = [tokens.length ? `${what}: ${expressionToPath(tokens, sourceOf, getPersistantId(component.parents().pop() ?? component) ?? undefined)}` : `${what}: empty.`]
+  if (tokens.length) lines.push(previewOf(component, target, tokens))
+  const { entries, hidden } = nextTokens(editor, slot, tokens, showAll)
+  const groups = [...new Set(entries.map(entry => entry.group))]
+  lines.push(entries.length ? 'Next tokens:' : 'No next token.')
+  for (const group of groups) {
+    const inGroup = entries.filter(entry => entry.group === group)
+    if (inGroup.every(entry => entry.token.type === 'filter')) lines.push(`${group}: ${inGroup.map(entry => entry.key).join(', ')}`)
+    else lines.push(`${group}:`, ...inGroup.map(entry => `  ${entryLine(component, entry)}`))
+  }
+  if (hidden) lines.push(`${hidden} secondary fields hidden, show_all lists them.`)
+  return lines.join('\n')
+}
+
+function previewOf(component: Component, target: BindTo, tokens: StoredToken[]): string {
+  const field = getExpressionResultType(tokens, component)
+  if (!field) return 'Preview: this expression has no type, change its last token.'
+  const value = getValue(tokens, component, target !== 'loop')
+  if (target === 'loop') {
+    return field.kind === 'list'
+      ? `Preview: ${Array.isArray(value) ? value.length : 0} items of ${field.typeIds.join('|')}. Bind its children with the token item.`
+      : `Not a list yet (${typeLabel(field)}): add a token that is a list.`
+  }
+  if (target !== 'condition' && field.kind !== 'scalar') return `Not a value yet (${typeLabel(field)}): add one of its fields.`
+  if (target === 'condition') return `Preview: the element is ${isComponentVisible(component) ? 'shown' : 'hidden'}.`
+  if (value === undefined || value === null || value === '') return 'Preview: empty.'
+  return `Preview: ${preview(value)}.`
+}
+
+function failure(editor: Editor, slot: Slot, why: string, showAll?: boolean): Error {
+  return new Error(`${why} Nothing was changed.\n${describe(editor, slot, showAll)}`)
+}
+
+// Stored as the expression editor stores a token it picked (toValue, then fromString)
+function picked(editor: Editor, slot: Slot, entry: Entry, options: Record<string, unknown> | undefined, showAll?: boolean): StoredToken {
+  const token = JSON.parse(JSON.stringify(entry.token)) as StoredToken
+  if (!options) return token
+  if (token.type !== 'property') throw failure(editor, slot, `Options of ${entry.key} cannot be set yet.`, showAll)
+  const allowed = Object.keys((entry.token as StoredProperty).options ?? {})
+  const unknown = Object.keys(options).filter(name => !allowed.includes(name))
+  if (unknown.length) throw failure(editor, slot, allowed.length ? `${entry.key} has no option ${unknown.join(', ')}. Options: ${allowed.join(', ')}.` : `${entry.key} takes no options.`, showAll)
+  // The options form of the editor gives text
+  const text = Object.fromEntries(Object.entries(options).map(([name, value]) => [name, typeof value === 'string' ? value : JSON.stringify(value)]))
+  return { ...token, options: { ...token.options, ...text } }
+}
+
+function findEntry(editor: Editor, slot: Slot, before: StoredToken[], key: string | undefined, showAll?: boolean): Entry {
+  if (!key) throw failure(editor, slot, 'Set token to one of the next tokens.', showAll)
+  const entry = nextTokens(editor, slot, before, true).entries.find(entry => entry.key === key)
+  if (!entry) throw failure(editor, slot, `No token "${key}" can come here.`, showAll)
+  return entry
+}
+
+async function save(editor: Editor, slot: Slot, tokens: StoredToken[], operator: string | undefined, showAll?: boolean): Promise<string> {
+  const { component, target, attribute } = slot
+  if (target === 'condition' && operator !== undefined && operator !== UnariOperator.TRUTHY && operator !== UnariOperator.FALSY) throw failure(editor, slot, 'operator must be truthy or falsy.', showAll)
+  const expression = target === 'loop' && tokens.length ? previewFirstItem(tokens) : tokens
   const { write, before } = writer(component, target, attribute)
   const operatorBefore = component.get('conditionOperator')
   // Only unary conditions here: the second operand of a binary one goes
@@ -447,45 +526,67 @@ async function bind(editor: Editor, opts: CmsOptions): Promise<string> {
       else component.set('conditionOperator', operatorBefore)
       if (operandBefore) setState(component, Properties.condition2, operandBefore, false)
     }
-    return new Error(`${why} Nothing was changed.`)
+    return failure(editor, slot, why, showAll)
   }
   try {
-    if (target === 'condition') component.set('conditionOperator', operator)
+    if (target === 'condition') component.set('conditionOperator', operator ?? operatorBefore ?? UnariOperator.TRUTHY)
     if (operandBefore) removeState(component, Properties.condition2, false)
-    write(attribute ? { label: attribute, expression } : { expression })
+    write(expression.length ? (attribute ? { label: attribute, expression } : { expression }) : null)
     getPageQuery(page, editor)
   } catch (e) {
-    throw undo(`This binding breaks the data query of the page: ${bodyStart(e)}.`)
+    throw undo(`This expression breaks the data query of the page: ${bodyStart(e)}.`)
   }
-
+  const dsId = expression.find((token): token is StoredProperty => token.type === 'property' && token.dataSourceId !== undefined)?.dataSourceId
+    ?? getExpressionResultType(expression, component)?.dataSourceId
+  if (dsId === undefined) {
+    stop()
+    return describe(editor, slot, showAll)
+  }
   let data: Record<DataSourceId, unknown>
   try {
     data = await within(loaded, 25_000, 'The preview data did not load within 25 s.')
   } catch (e) {
     stop()
-    return `Bound, but ${(e as Error).message[0].toLowerCase()}${(e as Error).message.slice(1)}`
+    return `${(e as Error).message}\n${describe(editor, slot, showAll)}`
   }
-  if (data[ds.id] === undefined || data[ds.id] === null) {
-    const why = getPreviewErrors()[ds.id]
-    throw undo(why ? `The data query failed with this binding: ${bodyStart(why)}. Check the arguments in path.` : `Source "${ds.id}" sent no data for this page.`)
+  if (data[dsId] === undefined || data[dsId] === null) {
+    const why = getPreviewErrors()[dsId]
+    throw undo(why ? `The data query failed with this expression: ${bodyStart(why)}. Check the options of the tokens.` : `Source "${dsId}" sent no data for this page.`)
   }
+  return describe(editor, slot, showAll)
+}
 
-  const inLoop = expression[0]?.type === 'state' && (expression[0] as State).storedStateId === Properties.__data
-  switch (target) {
-  case 'loop': {
-    const value = getValue(expression, component, false)
-    const items = Array.isArray(value) ? value.length : 0
-    return `Loop bound on element ${elementId(editor, component)}: ${items} items of ${field.typeIds[0]} in the preview. Item fields: ${itemFields(lookup.type(field.typeIds[0]), lookup).join(', ')}. Bind its children with item.<field>.`
+function expression(editor: Editor, opts: CmsOptions): string {
+  return describe(editor, slotOf(editor, opts), opts.show_all)
+}
+
+async function expressionAdd(editor: Editor, opts: CmsOptions): Promise<string> {
+  const slot = slotOf(editor, opts)
+  const tokens = tokensOf(slot)
+  const token = picked(editor, slot, findEntry(editor, slot, tokens, opts.token, opts.show_all), opts.options, opts.show_all)
+  return save(editor, slot, [...tokens, token], opts.operator, opts.show_all)
+}
+
+async function expressionSet(editor: Editor, opts: CmsOptions): Promise<string> {
+  const slot = slotOf(editor, opts)
+  const tokens = tokensOf(slot)
+  const index = opts.index
+  if (typeof index !== 'number' || !Number.isInteger(index) || index < 0 || index >= tokens.length) {
+    throw failure(editor, slot, tokens.length ? `Set index from 0 to ${tokens.length - 1}.` : 'This expression is empty, add a token with expression_add.', opts.show_all)
   }
-  case 'condition':
-    return `Condition bound: the element is ${isComponentVisible(component) ? 'shown' : 'hidden'}${inLoop ? ' for the first item' : ''} in the preview.`
-  default: {
-    const value = getValue(expression, component, true)
-    const what = attribute ? `Attribute ${attribute}` : 'Content'
-    if (value === undefined || value === null || value === '') return `${what} bound, but it is empty${inLoop ? ' for the first item' : ''} in the preview.`
-    return `${what} bound: ${preview(value)}${inLoop ? ' for the first item' : ''}.`
+  const before = tokens.slice(0, index)
+  if (opts.token === '-') return save(editor, slot, before, undefined, opts.show_all)
+  if (opts.token !== undefined) {
+    // As in the editor: a new token at index clears its options and removes the tokens after
+    const token = picked(editor, slot, findEntry(editor, slot, before, opts.token, opts.show_all), opts.options, opts.show_all)
+    return save(editor, slot, [...before, token], undefined, opts.show_all)
   }
-  }
+  if (!opts.options) throw failure(editor, slot, 'Set token or options.', opts.show_all)
+  const current = nextTokens(editor, slot, before, true).entries.find(({ token }) => token.type === tokens[index].type && keyOf(token) === keyOf(tokens[index] as Token))
+  if (!current) throw failure(editor, slot, `The token at ${index} cannot come here any more, change it with token.`, opts.show_all)
+  const { options } = picked(editor, slot, current, opts.options, opts.show_all) as StoredProperty
+  const changed = { ...tokens[index], options: { ...(tokens[index] as StoredProperty).options, ...options } } as StoredToken
+  return save(editor, slot, [...before, changed, ...tokens.slice(index + 1)], undefined, opts.show_all)
 }
 
 function unbind(editor: Editor, opts: CmsOptions): string {
@@ -549,9 +650,9 @@ export default (editor: Editor) => {
     add: opts => add(editor, opts),
     update: opts => update(editor, opts),
     remove: opts => remove(editor, opts),
-    schema: opts => schema(editor, opts),
-    search: opts => search(opts),
-    bind: opts => bind(editor, opts),
+    expression: opts => expression(editor, opts),
+    expression_add: opts => expressionAdd(editor, opts),
+    expression_set: opts => expressionSet(editor, opts),
     unbind: opts => unbind(editor, opts),
     bindings: opts => bindings(editor, opts),
   }
