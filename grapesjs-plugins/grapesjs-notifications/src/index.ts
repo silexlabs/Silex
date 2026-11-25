@@ -1,5 +1,6 @@
 import { Editor } from 'grapesjs'
-import en from './locale/en'
+import en from './locale/en.json'
+import fr from './locale/fr.json'
 import {
   NotificationManager,
   NotificationManagerOptions,
@@ -56,6 +57,7 @@ export default (editor: Editor, opts: Partial<NotificationManagerOptions> = {}) 
   // Load i18n files
   editor.I18n && editor.I18n.addMessages({
     en,
+    fr,
     ...options.i18n,
   })
 

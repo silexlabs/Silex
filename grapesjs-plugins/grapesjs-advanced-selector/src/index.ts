@@ -1,8 +1,8 @@
 // GrapesJs Plugin
 import { AdvancedSelectorOptions, initASM, initListeners } from './plugin'
 import { Editor } from 'grapesjs'
-import en from './i18n/en'
-import fr from './i18n/fr'
+import en from './locale/en.json'
+import fr from './locale/fr.json'
 import registerCommands from './commands'
 import { registerCapabilities } from './capabilities'
 import type { AddCapability, DescribeTool } from '@silexlabs/grapesjs-ai-capabilities'

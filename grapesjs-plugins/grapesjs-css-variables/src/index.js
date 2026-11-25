@@ -1,8 +1,8 @@
 import { variablesPlugin } from './variables.js'
 import { setupStyleManager } from './style-manager.js'
 import { registerCommands, registerCapabilities } from './capabilities.js'
-import en from './locale/en.js'
-import fr from './locale/fr.js'
+import en from './locale/en.json'
+import fr from './locale/fr.json'
 
 export default (editor, opts = {}) => {
   const options = {
