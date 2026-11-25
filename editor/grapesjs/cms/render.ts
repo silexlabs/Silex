@@ -16,7 +16,7 @@
  */
 
 import type { Component, Editor } from 'grapesjs'
-import { BinaryOperator, Expression, FIXED_TOKEN_ID, NOTIFICATION_GROUP, Properties, State, StateId, StoredFilter, StoredState, Token, UnariOperator, fixedText, fromStored, getExpressionResultType, getPersistantId, getState, getStateIds, getStateVariableName } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, FIXED_TOKEN_ID, NOTIFICATION_GROUP, Properties, State, StateId, StoredFilter, StoredState, Token, UnariOperator, fixedText, fromStored, getExpressionResultType, getFieldAlias, getPersistantId, getState, getStateIds, getStateVariableName } from '@silexlabs/grapesjs-data-source'
 import { UNWRAP_ID } from './traits'
 
 export interface BinaryCondition {
@@ -107,7 +107,7 @@ export function getTemplateExpression(expression: Expression, language: Expressi
       }
       if (filtered && language.fieldOfFiltered) base = language.fieldOfFiltered(base)
       filtered = false
-      fields.push(token.fieldId)
+      fields.push(getFieldAlias(token))
       break
     case 'filter': {
       if (index === 0) throw new Error('Expression cannot start with a filter')

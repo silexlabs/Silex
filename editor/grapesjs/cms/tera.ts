@@ -16,7 +16,7 @@
  */
 
 import type { Component } from 'grapesjs'
-import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
+import { BinaryOperator, Expression, FIXED_TOKEN_ID, StateId, StoredFilter, UnariOperator, fixedText, getExpressionResultType, getFieldAlias, getFilters, getStateVariableName, toExpression } from '@silexlabs/grapesjs-data-source'
 import { DECIMAL, EchoContext, dataSourceName, getTemplateExpression, isNumberExpression, persistantId, type BinaryCondition, type Condition, type TemplateSyntax, type UnaryCondition } from './render'
 import type { TeraFilter } from './tera-filters'
 import { INTEGER } from './slice'
@@ -111,7 +111,7 @@ function teraOptions(component: Component, filter: StoredFilter, prefix: string[
     path: key => {
       const expression = toExpression(option(key))
       if (!expression) return option(key) ? [`${option(key)}`] : []
-      return expression.map(token => token.type === 'property' && token.fieldId === FIXED_TOKEN_ID ? `${token.options?.value ?? ''}` : 'fieldId' in token ? token.fieldId : '')
+      return expression.map(token => token.type === 'property' && token.fieldId === FIXED_TOKEN_ID ? `${token.options?.value ?? ''}` : token.type === 'property' ? getFieldAlias(token) : '')
     },
   }
 }

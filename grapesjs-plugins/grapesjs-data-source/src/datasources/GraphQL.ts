@@ -19,7 +19,15 @@ import { IDataSourceOptions, Type, Field, Tree, TypeId, IDataSource, DATA_SOURCE
 import graphqlIntrospectionQuery from './graphql-introspection-query'
 import dedent from 'dedent-js'
 import { FIXED_TOKEN_ID } from '../types'
-import { buildArgs } from '../model/token'
+import { buildArgs, getFieldAlias } from '../model/token'
+
+/**
+ * A field in a query: `alias: field(args)`, or `field` when it has no arguments
+ */
+function fieldSelection(token: Tree['token']): string {
+  const alias = getFieldAlias(token)
+  return `${alias === token.fieldId ? '' : `${alias}: `}${token.fieldId}${buildArgs(token.options)}`
+}
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -1084,7 +1092,7 @@ export default class GraphQL implements IDataSource {
 
   protected getQueryRecursive(tree: Tree, indent = '', fragment = ''): string {
     // Check if the tree is a fragment
-    const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${buildArgs(tree.token.options)}`
+    const typeOrFragment = fragment ? `...on ${fragment}` : fieldSelection(tree.token)
 
     // Build the value
     switch(tree.token.kind) {
@@ -1125,7 +1133,7 @@ export default class GraphQL implements IDataSource {
 
       const fragmentsQuery = fragments
         .map(({query, child}) => dedent`
-            ${indent}${child.token.fieldId} {
+            ${indent}${fieldSelection(child.token)} {
               ${query}
             }
           `)
