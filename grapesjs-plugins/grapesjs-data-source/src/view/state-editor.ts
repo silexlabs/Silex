@@ -19,6 +19,7 @@ import {LitElement, TemplateResult, html} from 'lit'
 import {property} from 'lit/decorators.js'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
+import { live } from 'lit/directives/live.js'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, Filter, FIXED_TOKEN_ID, Property, Token } from '../types'
 import { filterDisplayedCompletion, fromString, getFixedToken, getTokenDisplayName, groupByType, isSecondaryToken, toExpression, toId, toValue } from '../utils'
@@ -310,7 +311,7 @@ export class StateEditor extends LitElement {
         @change=${(event: Event) => this.onChangeValue(event)}
         data-is-input
         ${ref(this.expressionInputRef)}
-        .fixed=${fixed}
+        .fixed=${live(fixed)}
         class="ds-section"
         name=${this.name}
         reactive
@@ -324,7 +325,7 @@ export class StateEditor extends LitElement {
             type="text"
             class="ds-expression-input__fixed"
             placeholder="Enter a text or switch to expression mode"
-            .value=${text}
+            .value=${live(text)}
             />
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`
@@ -481,6 +482,9 @@ export class StateEditor extends LitElement {
     } else if(idx === -1) {
       // Clear expression (case when user clicks reset/clear button)
       this.data = []
+    } else if (this.expressionInputRef.value?.fixed) {
+      // The fixed text changed: keep it, or the next render would put back the old text
+      this._data = this.data
     } else {
       // Event coming from the options (no idx in detail)
     }
