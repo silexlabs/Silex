@@ -304,6 +304,7 @@ export class FsStorage implements StorageConnector<FsSession> {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
         try {
+          await fs.mkdir(dirname(path), { recursive: true })
           await fs.writeFile(path, file.content)
         } catch(err) {
           fileStatus.message = `Error (${err})`

@@ -1,10 +1,12 @@
 import {live} from 'lit-html/directives/live.js'
+import {ref} from 'lit-html/directives/ref.js'
 import {html, TemplateResult, nothing} from 'lit-html'
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 import { WebsiteMeta, WebsiteSettings } from '~/common/types'
 import { websiteMetaRead } from '../api' // Adjust as needed
 import type { ClientConfig } from '..'
 import type { Editor } from 'grapesjs'
+import { getFixedPermalink, serializeFixedPermalink } from './permalink'
 import { cmdRenderSection } from './settings'
 import { t } from '../i18n'
 
@@ -47,7 +49,7 @@ export interface SettingsError {
 export const defaultSections: SettingsSection[] = [{
   id: 'general',
   label: 'General',
-  render: (settings, model) => html`
+  render: (settings, model, editor) => html`
     <div id="settings-general" class="silex-hideable">
       <div class="silex-form__group col2">
         ${!isSite(model) ? html`
@@ -56,6 +58,38 @@ export const defaultSections: SettingsSection[] = [{
             <p class="silex-help">Label of the page in the editor, and file name of the published HTML page.</p>
             <input type="text" name="name" .value=${live(model.get('name') || '')}/>
           </label>
+          <div class="silex-form__element">
+            ${editor.getModel().get('config').cmsConfig?.enabled === false ? html`
+              <label for="permalink-text">Permalink</label>
+              <input
+                id="permalink-text"
+                type="text"
+                .value=${live(getFixedPermalink(settings) ?? '')}
+                ?disabled=${getFixedPermalink(settings) === null}
+                @input=${(event: Event) => {
+    const input = event.currentTarget as HTMLInputElement
+    const stored = input.nextElementSibling as HTMLInputElement
+    stored.value = serializeFixedPermalink(input.value)
+  }}
+              />
+              <input type="hidden" name="eleventyPermalink" .value=${live(settings.eleventyPermalink ?? '')} />
+              ${getFixedPermalink(settings) === null ? html`
+                <p class="silex-help">This permalink uses an expression. Expression editing is unavailable in this configuration.</p>
+              ` : nothing}
+            ` : html`<state-editor
+              id="eleventyPermalink"
+              name="eleventyPermalink"
+              .editor=${editor}
+              .selected=${model.getMainComponent()}
+              ${ref(element => {
+    if (element) (element as HTMLElement & { value: string }).value = settings.eleventyPermalink ?? ''
+  })}
+              default-fixed
+            >
+              <label slot="label">Permalink</label>
+            </state-editor>`}
+            <p class="silex-help">The published URL path. When empty, the page name is used.</p>
+          </div>
           ` : nothing }
       </div>
       ${isSite(model) ? html`

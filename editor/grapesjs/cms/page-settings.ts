@@ -239,7 +239,7 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
       <div class="silex-help">
         <p>The "Silex CMS" feature connects your favorite headless CMS to Silex, and publishes your pages with 11ty or Hugo.</p>
-        <p>Tip: Click the “?” icons to view inline help about collection pages, expressions and permalinks.</p>
+        <p>Tip: Click the “?” icons to view inline help about collection pages and expressions.</p>
         <p>Related links to the docs:
         <ul>
           <li><a target="_blank" href="https://docs.silex.me/designer/cms/overview/">documentation about Silex CMS concepts</a></li>
@@ -283,33 +283,6 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             </label>
           </state-editor>
           <p class="silex-help">One page is generated for each item of this list.</p>
-
-          <state-editor
-            id="eleventyPermalink"
-            name="eleventyPermalink"
-            value=${settings.eleventyPermalink ?? ''}
-            .editor=${editor}
-            .selected=${body}
-          >
-            <label slot="label">
-              Permalink
-              <span class="help-wrapper">
-                <details class="help-popover">
-                  <summary class="help-icon" aria-label="Help">?</summary>
-                  <div class="help-content">
-                    <strong>Permalink</strong>
-                    <ul>
-                      <li>Defines the published URL path (expects an expression).</li>
-                      <li>For collection pages, this is evaluated for each generated page.</li>
-                    </ul>
-                    <ul>
-                      <li><a href="https://docs.silex.me/designer/cms/collection-pages/#permalink-structure" target="_blank">Permalinks in Silex</a></li>
-                    </ul>
-                  </div>
-                </details>
-              </span>
-            </label>
-          </state-editor>
 
           <details class="silex-more"><summary>Deprecated</summary>
           <label class="silex-form__element">Size

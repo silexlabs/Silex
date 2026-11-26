@@ -70,6 +70,13 @@ describe('FsStorage path confinement', () => {
     expect(content.toString()).toBe('hello')
   })
 
+  it('should write files into a new nested folder', async () => {
+    const storage = connector()
+    const id = await storage.createWebsite(dummySession, { name: 'dummy name', connectorUserSettings: {} })
+    await storage.writeAssets(dummySession, id, [{ path: '/nested/photo.txt', content: 'photo' }])
+    expect((await storage.readAsset(dummySession, id, 'nested/photo.txt')).toString()).toBe('photo')
+  })
+
   it('should refuse an asset name which leads out of the website', async () => {
     const storage = connector()
     const id = await storage.createWebsite(dummySession, { name: 'dummy name', connectorUserSettings: {} })

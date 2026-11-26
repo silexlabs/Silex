@@ -135,6 +135,7 @@ export interface PublicationData extends WebsiteData {
 }
 
 export interface WebsiteSettings {
+  eleventyPermalink?: string, // Serialized expression; keep the key used by existing pages
   description?: string,
   title?: string,
   lang?: string,
