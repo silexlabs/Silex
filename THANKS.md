@@ -4,7 +4,7 @@ Silex also lives thanks to people and organizations who did not write its code. 
 
 ## Partners
 
-- [NLnet (NGI0 Commons Fund)](https://www.silex.me/nlnet/): fund the desktop app and its accessibility
+- [NLnet](https://nlnet.nl/): fund [parts of the development of Silex](https://www.silex.me/nlnet/) through the NGI Zero Commons Fund
 - [OW2](https://projects.ow2.org/view/silex/): host Silex among their open source projects
 - [NoCode France](https://www.nocode-france.fr/): [live events on Twitch](https://www.twitch.tv/nocodefrance), the #silex channel of [their Slack](http://redirection.nocode-france.fr/slack) and the [NoCode Week](https://nocodeweek.io/)
 - [Internet 2000](https://internet2000.net/): web studio
